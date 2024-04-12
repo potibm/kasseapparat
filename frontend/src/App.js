@@ -4,6 +4,13 @@ import { Button, Card, Table } from "flowbite-react";
 import './App.css';
 import Products from './products.json';
 
+let Currency = new Intl.NumberFormat('de-DE', {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
 function Product({ product, addToCart }) {
   const handleAddToCart = () => {
     addToCart(product);
@@ -15,7 +22,7 @@ function Product({ product, addToCart }) {
         {product.name}
       </h5>
       <div className="flex items-center justify-between">
-        <span className="text-3xl font-bold text-gray-900 dark:text-white">{product.price} €</span>
+        <span className="text-3xl font-bold text-gray-900 dark:text-white">{Currency.format(product.price)}</span>
         <Button onClick={handleAddToCart}><HiShoppingCart className="h-5 w-5" /></Button>
       </div>
     </Card>
@@ -32,33 +39,42 @@ function ProductList({ products, addToCart }) {
   );
 }
 
-function Cart({ cart, cartValue }) {
+function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
   return (
     <div className="w-30">
       <Table striped>
         <Table.Head>
           <Table.HeadCell>Product</Table.HeadCell>
-          <Table.HeadCell>Quantity</Table.HeadCell>
-          <Table.HeadCell>Total Price</Table.HeadCell>
+          <Table.HeadCell className="text-right">Quantity</Table.HeadCell>
+          <Table.HeadCell className="text-right">Total Price</Table.HeadCell>
           <Table.HeadCell>Remove</Table.HeadCell>
         </Table.Head>
         <Table.Body>
           {cart.map(cartElement => (
             <Table.Row key={cartElement.id}>
-              <Table.Cell>{cartElement.name}</Table.Cell>
-              <Table.Cell>{cartElement.count}</Table.Cell>
-              <Table.Cell>{cartElement.totalPrice} €</Table.Cell>
-              <Table.Cell><Button><HiXCircle /></Button></Table.Cell>
+              <Table.Cell className="whitespace-nowrap">{cartElement.name}</Table.Cell>
+              <Table.Cell className="text-right">{cartElement.count}</Table.Cell>
+              <Table.Cell className="text-right">{Currency.format(cartElement.totalPrice)}</Table.Cell>
+              <Table.Cell><Button color="failure" onClick={() => removeFromCart(cartElement)}><HiXCircle /></Button></Table.Cell>
             </Table.Row>
           ))}
           <Table.Row>
-            <Table.Cell>Total</Table.Cell>
+            <Table.Cell className="uppercase font-bold">Total</Table.Cell>
             <Table.Cell></Table.Cell>
-            <Table.Cell>{cartValue} €</Table.Cell>
-            <Table.Cell></Table.Cell>
+            <Table.Cell className="font-bold text-right">{Currency.format(cart.reduce((total, item) => total + item.totalPrice, 0))}</Table.Cell>
+            <Table.Cell>{cart.length ? (
+              <Button color="failure" onClick={() => removeAllFromCart()}><HiXCircle /></Button> 
+            ) : (
+              <Button disabled color="failure"><HiXCircle /></Button> 
+            )}</Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table>
+
+      <Button {...(cart.length === 0 && {disabled: true})}  color="success" className="w-full mt-2 uppercase" onClick={checkoutCart}>
+        Checkout&nbsp;
+        {cart.length && Currency.format(cart.reduce((total, item) => total + item.totalPrice, 0))}
+      </Button>
     </div>
   );
 }
@@ -67,7 +83,6 @@ function App() {
   const [cart, setCart] = useState([]);
   
   const addToCart = (product) => {
-    console.log("wuff" + product);
     const existingProductIndex = cart.findIndex(item => item.id === product.id);
     if (existingProductIndex !== -1) {
       const updatedCart = [...cart];
@@ -80,11 +95,30 @@ function App() {
     }
   };
 
+  const removeFromCart = (product) => {
+    const existingProductIndex = cart.findIndex(item => item.id === product.id);
+  
+    if (existingProductIndex !== -1) {
+      setCart([...cart.slice(0, existingProductIndex), ...cart.slice(existingProductIndex + 1)]);
+    }
+  }
+
+  const removeAllFromCart = () => {
+    setCart([]);
+  }
+
+  const checkoutCart = () => {
+    setCart([]);
+  }
+
   return (
-    <div className="App">
+    <div className="App p-2">
       <div className="flex">
         <ProductList products={Products} addToCart={addToCart} />
-        <Cart cart={cart} cartValue={0} />
+        <Cart cart={cart} 
+          removeFromCart={removeFromCart} 
+          removeAllFromCart={removeAllFromCart} 
+          checkoutCart={checkoutCart} />
       </div>
     </div>
   );
