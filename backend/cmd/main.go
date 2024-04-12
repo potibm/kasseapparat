@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -17,13 +16,12 @@ func main() {
 	http.Handle("/", fs)
 
 	myHandler := func(w http.ResponseWriter, r *http.Request) {
-		data := map[string]interface{}{}
-		data["message"] = "Hello, World!"
-		jsonData, err := json.Marshal(data)
+		jsonData, err := os.ReadFile("./backend/data/products.json")
 		if err != nil {
 			log.Println("Error:", err)
 		} else {
 			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Write(jsonData)
 		}
 	}

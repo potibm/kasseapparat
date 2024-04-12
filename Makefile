@@ -3,12 +3,14 @@
 .PHONY: run
 
 run:
-	go run ./backend/cmd/main.go 3001: &
+	go run ./backend/cmd/main.go 3001 &
 	cd frontend && yarn start &
 
 run-be:
-	 go run ./backend/cmd/main.go 3001: 
+	 go run ./backend/cmd/main.go 3001
 
+stop:
+	kill -9 `lsof -t -i:3001`
 
 run-fe:
 	 cd frontend && yarn start

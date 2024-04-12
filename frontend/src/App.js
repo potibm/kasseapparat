@@ -73,7 +73,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
 
       <Button {...(cart.length === 0 && {disabled: true})}  color="success" className="w-full mt-2 uppercase" onClick={checkoutCart}>
         Checkout&nbsp;
-        {cart.length && Currency.format(cart.reduce((total, item) => total + item.totalPrice, 0))}
+        {cart.length>0 && Currency.format(cart.reduce((total, item) => total + item.totalPrice, 0))}
       </Button>
     </div>
   );
@@ -81,6 +81,24 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
 
 function App() {
   const [cart, setCart] = useState([]);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []); // Empty dependency array to run only once on mount
+  
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/products');
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   
   const addToCart = (product) => {
     const existingProductIndex = cart.findIndex(item => item.id === product.id);
@@ -105,16 +123,18 @@ function App() {
 
   const removeAllFromCart = () => {
     setCart([]);
+    fetchProducts();
   }
 
   const checkoutCart = () => {
     setCart([]);
+    fetchProducts();
   }
 
   return (
     <div className="App p-2">
       <div className="flex">
-        <ProductList products={Products} addToCart={addToCart} />
+        <ProductList products={products} addToCart={addToCart} />
         <Cart cart={cart} 
           removeFromCart={removeFromCart} 
           removeAllFromCart={removeAllFromCart} 
