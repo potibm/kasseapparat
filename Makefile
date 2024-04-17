@@ -18,6 +18,7 @@ run-fe:
 
 build:
 	cd backend && go build -o ../dist/diekassa ./cmd/main.go
+	cd backend && go build -o ../dist/diekassa-tool ./tools/main.go
 	cd frontend && BUILD_PATH=../dist/public yarn build
 	mkdir -p dist/data
-	# @TODO create a script to initialize the sqlite database
+	cd dist && ./diekassa-tool --seed --purge

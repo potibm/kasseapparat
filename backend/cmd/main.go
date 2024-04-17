@@ -2,35 +2,36 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/potibm/die-kassa/internal/app/repository"
 )
 
 func main() {
+
 	port := ":3000" // Default port number
 	if len(os.Args) > 1 {
 		port = ":" + os.Args[1] // Use the provided port number if available
 	}
 
-	fs := http.FileServer(http.Dir("./public"))
-	http.Handle("/", fs)
+	r := gin.Default()
 
-	myHandler := func(w http.ResponseWriter, r *http.Request) {
-		jsonData, err := os.ReadFile("./backend/data/products.json")
-		if err != nil {
-			log.Println("Error:", err)
-		} else {
-			w.Header().Set("Content-Type", "application/json")
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.Write(jsonData)
-		}
+	apiRouter := r.Group("/api/v1")
+	{
+		apiRouter.GET("/products", repository.GetProducts)
+		apiRouter.GET("/products/:id", repository.GetProductByID)
 	}
 
-	http.HandleFunc("/api/products", myHandler)
+	// Serve static files from the "public" directory for all other requests
+	r.StaticFile("/", "./public/index.html")
+	r.StaticFile("/favicon.ico", "./public/favicon.ico")
+	r.Static("/static", "./public/static")
 
 	log.Println("Listening on " + port + "...")
-	err := http.ListenAndServe(port, nil)
+	err := r.Run(port)
 	if err != nil {
-		log.Fatal(err)
+		panic("[Error] failed to start Gin server due to: " + err.Error())
 	}
 }

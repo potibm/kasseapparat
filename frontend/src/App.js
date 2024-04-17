@@ -19,10 +19,10 @@ function Product({ product, addToCart }) {
   return (
     <Card className="max-w-sm mr-1.5 mb-1.5 float-left">
       <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-        {product.name}
+        {product.Name}
       </h5>
       <div className="flex items-center justify-between">
-        <span className="text-3xl font-bold text-gray-900 dark:text-white">{Currency.format(product.price)}</span>
+        <span className="text-3xl font-bold text-gray-900 dark:text-white">{Currency.format(product.Price)}</span>
         <Button onClick={handleAddToCart}><HiShoppingCart className="h-5 w-5" /></Button>
       </div>
     </Card>
@@ -33,7 +33,7 @@ function ProductList({ products, addToCart }) {
   return (
     <div className="grow">
       {products.map(product => (
-        <Product key={product.id} product={product} addToCart={addToCart} />
+        <Product key={product.ID} product={product} addToCart={addToCart} />
       ))}
     </div>
   );
@@ -51,8 +51,8 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
         </Table.Head>
         <Table.Body>
           {cart.map(cartElement => (
-            <Table.Row key={cartElement.id}>
-              <Table.Cell className="whitespace-nowrap">{cartElement.name}</Table.Cell>
+            <Table.Row key={cartElement.ID}>
+              <Table.Cell className="whitespace-nowrap">{cartElement.Name}</Table.Cell>
               <Table.Cell className="text-right">{cartElement.count}</Table.Cell>
               <Table.Cell className="text-right">{Currency.format(cartElement.totalPrice)}</Table.Cell>
               <Table.Cell><Button color="failure" onClick={() => removeFromCart(cartElement)}><HiXCircle /></Button></Table.Cell>
@@ -89,7 +89,7 @@ function App() {
   
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/products');
+      const response = await fetch('http://localhost:3001/api/v1/products');
       if (!response.ok) {
         throw new Error('Failed to fetch products');
       }
@@ -101,20 +101,20 @@ function App() {
   };
   
   const addToCart = (product) => {
-    const existingProductIndex = cart.findIndex(item => item.id === product.id);
+    const existingProductIndex = cart.findIndex(item => item.ID === product.ID);
     if (existingProductIndex !== -1) {
       const updatedCart = [...cart];
       updatedCart[existingProductIndex].count++;
-      updatedCart[existingProductIndex].totalPrice = updatedCart[existingProductIndex].count * updatedCart[existingProductIndex].price;
+      updatedCart[existingProductIndex].totalPrice = updatedCart[existingProductIndex].count * updatedCart[existingProductIndex].Price;
       setCart(updatedCart);
     } else {
-      const updatedProduct = { ...product, count: 1, totalPrice: product.price };
+      const updatedProduct = { ...product, count: 1, totalPrice: product.Price };
       setCart([...cart, updatedProduct]);
     }
   };
 
   const removeFromCart = (product) => {
-    const existingProductIndex = cart.findIndex(item => item.id === product.id);
+    const existingProductIndex = cart.findIndex(item => item.ID === product.ID);
   
     if (existingProductIndex !== -1) {
       setCart([...cart.slice(0, existingProductIndex), ...cart.slice(existingProductIndex + 1)]);
