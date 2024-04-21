@@ -11,6 +11,8 @@ const Currency = new Intl.NumberFormat('de-DE', {
   maximumFractionDigits: 0
 })
 
+const API_HOST = process.env.REACT_APP_API_HOST ?? 'http://localhost:3001'
+
 function Product ({ product, addToCart }) {
   const handleAddToCart = () => {
     addToCart(product)
@@ -91,7 +93,7 @@ function App () {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/v1/products')
+      const response = await fetch(API_HOST + '/api/v1/products')
       if (!response.ok) {
         throw new Error('Failed to fetch products')
       }
