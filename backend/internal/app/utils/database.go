@@ -17,13 +17,17 @@ func ConnectToDatabase() *gorm.DB {
 }
 
 func PurgeDatabase(db *gorm.DB) {
-	// Your own implementation of purging the database
-	db.Migrator().DropTable(&models.Product{})
+	err := db.Migrator().DropTable(&models.Product{})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func MigrateDatabase(db *gorm.DB) {
-	// Your own implementation of migrating the database
-	db.AutoMigrate(&models.Product{})
+	err := db.AutoMigrate(&models.Product{})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func SeedDatabase(db *gorm.DB) {
