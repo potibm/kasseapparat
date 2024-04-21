@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/potibm/die-kassa/internal/app/handler"
 	"github.com/potibm/die-kassa/internal/app/repository"
 )
 
@@ -16,12 +17,14 @@ func main() {
 		port = ":" + os.Args[1] // Use the provided port number if available
 	}
 
+	myhandler := handler.NewHandler(repository.NewRepository())
+
 	r := gin.Default()
 
 	apiRouter := r.Group("/api/v1")
 	{
-		apiRouter.GET("/products", repository.GetProducts)
-		apiRouter.GET("/products/:id", repository.GetProductByID)
+		apiRouter.GET("/products", myhandler.GetProducts)
+		apiRouter.GET("/products/:id", myhandler.GetProductByID)
 	}
 
 	// Serve static files from the "public" directory for all other requests

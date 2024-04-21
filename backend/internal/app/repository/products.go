@@ -1,35 +1,25 @@
 package repository
 
 import (
-	"net/http"
+	"errors"
 
-	"github.com/gin-gonic/gin"
 	"github.com/potibm/die-kassa/internal/app/models"
-	"github.com/potibm/die-kassa/internal/app/utils"
 )
 
-func GetProducts(c *gin.Context) {
-	db := utils.ConnectToDatabase()
-
+func (repo *Repository) GetProducts() ([]models.Product, error) {
 	var products []models.Product
-	if err := db.Find(&products).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve products"})
-		return
+	if err := repo.db.Find(&products).Error; err != nil {
+		return nil, errors.New("Products not found")
 	}
 
-	c.Header("Access-Control-Allow-Origin", "*")
-	c.JSON(http.StatusOK, products)
+	return products, nil
 }
 
-func GetProductByID(c *gin.Context) {
-	db := utils.ConnectToDatabase()
-
+func (repo *Repository) GetProductByID(id int) (*models.Product, error) {
 	var product models.Product
-	if err := db.First(&product, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
-		return
+	if err := repo.db.First(&product, id).Error; err != nil {
+		return nil, errors.New("Product not found")
 	}
 
-	c.Header("Access-Control-Allow-Origin", "*")
-	c.JSON(http.StatusOK, product)
+	return &product, nil
 }
