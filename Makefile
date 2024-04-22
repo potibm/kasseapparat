@@ -13,6 +13,9 @@ stop:
 run-be:
 	cd backend && go run ./cmd/main.go 3001
 
+run-tool:
+	cd backend && go run ./tools/main.go --seed --purge
+
 run-fe:
 	cd frontend && yarn start
 
