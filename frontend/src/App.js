@@ -19,7 +19,7 @@ function Product ({ product, addToCart }) {
   }
 
   return (
-    <Card className="max-w-sm mr-1.5 mb-1.5 float-left">
+    <Card className={`w-3/12 mr-1.5 mb-1.5 float-left ${product.WrapAfter ? 'float-none' : ''}`}>
       <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
         {product.Name}
       </h5>
@@ -138,7 +138,7 @@ function App () {
   return (
     <div className="App p-2">
       <div className="flex">
-        <ProductList products={products} addToCart={addToCart} />
+        <ProductList  products={products} addToCart={addToCart} />
         <Cart cart={cart}
           removeFromCart={removeFromCart}
           removeAllFromCart={removeAllFromCart}

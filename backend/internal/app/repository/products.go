@@ -8,7 +8,7 @@ import (
 
 func (repo *Repository) GetProducts() ([]models.Product, error) {
 	var products []models.Product
-	if err := repo.db.Find(&products).Error; err != nil {
+	if err := repo.db.Order("Pos, Name").Find(&products).Error; err != nil {
 		return nil, errors.New("Products not found")
 	}
 

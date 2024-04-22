@@ -5,6 +5,8 @@ import "gorm.io/gorm"
 // Product represents a product model
 type Product struct {
 	gorm.Model
-	Name  string
-	Price float64
+	Name      string
+	Price     float64
+	WrapAfter bool
+	Pos       int
 }
