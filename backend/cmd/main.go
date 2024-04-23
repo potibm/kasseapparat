@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"github.com/potibm/die-kassa/internal/app/handler"
@@ -20,6 +21,17 @@ func main() {
 	myhandler := handler.NewHandler(repository.NewRepository())
 
 	r := gin.Default()
+
+	/*
+		r.Use(cors.New(cors.Config{
+			AllowAllOrigins:  false,
+			AllowMethods:     []string{"POST", "DELETE", "PUT", "GET", "OPTIONS"},
+			AllowHeaders:     []string{"Origin", "Content-Type"},
+			ExposeHeaders:    []string{"Content-Length"},
+			AllowCredentials: false,
+			//MaxAge: 12 * time.Hour,
+		}))*/
+	r.Use(cors.Default())
 
 	apiRouter := r.Group("/api/v1")
 	{

@@ -14,22 +14,16 @@ type PurchaseCartRequest struct {
 }
 
 type PurchaseRequest struct {
-	TotalPrice float64               `form:"totalPrice" binding:"required"`
-	Cart       []PurchaseCartRequest `form:"cart" binding:"required"`
+	TotalPrice float64               `form:"totalPrice" binding:"numeric"`
+	Cart       []PurchaseCartRequest `form:"cart" binding:"required,dive"`
 }
 
 func (handler *Handler) OptionsPurchases(c *gin.Context) {
 
-	c.Header("Access-Control-Allow-Origin", "*")
-	c.Header("Access-Control-Allow-Methods", "POST, DELETE")
-	c.Header("Access-Control-Allow-Headers", "Content-Type")
 	c.JSON(http.StatusOK, nil)
 }
 
 func (handler *Handler) DeletePurchases(c *gin.Context) {
-	c.Header("Access-Control-Allow-Origin", "*")
-	c.Header("Access-Control-Allow-Methods", "PUT, DELETE")
-	c.Header("Access-Control-Allow-Headers", "Content-Type")
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -39,9 +33,6 @@ func (handler *Handler) DeletePurchases(c *gin.Context) {
 }
 
 func (handler *Handler) PostPurchases(c *gin.Context) {
-	c.Header("Access-Control-Allow-Origin", "*")
-	c.Header("Access-Control-Allow-Methods", "PUT, DELETE")
-	c.Header("Access-Control-Allow-Headers", "Content-Type")
 
 	var purchase models.Purchase
 
