@@ -15,7 +15,7 @@ export default function Cart ({ cart, removeFromCart, removeAllFromCart, checkou
             {cart.map(cartElement => (
               <Table.Row key={cartElement.ID}>
                 <Table.Cell className="whitespace-nowrap">{cartElement.Name}</Table.Cell>
-                <Table.Cell className="text-right">{cartElement.count}</Table.Cell>
+                <Table.Cell className="text-right">{cartElement.quantity}</Table.Cell>
                 <Table.Cell className="text-right">{currency.format(cartElement.totalPrice)}</Table.Cell>
                 <Table.Cell><Button color="failure" onClick={() => removeFromCart(cartElement)}><HiXCircle /></Button></Table.Cell>
               </Table.Row>

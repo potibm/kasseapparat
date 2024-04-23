@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import './App.css'
 import Cart from './components/Cart'
 import ProductList from './components/ProductList'
-import { fetchProducts } from './hooks/Api'
+import { fetchProducts, storePurchase } from './hooks/Api'
 import { addToCart, removeFromCart, removeAllFromCart, checkoutCart } from './hooks/Cart'
 
 const Currency = new Intl.NumberFormat('de-DE', {
@@ -42,8 +42,10 @@ function App () {
   }
 
   const handleCheckoutCart = () => {
-    setCart(checkoutCart())
-    fetchProducts(API_HOST)
+    if (storePurchase(API_HOST, cart)) {
+      setCart(checkoutCart())
+      fetchProducts(API_HOST)
+    }
   }
 
   return (

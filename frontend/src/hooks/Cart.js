@@ -3,11 +3,11 @@ export const addToCart = (cart, product) => {
   const existingProductIndex = cart.findIndex(item => item.ID === product.ID)
   if (existingProductIndex !== -1) {
     const updatedCart = [...cart]
-    updatedCart[existingProductIndex].count++
-    updatedCart[existingProductIndex].totalPrice = updatedCart[existingProductIndex].count * updatedCart[existingProductIndex].Price
+    updatedCart[existingProductIndex].quantity++
+    updatedCart[existingProductIndex].totalPrice = updatedCart[existingProductIndex].quantity * updatedCart[existingProductIndex].Price
     return updatedCart
   } else {
-    const updatedProduct = { ...product, count: 1, totalPrice: product.Price }
+    const updatedProduct = { ...product, quantity: 1, totalPrice: product.Price }
     return [...cart, updatedProduct]
   }
 }

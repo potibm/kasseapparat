@@ -25,6 +25,9 @@ func main() {
 	{
 		apiRouter.GET("/products", myhandler.GetProducts)
 		apiRouter.GET("/products/:id", myhandler.GetProductByID)
+		apiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
+		apiRouter.POST("/purchases", myhandler.PostPurchases)
+		apiRouter.DELETE("/purchases/:id", myhandler.DeletePurchases)
 	}
 
 	// Serve static files from the "public" directory for all other requests
