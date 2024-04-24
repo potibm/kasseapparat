@@ -38,8 +38,10 @@ func main() {
 		apiRouter.GET("/products", myhandler.GetProducts)
 		apiRouter.GET("/products/:id", myhandler.GetProductByID)
 		apiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
+		apiRouter.GET("/purchases", myhandler.GetLastPurchases)
 		apiRouter.POST("/purchases", myhandler.PostPurchases)
 		apiRouter.DELETE("/purchases/:id", myhandler.DeletePurchases)
+		apiRouter.GET("/purchases/stats", myhandler.GetPurchaseStats)
 	}
 
 	// Serve static files from the "public" directory for all other requests
