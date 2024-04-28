@@ -3,8 +3,8 @@ import { Button, Table } from 'flowbite-react'
 
 export default function Cart ({ cart, removeFromCart, removeAllFromCart, checkoutCart, currency }) {
   return (
-      <div className="w-30">
-        <Table striped>
+      <div>
+        <Table striped className='table-fixed'>
           <Table.Head>
             <Table.HeadCell>Product</Table.HeadCell>
             <Table.HeadCell className="text-right">Quantity</Table.HeadCell>

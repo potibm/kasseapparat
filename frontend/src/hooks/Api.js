@@ -24,9 +24,24 @@ export const storePurchase = async (apiHost, cart, totalPrice) => {
     if (!response.ok) {
       throw new Error('Failed to store purchase')
     }
-    return true
+    const data = await response.json()
+    return data.purchase
   } catch (error) {
     console.error(error)
-    return false
+    return null
+  }
+}
+
+export const fetchPurchases = async (apiHost) => {
+  try {
+    const response = await fetch(apiHost + '/api/v1/purchases')
+    if (!response.ok) {
+      throw new Error('Failed to fetch purchases')
+    }
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error(error)
+    return null
   }
 }

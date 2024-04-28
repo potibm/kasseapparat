@@ -7,7 +7,7 @@ export default function Product ({ product, addToCart, currency }) {
   }
 
   return (
-      <Card className={`w-3/12 mr-1.5 mb-1.5 float-left ${product.WrapAfter ? 'float-none' : ''}`}>
+      <Card className={`w-1/4 mr-1.5 mb-1.5 float-left ${product.WrapAfter ? 'float-none' : ''}`}>
         <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
           {product.Name}
         </h5>
