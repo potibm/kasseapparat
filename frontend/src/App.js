@@ -58,7 +58,6 @@ function App () {
 
   const handleCheckoutCart = async () => {
     try {
-      throw new Error('Failed to checkout cart: Not implemented')
       const createdPurchase = await storePurchase(API_HOST, cart)
       if (createdPurchase) {
         setCart(checkoutCart())
@@ -67,8 +66,17 @@ function App () {
       }
     } catch (error) {
       console.error('Failed to checkout cart:', error)
+      showError(error.message, error)
     }
   }
+
+  const showError = (message) => {
+    setErrorMessage(message);
+  };
+
+  const handleCloseError = () => {
+      setErrorMessage('');
+  };
 
   return (
     <div className="App p-2">
@@ -92,6 +100,7 @@ function App () {
           />
         </div>
       </div>
+      <ErrorModal message={errorMessage} onClose={handleCloseError} />
     </div>
   )
 }
