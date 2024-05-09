@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/potibm/die-kassa/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
 type PurchaseCartRequest struct {

@@ -1,4 +1,4 @@
-module github.com/potibm/die-kassa
+module github.com/potibm/kasseapparat
 
 go 1.22.1
 

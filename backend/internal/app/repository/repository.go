@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/potibm/die-kassa/internal/app/utils"
+	"github.com/potibm/kasseapparat/internal/app/utils"
 	"gorm.io/gorm"
 )
 

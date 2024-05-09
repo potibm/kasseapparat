@@ -1,6 +1,6 @@
 package handler
 
-import "github.com/potibm/die-kassa/internal/app/repository"
+import "github.com/potibm/kasseapparat/internal/app/repository"
 
 type Handler struct {
 	repo *repository.Repository

@@ -1,13 +1,13 @@
 package utils
 
 import (
-	"github.com/potibm/die-kassa/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func ConnectToDatabase() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("./data/kassa.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("./data/kasseapparat.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

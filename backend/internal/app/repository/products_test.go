@@ -7,9 +7,9 @@ import (
 
 	"github.com/gavv/httpexpect/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/potibm/die-kassa/internal/app/handler"
-	"github.com/potibm/die-kassa/internal/app/repository"
-	"github.com/potibm/die-kassa/internal/app/utils"
+	"github.com/potibm/kasseapparat/internal/app/handler"
+	"github.com/potibm/kasseapparat/internal/app/repository"
+	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
 var e *httpexpect.Expect

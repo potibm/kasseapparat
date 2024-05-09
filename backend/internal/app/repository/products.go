@@ -3,7 +3,7 @@ package repository
 import (
 	"errors"
 
-	"github.com/potibm/die-kassa/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
 func (repo *Repository) GetProducts() ([]models.Product, error) {
