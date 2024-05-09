@@ -1,38 +1,48 @@
-# Makefile
+FRONTEND_DIR = frontend
+BACKEND_DIR = backend
+DIST_DIR = dist
+BACKEND_BUILD_CMD = go build -o ../$(DIST_DIR)
 
-.PHONY: run
+.PHONY: run run-fe run-be run-tool linter linter-fix test test-fe test-be build
 
 run:
-	cd backend && go run ./cmd/main.go 3001 &
-	cd frontend && yarn start &
+	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001 &
+	cd $(FRONTEND_DIR) && yarn start &
 
 stop:
 	lsof -t -i:3000 | xargs kill -9
 	lsof -t -i:3001 | xargs kill -9
 
 run-be:
-	cd backend && go run ./cmd/main.go 3001
+	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001
 
 run-tool:
-	cd backend && go run ./tools/main.go --seed --purge
+	cd $(BACKEND_DIR) && go run ./tools/main.go --seed --purge
 
 run-fe:
-	cd frontend && yarn start
+	cd $(FRONTEND_DIR) && yarn start
 
 linter:
-	cd backend && golangci-lint run
-	cd frontend && yarn run eslint src/
+	cd $(BACKEND_DIR) && golangci-lint run
+	cd $(FRONTEND_DIR) && yarn run eslint src/
 
 linter-fix:
-	cd backend && golangci-lint run --fix
-	cd frontend && yarn run eslint src/ --fix
+	cd $(BACKEND_DIR) && golangci-lint run --fix
+	cd $(FRONTEND_DIR) && yarn run eslint src/ --fix
 
 test:
-	cd frontend && yarn test --coverage --watchAll=false
+	$(MAKE) test-fe
+	$(MAKE) test-be
+
+test-fe:
+	cd $(FRONTEND_DIR) && yarn test --coverage --watchAll=false
+
+test-be:
+	cd $(BACKEND_DIR) && go test ./...
 
 build:
-	cd backend && go build -o ../dist/diekassa ./cmd/main.go
-	cd backend && go build -o ../dist/diekassa-tool ./tools/main.go
-	cd frontend && BUILD_PATH=../dist/public yarn build
-	mkdir -p dist/data
-	cd dist && ./diekassa-tool --seed --purge
+	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/diekassa ./cmd/main.go
+	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/diekassa-tool ./tools/main.go
+	cd $(FRONTEND_DIR) && BUILD_PATH=../$(DIST_DIR)/public yarn build
+	mkdir -p $(DIST_DIR)/data
+	cd $(DIST_DIR) && ./diekassa-tool --seed --purge

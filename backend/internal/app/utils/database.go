@@ -7,8 +7,16 @@ import (
 )
 
 func ConnectToDatabase() *gorm.DB {
-	// Your own implementation of connecting to the database
 	db, err := gorm.Open(sqlite.Open("./data/kassa.db"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	return db
+}
+
+func ConnectToLocalDatabase() *gorm.DB {
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
