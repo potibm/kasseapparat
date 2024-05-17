@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -22,11 +24,44 @@ func (repo *Repository) DeletePurchases(id int) {
 	repo.db.Where("purchase_id = ?", id).Delete(&models.PurchaseItem{})
 }
 
-func (repo *Repository) GetLastPurchases(limit int, offset int) ([]models.Purchase, error) {
-	var purchases []models.Purchase
-	result := repo.db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&purchases)
+func (repo *Repository) GetPurchaseByID(id int) (*models.Purchase, error) {
+	var purchase models.Purchase
+	if err := repo.db.Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").First(&purchase, id).Error; err != nil {
+		return nil, errors.New("Purchase not found")
+	}
 
-	return purchases, result.Error
+	return &purchase, nil
+}
+
+func (repo *Repository) GetPurchases(limit int, offset int, sort string, order string) ([]models.Purchase, error) {
+	if order != "ASC" && order != "DESC" {
+		order = "ASC"
+	}
+
+	sort, err := getPurchasesValidFieldName(sort)
+	if err != nil {
+		return nil, err
+	}
+
+	var purchases []models.Purchase
+	if err := repo.db.Order(sort + " " + order + ", created_at DESC").Limit(limit).Offset(offset).Find(&purchases).Error; err != nil {
+		return nil, errors.New("Purchases not found")
+	}
+
+	return purchases, nil
+}
+
+func getPurchasesValidFieldName(input string) (string, error) {
+	switch input {
+	case "id":
+		return "ID", nil
+	case "createdAt":
+		return "created_at", nil
+	case "totalPrice":
+		return "total_price", nil
+	}
+
+	return "", errors.New("Invalid field name")
 }
 
 func (repo *Repository) GetTotalPurchases() (int64, error) {

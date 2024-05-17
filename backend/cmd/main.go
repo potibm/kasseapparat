@@ -22,25 +22,25 @@ func main() {
 
 	r := gin.Default()
 
-	/*
-		r.Use(cors.New(cors.Config{
-			AllowAllOrigins:  false,
-			AllowMethods:     []string{"POST", "DELETE", "PUT", "GET", "OPTIONS"},
-			AllowHeaders:     []string{"Origin", "Content-Type"},
-			ExposeHeaders:    []string{"Content-Length"},
-			AllowCredentials: false,
-			//MaxAge: 12 * time.Hour,
-		}))*/
-	r.Use(cors.Default())
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AddExposeHeaders("X-Total-Count")
+	r.Use(cors.New(corsConfig))
 
 	apiRouter := r.Group("/api/v1")
 	{
 		apiRouter.GET("/products", myhandler.GetProducts)
 		apiRouter.GET("/products/:id", myhandler.GetProductByID)
+		apiRouter.PUT("/products/:id", myhandler.UpdateProductByID)
+		apiRouter.DELETE("/products/:id", myhandler.DeleteProductByID)
+		apiRouter.POST("/products", myhandler.CreateProduct)
+
 		apiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
-		apiRouter.GET("/purchases", myhandler.GetLastPurchases)
+		apiRouter.GET("/purchases", myhandler.GetPurchases)
+		apiRouter.GET("/purchases/:id", myhandler.GetPurchaseByID)
 		apiRouter.POST("/purchases", myhandler.PostPurchases)
 		apiRouter.DELETE("/purchases/:id", myhandler.DeletePurchases)
+
 		apiRouter.GET("/purchases/stats", myhandler.GetPurchaseStats)
 	}
 

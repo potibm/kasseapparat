@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"math"
 	"net/http"
 	"strconv"
 
@@ -81,55 +80,37 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Purchase successful", "purchase": purchase})
 }
 
-func (handler *Handler) GetLastPurchases(c *gin.Context) {
+func (handler *Handler) GetPurchases(c *gin.Context) {
+	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
+	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
+	sort := c.DefaultQuery("_sort", "id")
+	order := c.DefaultQuery("_order", "DESC")
 
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	if page < 1 {
-		page = 1
+	products, err := handler.repo.GetPurchases(end-start, start, sort, order)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-	offset := (page - 1) * limit
 
-	purchases, err := handler.repo.GetLastPurchases(limit, offset)
+	total, err := handler.repo.GetTotalPurchases()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
-	totalRows, err := handler.repo.GetTotalPurchases()
+
+	c.Header("X-Total-Count", strconv.Itoa(int(total)))
+	c.JSON(http.StatusOK, products)
+}
+
+func (handler *Handler) GetPurchaseByID(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	purchase, err := handler.repo.GetPurchaseByID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
-	totalPages := int(math.Ceil(float64(totalRows) / float64(limit)))
-	var nextPage *int
-	if page < totalPages {
-		next := page + 1
-		nextPage = &next
-	}
-	var prevPage *int
-	if page > 1 {
-		prev := page - 1
-		prevPage = &prev
-	}
-
-	type Pagination struct {
-		TotalRecords int64 `json:"total_records"`
-		CurrentPage  int   `json:"current_page"`
-		TotalPages   int   `json:"total_pages"`
-		NextPage     *int  `json:"next_page"`
-		PrevPage     *int  `json:"prev_page"`
-	}
-
-	pagination := Pagination{
-		TotalRecords: totalRows,
-		CurrentPage:  page,
-		TotalPages:   totalPages,
-		NextPage:     nextPage,
-		PrevPage:     prevPage,
-	}
-
-	c.JSON(http.StatusOK, gin.H{"data": purchases, "pagination": pagination})
+	c.JSON(http.StatusOK, purchase)
 }
 
 func (handler *Handler) GetPurchaseStats(c *gin.Context) {

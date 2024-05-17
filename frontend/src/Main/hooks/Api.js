@@ -1,6 +1,6 @@
 export const fetchProducts = async (apiHost) => {
   try {
-    const response = await fetch(apiHost + '/api/v1/products')
+    const response = await fetch(apiHost + '/api/v1/products?_end=1000&_sort=pos&_order=asc')
     if (!response.ok) {
       throw new Error('Failed to fetch products')
     }

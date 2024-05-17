@@ -1,13 +1,11 @@
 package models
 
-import "gorm.io/gorm"
-
 // Product represents a product model
 type Product struct {
-	gorm.Model
-	Name      string
-	Price     float64
-	WrapAfter bool `gorm:"default:false"`
-	Pos       int
-	ApiExport bool `gorm:"default:false"`
+	GormModel
+	Name      string  `json:"name"`
+	Price     float64 `json:"price"`
+	WrapAfter bool    `gorm:"default:false" json:"wrapAfter"`
+	Pos       int     `json:"pos"`
+	ApiExport bool    `gorm:"default:false" json:"apiExport"`
 }

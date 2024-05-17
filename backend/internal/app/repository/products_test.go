@@ -65,12 +65,12 @@ func TestGetProducts(t *testing.T) {
 
 	for i := 0; i < len(obj.Iter()); i++ {
 		product := obj.Value(i).Object()
-		product.Value("ID").Number().Gt(0)
-		product.Value("Name").String().NotEmpty()
-		product.Value("Price").Number().Ge(0)
-		product.Value("WrapAfter").Boolean()
-		product.Value("Pos").Number().Ge(0)
-		product.Value("ApiExport").Boolean()
+		product.Value("id").Number().Gt(0)
+		product.Value("name").String().NotEmpty()
+		product.Value("price").Number().Ge(0)
+		product.Value("wrapAfter").Boolean()
+		product.Value("pos").Number().Ge(0)
+		product.Value("apiExport").Boolean()
 	}
 }
 
@@ -84,10 +84,10 @@ func TestGetProduct(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	obj.Value("ID").Number().Gt(0)
-	obj.Value("Name").String().NotEmpty()
-	obj.Value("Price").Number().Ge(0)
-	obj.Value("WrapAfter").Boolean()
-	obj.Value("Pos").Number().Ge(0)
-	obj.Value("ApiExport").Boolean()
+	obj.Value("id").Number().Gt(0)
+	obj.Value("name").String().NotEmpty()
+	obj.Value("price").Number().Ge(0)
+	obj.Value("wrapAfter").Boolean()
+	obj.Value("pos").Number().Ge(0)
+	obj.Value("apiExport").Boolean()
 }

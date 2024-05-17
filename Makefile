@@ -41,8 +41,8 @@ test-be:
 	cd $(BACKEND_DIR) && go test ./...
 
 build:
-	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/diekassa ./cmd/main.go
-	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/diekassa-tool ./tools/main.go
+	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat ./cmd/main.go
+	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat-tool ./tools/main.go
 	cd $(FRONTEND_DIR) && BUILD_PATH=../$(DIST_DIR)/public yarn build
 	mkdir -p $(DIST_DIR)/data
-	cd $(DIST_DIR) && ./diekassa-tool --seed --purge
+	cd $(DIST_DIR) && ./kasseapparat-tool --seed --purge

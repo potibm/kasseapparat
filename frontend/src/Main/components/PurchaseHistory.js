@@ -15,9 +15,9 @@ export default function PurchaseHistory ({history, currency}) {
           </Table.Head>
           <Table.Body>
           {history.slice(0, 2).map(purchase => (
-              <Table.Row key={purchase.ID}>
-                <Table.Cell className="text-right">{new Date(purchase.CreatedAt).toLocaleString('de-DE', { weekday: 'long', hour: '2-digit', minute: '2-digit' })}</Table.Cell>
-                <Table.Cell className="text-right">{currency.format(purchase.TotalPrice)}</Table.Cell>
+              <Table.Row key={purchase.id}>
+                <Table.Cell className="text-right">{new Date(purchase.createdAt).toLocaleString('de-DE', { weekday: 'long', hour: '2-digit', minute: '2-digit' })}</Table.Cell>
+                <Table.Cell className="text-right">{currency.format(purchase.totalPrice)}</Table.Cell>
                 <Table.Cell><Button><HiXCircle /></Button></Table.Cell>
               </Table.Row>
             ))}

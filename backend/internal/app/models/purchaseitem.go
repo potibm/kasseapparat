@@ -1,13 +1,11 @@
 package models
 
-import "gorm.io/gorm"
-
 type PurchaseItem struct {
-	gorm.Model
-	PurchaseID uint
-	ProductID  uint // Foreign key to Product
-	Product    Product
-	Quantity   int
-	Price      float64
-	TotalPrice float64
+	GormModel
+	PurchaseID uint    `json:"purchaseID"` // Foreign key to Purchase
+	ProductID  uint    `json:"productID"`  // Foreign key to Product
+	Product    Product `json:"product"`
+	Quantity   int     `json:"quantity"`
+	Price      float64 `json:"price"`
+	TotalPrice float64 `json:"totalPrice"`
 }
