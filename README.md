@@ -12,5 +12,6 @@ It is a simple point of sale (POS) system aimed at [demoparties](https://en.wiki
 * [React](https://react.dev)
     * [Flowbite React](https://flowbite-react.com)
     * [Tailwind CSS](https://tailwindcss.com)
+    * [React Admin](https://marmelab.com/react-admin/)
 * [SQLite](https://www.sqlite.org)
 * Make
