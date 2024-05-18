@@ -40,7 +40,7 @@ func main() {
 		apiRouter.GET("/purchases", myhandler.GetPurchases)
 		apiRouter.GET("/purchases/:id", myhandler.GetPurchaseByID)
 		apiRouter.POST("/purchases", myhandler.PostPurchases)
-		apiRouter.DELETE("/purchases/:id", myhandler.DeletePurchases)
+		apiRouter.DELETE("/purchases/:id", myhandler.DeletePurchase)
 
 		apiRouter.GET("/purchases/stats", myhandler.GetPurchaseStats)
 	}

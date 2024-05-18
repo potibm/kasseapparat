@@ -3,7 +3,7 @@ import Cart from './components/Cart'
 import ProductList from './components/ProductList'
 import PurchaseHistory from './components/PurchaseHistory'
 import ErrorModal from './components/ErrorModal'
-import { fetchProducts, fetchPurchases, storePurchase } from './hooks/Api'
+import { deletePurchaseById, fetchProducts, fetchPurchases, storePurchase } from './hooks/Api'
 import { addToCart, removeFromCart, removeAllFromCart, checkoutCart } from './hooks/Cart'
 import { Link } from 'react-router-dom'
 import { Button } from 'flowbite-react'
@@ -27,14 +27,17 @@ function Kasseapparat () {
 
   useEffect(() => {
     const getProducts = async () => {
-      const products = await fetchProducts(API_HOST)
-      if (products) {
-        setProducts(products)
-      }
+      fetchProducts(API_HOST)
+      .then(products => setProducts(products))
+      .catch(error => showError("There was an error fetching the products: " + error.message));
+
     }
     const getHistory = async () => {
       const history = await fetchPurchases(API_HOST)
       setPurchaseHistory(history)
+      fetchPurchases(API_HOST)
+        .then(history => setPurchaseHistory(history))
+        .catch(error => showError("There was an error fetching the purchase history: " + error.message));
     }
     getProducts()
     getHistory()
@@ -51,24 +54,40 @@ function Kasseapparat () {
   const handleRemoveAllFromCart = () => {
     setCart(removeAllFromCart())
     fetchProducts(API_HOST)
+    .then(products => setProducts(products))
+    .catch(error => showError("There was an error fetching the products: " + error.message));
+
   }
 
   const handleAddToPurchaseHistory = (purchase) => {
     setPurchaseHistory([purchase, ...purchaseHistory])
   }
 
+  const handleRemoveFromPurchaseHistory = (purchase) => {
+    deletePurchaseById(API_HOST, purchase.id)
+    .then(data => {
+      fetchPurchases(API_HOST)
+      .then(history => setPurchaseHistory(history))
+      .catch(error => showError("There was an error fetching the purchase history: " + error.message));
+    })
+    .catch(error => {
+        showError("There was an error deleting the purchase: " + error.message);
+    });
+  }
+
   const handleCheckoutCart = async () => {
-    try {
-      const createdPurchase = await storePurchase(API_HOST, cart)
-      if (createdPurchase) {
-        setCart(checkoutCart())
-        handleAddToPurchaseHistory(createdPurchase)
+    storePurchase(API_HOST, cart)
+    .then(createdPurchase => {
+      setCart(checkoutCart())
+        handleAddToPurchaseHistory(createdPurchase.purchase)
         fetchProducts(API_HOST)
+          .then(products => setProducts(products))
+          .catch(error => showError("There was an error fetching the products: " + error.message));
       }
-    } catch (error) {
-      console.error('Failed to checkout cart:', error)
-      showError(error.message, error)
-    }
+    )
+    .catch(error => { 
+      showError("There was an error storing the purchase: " + error.message);
+    });
   }
 
   const showError = (message) => {
@@ -98,6 +117,7 @@ function Kasseapparat () {
           <PurchaseHistory 
             currency={Currency}
             history={purchaseHistory}
+            removeFromPurchaseHistory={handleRemoveFromPurchaseHistory}
           />
 
           <div className="mt-10">

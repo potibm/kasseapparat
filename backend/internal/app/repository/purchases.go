@@ -18,7 +18,7 @@ func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchas
 	return purchase, result.Error
 }
 
-func (repo *Repository) DeletePurchases(id int) {
+func (repo *Repository) DeletePurchaseByID(id int) {
 	repo.db.Delete(&models.Purchase{}, id)
 
 	repo.db.Where("purchase_id = ?", id).Delete(&models.PurchaseItem{})

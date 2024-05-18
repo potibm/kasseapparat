@@ -23,11 +23,11 @@ func (handler *Handler) OptionsPurchases(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-func (handler *Handler) DeletePurchases(c *gin.Context) {
+func (handler *Handler) DeletePurchase(c *gin.Context) {
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	handler.repo.DeletePurchases(id)
+	handler.repo.DeletePurchaseByID(id)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Purchase deleted"})
 }

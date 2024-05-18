@@ -13,7 +13,7 @@ export default function Cart ({ cart, removeFromCart, removeAllFromCart, checkou
           </Table.Head>
           <Table.Body>
             {cart.map(cartElement => (
-              <Table.Row key={cartElement.ID}>
+              <Table.Row key={cartElement.id}>
                 <Table.Cell className="whitespace-nowrap">{cartElement.name}</Table.Cell>
                 <Table.Cell className="text-right">{cartElement.quantity}</Table.Cell>
                 <Table.Cell className="text-right">{currency.format(cartElement.totalPrice)}</Table.Cell>
