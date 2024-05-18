@@ -1,16 +1,17 @@
 
-import { List, Datagrid, TextField, EmailField, DeleteButton, NumberField, NumberInput, Edit, SimpleForm, TextInput, Create, BooleanField, BooleanInput } from 'react-admin';
+import { List, Datagrid, TextField, EmailField, DeleteButton, NumberField, NumberInput, Edit, SimpleForm, TextInput, Create, BooleanField, BooleanInput, UpdateButton, SaveButton, Toolbar, DeleteWithConfirmButton } from 'react-admin';
 import InventoryIcon from '@mui/icons-material/Inventory';
 
 export const ProductList = () => {
     return (
         <List sort={{ field: 'pos', order: 'ASC' }}>
-            <Datagrid rowClick="edit">
+            <Datagrid rowClick="edit" bulkActionButtons={false}>
               <NumberField source="id" />
               <TextField source="name" />
               <NumberField source="price" />
               <NumberField source="pos" />
-              <BooleanField source="wrapAfter" sortable={false} />        
+              <BooleanField source="wrapAfter" sortable={false} />       
+              <DeleteButton mutationMode="pessimistic" /> 
             </Datagrid>
         </List>
     )
@@ -19,7 +20,7 @@ export const ProductList = () => {
 export const ProductEdit = () => {
     return (
         <Edit>
-            <SimpleForm>
+            <SimpleForm toolbar={<Toolbar><SaveButton /></Toolbar>}>
                 <NumberInput disabled source="id" />
                 <TextInput source="name" />
                 <NumberInput source="price" />

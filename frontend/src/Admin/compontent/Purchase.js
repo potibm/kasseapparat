@@ -5,10 +5,11 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 export const PurchaseList = () => {
     return (
         <List sort={{ field: 'createdAt', order: 'DESC' }}>
-        <Datagrid rowClick="show">
+        <Datagrid rowClick="show" bulkActionButtons={false}>
           <NumberField source="id" />
           <DateField source="createdAt" showTime={true} />
           <NumberField source="totalPrice" />
+          <DeleteButton mutationMode="pessimistic" /> 
         </Datagrid>
     </List>
     )
