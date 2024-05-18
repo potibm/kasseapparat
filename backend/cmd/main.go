@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -46,6 +47,12 @@ func main() {
 
 	// Serve static files from the "public" directory for all other requests
 	r.StaticFile("/", "./public/index.html")
+	r.NoRoute(func(c *gin.Context) {
+		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
+			c.File("./public/index.html")
+		}
+		//default 404 page not found
+	})
 	r.StaticFile("/favicon.ico", "./public/favicon.ico")
 	r.Static("/static", "./public/static")
 
