@@ -5,10 +5,12 @@ import (
 	"os"
 	"strings"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"github.com/potibm/kasseapparat/internal/app/handler"
+	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 )
 
@@ -19,10 +21,15 @@ func main() {
 		port = ":" + os.Args[1] // Use the provided port number if available
 	}
 
-	myhandler := handler.NewHandler(repository.NewRepository())
+	repository := repository.NewRepository()
+	myhandler := handler.NewHandler(repository)
 
 	r := gin.Default()
 
+	authMiddleware, err := jwt.New(middleware.InitParams(*repository))
+	r.Use(middleware.HandlerMiddleWare(authMiddleware))
+
+	// register route
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	corsConfig.AddExposeHeaders("X-Total-Count")
@@ -32,7 +39,7 @@ func main() {
 	{
 		apiRouter.GET("/products", myhandler.GetProducts)
 		apiRouter.GET("/products/:id", myhandler.GetProductByID)
-		apiRouter.PUT("/products/:id", myhandler.UpdateProductByID)
+		apiRouter.PUT("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateProductByID)
 		apiRouter.DELETE("/products/:id", myhandler.DeleteProductByID)
 		apiRouter.POST("/products", myhandler.CreateProduct)
 
@@ -56,8 +63,10 @@ func main() {
 	r.StaticFile("/favicon.ico", "./public/favicon.ico")
 	r.Static("/static", "./public/static")
 
+	middleware.RegisterRoute(r, authMiddleware)
+
 	log.Println("Listening on " + port + "...")
-	err := r.Run(port)
+	err = r.Run(port)
 	if err != nil {
 		panic("[Error] failed to start Gin server due to: " + err.Error())
 	}

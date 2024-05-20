@@ -4,7 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
+
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -42,14 +45,20 @@ func (handler *Handler) GetProductByID(c *gin.Context) {
 }
 
 type ProductRequest struct {
-	Name      string  `form:"name" binding:"required"`
-	Price     float64 `form:"price" binding:"numeric,required"`
-	WrapAfter bool    `form:"wrapAfter"`
-	Pos       int     `form:"pos" binding:"numeric,required"`
-	ApiExport bool    `form:"apiExport"`
+	Name      string  `form:"name"  json:"name" binding:"required"`
+	Price     float64 `form:"price" json:"price" binding:"numeric,required"`
+	WrapAfter bool    `form:"wrapAfter" json:"wrapAfter"`
+	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
+	ApiExport bool    `form:"apiExport" json:"apiExport"`
 }
 
 func (handler *Handler) UpdateProductByID(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	user, _ := c.Get(middleware.IdentityKey)
+
+	println("User ", user)
+	println("Claims ", claims)
+
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
@@ -58,8 +67,8 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	}
 
 	var productRequest ProductRequest
-	if c.ShouldBind(&productRequest) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	if err := c.ShouldBind(&productRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": err.Error()})
 		return
 	}
 
