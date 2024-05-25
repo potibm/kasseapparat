@@ -61,3 +61,43 @@ export const deletePurchaseById = async (apiHost, purchaseId) => {
     .catch(error => reject(error));
 });
 }
+
+export const getJwtToken = async (apiHost, username, password) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ "username": username, "password": password })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => resolve(data))
+    .catch(error => reject(error));
+});
+}
+
+export const refreshJwtToken = async (apiHost, refreshToken) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/auth/refresh_token`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${refreshToken}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => resolve(data))
+    .catch(error => reject(error));
+});
+}

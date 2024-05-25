@@ -31,7 +31,9 @@ func main() {
 
 	// register route
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowOrigins = []string{"http://localhost:8080", "http://localhost:3000"}
+	corsConfig.AllowCredentials = true
+	corsConfig.AddAllowHeaders("Authorization")
 	corsConfig.AddExposeHeaders("X-Total-Count")
 	r.Use(cors.New(corsConfig))
 

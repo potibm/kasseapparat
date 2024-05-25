@@ -7,7 +7,8 @@ import { deletePurchaseById, fetchProducts, fetchPurchases, storePurchase } from
 import { addToCart, removeFromCart, removeAllFromCart, checkoutCart } from './hooks/Cart'
 import { Link } from 'react-router-dom'
 import { Button } from 'flowbite-react'
-import { HiCog } from "react-icons/hi";
+import { HiCog,HiOutlineUserCircle } from "react-icons/hi";
+import { useAuth } from "../provider/authProvider";
 
 // @TODO retrieve those settings from the backend
 const Currency = new Intl.NumberFormat('de-DE', {
@@ -24,6 +25,7 @@ function Kasseapparat () {
   const [products, setProducts] = useState([])
   const [purchaseHistory, setPurchaseHistory] = useState([])
   const [errorMessage, setErrorMessage] = useState('');
+  const { username } = useAuth();
 
   useEffect(() => {
     const getProducts = async () => {
@@ -122,6 +124,7 @@ function Kasseapparat () {
 
           <div className="mt-10">
             <Link to="/admin" target="_blank"><Button><HiCog  className="mr-2 h-5 w-5"/> Admin</Button></Link>
+            <Link to="/logout"><Button><HiOutlineUserCircle  className="mr-2 h-5 w-5"/> Logout {username}</Button></Link>
           </div>
         </div>
       </div>
