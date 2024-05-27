@@ -9,6 +9,7 @@ export const PurchaseList = () => {
           <NumberField source="id" />
           <DateField source="createdAt" showTime={true} />
           <NumberField source="totalPrice" />
+          <TextField source="createdBy.username" />
           <DeleteButton mutationMode="pessimistic" /> 
         </Datagrid>
     </List>

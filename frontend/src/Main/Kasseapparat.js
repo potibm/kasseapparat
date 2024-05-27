@@ -25,7 +25,7 @@ function Kasseapparat () {
   const [products, setProducts] = useState([])
   const [purchaseHistory, setPurchaseHistory] = useState([])
   const [errorMessage, setErrorMessage] = useState('');
-  const { username } = useAuth();
+  const { username, token } = useAuth();
 
   useEffect(() => {
     const getProducts = async () => {
@@ -66,7 +66,7 @@ function Kasseapparat () {
   }
 
   const handleRemoveFromPurchaseHistory = (purchase) => {
-    deletePurchaseById(API_HOST, purchase.id)
+    deletePurchaseById(API_HOST, token, purchase.id)
     .then(data => {
       fetchPurchases(API_HOST)
       .then(history => setPurchaseHistory(history))
@@ -78,7 +78,7 @@ function Kasseapparat () {
   }
 
   const handleCheckoutCart = async () => {
-    storePurchase(API_HOST, cart)
+    storePurchase(API_HOST, token, cart)
     .then(createdPurchase => {
       setCart(checkoutCart())
         handleAddToPurchaseHistory(createdPurchase.purchase)
@@ -122,10 +122,11 @@ function Kasseapparat () {
             removeFromPurchaseHistory={handleRemoveFromPurchaseHistory}
           />
 
-          <div className="mt-10">
-            <Link to="/admin" target="_blank"><Button><HiCog  className="mr-2 h-5 w-5"/> Admin</Button></Link>
-            <Link to="/logout"><Button><HiOutlineUserCircle  className="mr-2 h-5 w-5"/> Logout {username}</Button></Link>
-          </div>
+         <Button.Group className='mt-10'>
+            <Button><HiOutlineUserCircle  className="mr-2 h-5 w-5"/> {username}</Button>
+            <Button as={Link} to="/logout">Logout</Button>
+            <Button as={Link} target="blank" to="/admin"><HiCog  className="mr-2 h-5 w-5"/> Admin</Button>
+          </Button.Group>
         </div>
       </div>
       <ErrorModal message={errorMessage} onClose={handleCloseError} />

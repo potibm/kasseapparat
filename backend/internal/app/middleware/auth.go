@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	IdentityKey = "id"
+	IdentityKey = "ID"
 )
 
 type login struct {
@@ -78,7 +78,7 @@ func payloadFunc() func(data interface{}) jwt.MapClaims {
 	return func(data interface{}) jwt.MapClaims {
 		if v, ok := data.(*models.User); ok {
 			return jwt.MapClaims{
-				IdentityKey: v.Username,
+				IdentityKey: v.ID,
 			}
 		}
 		return jwt.MapClaims{}
@@ -89,7 +89,7 @@ func identityHandler() func(c *gin.Context) interface{} {
 	return func(c *gin.Context) interface{} {
 		claims := jwt.ExtractClaims(c)
 		return &models.User{
-			Username: claims[IdentityKey].(string),
+			ID: uint(claims[IdentityKey].(float64)),
 		}
 	}
 }

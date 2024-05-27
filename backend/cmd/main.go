@@ -42,14 +42,20 @@ func main() {
 		apiRouter.GET("/products", myhandler.GetProducts)
 		apiRouter.GET("/products/:id", myhandler.GetProductByID)
 		apiRouter.PUT("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateProductByID)
-		apiRouter.DELETE("/products/:id", myhandler.DeleteProductByID)
-		apiRouter.POST("/products", myhandler.CreateProduct)
+		apiRouter.DELETE("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteProductByID)
+		apiRouter.POST("/products", authMiddleware.MiddlewareFunc(), myhandler.CreateProduct)
 
 		apiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
 		apiRouter.GET("/purchases", myhandler.GetPurchases)
 		apiRouter.GET("/purchases/:id", myhandler.GetPurchaseByID)
-		apiRouter.POST("/purchases", myhandler.PostPurchases)
-		apiRouter.DELETE("/purchases/:id", myhandler.DeletePurchase)
+		apiRouter.POST("/purchases", authMiddleware.MiddlewareFunc(), myhandler.PostPurchases)
+		apiRouter.DELETE("/purchases/:id", authMiddleware.MiddlewareFunc(), myhandler.DeletePurchase)
+
+		apiRouter.GET("/users", myhandler.GetUsers)
+		apiRouter.GET("/users/:id", myhandler.GetUserByID)
+		apiRouter.PUT("/users/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateUserByID)
+		apiRouter.DELETE("/users/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteUserByID)
+		apiRouter.POST("/users", authMiddleware.MiddlewareFunc(), myhandler.CreateUser)
 
 		apiRouter.GET("/purchases/stats", myhandler.GetPurchaseStats)
 	}

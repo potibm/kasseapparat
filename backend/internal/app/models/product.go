@@ -2,7 +2,7 @@ package models
 
 // Product represents a product model
 type Product struct {
-	GormModel
+	GormOwnedModel
 	Name      string  `json:"name"`
 	Price     float64 `json:"price"`
 	WrapAfter bool    `gorm:"default:false" json:"wrapAfter"`

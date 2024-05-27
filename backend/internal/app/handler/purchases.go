@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -24,15 +25,20 @@ func (handler *Handler) OptionsPurchases(c *gin.Context) {
 }
 
 func (handler *Handler) DeletePurchase(c *gin.Context) {
+	user, _ := c.Get(middleware.IdentityKey)
+	userObj, _ := user.(*models.User)
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	handler.repo.DeletePurchaseByID(id)
+	handler.repo.DeletePurchaseByID(id, *userObj)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Purchase deleted"})
 }
 
 func (handler *Handler) PostPurchases(c *gin.Context) {
+
+	user, _ := c.Get(middleware.IdentityKey)
+	userObj, _ := user.(*models.User)
 
 	var purchase models.Purchase
 
@@ -62,6 +68,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			TotalPrice: calculatedPurchaseItemPrice,
 		}
 		purchase.PurchaseItems = append(purchase.PurchaseItems, purchaseItem)
+		purchase.CreatedByID = &userObj.ID
 	}
 	// check that total price is correct
 	if calculatedTotalPrice != purchaseRequest.TotalPrice {

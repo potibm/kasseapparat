@@ -32,76 +32,36 @@ const AuthProvider = ({ children }) => {
     }
   }, [auth]);
   
-  const refreshToken = async () => {
-    console.log('Trying to refresh token');
-  }
-
   useEffect(() => {
-    /*
-    const tokenExpirationTime = new Date(auth.expiryDate).getTime();
-    console.log("tokenExpirationTime", tokenExpirationTime, auth.expiryDate);
-    const now = new Date().getTime();
-    console.log("now", now);
-    const timeout = (tokenExpirationTime - now) - (5*1000);
-    console.log("timeout", timeout);
-  
-    const tokenRefreshTimeout = setTimeout(() => {
-      console.log("Token expired. Refreshing token...");
-      refreshJwtToken(API_HOST, auth.token).then((response) => {
-        const newToken = response.token;
-        const newExpiryDate = response.expire;
-        const username = auth.username;
-        console.log("Token: " + newToken + " Expiry: " + newExpiryDate)
-
-        setAuth({token: newToken, expiryDate: newExpiryDate, username: username})
-      
-      }).catch((error) => {
-        clearTimeout(tokenRefreshTimeout);
-        setAuth({token: null, expiryDate: null, username: null});
-        console.error("Error refreshing token: ", error);
-        window.location = '/logout';
-      });
-    }, timeout);
-  
-    return () => {
-      clearTimeout(tokenRefreshTimeout);
-    };
-    */
     
     const tokenRefreshInterval = setInterval(() => {
-      console.log("Versuche, Token zu aktualisieren...");
       refreshJwtToken(API_HOST, auth.token).then((response) => {
         const newToken = response.token;
         const newExpiryDate = response.expire;
         const username = auth.username;
-        console.log("Token: " + newToken + " Expiry: " + newExpiryDate)
+        console.log("Refreshed token, Expiry: " + newExpiryDate)
   
         setAuth({token: newToken, expiryDate: newExpiryDate, username: username})
       }).catch((error) => {
         console.error("Fehler beim Aktualisieren des Tokens: ", error);
-        // Ignoriere den Fehler und versuche es später erneut
       });
   
-      // Überprüfe, ob das Token abgelaufen ist und logge den Benutzer aus, wenn es abgelaufen ist
+      // check if token is expired
       const now = new Date();
       const expiryDate = new Date(auth.expiryDate);
       if (now > expiryDate) {
-        console.log("Token abgelaufen. Benutzer wird ausgeloggt...");
         // @todo notify user
         setAuth({token: null, expiryDate: null, username: null});
         window.location = '/logout';
       }
-    }, 60 * 1000); // Aktualisiere das Token jede Minute
+    }, 60 * 1000); // Refresh the token every 60 seconds
   
     return () => {
       clearInterval(tokenRefreshInterval);
     };
 
-
-
   }, [auth.expiryDate]);
   
-  // Memoisierte Wert des Authentifizierungskontexts
   const contextValue = useMemo(
     () => ({
       token: auth.token,

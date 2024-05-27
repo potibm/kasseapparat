@@ -10,9 +10,10 @@ var (
 )
 
 type User struct {
+	ID uint `gorm:"primarykey" json:"id"`
 	GormModel
 	Username string `json:"username" gorm:"unique"`
-	Password string `json:"password"`
+	Password string `json:"-"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
