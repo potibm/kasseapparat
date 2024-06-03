@@ -1,22 +1,19 @@
-import { HiXCircle } from 'react-icons/hi'
-import React, { useState, useEffect } from 'react'
+import { HiXCircle, HiOutlineExclamationCircle } from 'react-icons/hi'
+import React, { useState } from 'react'
 import { Button, Modal, Table } from 'flowbite-react'
-import { fetchPurchases } from '../hooks/Api'
-import { HiOutlineExclamationCircle } from 'react-icons/hi'
-import Product from './Product'
-import { func } from 'prop-types'
+import PropTypes from 'prop-types'
 
-export default function PurchaseHistory ({history, currency, removeFromPurchaseHistory}) {
-    const [openModal, setOpenModal] = useState({show: false, purchase: null});
+function PurchaseHistory ({ history, currency, removeFromPurchaseHistory }) {
+  const [openModal, setOpenModal] = useState({ show: false, purchase: null })
 
-    const confirmDelete = (purchase) => {
-      setOpenModal({show: false})
-      removeFromPurchaseHistory(purchase)
-    }
+  const confirmDelete = (purchase) => {
+    setOpenModal({ show: false })
+    removeFromPurchaseHistory(purchase)
+  }
 
-    return (
+  return (
       <div className='mt-10'>
-        <Modal show={openModal.show} size="md" onClose={() => setOpenModal({show: false})} popup>
+        <Modal show={openModal.show} size="md" onClose={() => setOpenModal({ show: false })} popup>
           <Modal.Header />
           <Modal.Body>
             <div className="text-center">
@@ -34,7 +31,7 @@ export default function PurchaseHistory ({history, currency, removeFromPurchaseH
               </div>
             </div>
           </Modal.Body>
-        </Modal>  
+        </Modal>
         <Table striped>
           <Table.Head>
             <Table.HeadCell>Date</Table.HeadCell>
@@ -46,11 +43,19 @@ export default function PurchaseHistory ({history, currency, removeFromPurchaseH
               <Table.Row key={purchase.id}>
                 <Table.Cell className="text-right">{new Date(purchase.createdAt).toLocaleString('de-DE', { weekday: 'long', hour: '2-digit', minute: '2-digit' })}</Table.Cell>
                 <Table.Cell className="text-right">{currency.format(purchase.totalPrice)}</Table.Cell>
-                <Table.Cell><Button color="failure" onClick={() => setOpenModal({show: true, purchase: purchase})}><HiXCircle /></Button></Table.Cell>
+                <Table.Cell><Button color="failure" onClick={() => setOpenModal({ show: true, purchase })}><HiXCircle /></Button></Table.Cell>
               </Table.Row>
-            ))}
+          ))}
           </Table.Body>
         </Table>
       </div>
-    )
+  )
 }
+
+PurchaseHistory.propTypes = {
+  history: PropTypes.array.isRequired,
+  currency: PropTypes.object.isRequired,
+  removeFromPurchaseHistory: PropTypes.func.isRequired
+}
+
+export default PurchaseHistory

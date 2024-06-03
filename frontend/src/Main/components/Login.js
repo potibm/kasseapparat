@@ -1,38 +1,39 @@
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../provider/authProvider";
-import { Card, Label, Button, TextInput, Alert } from "flowbite-react";
-import { getJwtToken } from "../hooks/Api";
-import { useState } from "react";
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../provider/authProvider'
+import { Card, Label, Button, TextInput, Alert } from 'flowbite-react'
+import { getJwtToken } from '../hooks/Api'
 
-const API_HOST = process.env.REACT_APP_API_HOST;
+const API_HOST = process.env.REACT_APP_API_HOST
 
 const Login = () => {
-  
-    const [error, setError] = useState(null);
+  const [error, setError] = useState(null)
 
-    const { setToken, setUsername, setExpiryDate } = useAuth();
-    const navigate = useNavigate();
-  
-    const handleLogin = (event) => {
-      event.preventDefault();
-      
-      const username = event.target.username.value;
-      const password = event.target.password.value;
+  const { setToken, setUsername, setExpiryDate } = useAuth()
+  const navigate = useNavigate()
 
-      getJwtToken(API_HOST, username, password).then((auth) => {
-        const token = auth.token;
-        const expiryDate = auth.expire;
-        console.log("Token: " + token + " Expiry: " + expiryDate + " Username: " + username);
-        setToken(token);
-        setUsername(username);
-        setExpiryDate(expiryDate);
-        navigate("/", { replace: true });
-      }).catch((error) => {
-        setError("Invalid username or password. Please try again.");
+  const handleLogin = (event) => {
+    event.preventDefault()
+
+    const username = event.target.username.value
+    const password = event.target.password.value
+
+    getJwtToken(API_HOST, username, password)
+      .then(auth => {
+        const token = auth.token
+        const expiryDate = auth.expire
+        setToken(token)
+        setUsername(username)
+        setExpiryDate(expiryDate)
+        navigate('/', { replace: true })
       })
-    }
+      .catch(error => {
+        console.error('Login error:', error)
+        setError('Invalid username or password. Please try again.')
+      })
+  }
 
-    return <div className="flex justify-center items-center h-screen">
+  return <div className="flex justify-center items-center h-screen">
     <Card className="max-w-sm ">
       <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Kasseapparat</h5>
 
@@ -53,7 +54,7 @@ const Login = () => {
       </div>
       <Button type="submit">Login</Button>
     </form>
-  </Card></div>;
-  };
-  
-  export default Login;
+  </Card></div>
+}
+
+export default Login

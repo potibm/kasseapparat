@@ -7,8 +7,8 @@ import { deletePurchaseById, fetchProducts, fetchPurchases, storePurchase } from
 import { addToCart, removeFromCart, removeAllFromCart, checkoutCart } from './hooks/Cart'
 import { Link } from 'react-router-dom'
 import { Button } from 'flowbite-react'
-import { HiCog,HiOutlineUserCircle } from "react-icons/hi";
-import { useAuth } from "../provider/authProvider";
+import { HiCog, HiOutlineUserCircle } from 'react-icons/hi'
+import { useAuth } from '../provider/authProvider'
 
 // @TODO retrieve those settings from the backend
 const Currency = new Intl.NumberFormat('de-DE', {
@@ -24,22 +24,21 @@ function Kasseapparat () {
   const [cart, setCart] = useState([])
   const [products, setProducts] = useState([])
   const [purchaseHistory, setPurchaseHistory] = useState([])
-  const [errorMessage, setErrorMessage] = useState('');
-  const { username, token } = useAuth();
+  const [errorMessage, setErrorMessage] = useState('')
+  const { username, token } = useAuth()
 
   useEffect(() => {
     const getProducts = async () => {
       fetchProducts(API_HOST)
-      .then(products => setProducts(products))
-      .catch(error => showError("There was an error fetching the products: " + error.message));
-
+        .then(products => setProducts(products))
+        .catch(error => showError('There was an error fetching the products: ' + error.message))
     }
     const getHistory = async () => {
       const history = await fetchPurchases(API_HOST)
       setPurchaseHistory(history)
       fetchPurchases(API_HOST)
         .then(history => setPurchaseHistory(history))
-        .catch(error => showError("There was an error fetching the purchase history: " + error.message));
+        .catch(error => showError('There was an error fetching the purchase history: ' + error.message))
     }
     getProducts()
     getHistory()
@@ -56,9 +55,8 @@ function Kasseapparat () {
   const handleRemoveAllFromCart = () => {
     setCart(removeAllFromCart())
     fetchProducts(API_HOST)
-    .then(products => setProducts(products))
-    .catch(error => showError("There was an error fetching the products: " + error.message));
-
+      .then(products => setProducts(products))
+      .catch(error => showError('There was an error fetching the products: ' + error.message))
   }
 
   const handleAddToPurchaseHistory = (purchase) => {
@@ -67,38 +65,38 @@ function Kasseapparat () {
 
   const handleRemoveFromPurchaseHistory = (purchase) => {
     deletePurchaseById(API_HOST, token, purchase.id)
-    .then(data => {
-      fetchPurchases(API_HOST)
-      .then(history => setPurchaseHistory(history))
-      .catch(error => showError("There was an error fetching the purchase history: " + error.message));
-    })
-    .catch(error => {
-        showError("There was an error deleting the purchase: " + error.message);
-    });
+      .then(data => {
+        fetchPurchases(API_HOST)
+          .then(history => setPurchaseHistory(history))
+          .catch(error => showError('There was an error fetching the purchase history: ' + error.message))
+      })
+      .catch(error => {
+        showError('There was an error deleting the purchase: ' + error.message)
+      })
   }
 
   const handleCheckoutCart = async () => {
     storePurchase(API_HOST, token, cart)
-    .then(createdPurchase => {
-      setCart(checkoutCart())
+      .then(createdPurchase => {
+        setCart(checkoutCart())
         handleAddToPurchaseHistory(createdPurchase.purchase)
         fetchProducts(API_HOST)
           .then(products => setProducts(products))
-          .catch(error => showError("There was an error fetching the products: " + error.message));
+          .catch(error => showError('There was an error fetching the products: ' + error.message))
       }
-    )
-    .catch(error => { 
-      showError("There was an error storing the purchase: " + error.message);
-    });
+      )
+      .catch(error => {
+        showError('There was an error storing the purchase: ' + error.message)
+      })
   }
 
   const showError = (message) => {
-    setErrorMessage(message);
-  };
+    setErrorMessage(message)
+  }
 
   const handleCloseError = () => {
-      setErrorMessage('');
-  };
+    setErrorMessage('')
+  }
 
   return (
     <div className="App p-2">
@@ -116,16 +114,16 @@ function Kasseapparat () {
             removeAllFromCart={handleRemoveAllFromCart}
             checkoutCart={handleCheckoutCart} />
 
-          <PurchaseHistory 
+          <PurchaseHistory
             currency={Currency}
             history={purchaseHistory}
             removeFromPurchaseHistory={handleRemoveFromPurchaseHistory}
           />
 
          <Button.Group className='mt-10'>
-            <Button><HiOutlineUserCircle  className="mr-2 h-5 w-5"/> {username}</Button>
+            <Button><HiOutlineUserCircle className="mr-2 h-5 w-5"/> {username}</Button>
             <Button as={Link} to="/logout">Logout</Button>
-            <Button as={Link} target="blank" to="/admin"><HiCog  className="mr-2 h-5 w-5"/> Admin</Button>
+            <Button as={Link} target="blank" to="/admin"><HiCog className="mr-2 h-5 w-5"/> Admin</Button>
           </Button.Group>
         </div>
       </div>

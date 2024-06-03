@@ -25,12 +25,12 @@ run-fe:
 linter:
 	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(BACKEND_DIR) && golangci-lint run
-	cd $(FRONTEND_DIR) && yarn run eslint src/
+	cd $(FRONTEND_DIR) && yarn run eslint 
 
 linter-fix:
 	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(BACKEND_DIR) && golangci-lint run --fix
-	cd $(FRONTEND_DIR) && yarn run eslint src/ --fix
+	cd $(FRONTEND_DIR) && yarn run eslint --fix
 
 test:
 	$(MAKE) test-fe

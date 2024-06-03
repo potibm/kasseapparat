@@ -1,7 +1,9 @@
+import React from 'react'
 import { Button, Card } from 'flowbite-react'
 import { HiShoppingCart } from 'react-icons/hi'
+import PropTypes from 'prop-types'
 
-export default function Product ({ product, addToCart, currency }) {
+function Product ({ product, addToCart, currency }) {
   const handleAddToCart = () => {
     addToCart(product)
   }
@@ -18,3 +20,11 @@ export default function Product ({ product, addToCart, currency }) {
       </Card>
   )
 }
+
+Product.propTypes = {
+  product: PropTypes.object.isRequired,
+  addToCart: PropTypes.func.isRequired,
+  currency: PropTypes.object.isRequired
+}
+
+export default Product
