@@ -1,23 +1,22 @@
-
-import { List, Datagrid, TextField, EmailField, DeleteButton, NumberField, NumberInput, Edit, SimpleForm, TextInput, Create, BooleanField, BooleanInput, DateField, Show, SimpleShowLayout, ArrayField } from 'react-admin';
-import InventoryIcon from '@mui/icons-material/Inventory';
+import { List, Datagrid, TextField, EmailField, DeleteButton, NumberField, NumberInput, Edit, SimpleForm, TextInput, Create, BooleanField, BooleanInput, DateField, Show, SimpleShowLayout, ArrayField } from 'react-admin'
+import InventoryIcon from '@mui/icons-material/Inventory'
 
 export const PurchaseList = () => {
-    return (
+  return (
         <List sort={{ field: 'createdAt', order: 'DESC' }}>
         <Datagrid rowClick="show" bulkActionButtons={false}>
           <NumberField source="id" />
           <DateField source="createdAt" showTime={true} />
           <NumberField source="totalPrice" />
           <TextField source="createdBy.username" />
-          <DeleteButton mutationMode="pessimistic" /> 
+          <DeleteButton mutationMode="pessimistic" />
         </Datagrid>
     </List>
-    )
+  )
 }
 
 export const PurchaseShow = (props) => {
-    return (
+  return (
         <Show {...props}>
             <SimpleShowLayout>
                 <NumberField source="id" />
@@ -33,11 +32,11 @@ export const PurchaseShow = (props) => {
                 </ArrayField>
             </SimpleShowLayout>
         </Show>
-    )
+  )
 }
 
 export const ProductCreate = () => {
-    return (
+  return (
         <Create title="Create new product">
             <SimpleForm>
                 <NumberInput disabled source="id" />
@@ -48,7 +47,7 @@ export const ProductCreate = () => {
                 <BooleanInput source="apiExport" />
             </SimpleForm>
         </Create>
-    )
+  )
 }
 
-export const ProductIcon = () => <InventoryIcon />;
+export const ProductIcon = () => <InventoryIcon />

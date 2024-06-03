@@ -1,24 +1,23 @@
-
-import { List, Datagrid, TextField, EmailField, DeleteButton, NumberField, NumberInput, Edit, SimpleForm, TextInput, Create, BooleanField, BooleanInput, UpdateButton, SaveButton, Toolbar, DeleteWithConfirmButton } from 'react-admin';
-import InventoryIcon from '@mui/icons-material/Inventory';
+import { List, Datagrid, TextField, EmailField, DeleteButton, NumberField, NumberInput, Edit, SimpleForm, TextInput, Create, BooleanField, BooleanInput, UpdateButton, SaveButton, Toolbar, DeleteWithConfirmButton } from 'react-admin'
+import InventoryIcon from '@mui/icons-material/Inventory'
 
 export const ProductList = () => {
-    return (
+  return (
         <List sort={{ field: 'pos', order: 'ASC' }}>
             <Datagrid rowClick="edit" bulkActionButtons={false}>
               <NumberField source="id" />
               <TextField source="name" />
               <NumberField source="price" />
               <NumberField source="pos" />
-              <BooleanField source="wrapAfter" sortable={false} />       
-              <DeleteButton mutationMode="pessimistic" /> 
+              <BooleanField source="wrapAfter" sortable={false} />
+              <DeleteButton mutationMode="pessimistic" />
             </Datagrid>
         </List>
-    )
+  )
 }
 
 export const ProductEdit = () => {
-    return (
+  return (
         <Edit>
             <SimpleForm toolbar={<Toolbar><SaveButton /></Toolbar>}>
                 <NumberInput disabled source="id" />
@@ -29,11 +28,11 @@ export const ProductEdit = () => {
                 <BooleanInput source="apiExport" />
             </SimpleForm>
         </Edit>
-    )
+  )
 }
 
 export const ProductCreate = () => {
-    return (
+  return (
         <Create title="Create new product">
             <SimpleForm>
                 <NumberInput disabled source="id" />
@@ -44,7 +43,7 @@ export const ProductCreate = () => {
                 <BooleanInput source="apiExport" />
             </SimpleForm>
         </Create>
-    )
+  )
 }
 
-export const ProductIcon = () => <InventoryIcon />;
+export const ProductIcon = () => <InventoryIcon />

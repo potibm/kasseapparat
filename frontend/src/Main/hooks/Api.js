@@ -1,15 +1,15 @@
 export const fetchProducts = async (apiHost) => {
   return new Promise((resolve, reject) => {
     fetch(`${apiHost}/api/v1/products?_end=1000&_sort=pos&_order=asc`)
-    .then(response => {
+      .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+          throw new Error('Network response was not ok')
         }
-        return response.json();
-    })
-    .then(data => resolve(data))
-    .catch(error => reject(error));
-});
+        return response.json()
+      })
+      .then(data => resolve(data))
+      .catch(error => reject(error))
+  })
 }
 
 export const storePurchase = async (apiHost, jwtToken, cart) => {
@@ -18,91 +18,91 @@ export const storePurchase = async (apiHost, jwtToken, cart) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${jwtToken}`
+        Authorization: `Bearer ${jwtToken}`
       },
       body: JSON.stringify({ cart, totalPrice: cart.reduce((total, item) => total + item.totalPrice, 0) }) // : )
     })
-    .then(response => {
+      .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+          throw new Error('Network response was not ok')
         }
-        return response.json();
-    })
-    .then(data => resolve(data))
-    .catch(error => reject(error));
-});
+        return response.json()
+      })
+      .then(data => resolve(data))
+      .catch(error => reject(error))
+  })
 }
 
 export const fetchPurchases = async (apiHost) => {
   return new Promise((resolve, reject) => {
     fetch(`${apiHost}/api/v1/purchases`)
-    .then(response => {
+      .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+          throw new Error('Network response was not ok')
         }
-        return response.json();
-    })
-    .then(data => resolve(data))
-    .catch(error => reject(error));
-});
+        return response.json()
+      })
+      .then(data => resolve(data))
+      .catch(error => reject(error))
+  })
 }
 
 export const deletePurchaseById = async (apiHost, jwtToken, purchaseId) => {
   return new Promise((resolve, reject) => {
     fetch(`${apiHost}/api/v1/purchases/${purchaseId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jwtToken}`
-        }
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`
+      }
     })
-    .then(response => {
+      .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+          throw new Error('Network response was not ok')
         }
-        return response.json();
-    })
-    .then(data => resolve(data))
-    .catch(error => reject(error));
-});
+        return response.json()
+      })
+      .then(data => resolve(data))
+      .catch(error => reject(error))
+  })
 }
 
 export const getJwtToken = async (apiHost, username, password) => {
   return new Promise((resolve, reject) => {
     fetch(`${apiHost}/login`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ "username": username, "password": password })
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username, password })
     })
-    .then(response => {
+      .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+          throw new Error('Network response was not ok')
         }
-        return response.json();
-    })
-    .then(data => resolve(data))
-    .catch(error => reject(error));
-});
+        return response.json()
+      })
+      .then(data => resolve(data))
+      .catch(error => reject(error))
+  })
 }
 
 export const refreshJwtToken = async (apiHost, refreshToken) => {
   return new Promise((resolve, reject) => {
     fetch(`${apiHost}/auth/refresh_token`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${refreshToken}`
-        }
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${refreshToken}`
+      }
     })
-    .then(response => {
+      .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+          throw new Error('Network response was not ok')
         }
-        return response.json();
-    })
-    .then(data => resolve(data))
-    .catch(error => reject(error));
-});
+        return response.json()
+      })
+      .then(data => resolve(data))
+      .catch(error => reject(error))
+  })
 }
