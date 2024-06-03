@@ -1,0 +1,36 @@
+name: golang-test
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  golang:
+    name: unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create assets file
+        run: |
+          mkdir -p backend/cmd/assets && \
+          touch backend/cmd/assets/index.html
+      - uses: actions/setup-go@v5
+        with:
+          cache-dependency-path: backend/go.sum
+          go-version-file: backend/go.mod
+      - name: Install dependencies
+        run: go get .
+        working-directory: backend
+      - name: Build
+        run: |
+          go build -v ./cmd/main.go && \
+          go build -v ./tools/main.go
+        working-directory: backend
+      - name: Test with the Go CLI
+        run: go test ./...
+        working-directory: backend
