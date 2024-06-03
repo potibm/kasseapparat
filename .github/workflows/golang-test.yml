@@ -23,8 +23,9 @@ jobs:
         with:
           cache-dependency-path: backend/go.sum
           go-version-file: backend/go.mod
+          cache: true
       - name: Install dependencies
-        run: go get .
+        run: go mod download
         working-directory: backend
       - name: Build
         run: |
@@ -32,5 +33,5 @@ jobs:
           go build -v ./tools/main.go
         working-directory: backend
       - name: Test with the Go CLI
-        run: go test ./...
+        run: go test -v ./...
         working-directory: backend
