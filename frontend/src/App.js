@@ -3,24 +3,15 @@ import './App.css'
 import Kasseapparat from './Main/Kasseapparat'
 import Admin from './Admin/Admin'
 import { createBrowserRouter, RouterProvider, BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import AuthProvider from "./provider/authProvider"
+import Routes from "./routes";
 
 function App () {
 
-  var router = createBrowserRouter([
-    {
-      path: "/",
-      element: <Kasseapparat />,
-    },
-    {
-      path: "admin/*",
-      element: <Admin />,
-    }
-  ])
-
   return (
-    <div>
-        <RouterProvider router={router} />
-    </div>
+    <AuthProvider>
+      <Routes />
+    </AuthProvider>
   )
 }
 

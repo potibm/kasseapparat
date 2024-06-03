@@ -67,6 +67,7 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	product.Price = updatedProduct.Price
 	product.WrapAfter = updatedProduct.WrapAfter
 	product.ApiExport = updatedProduct.ApiExport
+	product.UpdatedByID = updatedProduct.UpdatedByID
 
 	// Save the updated product to the database
 	if err := repo.db.Save(&product).Error; err != nil {
@@ -82,6 +83,8 @@ func (repo *Repository) CreateProduct(product models.Product) (models.Product, e
 	return product, result.Error
 }
 
-func (repo *Repository) DeleteProduct(product models.Product) {
+func (repo *Repository) DeleteProduct(product models.Product, deletedBy models.User) {
+	repo.db.Model(&models.Product{}).Where("id = ?", product.ID).Update("DeletedByID", deletedBy.ID)
+
 	repo.db.Delete(&product)
 }

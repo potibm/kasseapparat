@@ -25,14 +25,14 @@ func ConnectToLocalDatabase() *gorm.DB {
 }
 
 func PurgeDatabase(db *gorm.DB) {
-	err := db.Migrator().DropTable(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{})
+	err := db.Migrator().DropTable(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{})
 	if err != nil {
 		panic(err)
 	}
 }
 
 func MigrateDatabase(db *gorm.DB) {
-	err := db.AutoMigrate(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{})
+	err := db.AutoMigrate(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{})
 	if err != nil {
 		panic(err)
 	}
@@ -52,4 +52,6 @@ func SeedDatabase(db *gorm.DB) {
 	db.Create(&models.Product{Name: "👕 T-Shirt Female L", Price: 20, Pos: 22})
 	db.Create(&models.Product{Name: "👕 T-Shirt Female XL", Price: 20, Pos: 23, WrapAfter: true})
 	db.Create(&models.Product{Name: "☕ Coffee Mug", Price: 1, Pos: 30})
+	db.Create(&models.User{Username: "admin", Password: "admin"})
+	db.Create(&models.User{Username: "demo", Password: "demo"})
 }

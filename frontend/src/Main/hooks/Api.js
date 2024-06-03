@@ -12,12 +12,13 @@ export const fetchProducts = async (apiHost) => {
 });
 }
 
-export const storePurchase = async (apiHost, cart, totalPrice) => {
+export const storePurchase = async (apiHost, jwtToken, cart) => {
   return new Promise((resolve, reject) => {
     fetch(`${apiHost}/api/v1/purchases`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`
       },
       body: JSON.stringify({ cart, totalPrice: cart.reduce((total, item) => total + item.totalPrice, 0) }) // : )
     })
@@ -46,10 +47,54 @@ export const fetchPurchases = async (apiHost) => {
 });
 }
 
-export const deletePurchaseById = async (apiHost, purchaseId) => {
+export const deletePurchaseById = async (apiHost, jwtToken, purchaseId) => {
   return new Promise((resolve, reject) => {
     fetch(`${apiHost}/api/v1/purchases/${purchaseId}`, {
         method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => resolve(data))
+    .catch(error => reject(error));
+});
+}
+
+export const getJwtToken = async (apiHost, username, password) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ "username": username, "password": password })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => resolve(data))
+    .catch(error => reject(error));
+});
+}
+
+export const refreshJwtToken = async (apiHost, refreshToken) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/auth/refresh_token`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${refreshToken}`
+        }
     })
     .then(response => {
         if (!response.ok) {

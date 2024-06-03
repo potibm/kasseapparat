@@ -1,0 +1,1 @@
+{"schemaVersion":2,"mediaType":"application/vnd.oci.image.index.v1+json","manifests":[{"mediaType":"application/vnd.oci.image.manifest.v1+json","digest":"sha256:5f28aa645d1b073ac5cc6a69c025e90e60332e1aa2c53375c8a2d107b9d53400","size":552,"annotations":{"io.containerd.image.name":"docker.io/library/kasseapparat:latest","org.opencontainers.image.ref.name":"latest"}}]}

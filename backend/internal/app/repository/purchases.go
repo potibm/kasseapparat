@@ -18,7 +18,8 @@ func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchas
 	return purchase, result.Error
 }
 
-func (repo *Repository) DeletePurchaseByID(id int) {
+func (repo *Repository) DeletePurchaseByID(id int, deletedBy models.User) {
+	repo.db.Model(&models.Purchase{}).Where("id = ?", id).Update("DeletedByID", deletedBy.ID)
 	repo.db.Delete(&models.Purchase{}, id)
 
 	repo.db.Where("purchase_id = ?", id).Delete(&models.PurchaseItem{})
@@ -44,7 +45,7 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 	}
 
 	var purchases []models.Purchase
-	if err := repo.db.Order(sort + " " + order + ", created_at DESC").Limit(limit).Offset(offset).Find(&purchases).Error; err != nil {
+	if err := repo.db.Model(&models.Purchase{}).Preload("CreatedBy").Order(sort + " " + order + ", created_at DESC").Limit(limit).Offset(offset).Find(&purchases).Error; err != nil {
 		return nil, errors.New("Purchases not found")
 	}
 

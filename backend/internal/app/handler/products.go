@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -42,14 +43,17 @@ func (handler *Handler) GetProductByID(c *gin.Context) {
 }
 
 type ProductRequest struct {
-	Name      string  `form:"name" binding:"required"`
-	Price     float64 `form:"price" binding:"numeric,required"`
-	WrapAfter bool    `form:"wrapAfter"`
-	Pos       int     `form:"pos" binding:"numeric,required"`
-	ApiExport bool    `form:"apiExport"`
+	Name      string  `form:"name"  json:"name" binding:"required"`
+	Price     float64 `form:"price" json:"price" binding:"numeric,required"`
+	WrapAfter bool    `form:"wrapAfter" json:"wrapAfter"`
+	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
+	ApiExport bool    `form:"apiExport" json:"apiExport"`
 }
 
 func (handler *Handler) UpdateProductByID(c *gin.Context) {
+	user, _ := c.Get(middleware.IdentityKey)
+	userObj, _ := user.(*models.User)
+
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
@@ -58,8 +62,8 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	}
 
 	var productRequest ProductRequest
-	if c.ShouldBind(&productRequest) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	if err := c.ShouldBind(&productRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": err.Error()})
 		return
 	}
 
@@ -68,6 +72,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
+	product.UpdatedByID = &userObj.ID
 
 	product, err = handler.repo.UpdateProductByID(id, *product)
 	if err != nil {
@@ -79,6 +84,9 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 }
 
 func (handler *Handler) CreateProduct(c *gin.Context) {
+	user, _ := c.Get(middleware.IdentityKey)
+	userObj, _ := user.(*models.User)
+
 	var product models.Product
 	var productRequest ProductRequest
 	if c.ShouldBind(&productRequest) != nil {
@@ -91,6 +99,7 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
+	product.CreatedByID = &userObj.ID
 
 	product, err := handler.repo.CreateProduct(product)
 	if err != nil {
@@ -102,6 +111,9 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 }
 
 func (handler *Handler) DeleteProductByID(c *gin.Context) {
+	user, _ := c.Get(middleware.IdentityKey)
+	userObj, _ := user.(*models.User)
+
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
@@ -109,7 +121,7 @@ func (handler *Handler) DeleteProductByID(c *gin.Context) {
 		return
 	}
 
-	handler.repo.DeleteProduct(*product)
+	handler.repo.DeleteProduct(*product, *userObj)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
