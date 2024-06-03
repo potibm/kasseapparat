@@ -17,7 +17,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: stable
           cache-dependency-path: backend/go.sum
           go-version-file: backend/go.mod
       - name: golangci-lint
@@ -25,4 +24,4 @@ jobs:
         with:
           version: v1.59
           working-directory: ./backend
-          args: --timeout=30m --config=./backend/.golangci.yml 
+          args: --timeout=30m --config=./backend/.golangci.yaml 
