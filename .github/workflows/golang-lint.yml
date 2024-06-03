@@ -24,4 +24,4 @@ jobs:
         with:
           version: v1.59
           working-directory: ./backend
-          args: --timeout=30m --config=./backend/.golangci.yaml 
+          args: --timeout=30m --config=.golangci.yaml 
