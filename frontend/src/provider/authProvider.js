@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { refreshJwtToken } from '../Main/hooks/Api'
+import PropTypes from 'prop-types'
 
 const AuthContext = createContext()
 
@@ -80,6 +81,10 @@ const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   return useContext(AuthContext)
+}
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired
 }
 
 export default AuthProvider

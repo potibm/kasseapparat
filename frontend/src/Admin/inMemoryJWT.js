@@ -5,8 +5,12 @@ const inMemoryJWTManager = () => {
   let refreshEndpoint = '/refresh-token'
   let refreshTimeOutId
 
-  const setLogoutEventName = name => logoutEventName = name
-  const setRefreshTokenEndpoint = endpoint => refreshEndpoint = endpoint
+  const setLogoutEventName = name => {
+    logoutEventName = name
+  }
+  const setRefreshTokenEndpoint = endpoint => {
+    refreshEndpoint = endpoint
+  }
 
   // This countdown feature is used to renew the JWT before it's no longer valid
   // in a way that is transparent to the user.

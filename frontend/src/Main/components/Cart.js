@@ -1,7 +1,9 @@
+import React from 'react'
 import { HiXCircle } from 'react-icons/hi'
 import { Button, Table } from 'flowbite-react'
+import PropTypes from 'prop-types'
 
-export default function Cart ({ cart, removeFromCart, removeAllFromCart, checkoutCart, currency }) {
+function Cart ({ cart, removeFromCart, removeAllFromCart, checkoutCart, currency }) {
   return (
       <div>
         <Table striped className='table-fixed'>
@@ -42,3 +44,13 @@ export default function Cart ({ cart, removeFromCart, removeAllFromCart, checkou
       </div>
   )
 }
+
+Cart.propTypes = {
+  cart: PropTypes.array.isRequired,
+  removeFromCart: PropTypes.func.isRequired,
+  removeAllFromCart: PropTypes.func.isRequired,
+  checkoutCart: PropTypes.func.isRequired,
+  currency: PropTypes.object.isRequired
+}
+
+export default Cart

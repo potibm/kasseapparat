@@ -1,7 +1,8 @@
 import React from 'react'
 import { Modal } from 'flowbite-react'
+import PropTypes from 'prop-types'
 
-export default function ErrorModal ({ message, onClose }) {
+function ErrorModal ({ message, onClose }) {
   return (
         <Modal show={message !== ''} onClose={onClose}>
             <Modal.Header>Error</Modal.Header>
@@ -11,3 +12,10 @@ export default function ErrorModal ({ message, onClose }) {
         </Modal>
   )
 }
+
+ErrorModal.propTypes = {
+  message: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired
+}
+
+export default ErrorModal

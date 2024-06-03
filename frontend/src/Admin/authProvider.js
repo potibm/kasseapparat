@@ -39,7 +39,7 @@ const authProvider = {
 
   checkAuth: () => {
     return inMemoryJWT.waitForTokenRefresh().then(() => {
-      return inMemoryJWT.getToken() ? Promise.resolve() : Promise.reject()
+      return inMemoryJWT.getToken() ? Promise.resolve() : Promise.reject(new Error('no token'))
     })
   },
 
@@ -47,14 +47,14 @@ const authProvider = {
     const status = error.status
     if (status === 401 || status === 403) {
       inMemoryJWT.ereaseToken()
-      return Promise.reject()
+      return Promise.reject(new Error('Your session has expired'))
     }
     return Promise.resolve()
   },
 
   getPermissions: () => {
     return inMemoryJWT.waitForTokenRefresh().then(() => {
-      return inMemoryJWT.getToken() ? Promise.resolve() : Promise.reject()
+      return inMemoryJWT.getToken() ? Promise.resolve() : Promise.reject(new Error('no token'))
     })
   }
 }

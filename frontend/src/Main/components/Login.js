@@ -1,8 +1,8 @@
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../provider/authProvider'
 import { Card, Label, Button, TextInput, Alert } from 'flowbite-react'
 import { getJwtToken } from '../hooks/Api'
-import { useState } from 'react'
 
 const API_HOST = process.env.REACT_APP_API_HOST
 
@@ -18,17 +18,19 @@ const Login = () => {
     const username = event.target.username.value
     const password = event.target.password.value
 
-    getJwtToken(API_HOST, username, password).then((auth) => {
-      const token = auth.token
-      const expiryDate = auth.expire
-      console.log('Token: ' + token + ' Expiry: ' + expiryDate + ' Username: ' + username)
-      setToken(token)
-      setUsername(username)
-      setExpiryDate(expiryDate)
-      navigate('/', { replace: true })
-    }).catch((error) => {
-      setError('Invalid username or password. Please try again.')
-    })
+    getJwtToken(API_HOST, username, password)
+      .then(auth => {
+        const token = auth.token
+        const expiryDate = auth.expire
+        setToken(token)
+        setUsername(username)
+        setExpiryDate(expiryDate)
+        navigate('/', { replace: true })
+      })
+      .catch(error => {
+        console.error('Login error:', error)
+        setError('Invalid username or password. Please try again.')
+      })
   }
 
   return <div className="flex justify-center items-center h-screen">

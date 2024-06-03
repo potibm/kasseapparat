@@ -1,4 +1,5 @@
-import { List, Datagrid, TextField, EmailField, DeleteButton, NumberField, NumberInput, Edit, SimpleForm, TextInput, Create, BooleanField, BooleanInput, DateField, Show, SimpleShowLayout, ArrayField } from 'react-admin'
+import React from 'react'
+import { List, Datagrid, TextField, DeleteButton, NumberField, NumberInput, SimpleForm, TextInput, Create, BooleanInput, DateField, Show, SimpleShowLayout, ArrayField } from 'react-admin'
 import InventoryIcon from '@mui/icons-material/Inventory'
 
 export const PurchaseList = () => {

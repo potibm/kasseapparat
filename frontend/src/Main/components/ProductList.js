@@ -1,6 +1,8 @@
+import React from 'react'
 import Product from './Product'
+import PropTypes from 'prop-types'
 
-export default function ProductList ({ products, addToCart, currency }) {
+function ProductList ({ products, addToCart, currency }) {
   return (
       <div className="w-full">
         {products.map(product => (
@@ -9,3 +11,11 @@ export default function ProductList ({ products, addToCart, currency }) {
       </div>
   )
 }
+
+ProductList.propTypes = {
+  products: PropTypes.array.isRequired,
+  addToCart: PropTypes.func.isRequired,
+  currency: PropTypes.object.isRequired
+}
+
+export default ProductList
