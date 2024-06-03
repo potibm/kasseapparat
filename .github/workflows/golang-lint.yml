@@ -15,7 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: touch backend/cmd/assets/index.html
+      - name: Create assets file
+        run: |
+          mkdir -p backend/cmd/assets && \
+          touch backend/cmd/assets/index.html
       - uses: actions/setup-go@v5
         with:
           cache-dependency-path: backend/go.sum
