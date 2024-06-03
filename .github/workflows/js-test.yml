@@ -1,0 +1,43 @@
+name: js-test
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  js:
+    name: unit test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: install
+        run: yarn install
+        working-directory: frontend
+
+      - name: build
+        run: yarn run build
+        working-directory: frontend
+
+      - name: test
+        run: yarn run test --coverage --watchAll=false
+        working-directory: frontend
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: frontend/coverage

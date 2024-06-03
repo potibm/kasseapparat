@@ -1,4 +1,4 @@
-name: golang-lint
+name: golang-test
 on:
   push:
     branches:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   golang:
-    name: lint
+    name: unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,9 +24,14 @@ jobs:
           cache-dependency-path: backend/go.sum
           go-version-file: backend/go.mod
           cache: true
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v1.59
-          working-directory: ./backend
-          args: --timeout=30m --config=.golangci.yaml 
+      - name: Install dependencies
+        run: go mod download
+        working-directory: backend
+      - name: Build
+        run: |
+          go build -v ./cmd/main.go && \
+          go build -v ./tools/main.go
+        working-directory: backend
+      - name: Test with the Go CLI
+        run: go test -v ./...
+        working-directory: backend

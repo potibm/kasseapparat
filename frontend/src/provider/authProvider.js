@@ -59,7 +59,7 @@ const AuthProvider = ({ children }) => {
     return () => {
       clearInterval(tokenRefreshInterval)
     }
-  }, [auth.expiryDate])
+  }, [auth.expiryDate, auth.token, auth.username])
 
   const contextValue = useMemo(
     () => ({
