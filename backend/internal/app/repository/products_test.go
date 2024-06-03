@@ -12,7 +12,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
-var e *httpexpect.Expect
+//var e *httpexpect.Expect
 
 func TestMain(m *testing.M) {
 	// Setup test environment
