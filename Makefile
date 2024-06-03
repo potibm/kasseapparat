@@ -41,7 +41,7 @@ test-fe:
 
 test-be:
 	touch $(BACKEND_DIR)/cmd/assets/index.html
-	cd $(BACKEND_DIR) && go test ./...
+	cd $(BACKEND_DIR) && go test -cover -v ./...
 
 build:
 	rm -rf $(BACKEND_DIR)/cmd/assets
