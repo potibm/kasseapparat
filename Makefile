@@ -23,10 +23,12 @@ run-fe:
 	cd $(FRONTEND_DIR) && yarn start
 
 linter:
+	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(BACKEND_DIR) && golangci-lint run
 	cd $(FRONTEND_DIR) && yarn run eslint src/
 
 linter-fix:
+	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(BACKEND_DIR) && golangci-lint run --fix
 	cd $(FRONTEND_DIR) && yarn run eslint src/ --fix
 
@@ -38,6 +40,7 @@ test-fe:
 	cd $(FRONTEND_DIR) && yarn test --coverage --watchAll=false
 
 test-be:
+	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(BACKEND_DIR) && go test ./...
 
 build:

@@ -32,7 +32,7 @@ func main() {
 
 	r := gin.Default()
 
-	authMiddleware, err := jwt.New(middleware.InitParams(*repository))
+	authMiddleware, _ := jwt.New(middleware.InitParams(*repository))
 	r.Use(middleware.HandlerMiddleWare(authMiddleware))
 
 	// register route
@@ -82,7 +82,7 @@ func main() {
 	middleware.RegisterRoute(r, authMiddleware)
 
 	log.Println("Listening on " + port + "...")
-	err = r.Run(port)
+	err := r.Run(port)
 	if err != nil {
 		panic("[Error] failed to start Gin server due to: " + err.Error())
 	}
