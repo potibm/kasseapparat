@@ -12,7 +12,7 @@ WORKDIR /app/backend
 RUN apk update && apk add --no-cache gcc g++
 COPY backend .
 RUN go mod download
-COPY --from=frontend-build /app/frontend/build ./cmd/static
+COPY --from=frontend-build /app/frontend/build ./cmd/assets
 RUN CGO_ENABLED=1 go build -o kasseapparat ./cmd/main.go
 RUN CGO_ENABLED=1 go build -o kasseapparat-tool ./tools/main.go
 
