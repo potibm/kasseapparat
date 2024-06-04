@@ -51,3 +51,9 @@ build:
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat-tool ./tools/main.go
 	mkdir -p $(DIST_DIR)/data
 	cd $(DIST_DIR) && ./kasseapparat-tool --seed --purge
+
+docker-build:
+	docker build -t kasseapparat:latest .
+
+docker-run:
+	docker run -p 3003:8080 -v ./backend/data:/app/data kasseapparat:latest
