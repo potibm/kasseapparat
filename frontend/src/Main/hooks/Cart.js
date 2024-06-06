@@ -1,30 +1,39 @@
 // Cart.js
 export const addToCart = (cart, product) => {
-  const existingProductIndex = cart.findIndex(item => item.id === product.id)
+  const existingProductIndex = cart.findIndex((item) => item.id === product.id);
   if (existingProductIndex !== -1) {
-    const updatedCart = [...cart]
-    updatedCart[existingProductIndex].quantity++
-    updatedCart[existingProductIndex].totalPrice = updatedCart[existingProductIndex].quantity * updatedCart[existingProductIndex].price
-    return updatedCart
+    const updatedCart = [...cart];
+    updatedCart[existingProductIndex].quantity++;
+    updatedCart[existingProductIndex].totalPrice =
+      updatedCart[existingProductIndex].quantity *
+      updatedCart[existingProductIndex].price;
+    return updatedCart;
   } else {
-    const updatedProduct = { ...product, quantity: 1, totalPrice: product.price }
-    return [...cart, updatedProduct]
+    const updatedProduct = {
+      ...product,
+      quantity: 1,
+      totalPrice: product.price,
+    };
+    return [...cart, updatedProduct];
   }
-}
+};
 
 export const removeFromCart = (cart, product) => {
-  const existingProductIndex = cart.findIndex(item => item.id === product.id)
+  const existingProductIndex = cart.findIndex((item) => item.id === product.id);
 
   if (existingProductIndex !== -1) {
-    return [...cart.slice(0, existingProductIndex), ...cart.slice(existingProductIndex + 1)]
+    return [
+      ...cart.slice(0, existingProductIndex),
+      ...cart.slice(existingProductIndex + 1),
+    ];
   }
-  return cart
-}
+  return cart;
+};
 
 export const removeAllFromCart = () => {
-  return []
-}
+  return [];
+};
 
 export const checkoutCart = () => {
-  return []
-}
+  return [];
+};

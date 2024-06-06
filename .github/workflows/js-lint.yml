@@ -18,8 +18,8 @@ jobs:
       - name: Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'yarn'
+          node-version: "22"
+          cache: "yarn"
           cache-dependency-path: frontend/yarn.lock
       - name: Cache node_modules
         uses: actions/cache@v3
