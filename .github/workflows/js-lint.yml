@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  js:
-    name: lint
+  checkout:
+    name: checkout
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +31,17 @@ jobs:
       - name: install
         run: yarn install
         working-directory: frontend
+  prettier:
+    name: prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: prettier
+        run: yarn run prettier .. --check
+        working-directory: frontend
+  eslint:
+    name: eslint
+    runs-on: ubuntu-latest
+    steps:
       - name: eslint
         run: yarn run eslint
         working-directory: frontend
