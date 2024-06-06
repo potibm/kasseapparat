@@ -24,11 +24,13 @@ run-fe:
 
 linter:
 	touch $(BACKEND_DIR)/cmd/assets/index.html
+	cd $(FRONTEND_DIR) && yarn run prettier .. --check
 	cd $(BACKEND_DIR) && golangci-lint run
 	cd $(FRONTEND_DIR) && yarn run eslint 
 
 linter-fix:
 	touch $(BACKEND_DIR)/cmd/assets/index.html
+	cd $(FRONTEND_DIR) && yarn run prettier .. --write
 	cd $(BACKEND_DIR) && golangci-lint run --fix
 	cd $(FRONTEND_DIR) && yarn run eslint --fix
 
