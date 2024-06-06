@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   linter:
-    name: checkout
+    name: linter
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
