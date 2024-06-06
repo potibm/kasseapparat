@@ -1,4 +1,4 @@
-name: golang-test
+name: golang
 on:
   push:
     branches:
@@ -10,9 +10,31 @@ permissions:
   contents: read
 
 jobs:
-  golang:
+  linter:
+    name: linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create assets file
+        run: |
+          mkdir -p backend/cmd/assets && \
+          touch backend/cmd/assets/index.html
+      - uses: actions/setup-go@v5
+        with:
+          cache-dependency-path: backend/go.sum
+          go-version-file: backend/go.mod
+          cache: true
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.59
+          working-directory: ./backend
+          args: --timeout=30m --config=.golangci.yaml
+
+  test:
     name: unit tests
     runs-on: ubuntu-latest
+    needs: linter
     steps:
       - uses: actions/checkout@v4
       - name: Create assets file
