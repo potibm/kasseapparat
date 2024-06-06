@@ -23,12 +23,14 @@ run-fe:
 	cd $(FRONTEND_DIR) && yarn start
 
 linter:
+	mkdir -p $(BACKEND_DIR)/cmd/assets
 	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(FRONTEND_DIR) && yarn run prettier .. --check
 	cd $(BACKEND_DIR) && golangci-lint run
 	cd $(FRONTEND_DIR) && yarn run eslint 
 
 linter-fix:
+	mkdir -p $(BACKEND_DIR)/cmd/assets
 	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(FRONTEND_DIR) && yarn run prettier .. --write
 	cd $(BACKEND_DIR) && golangci-lint run --fix
@@ -42,6 +44,7 @@ test-fe:
 	cd $(FRONTEND_DIR) && yarn test --coverage --watchAll=false
 
 test-be:
+	mkdir -p $(BACKEND_DIR)/cmd/assets
 	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(BACKEND_DIR) && go test -cover -v ./...
 
