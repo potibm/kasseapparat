@@ -1,6 +1,11 @@
 name: "Lint PR"
 
 on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
   pull_request_target:
     types:
       - opened
@@ -8,7 +13,7 @@ on:
       - synchronize
 
 permissions:
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   main:
@@ -18,3 +23,5 @@ jobs:
       - uses: amannn/action-semantic-pull-request@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          wip: true
