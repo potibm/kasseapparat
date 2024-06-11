@@ -11,6 +11,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 
 	"github.com/potibm/kasseapparat/internal/app/handler"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
@@ -21,7 +22,8 @@ import (
 var staticFiles embed.FS
 
 func main() {
-
+	godotenv.Load()
+	
 	port := ":3000" // Default port number
 	if len(os.Args) > 1 {
 		port = ":" + os.Args[1] // Use the provided port number if available
@@ -30,14 +32,21 @@ func main() {
 	repository := repository.NewRepository()
 	myhandler := handler.NewHandler(repository)
 
+	gin.SetMode(os.Getenv("GIN_MODE"))
 	r := gin.Default()
 
-	authMiddleware, _ := jwt.New(middleware.InitParams(*repository))
+	authMiddleware, _ := jwt.New(middleware.InitParams(*repository, os.Getenv("JWT_REALM"), os.Getenv("JWT_SECRET"), 10))
 	r.Use(middleware.HandlerMiddleWare(authMiddleware))
 
 	// register route
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:8080", "http://localhost:3000"}
+	corsAllowOrigins := os.Getenv("CORS_ALLOW_ORIGINS")
+	if corsAllowOrigins != "" {
+		corsConfig.AllowOrigins = strings.Split(corsAllowOrigins, ",")
+		corsConfig.AllowAllOrigins = false
+	} else {
+		corsConfig.AllowAllOrigins = true
+	}
 	corsConfig.AllowCredentials = true
 	corsConfig.AddAllowHeaders("Authorization")
 	corsConfig.AddExposeHeaders("X-Total-Count")
