@@ -14,11 +14,28 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "pos")
 	order := c.DefaultQuery("_order", "ASC")
+	filterHidden := c.DefaultQuery("_filter_hidden", "false")
 
 	products, err := handler.repo.GetProducts(end-start, start, sort, order)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+		
+	if filterHidden == "true" {
+		var filteredProducts []models.Product
+		for _, product := range products {
+			if product.Hidden && product.WrapAfter {
+				// find last product in filteredProducts and set wrapAfter to true
+				if len(filteredProducts) > 0 {
+					filteredProducts[len(filteredProducts)-1].WrapAfter = true
+				}
+			}
+			if !product.Hidden {
+				filteredProducts = append(filteredProducts, product)
+			}
+		}
+		products = filteredProducts
 	}
 
 	total, err := handler.repo.GetTotalProducts()
@@ -47,7 +64,8 @@ type ProductRequest struct {
 	Price     float64 `form:"price" json:"price" binding:"numeric,required"`
 	WrapAfter bool    `form:"wrapAfter" json:"wrapAfter"`
 	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
-	ApiExport bool    `form:"apiExport" json:"apiExport"`
+	ApiExport bool    `form:"apiExport" json:"apiExport" binding:"boolean"`
+	Hidden	  bool    `form:"hidden" json:"hidden" binding:"boolean"`
 }
 
 func (handler *Handler) UpdateProductByID(c *gin.Context) {
@@ -72,6 +90,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
+	product.Hidden = productRequest.Hidden
 	product.UpdatedByID = &userObj.ID
 
 	product, err = handler.repo.UpdateProductByID(id, *product)
@@ -99,6 +118,7 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
+	product.Hidden = productRequest.Hidden
 	product.CreatedByID = &userObj.ID
 
 	product, err := handler.repo.CreateProduct(product)

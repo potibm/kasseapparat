@@ -26,6 +26,7 @@ export const ProductList = () => {
         <NumberField source="price" />
         <NumberField source="pos" />
         <BooleanField source="wrapAfter" sortable={false} />
+        <BooleanField source="hidden" sortable={false} />
         <DeleteButton mutationMode="pessimistic" />
       </Datagrid>
     </List>
@@ -47,6 +48,7 @@ export const ProductEdit = () => {
         <NumberInput source="price" />
         <NumberInput source="pos" />
         <BooleanInput source="wrapAfter" />
+        <BooleanInput source="hidden" />
         <BooleanInput source="apiExport" />
       </SimpleForm>
     </Edit>
@@ -62,6 +64,7 @@ export const ProductCreate = () => {
         <NumberInput source="price" />
         <NumberInput source="pos" />
         <BooleanInput source="wrapAfter" />
+        <BooleanInput source="hidden" />
         <BooleanInput source="apiExport" />
       </SimpleForm>
     </Create>
