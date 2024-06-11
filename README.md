@@ -1,5 +1,7 @@
 # Kasseapparat
 
+![Kasseapparat Logo](frontend/public/favicon.svg)
+
 > _Kasseapparat_ is the Danish term for cash register.
 
 It is a simple point of sale (POS) system aimed at [demoparties](https://en.wikipedia.org/wiki/Demoscene#Parties). Based on [Partymeister](https://github.com/partymeister), rewritten after moving to [Granola](https://gitlab.com/granola-compo/granola) for [Evoke](https://www.evoke.eu/).
