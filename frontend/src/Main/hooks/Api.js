@@ -1,6 +1,8 @@
 export const fetchProducts = async (apiHost) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v1/products?_end=1000&_sort=pos&_order=asc`)
+    fetch(
+      `${apiHost}/api/v1/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true`,
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
