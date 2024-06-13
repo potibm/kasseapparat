@@ -15,6 +15,7 @@ var staticFiles embed.FS
 
 func main() {
 	initializer.InitializeDotenv();
+	initializer.InitializeSentry()
 
 	port := ":3000" // Default port number
 	if len(os.Args) > 1 {

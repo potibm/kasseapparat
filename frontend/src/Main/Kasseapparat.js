@@ -18,15 +18,7 @@ import {
 import { Link } from "react-router-dom";
 import { Button } from "flowbite-react";
 import { HiCog, HiOutlineUserCircle } from "react-icons/hi";
-import { useAuth } from "../provider/authProvider";
-
-// @TODO retrieve those settings from the backend
-const Currency = new Intl.NumberFormat("de-DE", {
-  style: "currency",
-  currency: "EUR",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
+import { useAuth } from "../provider/AuthProvider";
 
 const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
 
@@ -131,23 +123,17 @@ function Kasseapparat() {
     <div className="App p-2">
       <div className="w-full overflow-hidden">
         <div className="border w-9/12">
-          <ProductList
-            products={products}
-            addToCart={handleAddToCart}
-            currency={Currency}
-          />
+          <ProductList products={products} addToCart={handleAddToCart} />
         </div>
         <div className="fixed inset-y-0 right-0 w-3/12 border bg-slate-200 p-2">
           <Cart
             cart={cart}
-            currency={Currency}
             removeFromCart={handleRemoveFromCart}
             removeAllFromCart={handleRemoveAllFromCart}
             checkoutCart={handleCheckoutCart}
           />
 
           <PurchaseHistory
-            currency={Currency}
             history={purchaseHistory}
             removeFromPurchaseHistory={handleRemoveFromPurchaseHistory}
           />

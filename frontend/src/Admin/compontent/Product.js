@@ -16,14 +16,18 @@ import {
   Toolbar,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
+import { useConfig } from "../../provider/ConfigProvider";
 
 export const ProductList = () => {
+  const currency = useConfig().currencyOptions;
+  const locale = useConfig().Locale;
+
   return (
     <List sort={{ field: "pos", order: "ASC" }}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
-        <NumberField source="price" />
+        <NumberField source="price" locales={locale} options={currency} />
         <NumberField source="pos" />
         <BooleanField source="wrapAfter" sortable={false} />
         <BooleanField source="hidden" sortable={false} />
@@ -45,7 +49,7 @@ export const ProductEdit = () => {
       >
         <NumberInput disabled source="id" />
         <TextInput source="name" />
-        <NumberInput source="price" />
+        <NumberInput source="price" min={0} />
         <NumberInput source="pos" />
         <BooleanInput source="wrapAfter" />
         <BooleanInput source="hidden" />
@@ -61,7 +65,7 @@ export const ProductCreate = () => {
       <SimpleForm>
         <NumberInput disabled source="id" />
         <TextInput source="name" />
-        <NumberInput source="price" />
+        <NumberInput source="price" min={0} />
         <NumberInput source="pos" />
         <BooleanInput source="wrapAfter" />
         <BooleanInput source="hidden" />

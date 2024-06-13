@@ -57,7 +57,7 @@ build:
 	cd $(FRONTEND_DIR) && BUILD_PATH=../$(BACKEND_DIR)/cmd/assets yarn build
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat ./cmd/main.go
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat-tool ./tools/main.go
-	[ -f /.env ] || cp $(BACKEND_DIR)/.env.example .env
+	[ -f $(DIST_DIR)/.env ] || cp $(BACKEND_DIR)/.env.example $(DIST_DIR)/.env
 	mkdir -p $(DIST_DIR)/data
 	cd $(DIST_DIR) && ./kasseapparat-tool --seed --purge
 
