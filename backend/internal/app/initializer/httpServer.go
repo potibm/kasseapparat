@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,7 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 	r = gin.Default()
 
 	r.Use(createCorsMiddleware())
+	r.Use(sentrygin.New(sentrygin.Options{}))
 
 	r.Use(static.Serve("/", static.EmbedFolder(staticFiles, "assets")))
 
