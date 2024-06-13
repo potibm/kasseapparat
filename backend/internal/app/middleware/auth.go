@@ -34,12 +34,17 @@ func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 	auth.GET("/refresh_token", handle.RefreshHandler)
 }
 
-func InitParams(repo repository.Repository) *jwt.GinJWTMiddleware {
+func InitParams(repo repository.Repository, realm string, secret string, timeout int) *jwt.GinJWTMiddleware {
+
+	if (secret == "") {
+		log.Println("JWT_SECRET is not set, using default value")
+		secret = "secret"
+	}
 
 	return &jwt.GinJWTMiddleware{
-		Realm:       "test zone",
-		Key:         []byte("secret key"),
-		Timeout:     5 * time.Minute,
+		Realm:       realm,
+		Key:         []byte(secret),
+		Timeout:     time.Duration(timeout) * time.Minute,
 		MaxRefresh:  time.Hour,
 		IdentityKey: IdentityKey,
 		PayloadFunc: payloadFunc(),
