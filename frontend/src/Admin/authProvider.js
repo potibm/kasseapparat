@@ -26,14 +26,8 @@ const authProvider = {
   },
 
   logout: () => {
-    /* const request = new Request('http://localhost:8001/logout', {
-            method: 'GET',
-            headers: new Headers({ 'Content-Type': 'application/json' }),
-            credentials: 'include',
-        }); */
     inMemoryJWT.ereaseToken();
 
-    // return fetch(request).then(() => '/login');
     return Promise.resolve();
   },
 

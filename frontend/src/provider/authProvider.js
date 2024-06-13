@@ -41,6 +41,9 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const tokenRefreshInterval = setInterval(() => {
+      if (auth.token == null) {
+        return;
+      }
       refreshJwtToken(API_HOST, auth.token)
         .then((response) => {
           const newToken = response.token;
