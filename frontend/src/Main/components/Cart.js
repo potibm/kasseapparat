@@ -2,14 +2,11 @@ import React from "react";
 import { HiXCircle } from "react-icons/hi";
 import { Button, Table } from "flowbite-react";
 import PropTypes from "prop-types";
+import { useConfig } from "../../provider/ConfigProvider";
 
-function Cart({
-  cart,
-  removeFromCart,
-  removeAllFromCart,
-  checkoutCart,
-  currency,
-}) {
+function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
+  const currency = useConfig().currency;
+
   return (
     <div>
       <Table striped className="table-fixed">
@@ -85,7 +82,6 @@ Cart.propTypes = {
   removeFromCart: PropTypes.func.isRequired,
   removeAllFromCart: PropTypes.func.isRequired,
   checkoutCart: PropTypes.func.isRequired,
-  currency: PropTypes.object.isRequired,
 };
 
 export default Cart;

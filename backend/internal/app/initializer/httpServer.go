@@ -2,6 +2,7 @@ package initializer
 
 import (
 	"embed"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -46,14 +47,13 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 func createCorsMiddleware() gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
 	corsAllowOrigins := os.Getenv("CORS_ALLOW_ORIGINS")
-	if corsAllowOrigins != "" {
-		corsConfig.AllowOrigins = strings.Split(corsAllowOrigins, ",")
-		corsConfig.AllowAllOrigins = false
-	} else {
-		corsConfig.AllowAllOrigins = true
+	if corsAllowOrigins == "" {
+		log.Fatalf("CORS_ALLOW_ORIGINS is not set in env")
 	}
+	corsConfig.AllowOrigins = strings.Split(corsAllowOrigins, ",")
+	corsConfig.AllowAllOrigins = false
 	corsConfig.AllowCredentials = true
-	corsConfig.AddAllowHeaders("Authorization")
+	corsConfig.AddAllowHeaders("Authorization","Credentials")
 	corsConfig.AddExposeHeaders("X-Total-Count")
 
 	return cors.New(corsConfig)
@@ -90,6 +90,7 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 		apiRouter.DELETE("/users/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteUserByID)
 		apiRouter.POST("/users", authMiddleware.MiddlewareFunc(), myhandler.CreateUser)
 
+		apiRouter.GET("/config", myhandler.GetConfig)
 		apiRouter.GET("/purchases/stats", myhandler.GetPurchaseStats)
 	}
 }
