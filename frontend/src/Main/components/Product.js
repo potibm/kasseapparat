@@ -2,11 +2,14 @@ import React from "react";
 import { Button, Card } from "flowbite-react";
 import { HiShoppingCart } from "react-icons/hi";
 import PropTypes from "prop-types";
+import { useConfig } from "../../provider/ConfigProvider";
 
-function Product({ product, addToCart, currency }) {
+function Product({ product, addToCart }) {
   const handleAddToCart = () => {
     addToCart(product);
   };
+
+  const currency = useConfig().currency;
 
   return (
     <Card
@@ -30,7 +33,6 @@ function Product({ product, addToCart, currency }) {
 Product.propTypes = {
   product: PropTypes.object.isRequired,
   addToCart: PropTypes.func.isRequired,
-  currency: PropTypes.object.isRequired,
 };
 
 export default Product;

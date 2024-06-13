@@ -2,14 +2,17 @@ import { HiXCircle, HiOutlineExclamationCircle } from "react-icons/hi";
 import React, { useState } from "react";
 import { Button, Modal, Table } from "flowbite-react";
 import PropTypes from "prop-types";
+import { useConfig } from "../../provider/ConfigProvider";
 
-function PurchaseHistory({ history, currency, removeFromPurchaseHistory }) {
+function PurchaseHistory({ history, removeFromPurchaseHistory }) {
   const [openModal, setOpenModal] = useState({ show: false, purchase: null });
 
   const confirmDelete = (purchase) => {
     setOpenModal({ show: false });
     removeFromPurchaseHistory(purchase);
   };
+
+  const currency = useConfig().currency;
 
   return (
     <div className="mt-10">
@@ -77,7 +80,6 @@ function PurchaseHistory({ history, currency, removeFromPurchaseHistory }) {
 
 PurchaseHistory.propTypes = {
   history: PropTypes.array.isRequired,
-  currency: PropTypes.object.isRequired,
   removeFromPurchaseHistory: PropTypes.func.isRequired,
 };
 

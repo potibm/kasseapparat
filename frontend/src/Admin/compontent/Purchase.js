@@ -5,25 +5,24 @@ import {
   TextField,
   DeleteButton,
   NumberField,
-  NumberInput,
-  SimpleForm,
-  TextInput,
-  Create,
-  BooleanInput,
   DateField,
   Show,
   SimpleShowLayout,
   ArrayField,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
+import { useConfig } from "../../provider/ConfigProvider";
 
 export const PurchaseList = () => {
+  const currency = useConfig().currencyOptions;
+  const locale = useConfig().Locale;
+
   return (
     <List sort={{ field: "createdAt", order: "DESC" }}>
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <NumberField source="id" />
         <DateField source="createdAt" showTime={true} />
-        <NumberField source="totalPrice" />
+        <NumberField source="totalPrice" locales={locale} options={currency} />
         <TextField source="createdBy.username" />
         <DeleteButton mutationMode="pessimistic" />
       </Datagrid>
@@ -32,37 +31,29 @@ export const PurchaseList = () => {
 };
 
 export const PurchaseShow = (props) => {
+  const currency = useConfig().currencyOptions;
+  const locale = useConfig().Locale;
+
   return (
     <Show {...props}>
       <SimpleShowLayout>
         <NumberField source="id" />
         <DateField source="createdAt" showTime={true} />
-        <NumberField source="totalPrice" />
+        <NumberField source="totalPrice" locales={locale} options={currency} />
         <ArrayField source="purchaseItems">
           <Datagrid bulkActionButtons={false}>
             <NumberField source="quantity" />
-            <NumberField source="price" />
+            <NumberField source="price" locales={locale} options={currency} />
             <TextField source="product.name" />
-            <NumberField source="totalPrice" />
+            <NumberField
+              source="totalPrice"
+              locales={locale}
+              options={currency}
+            />
           </Datagrid>
         </ArrayField>
       </SimpleShowLayout>
     </Show>
-  );
-};
-
-export const ProductCreate = () => {
-  return (
-    <Create title="Create new product">
-      <SimpleForm>
-        <NumberInput disabled source="id" />
-        <TextInput source="name" />
-        <NumberInput source="price" />
-        <NumberInput source="pos" />
-        <BooleanInput source="wrapAfter" />
-        <BooleanInput source="apiExport" />
-      </SimpleForm>
-    </Create>
   );
 };
 

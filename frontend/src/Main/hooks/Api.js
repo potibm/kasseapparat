@@ -78,6 +78,7 @@ export const getJwtToken = async (apiHost, username, password) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Credentials: "include",
       },
       body: JSON.stringify({ username, password }),
     })
