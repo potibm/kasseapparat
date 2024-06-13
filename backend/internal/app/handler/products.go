@@ -61,7 +61,7 @@ func (handler *Handler) GetProductByID(c *gin.Context) {
 
 type ProductRequest struct {
 	Name      string  `form:"name"  json:"name" binding:"required"`
-	Price     float64 `form:"price" json:"price" binding:"numeric,required"`
+	Price     float64 `form:"price" json:"price" binding:"numeric"`
 	WrapAfter bool    `form:"wrapAfter" json:"wrapAfter"`
 	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
 	ApiExport bool    `form:"apiExport" json:"apiExport" binding:"boolean"`
