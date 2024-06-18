@@ -3,6 +3,7 @@ package initializer
 import (
 	"log"
 	"os"
+	"strings"
 )
 
 var version string = "0.0.0"
@@ -16,7 +17,7 @@ func InitializeVersion() {
 		return
 	}
 
-	version = string(content)
+	version = strings.TrimSpace(string(content))
 }
 
 func GetVersion() string {
