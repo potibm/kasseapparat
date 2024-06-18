@@ -1,1 +1,10 @@
-{}
+{
+  "overrides": [
+    {
+      "files": ".releaserc",
+      "options": {
+        "parser": "json"
+      }
+    }
+  ]
+}
