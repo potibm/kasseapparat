@@ -1,15 +1,38 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { HiXCircle } from "react-icons/hi";
 import { Button, Table } from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
+import "animate.css";
 
 function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
   const currency = useConfig().currency;
 
+  const [flash, setFlash] = useState(false);
+  const flashCount = useRef(0);
+
+  const triggerFlash = () => {
+    setFlash(true);
+    setTimeout(() => {
+      setFlash(false);
+    }, 500);
+  };
+
+  useEffect(() => {
+    // not 100% sure why this is called twice
+    if (flashCount.current < 2) {
+      flashCount.current++;
+      return;
+    }
+    triggerFlash();
+  }, [cart]);
+
   return (
     <div>
-      <Table striped className="table-fixed">
+      <Table
+        striped
+        className={`table-fixed ${flash ? "animate__animated animate__pulse" : ""}`}
+      >
         <Table.Head>
           <Table.HeadCell>Product</Table.HeadCell>
           <Table.HeadCell className="text-right">Quantity</Table.HeadCell>
