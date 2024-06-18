@@ -30,7 +30,6 @@ jobs:
 
       # Extract the version from the release output
       - name: Extract version
-        if: github.event_name != 'pull_request'
         run: echo "$(date +%y%m%d%H%M)" > VERSION
 
       # Install the cosign tool except on PR
