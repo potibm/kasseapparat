@@ -54,6 +54,7 @@ test-be:
 build:
 	rm -rf $(BACKEND_DIR)/cmd/assets
 	mkdir -p $(BACKEND_DIR)/cmd/assets
+	echo "$(shell date +%y%m%d%H%M)" > $(DIST_DIR)/VERSION
 	cd $(FRONTEND_DIR) && BUILD_PATH=../$(BACKEND_DIR)/cmd/assets yarn build
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat ./cmd/main.go
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat-tool ./tools/main.go
@@ -62,7 +63,9 @@ build:
 	cd $(DIST_DIR) && ./kasseapparat-tool --seed --purge
 
 docker-build:
+	echo "$(shell date +%y%m%d%H%M)" > VERSION
 	docker build -t kasseapparat:latest .
+	rm VERSION
 
 docker-run:
 	docker run -p 3003:8080 -e "CORS_ALLOW_ORIGINS=http://localhost:3003" -v ./backend/data:/app/data kasseapparat:latest

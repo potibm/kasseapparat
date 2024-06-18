@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../provider/AuthProvider";
 import { Card, Label, Button, TextInput, Alert } from "flowbite-react";
 import { getJwtToken } from "../hooks/Api";
+import { useConfig } from "../../provider/ConfigProvider";
 
 const API_HOST = process.env.REACT_APP_API_HOST;
 
@@ -11,6 +12,8 @@ const Login = () => {
 
   const { setToken, setUsername, setExpiryDate } = useAuth();
   const navigate = useNavigate();
+
+  const version = useConfig().version;
 
   const handleLogin = (event) => {
     event.preventDefault();
@@ -62,6 +65,7 @@ const Login = () => {
           </div>
           <Button type="submit">Login</Button>
         </form>
+        <p className="text-xs">Version {version}</p>
       </Card>
     </div>
   );

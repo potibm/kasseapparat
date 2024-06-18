@@ -52,7 +52,7 @@ func setupTestDatabase() {
 }
 
 func TestGetProducts(t *testing.T) {
-	myhandler := handler.NewHandler(repository.NewLocalRepository())
+	myhandler := handler.NewHandler(repository.NewLocalRepository(), "1.0.0")
 
 	gin.SetMode(gin.TestMode)
 	e := setupTest(t, "/example", myhandler.GetProducts)
@@ -75,7 +75,7 @@ func TestGetProducts(t *testing.T) {
 }
 
 func TestGetProduct(t *testing.T) {
-	myhandler := handler.NewHandler(repository.NewLocalRepository())
+	myhandler := handler.NewHandler(repository.NewLocalRepository(), "1.0.0")
 	gin.SetMode(gin.TestMode)
 
 	e := setupTest(t, "/example/:id", myhandler.GetProductByID)

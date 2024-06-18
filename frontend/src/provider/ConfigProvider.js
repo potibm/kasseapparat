@@ -3,14 +3,21 @@ import PropTypes from "prop-types";
 
 const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
 
-const ConfigContext = createContext(null);
+export const ConfigContext = createContext({});
 
 const ConfigProvider = ({ children }) => {
   const [config, setConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch(`${API_HOST}/api/v1/config`)
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => {
         data.currencyOptions = {
           style: "currency",
@@ -25,12 +32,21 @@ const ConfigProvider = ({ children }) => {
         );
 
         setConfig(data);
+        setLoading(false);
       })
-      .catch((error) => console.error("Error fetching config:", error));
+      .catch((error) => {
+        console.error("Error fetching config:", error);
+        setError(error.message);
+        setLoading(false);
+      });
   }, []);
 
-  if (!config) {
+  if (loading) {
     return <div>Loading Config...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading config: {error}</div>;
   }
 
   return (

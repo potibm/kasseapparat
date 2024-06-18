@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/potibm/kasseapparat/internal/app/utils"
+	"github.com/potibm/kasseapparat/internal/app/initializer"
 )
 
 var (
@@ -20,6 +21,8 @@ func init() {
 }
 
 func main() {
+	initializer.InitializeVersion()
+	initializer.OutputVersion()
 
 	db := utils.ConnectToDatabase()
 
