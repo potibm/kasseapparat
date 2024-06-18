@@ -44,11 +44,13 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 type UserCreateRequest struct {
 	Usermame string `form:"username"  json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
+	Admin	bool   `form:"admin" json:"admin" binding:""`
 }
 
 type UserUpdateRequest struct {
-	Usermame string `form:"username"  json:"username" binding:"required"`
+	Username string `form:"username"  json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:""`
+	Admin	bool   `form:"admin" json:"admin" binding:""`
 }
 
 func (handler *Handler) UpdateUserByID(c *gin.Context) {
@@ -65,10 +67,11 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 		return
 	}
 
-	user.Username = userRequest.Usermame
-	if user.Password != "" {
+	if userRequest.Password != "" {
 		user.Password = userRequest.Password
 	}
+
+	user.Admin = userRequest.Admin
 
 	user, err = handler.repo.UpdateUserByID(id, *user)
 	if err != nil {
@@ -90,6 +93,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 
 	user.Username = userRequest.Usermame
 	user.Password = userRequest.Password
+	user.Admin = userRequest.Admin
 
 	product, err := handler.repo.CreateUser(user)
 	if err != nil {

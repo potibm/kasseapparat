@@ -13,6 +13,8 @@ import {
   SaveButton,
   Toolbar,
   PasswordInput,
+  BooleanField,
+  BooleanInput,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
 
@@ -22,6 +24,7 @@ export const UserList = () => {
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="username" />
+        <BooleanField source="admin" />
         <DeleteButton mutationMode="pessimistic" />
       </Datagrid>
     </List>
@@ -48,6 +51,7 @@ export const UserEdit = () => {
         <TextInput source="username" />
         <PasswordInput source="password" />
         <PasswordInput source="confirm_password" validate={equalToPassword} />
+        <BooleanInput source="admin" />
       </SimpleForm>
     </Edit>
   );
@@ -67,6 +71,7 @@ export const UserCreate = () => {
         <TextInput source="username" />
         <PasswordInput source="password" />
         <PasswordInput source="confirm_password" validate={equalToPassword} />
+        <BooleanInput source="admin" />
       </SimpleForm>
     </Create>
   );

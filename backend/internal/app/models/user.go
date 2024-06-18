@@ -14,6 +14,7 @@ type User struct {
 	GormModel
 	Username string `json:"username" gorm:"unique"`
 	Password string `json:"-"`
+	Admin    bool   `json:"admin"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
