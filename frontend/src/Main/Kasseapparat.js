@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 import { Button } from "flowbite-react";
 import { HiCog, HiOutlineUserCircle } from "react-icons/hi";
 import { useAuth } from "../provider/AuthProvider";
+import { useConfig } from "../provider/ConfigProvider";
 
 const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
 
@@ -28,6 +29,8 @@ function Kasseapparat() {
   const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const { username, token } = useAuth();
+
+  const version = useConfig().version;
 
   useEffect(() => {
     const getProducts = async () => {
@@ -149,6 +152,8 @@ function Kasseapparat() {
               <HiCog className="mr-2 h-5 w-5" /> Admin
             </Button>
           </Button.Group>
+
+          <p className="text-xs mt-10">Version {version}</p>
         </div>
       </div>
       <ErrorModal message={errorMessage} onClose={handleCloseError} />

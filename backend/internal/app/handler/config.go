@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+    Version  string `json:"version"`
     SentryDSN 	string `json:"sentryDSN"`
     SentryTraceSampleRate       float64 `json:"sentryTraceSampleRate"`
     SentryReplaySessionSampleRate     float64 `json:"sentryReplaySessionSampleRate"`
@@ -21,6 +22,7 @@ type Config struct {
 func (handler *Handler) GetConfig(c *gin.Context) {
 
 	config := Config{
+        Version:     handler.version,
         SentryDSN: getEnv("SENTRY_DSN",""),
         SentryTraceSampleRate:       getEnvAsFloat("SENTRY_TRACE_SAMPLE_RATE", 0.1),
         SentryReplaySessionSampleRate:    getEnvAsFloat("SENTRY_REPLAY_SESSION_SAMPLE_RATE", 0.1),

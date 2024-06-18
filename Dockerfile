@@ -24,6 +24,7 @@ VOLUME [ "/app/data" ]
 # Copy frontend build
 COPY --from=backend-build /app/backend/kasseapparat ./kasseapparat
 COPY --from=backend-build /app/backend/kasseapparat-tool ./kasseapparat-tool
+COPY VERSION VERSION
 
 # Copy backend build
 RUN chmod +x /app/kasseapparat && chmod +x /app/kasseapparat-tool 

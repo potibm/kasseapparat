@@ -15,7 +15,9 @@ var staticFiles embed.FS
 
 func main() {
 	initializer.InitializeDotenv();
-	initializer.InitializeSentry()
+	initializer.InitializeSentry();
+	initializer.InitializeVersion()
+	initializer.OutputVersion()
 
 	port := ":3000" // Default port number
 	if len(os.Args) > 1 {
@@ -23,7 +25,7 @@ func main() {
 	}
 
 	repository := repository.NewRepository()
-	myhandler := handler.NewHandler(repository)
+	myhandler := handler.NewHandler(repository, initializer.GetVersion())
 
 	router := initializer.InitializeHttpServer(*myhandler, *repository, staticFiles)
 	log.Println("Listening on " + port + "...")
