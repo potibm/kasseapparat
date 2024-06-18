@@ -1,8 +1,9 @@
 import { HiXCircle, HiOutlineExclamationCircle } from "react-icons/hi";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button, Modal, Table } from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
+import "animate.css";
 
 function PurchaseHistory({ history, removeFromPurchaseHistory }) {
   const [openModal, setOpenModal] = useState({ show: false, purchase: null });
@@ -11,6 +12,25 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
     setOpenModal({ show: false });
     removeFromPurchaseHistory(purchase);
   };
+
+  const [flash, setFlash] = useState(false);
+  const flashCount = useRef(0);
+
+  const triggerFlash = () => {
+    setFlash(true);
+    setTimeout(() => {
+      setFlash(false);
+    }, 500);
+  };
+
+  useEffect(() => {
+    // not 100% sure why this is called three times
+    if (flashCount.current < 3) {
+      flashCount.current++;
+      return;
+    }
+    triggerFlash();
+  }, [history]);
 
   const currency = useConfig().currency;
 
@@ -43,7 +63,10 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
           </div>
         </Modal.Body>
       </Modal>
-      <Table striped>
+      <Table
+        striped
+        className={`table-fixed ${flash ? "animate__animated animate__pulse" : ""}`}
+      >
         <Table.Head>
           <Table.HeadCell>Date</Table.HeadCell>
           <Table.HeadCell className="text-right">Total Price</Table.HeadCell>

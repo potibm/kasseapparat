@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@sentry/react": "^8.9.2",
+    "animate.css": "^4.1.1",
     "flowbite-react": "^0.9.0",
     "prop-types": "^15.8.1",
     "ra-data-json-server": "^4.16.17",
