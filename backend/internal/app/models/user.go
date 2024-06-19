@@ -43,3 +43,4 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 func (u *User) ComparePassword(password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 }
+

@@ -18,6 +18,8 @@ import {
   PasswordInput,
   BooleanField,
   BooleanInput,
+  required,
+  minLength,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
 
@@ -71,13 +73,13 @@ const UserEditForm = (props) => {
         <NumberInput disabled source="id" />
         <TextInput source="username" />
         {(permissions === "admin" || isCurrentUser) && (
-          <div>
-            <PasswordInput source="password" />
+          <>
+            <PasswordInput source="password" validate={[minLength(8)]} />
             <PasswordInput
               source="confirm_password"
               validate={equalToPassword}
             />
-          </div>
+          </>
         )}
         <BooleanInput source="admin" disabled={permissions !== "admin"} />
       </SimpleForm>
@@ -100,7 +102,10 @@ export const UserCreate = () => {
       <SimpleForm>
         <NumberInput disabled source="id" />
         <TextInput source="username" />
-        <PasswordInput source="password" />
+        <PasswordInput
+          source="password"
+          validate={[required(), minLength(8)]}
+        />
         <PasswordInput source="confirm_password" validate={equalToPassword} />
         <BooleanInput source="admin" disabled={permissions !== "admin"} />
       </SimpleForm>

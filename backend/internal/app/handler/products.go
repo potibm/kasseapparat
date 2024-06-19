@@ -140,6 +140,10 @@ func (handler *Handler) DeleteProductByID(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+	if !userObj.Admin {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+		return
+	}
 
 	handler.repo.DeleteProduct(*product, *userObj)
 

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -67,11 +68,23 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 		return
 	}
 
-	if userRequest.Password != "" {
-		user.Password = userRequest.Password
+	user.Username = userRequest.Username
+	user.Password = ""
+
+	// an admin may change the password of another user
+	// a user may change his own password
+	if user.Admin || int(user.ID) == id {
+		log.Println("password " + userRequest.Password)
+		if userRequest.Password != "" {
+			log.Println("password " + userRequest.Password)
+			user.Password = userRequest.Password
+		}
 	}
 
-	user.Admin = userRequest.Admin
+	// only an admin may change the role of a user
+	if user.Admin {
+		user.Admin = userRequest.Admin
+	}
 
 	user, err = handler.repo.UpdateUserByID(id, *user)
 	if err != nil {
@@ -93,7 +106,13 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 
 	user.Username = userRequest.Usermame
 	user.Password = userRequest.Password
-	user.Admin = userRequest.Admin
+	
+	// only an admin may change the role of a user
+	if user.Admin {
+		user.Admin = userRequest.Admin
+	} else {
+		user.Admin = false
+	}
 
 	product, err := handler.repo.CreateUser(user)
 	if err != nil {
@@ -109,6 +128,10 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	if !user.Admin {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 
