@@ -99,7 +99,7 @@ func identityHandler() func(c *gin.Context) interface{} {
 		claims := jwt.ExtractClaims(c)
 
 		return &models.User{
-			ID: uint(claims[IdentityKey].(float64))
+			ID: uint(claims[IdentityKey].(float64)),
 		}
 	}
 }
