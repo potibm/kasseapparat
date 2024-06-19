@@ -1,5 +1,8 @@
 import React from "react";
 import {
+  usePermissions,
+  useRecordContext,
+  useGetIdentity,
   List,
   Datagrid,
   TextField,
@@ -19,27 +22,45 @@ import {
 import PersonIcon from "@mui/icons-material/Person";
 
 export const UserList = () => {
+  const { permissions } = usePermissions();
+
   return (
     <List sort={{ field: "id", order: "ASC" }}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="username" />
         <BooleanField source="admin" />
-        <DeleteButton mutationMode="pessimistic" />
+        {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
       </Datagrid>
     </List>
   );
 };
 
 export const UserEdit = () => {
+  return (
+    <Edit>
+      <UserEditForm />
+    </Edit>
+  );
+};
+
+const UserEditForm = (props) => {
+  const record = useRecordContext(props);
+  const { isLoading, permissions } = usePermissions();
+  const { data: identity, isLoading: identityLoading } = useGetIdentity();
+  if (isLoading || identityLoading) return <>Loading...</>;
+
   const equalToPassword = (value, allValues) => {
     if (value !== allValues.password) {
       return "The two passwords must match";
     }
   };
 
+  const currentUserId = identity.id;
+  const isCurrentUser = record && record.id === currentUserId;
+
   return (
-    <Edit>
+    <>
       <SimpleForm
         toolbar={
           <Toolbar>
@@ -49,15 +70,25 @@ export const UserEdit = () => {
       >
         <NumberInput disabled source="id" />
         <TextInput source="username" />
-        <PasswordInput source="password" />
-        <PasswordInput source="confirm_password" validate={equalToPassword} />
-        <BooleanInput source="admin" />
+        {(permissions === "admin" || isCurrentUser) && (
+          <div>
+            <PasswordInput source="password" />
+            <PasswordInput
+              source="confirm_password"
+              validate={equalToPassword}
+            />
+          </div>
+        )}
+        <BooleanInput source="admin" disabled={permissions !== "admin"} />
       </SimpleForm>
-    </Edit>
+    </>
   );
 };
 
 export const UserCreate = () => {
+  const { isLoading, permissions } = usePermissions();
+  if (isLoading) return <>Loading...</>;
+
   const equalToPassword = (value, allValues) => {
     if (value !== allValues.password) {
       return "The two passwords must match";
@@ -71,7 +102,7 @@ export const UserCreate = () => {
         <TextInput source="username" />
         <PasswordInput source="password" />
         <PasswordInput source="confirm_password" validate={equalToPassword} />
-        <BooleanInput source="admin" />
+        <BooleanInput source="admin" disabled={permissions !== "admin"} />
       </SimpleForm>
     </Create>
   );

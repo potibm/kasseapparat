@@ -40,10 +40,10 @@ const authProvider = {
       }
       const { token } = await response.json();
       const decodedToken = jwtDecode(token);
-      const { username, role } = decodedToken;
+      const { ID, username, role } = decodedToken;
       const expire = new Date(decodedToken.exp * 1000);
 
-      setAdminData({ token, username, role, expire });
+      setAdminData({ ID, token, username, role, expire });
     } catch (error) {
       console.error("Login error:", error);
       throw new Error("Network error. Please try again.");
@@ -138,8 +138,9 @@ const authProvider = {
     try {
       const adminData = getAdminData();
       const username = adminData ? adminData.username : null;
+      const ID = adminData ? adminData.ID : null;
       return username
-        ? Promise.resolve({ id: username, fullName: username })
+        ? Promise.resolve({ id: ID, fullName: username })
         : Promise.reject(new Error("No username found."));
     } catch (error) {
       return Promise.reject(error);
