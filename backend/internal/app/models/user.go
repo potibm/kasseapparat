@@ -17,6 +17,13 @@ type User struct {
 	Admin    bool   `json:"admin"`
 }
 
+func (u *User) Role() string {
+	if u.Admin {
+		return "admin"
+	}	
+	return "user"
+}
+
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	// hash the password
 	bytes, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcryptCost)
