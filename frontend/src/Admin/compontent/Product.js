@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  usePermissions,
   List,
   Datagrid,
   TextField,
@@ -19,6 +20,7 @@ import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
 
 export const ProductList = () => {
+  const { permissions } = usePermissions();
   const currency = useConfig().currencyOptions;
   const locale = useConfig().Locale;
 
@@ -31,7 +33,7 @@ export const ProductList = () => {
         <NumberField source="pos" />
         <BooleanField source="wrapAfter" sortable={false} />
         <BooleanField source="hidden" sortable={false} />
-        <DeleteButton mutationMode="pessimistic" />
+        {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
       </Datagrid>
     </List>
   );

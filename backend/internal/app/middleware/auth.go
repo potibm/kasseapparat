@@ -82,10 +82,14 @@ func authenticator(repo *repository.Repository) func(c *gin.Context) (interface{
 func payloadFunc() func(data interface{}) jwt.MapClaims {
 	return func(data interface{}) jwt.MapClaims {
 		if v, ok := data.(*models.User); ok {
+			log.Printf("payloadFunc data: %#v\n", v);
 			return jwt.MapClaims{
 				IdentityKey: v.ID,
+				"role":      v.Role(),
+				"username":  v.Username,
 			}
 		}
+		log.Printf("payloadFunc data: %#v\n", jwt.MapClaims{})
 		return jwt.MapClaims{}
 	}
 }
@@ -93,6 +97,7 @@ func payloadFunc() func(data interface{}) jwt.MapClaims {
 func identityHandler() func(c *gin.Context) interface{} {
 	return func(c *gin.Context) interface{} {
 		claims := jwt.ExtractClaims(c)
+
 		return &models.User{
 			ID: uint(claims[IdentityKey].(float64)),
 		}
