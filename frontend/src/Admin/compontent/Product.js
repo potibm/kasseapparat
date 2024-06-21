@@ -15,6 +15,8 @@ import {
   BooleanInput,
   SaveButton,
   Toolbar,
+  ReferenceInput,
+  SelectInput,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
@@ -57,6 +59,9 @@ export const ProductEdit = () => {
         <BooleanInput source="wrapAfter" />
         <BooleanInput source="hidden" />
         <BooleanInput source="apiExport" />
+        <ReferenceInput source="associatedListId" reference="lists">
+          <SelectInput optionText="name" />
+        </ReferenceInput>
       </SimpleForm>
     </Edit>
   );
@@ -73,6 +78,9 @@ export const ProductCreate = () => {
         <BooleanInput source="wrapAfter" />
         <BooleanInput source="hidden" />
         <BooleanInput source="apiExport" />
+        <ReferenceInput source="associatedListId" reference="lists">
+          <SelectInput optionText="name" />
+        </ReferenceInput>
       </SimpleForm>
     </Create>
   );

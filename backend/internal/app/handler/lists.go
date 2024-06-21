@@ -11,10 +11,11 @@ import (
 func (handler *Handler) GetLists(c *gin.Context) {
 	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
-	sort := c.DefaultQuery("_sort", "pos")
+	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "ASC")
-
-	lists, err := handler.repo.GetLists(end-start, start, sort, order)
+	ids := queryArrayInt(c, "id");
+	
+	lists, err := handler.repo.GetLists(end-start, start, sort, order, ids)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -6,7 +6,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-func (repo *Repository) GetLists(limit int, offset int, sort string, order string) ([]models.List, error) {
+func (repo *Repository) GetLists(limit int, offset int, sort string, order string, ids []int) ([]models.List, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -16,8 +16,14 @@ func (repo *Repository) GetLists(limit int, offset int, sort string, order strin
 		return nil, err
 	}
 
+	query := repo.db.Order(sort + " " + order + ", Id ASC").Limit(limit).Offset(offset);
+
+	if (len(ids) > 0) {
+		query = query.Where("id IN ?", ids)
+	}
+
 	var lists []models.List
-	if err := repo.db.Order(sort + " " + order + ", Id ASC").Limit(limit).Offset(offset).Find(&lists).Error; err != nil {
+	if err := query.Find(&lists).Error; err != nil {
 		return nil, errors.New("Lists not found")
 	}
 

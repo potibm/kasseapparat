@@ -65,6 +65,7 @@ type ProductRequest struct {
 	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
 	ApiExport bool    `form:"apiExport" json:"apiExport" binding:"boolean"`
 	Hidden	  bool    `form:"hidden" json:"hidden" binding:"boolean"`
+	AssociatedListId uint `form:"associatedListId" json:"associatedListId"`
 }
 
 func (handler *Handler) UpdateProductByID(c *gin.Context) {
@@ -93,6 +94,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
 	product.Hidden = productRequest.Hidden
+	product.AssociatedListID = productRequest.AssociatedListId
 	product.UpdatedByID = &executingUserObj.ID
 
 	product, err = handler.repo.UpdateProductByID(id, *product)
@@ -124,6 +126,7 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
 	product.Hidden = productRequest.Hidden
+	product.AssociatedListID = productRequest.AssociatedListId
 	product.CreatedByID = &executingUserObj.ID
 
 	product, err = handler.repo.CreateProduct(product)
