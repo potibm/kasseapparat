@@ -41,8 +41,15 @@ func MigrateDatabase(db *gorm.DB) {
 func SeedDatabase(db *gorm.DB) {
 	// Your own implementation of seeding the database
 	db.Create(&models.Product{Name: "🎟️ Regular", Price: 40, Pos: 1, ApiExport: true})
-	db.Create(&models.Product{Name: "🎟️ Reduced", Price: 20, Pos: 2, ApiExport: true})
-	db.Create(&models.Product{Name: "🎟️ Free", Price: 0, Pos: 3, WrapAfter: true, ApiExport: true})
+	guestList := &models.List{Name:"Guestlist"}
+	db.Create(guestList)
+	db.Create(&models.Product{Name: "🎟️ Reduced", Price: 20, Pos: 2, ApiExport: true, AssociatedListID: guestList.ID})
+	reducedList := &models.List{Name:"Reduced"}
+	db.Create(reducedList)	
+	db.Create(&models.Product{Name: "🎟️ Free", Price: 0, Pos: 3, ApiExport: true, AssociatedListID: reducedList.ID})
+	deineTicketsList := &models.List{Name:"Deine Tickets", TypeCode: true}
+	db.Create(deineTicketsList)
+	db.Create(&models.Product{Name: "🎟️ Prepaid", Price: 0, Pos: 4, WrapAfter: true, ApiExport: true, AssociatedListID: deineTicketsList.ID})
 	db.Create(&models.Product{Name: "👕 T-Shirt Male S", Price: 20, Pos: 10})
 	db.Create(&models.Product{Name: "👕 T-Shirt Male M", Price: 20, Pos: 11})
 	db.Create(&models.Product{Name: "👕 T-Shirt Male L", Price: 20, Pos: 12})
@@ -54,4 +61,5 @@ func SeedDatabase(db *gorm.DB) {
 	db.Create(&models.Product{Name: "☕ Coffee Mug", Price: 1, Pos: 30})
 	db.Create(&models.User{Username: "admin", Password: "admin", Admin: true})
 	db.Create(&models.User{Username: "demo", Password: "demo", Admin: false})
+
 }

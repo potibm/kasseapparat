@@ -17,7 +17,7 @@ func (repo *Repository) GetProducts(limit int, offset int, sort string, order st
 	}
 
 	var products []models.Product
-	if err := repo.db.Order(sort + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset).Find(&products).Error; err != nil {
+	if err := repo.db.Order(sort + " " + order + ", Pos ASC, Id ASC").Preload("AssociatedList").Limit(limit).Offset(offset).Find(&products).Error; err != nil {
 		return nil, errors.New("Products not found")
 	}
 

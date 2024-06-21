@@ -12,6 +12,8 @@ import {
 import { PurchaseList, PurchaseShow } from "./compontent/Purchase";
 import { UserCreate, UserEdit, UserIcon, UserList } from "./compontent/User";
 
+import { ListCreate, ListEdit, ListIcon, ListList } from "./compontent/List";
+
 const AdminPanel = () => (
   <Admin
     dataProvider={dataProvider}
@@ -24,6 +26,13 @@ const AdminPanel = () => (
       edit={ProductEdit}
       create={ProductCreate}
       icon={ProductIcon}
+    />
+     <Resource
+      name="lists"
+      list={ListList}
+      edit={ListEdit}
+      create={ListCreate}
+      icon={ListIcon}
     />
     <Resource name="purchases" list={PurchaseList} show={PurchaseShow} />
     <Resource

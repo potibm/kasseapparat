@@ -16,31 +16,25 @@ import {
   SaveButton,
   Toolbar,
 } from "react-admin";
-import InventoryIcon from "@mui/icons-material/Inventory";
+import GroupsIcon from "@mui/icons-material/Groups";
 import { useConfig } from "../../provider/ConfigProvider";
 
-export const ProductList = () => {
+export const ListList = () => {
   const { permissions } = usePermissions();
-  const currency = useConfig().currencyOptions;
-  const locale = useConfig().Locale;
 
   return (
-    <List sort={{ field: "pos", order: "ASC" }}>
+    <List sort={{ field: "id", order: "ASC" }}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
-        <NumberField source="price" locales={locale} options={currency} />
-        <NumberField source="pos" />
-        <BooleanField source="wrapAfter" sortable={false} />
-        <BooleanField source="hidden" sortable={false} />
-        <TextField source="associatedList.name" sortable={false} /> 
+        <BooleanField source="typeCode" sortable={false} />
         {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
       </Datagrid>
     </List>
   );
 };
 
-export const ProductEdit = () => {
+export const ListEdit = () => {
   return (
     <Edit>
       <SimpleForm
@@ -52,30 +46,22 @@ export const ProductEdit = () => {
       >
         <NumberInput disabled source="id" />
         <TextInput source="name" />
-        <NumberInput source="price" min={0} />
-        <NumberInput source="pos" />
-        <BooleanInput source="wrapAfter" />
-        <BooleanInput source="hidden" />
-        <BooleanInput source="apiExport" />
+        <BooleanInput source="typeCode" />
       </SimpleForm>
     </Edit>
   );
 };
 
-export const ProductCreate = () => {
+export const ListCreate = () => {
   return (
     <Create title="Create new product">
       <SimpleForm>
         <NumberInput disabled source="id" />
         <TextInput source="name" />
-        <NumberInput source="price" min={0} />
-        <NumberInput source="pos" />
-        <BooleanInput source="wrapAfter" />
-        <BooleanInput source="hidden" />
-        <BooleanInput source="apiExport" />
+        <BooleanInput source="typeCode" />
       </SimpleForm>
     </Create>
   );
 };
 
-export const ProductIcon = () => <InventoryIcon />;
+export const ListIcon = () => <GroupsIcon />;

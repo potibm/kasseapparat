@@ -80,6 +80,12 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 		apiRouter.DELETE("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteProductByID)
 		apiRouter.POST("/products", authMiddleware.MiddlewareFunc(), myhandler.CreateProduct)
 
+		apiRouter.GET("/lists", myhandler.GetLists)
+		apiRouter.GET("/lists/:id", myhandler.GetListByID)
+		apiRouter.PUT("/lists/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateListByID)
+		apiRouter.DELETE("/lists/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteListByID)
+		apiRouter.POST("/lists", authMiddleware.MiddlewareFunc(), myhandler.CreateList)
+
 		apiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
 		apiRouter.GET("/purchases", myhandler.GetPurchases)
 		apiRouter.GET("/purchases/:id", myhandler.GetPurchaseByID)

@@ -9,4 +9,6 @@ type Product struct {
 	Hidden	  bool    `gorm:"default:false" json:"hidden"`
 	Pos       int     `json:"pos"`
 	ApiExport bool    `gorm:"default:false" json:"apiExport"`
+	AssociatedListID	uint `json:"associatedListID"` 
+	AssociatedList 	*List `json:"associatedList"`
 }
