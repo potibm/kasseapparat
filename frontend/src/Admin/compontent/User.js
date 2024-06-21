@@ -23,16 +23,26 @@ import {
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
 
-export const UserList = () => {
+const ConditionalDeleteButton = (props) => {
   const { permissions } = usePermissions();
+  const { data: identity } = useGetIdentity();
+  const record = useRecordContext(props);
 
+  const isCurrentUser = record && record.id === identity.id;
+  if (permissions === "admin" && !isCurrentUser) {
+    return <DeleteButton {...props} />;
+  }
+  return null;
+};
+
+export const UserList = (props) => {
   return (
     <List sort={{ field: "id", order: "ASC" }}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="username" />
         <BooleanField source="admin" />
-        {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
+        <ConditionalDeleteButton />
       </Datagrid>
     </List>
   );
