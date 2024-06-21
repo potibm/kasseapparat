@@ -33,7 +33,7 @@ export const ProductList = () => {
         <NumberField source="pos" />
         <BooleanField source="wrapAfter" sortable={false} />
         <BooleanField source="hidden" sortable={false} />
-        <TextField source="associatedList.name" sortable={false} /> 
+        <TextField source="associatedList.name" sortable={false} />
         {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
       </Datagrid>
     </List>

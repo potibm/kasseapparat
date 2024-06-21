@@ -17,7 +17,6 @@ import {
   Toolbar,
 } from "react-admin";
 import GroupsIcon from "@mui/icons-material/Groups";
-import { useConfig } from "../../provider/ConfigProvider";
 
 export const ListList = () => {
   const { permissions } = usePermissions();

@@ -27,7 +27,7 @@ const AdminPanel = () => (
       create={ProductCreate}
       icon={ProductIcon}
     />
-     <Resource
+    <Resource
       name="lists"
       list={ListList}
       edit={ListEdit}

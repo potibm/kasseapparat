@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -49,8 +47,11 @@ type ListRequest struct {
 }
 
 func (handler *Handler) UpdateListByID(c *gin.Context) {
-	user, _ := c.Get(middleware.IdentityKey)
-	userObj, _ := user.(*models.User)
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	list, err := handler.repo.GetListByID(id)
@@ -67,7 +68,7 @@ func (handler *Handler) UpdateListByID(c *gin.Context) {
 
 	list.Name = listRequest.Name
 	list.TypeCode = listRequest.TypeCode
-	list.UpdatedByID = &userObj.ID
+	list.UpdatedByID = &executingUserObj.ID
 
 	list, err = handler.repo.UpdateListByID(id, *list)
 	if err != nil {
@@ -79,7 +80,11 @@ func (handler *Handler) UpdateListByID(c *gin.Context) {
 }
 
 func (handler *Handler) CreateList(c *gin.Context) {
-	userObj := handler.GetUserFromContext(c)
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
 
 	var list models.List
 	var listRequest ListRequest
@@ -90,7 +95,7 @@ func (handler *Handler) CreateList(c *gin.Context) {
 
 	list.Name = listRequest.Name
 	list.TypeCode = listRequest.TypeCode
-	list.CreatedByID = &userObj.ID
+	list.CreatedByID = &executingUserObj.ID
 
 	product, err := handler.repo.CreateList(list)
 	if err != nil {
@@ -102,28 +107,25 @@ func (handler *Handler) CreateList(c *gin.Context) {
 }
 
 func (handler *Handler) DeleteListByID(c *gin.Context) {
-	log.Println("lets go")
-	userObj := handler.GetUserFromContext(c)
-	log.Println(userObj)
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	log.Println(id)
 	list, err := handler.repo.GetListByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	log.Println(list)
-	log.Println(userObj)
-	if userObj.Admin {
-		log.Println("user is admin")
-	}
-	if !userObj.Admin {
+	
+	if !executingUserObj.Admin {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 
-	handler.repo.DeleteList(*list, userObj)
+	handler.repo.DeleteList(*list, *executingUserObj)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
