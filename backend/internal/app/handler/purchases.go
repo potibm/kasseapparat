@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -25,20 +24,25 @@ func (handler *Handler) OptionsPurchases(c *gin.Context) {
 }
 
 func (handler *Handler) DeletePurchase(c *gin.Context) {
-	user, _ := c.Get(middleware.IdentityKey)
-	userObj, _ := user.(*models.User)
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	handler.repo.DeletePurchaseByID(id, *userObj)
+	handler.repo.DeletePurchaseByID(id, *executingUserObj)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Purchase deleted"})
 }
 
 func (handler *Handler) PostPurchases(c *gin.Context) {
-
-	user, _ := c.Get(middleware.IdentityKey)
-	userObj, _ := user.(*models.User)
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
 
 	var purchase models.Purchase
 
@@ -68,7 +72,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			TotalPrice: calculatedPurchaseItemPrice,
 		}
 		purchase.PurchaseItems = append(purchase.PurchaseItems, purchaseItem)
-		purchase.CreatedByID = &userObj.ID
+		purchase.CreatedByID = &executingUserObj.ID
 	}
 	// check that total price is correct
 	if calculatedTotalPrice != purchaseRequest.TotalPrice {
@@ -78,7 +82,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 	purchase.TotalPrice = calculatedTotalPrice
 
-	purchase, err := handler.repo.StorePurchases(purchase)
+	purchase, err = handler.repo.StorePurchases(purchase)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error", "message": err.Error()})
 		return

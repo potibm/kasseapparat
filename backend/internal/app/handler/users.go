@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -123,14 +125,21 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, product)
 }
 
-func (handler *Handler) DeleteUserByID(c *gin.Context) {
+func (handler *Handler) DeleteUserByID(c *gin.Context) { 
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
+	
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if !user.Admin {
+	// only admins are allowed to delete users, and not themselves
+	if !executingUserObj.Admin || executingUserObj.ID == user.ID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
@@ -138,4 +147,16 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 	handler.repo.DeleteUser(*user)
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (handler *Handler) getUserFromContext(c *gin.Context) (*models.User, error) {
+	user, _ := c.Get(middleware.IdentityKey)
+	sparseUserObjFromJwt, _ := user.(*models.User)
+	
+	userObj, err := handler.repo.GetUserByID(int(sparseUserObjFromJwt.ID))
+	if err != nil {
+		return nil, errors.New("User not found")
+	}
+
+	return userObj, nil
 }

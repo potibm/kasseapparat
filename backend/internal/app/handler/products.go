@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -69,8 +68,11 @@ type ProductRequest struct {
 }
 
 func (handler *Handler) UpdateProductByID(c *gin.Context) {
-	user, _ := c.Get(middleware.IdentityKey)
-	userObj, _ := user.(*models.User)
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByID(id)
@@ -91,7 +93,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
 	product.Hidden = productRequest.Hidden
-	product.UpdatedByID = &userObj.ID
+	product.UpdatedByID = &executingUserObj.ID
 
 	product, err = handler.repo.UpdateProductByID(id, *product)
 	if err != nil {
@@ -103,8 +105,11 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 }
 
 func (handler *Handler) CreateProduct(c *gin.Context) {
-	user, _ := c.Get(middleware.IdentityKey)
-	userObj, _ := user.(*models.User)
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
 
 	var product models.Product
 	var productRequest ProductRequest
@@ -119,9 +124,9 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
 	product.Hidden = productRequest.Hidden
-	product.CreatedByID = &userObj.ID
+	product.CreatedByID = &executingUserObj.ID
 
-	product, err := handler.repo.CreateProduct(product)
+	product, err = handler.repo.CreateProduct(product)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -131,8 +136,11 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 }
 
 func (handler *Handler) DeleteProductByID(c *gin.Context) {
-	user, _ := c.Get(middleware.IdentityKey)
-	userObj, _ := user.(*models.User)
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByID(id)
@@ -140,12 +148,12 @@ func (handler *Handler) DeleteProductByID(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if !userObj.Admin {
+	if !executingUserObj.Admin {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 
-	handler.repo.DeleteProduct(*product, *userObj)
+	handler.repo.DeleteProduct(*product, *executingUserObj)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
