@@ -1,6 +1,6 @@
 // Admin.js
 import React from "react";
-import { Admin, Resource } from "react-admin";
+import { Admin, Layout, Menu, Resource } from "react-admin";
 import dataProvider from "./dataProvider";
 import authProvider from "./authProvider";
 import {
@@ -11,11 +11,12 @@ import {
 } from "./compontent/Product";
 import { PurchaseList, PurchaseShow } from "./compontent/Purchase";
 import { UserCreate, UserEdit, UserIcon, UserList } from "./compontent/User";
-
 import { ListCreate, ListEdit, ListIcon, ListList } from "./compontent/List";
+import PropTypes from "prop-types";
 
 const AdminPanel = () => (
   <Admin
+    layout={MyLayout}
     dataProvider={dataProvider}
     authProvider={authProvider}
     basename="/admin"
@@ -44,5 +45,27 @@ const AdminPanel = () => (
     />
   </Admin>
 );
+
+const MyMenu = () => (
+  <Menu>
+    <Menu.ResourceItem name="products" />
+
+    <div className="text-right mt-4 text-xs pr-1 font-bold tracking-wide border-b-2 border-b-pink-500 uppercase text-ellipsis">
+      Guestlist
+    </div>
+    <Menu.ResourceItem name="lists" />
+
+    <div className="text-right mt-4 text-xs pr-1 font-bold tracking-wide border-b-2 border-b-pink-500 uppercase text-ellipsis">
+      Admin
+    </div>
+    <Menu.ResourceItem name="users" />
+  </Menu>
+);
+
+const MyLayout = ({ children }) => <Layout menu={MyMenu}>{children}</Layout>;
+
+MyLayout.propTypes = {
+  children: PropTypes.object.isRequired,
+};
 
 export default AdminPanel;
