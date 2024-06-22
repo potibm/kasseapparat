@@ -11,29 +11,45 @@ import {
   SimpleForm,
   TextInput,
   Create,
-  BooleanField,
-  BooleanInput,
   SaveButton,
   Toolbar,
+  ReferenceInput,
+  SelectInput,
 } from "react-admin";
+import { Chip } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
+import PropTypes from "prop-types";
 
-export const ListList = () => {
+const QuickFilter = ({ label }) => {
+  return <Chip sx={{ marginBottom: 1 }} label={label} />;
+};
+
+QuickFilter.propTypes = {
+  label: PropTypes.string,
+};
+
+const ListGroupFilters = [
+  <ReferenceInput source="list" reference="lists" key="ID">
+    <SelectInput label="List" source="list" optionText="name" />
+  </ReferenceInput>,
+];
+
+export const ListGroupList = () => {
   const { permissions } = usePermissions();
 
   return (
-    <List sort={{ field: "id", order: "ASC" }}>
+    <List sort={{ field: "id", order: "ASC" }} filters={ListGroupFilters}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
-        <BooleanField source="typeCode" sortable={false} />
+        <TextField source="list.name" />
         {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
       </Datagrid>
     </List>
   );
 };
 
-export const ListEdit = () => {
+export const ListGroupEdit = () => {
   return (
     <Edit>
       <SimpleForm
@@ -45,22 +61,20 @@ export const ListEdit = () => {
       >
         <NumberInput disabled source="id" />
         <TextInput source="name" />
-        <BooleanInput source="typeCode" />
       </SimpleForm>
     </Edit>
   );
 };
 
-export const ListCreate = () => {
+export const ListGroupCreate = () => {
   return (
-    <Create title="Create new list">
+    <Create title="Create new List Group">
       <SimpleForm>
         <NumberInput disabled source="id" />
         <TextInput source="name" />
-        <BooleanInput source="typeCode" />
       </SimpleForm>
     </Create>
   );
 };
 
-export const ListIcon = () => <GroupsIcon />;
+export const ListGroupIcon = () => <GroupsIcon />;

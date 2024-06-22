@@ -12,6 +12,18 @@ import {
 import { PurchaseList, PurchaseShow } from "./compontent/Purchase";
 import { UserCreate, UserEdit, UserIcon, UserList } from "./compontent/User";
 import { ListCreate, ListEdit, ListIcon, ListList } from "./compontent/List";
+import {
+  ListEntryCreate,
+  ListEntryEdit,
+  ListEntryIcon,
+  ListEntryList,
+} from "./compontent/ListEntry";
+import {
+  ListGroupCreate,
+  ListGroupEdit,
+  ListGroupIcon,
+  ListGroupList,
+} from "./compontent/ListGroup";
 import PropTypes from "prop-types";
 
 const AdminPanel = () => (
@@ -35,6 +47,22 @@ const AdminPanel = () => (
       create={ListCreate}
       icon={ListIcon}
     />
+    <Resource
+      name="listEntries"
+      primaryText="List Entries"
+      list={ListEntryList}
+      edit={ListEntryEdit}
+      create={ListEntryCreate}
+      icon={ListEntryIcon}
+    />
+    <Resource
+      name="listGroups"
+      primaryText="List Groups"
+      list={ListGroupList}
+      edit={ListGroupEdit}
+      create={ListGroupCreate}
+      icon={ListGroupIcon}
+    />
     <Resource name="purchases" list={PurchaseList} show={PurchaseShow} />
     <Resource
       name="users"
@@ -54,6 +82,8 @@ const MyMenu = () => (
       Guestlist
     </div>
     <Menu.ResourceItem name="lists" />
+    <Menu.ResourceItem name="listGroups" primaryText="List Groups" />
+    <Menu.ResourceItem name="listEntries" primaryText="List Entries" />
 
     <div className="text-right mt-4 text-xs pr-1 font-bold tracking-wide border-b-2 border-b-pink-500 uppercase text-ellipsis">
       Admin
