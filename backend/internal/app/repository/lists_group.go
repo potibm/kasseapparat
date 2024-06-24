@@ -6,7 +6,12 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-func (repo *Repository) GetListsGroups(limit int, offset int, sort string, order string, ids []int) ([]models.ListGroup, error) {
+type ListGroupFilters = struct {
+	ListID int;
+	IDs []int;
+}
+
+func (repo *Repository) GetListsGroups(limit int, offset int, sort string, order string, filters ListGroupFilters) ([]models.ListGroup, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -18,8 +23,12 @@ func (repo *Repository) GetListsGroups(limit int, offset int, sort string, order
 
 	query := repo.db.Preload("List").Order(sort + " " + order + ", Id ASC").Limit(limit).Offset(offset);
 
-	if (len(ids) > 0) {
-		query = query.Where("id IN ?", ids)
+	if filters.ListID != 0 {
+		query = query.Where("list_id = ?", filters.ListID)
+	}
+
+	if (len(filters.IDs) > 0) {
+		query = query.Where("id IN ?", filters.IDs)
 	}
 
 	var listGroups []models.ListGroup

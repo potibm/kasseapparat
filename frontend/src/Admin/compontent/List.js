@@ -15,6 +15,7 @@ import {
   BooleanInput,
   SaveButton,
   Toolbar,
+  required,
 } from "react-admin";
 import GroupsIcon from "@mui/icons-material/Groups";
 
@@ -44,7 +45,7 @@ export const ListEdit = () => {
         }
       >
         <NumberInput disabled source="id" />
-        <TextInput source="name" />
+        <TextInput source="name" validate={required()} />
         <BooleanInput source="typeCode" />
       </SimpleForm>
     </Edit>
@@ -56,7 +57,7 @@ export const ListCreate = () => {
     <Create title="Create new list">
       <SimpleForm>
         <NumberInput disabled source="id" />
-        <TextInput source="name" />
+        <TextInput source="name" validate={required()} />
         <BooleanInput source="typeCode" />
       </SimpleForm>
     </Create>

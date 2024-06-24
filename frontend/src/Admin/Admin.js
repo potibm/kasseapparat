@@ -77,6 +77,7 @@ const AdminPanel = () => (
 const MyMenu = () => (
   <Menu>
     <Menu.ResourceItem name="products" />
+    <Menu.ResourceItem name="purchases" />
 
     <div className="text-right mt-4 text-xs pr-1 font-bold tracking-wide border-b-2 border-b-pink-500 uppercase text-ellipsis">
       Guestlist

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/repository"
 )
 
 func (handler *Handler) GetListGroups(c *gin.Context) {
@@ -13,9 +14,11 @@ func (handler *Handler) GetListGroups(c *gin.Context) {
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "ASC")
-	ids := queryArrayInt(c, "id");
+	filters := repository.ListGroupFilters{}
+	filters.IDs = queryArrayInt(c, "id");
+	filters.ListID, _ = strconv.Atoi(c.DefaultQuery("list", "0"))
 	
-	lists, err := handler.repo.GetListsGroups(end-start, start, sort, order, ids)
+	lists, err := handler.repo.GetListsGroups(end-start, start, sort, order, filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

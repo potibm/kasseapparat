@@ -12,9 +12,10 @@ type ListEntryFilters = struct {
 	ListGroupId int;
 	Present bool;
 	NotPresent bool;
+	IDs []int;
 }
 
-func (repo *Repository) GetListEntries(limit int, offset int, sort string, order string, ids []int, filters ListEntryFilters) ([]models.ListEntry, error) {
+func (repo *Repository) GetListEntries(limit int, offset int, sort string, order string, filters ListEntryFilters) ([]models.ListEntry, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -27,8 +28,8 @@ func (repo *Repository) GetListEntries(limit int, offset int, sort string, order
 	var listEntries []models.ListEntry
 	query := repo.db.Joins("List").Joins("ListGroup").Order(sort + " " + order + ", list_entries.ID ASC").Limit(limit).Offset(offset);
 	
-	if (len(ids) > 0) {
-		query = query.Where("list_entries.ID IN ?", ids)
+	if (len(filters.IDs) > 0) {
+		query = query.Where("list_entries.ID IN ?", filters.IDs)
 	}
 
 	if filters.Query != "" {

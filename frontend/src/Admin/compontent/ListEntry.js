@@ -11,15 +11,17 @@ import {
   SimpleForm,
   TextInput,
   Create,
-  BooleanInput,
   SaveButton,
   SearchInput,
   Toolbar,
   ReferenceInput,
   SelectInput,
+  required,
+  BooleanField,
+  useRecordContext,
 } from "react-admin";
 import { Chip } from "@mui/material";
-import GroupsIcon from "@mui/icons-material/Groups";
+import PersonIcon from "@mui/icons-material/Person";
 import PropTypes from "prop-types";
 
 const QuickFilter = ({ label }) => {
@@ -52,6 +54,19 @@ const ListEntryFilters = [
   />,
 ];
 
+const AttendedGuestsBooleanField = (props) => {
+  const record = useRecordContext();
+  if (!record) return null;
+  const hasAttendedGuests = record.attendedGuests > 0;
+
+  // Erstellen eines temporären Records, der dem BooleanField übergeben wird
+  const tempRecord = { ...record, hasAttendedGuests };
+
+  return (
+    <BooleanField {...props} source="hasAttendedGuests" record={tempRecord} />
+  );
+};
+
 export const ListEntryList = () => {
   const { permissions } = usePermissions();
 
@@ -62,7 +77,8 @@ export const ListEntryList = () => {
         <TextField source="name" />
         <TextField source="list.name" />
         <TextField source="listGroup.name" />
-        <NumberField source="additionalGuests" />
+        <NumberField source="additionalGuests" sortable={false} />
+        <AttendedGuestsBooleanField label="present" sortable={false} />
         {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
       </Datagrid>
     </List>
@@ -80,8 +96,24 @@ export const ListEntryEdit = () => {
         }
       >
         <NumberInput disabled source="id" />
-        <TextInput source="name" />
-        <BooleanInput source="typeCode" />
+        <ReferenceInput source="listId" reference="lists">
+          <SelectInput optionText="name" validate={required()} disabled />
+        </ReferenceInput>
+        <ReferenceInput source="listGroupId" reference="listGroups">
+          <SelectInput optionText="name" defaultValue={null} disabled />
+        </ReferenceInput>
+        <TextInput source="name" validate={required()} />
+        <TextInput source="code" helperText="The entrance code on the ticket" />
+        <NumberInput
+          source="additionalGuests"
+          min={0}
+          helperText="Number of additional guests (read as +1)"
+        />
+        <NumberInput
+          source="attendedGuests"
+          min={0}
+          helperText="Number of visitors that are present"
+        />
       </SimpleForm>
     </Edit>
   );
@@ -92,10 +124,23 @@ export const ListEntryCreate = () => {
     <Create title="Create new List Entry">
       <SimpleForm>
         <NumberInput disabled source="id" />
-        <TextInput source="name" />
+        <ReferenceInput source="listId" reference="lists">
+          <SelectInput optionText="name" validate={required()} />
+        </ReferenceInput>
+        <ReferenceInput source="listGroupId" reference="listGroups">
+          <SelectInput optionText="name" defaultValue={null} />
+        </ReferenceInput>
+        <TextInput source="name" validate={required()} />
+        <TextInput source="code" helperText="The entrance code on the ticket" />
+        <NumberInput
+          source="additionalGuests"
+          min={0}
+          defaultValue={0}
+          helperText="Number of additional guests (read as +1)"
+        />
       </SimpleForm>
     </Create>
   );
 };
 
-export const ListEntryIcon = () => <GroupsIcon />;
+export const ListEntryIcon = () => <PersonIcon />;

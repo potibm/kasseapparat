@@ -17,6 +17,7 @@ import {
   Toolbar,
   ReferenceInput,
   SelectInput,
+  required,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
@@ -30,7 +31,7 @@ export const ProductList = () => {
     <List sort={{ field: "pos", order: "ASC" }}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
-        <TextField source="name" />
+        <TextField source="name" validate={required()} />
         <NumberField source="price" locales={locale} options={currency} />
         <NumberField source="pos" />
         <BooleanField source="wrapAfter" sortable={false} />
@@ -53,7 +54,7 @@ export const ProductEdit = () => {
         }
       >
         <NumberInput disabled source="id" />
-        <TextInput source="name" />
+        <TextInput source="name" validate={required()} />
         <NumberInput source="price" min={0} />
         <NumberInput source="pos" />
         <BooleanInput source="wrapAfter" />
@@ -72,7 +73,7 @@ export const ProductCreate = () => {
     <Create title="Create new product">
       <SimpleForm>
         <NumberInput disabled source="id" />
-        <TextInput source="name" />
+        <TextInput source="name" validate={required()} />
         <NumberInput source="price" min={0} />
         <NumberInput source="pos" />
         <BooleanInput source="wrapAfter" />

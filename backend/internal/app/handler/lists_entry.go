@@ -14,16 +14,15 @@ func (handler *Handler) GetListEntries(c *gin.Context) {
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "ASC")
-	ids := queryArrayInt(c, "id");
-	ListEntryFilter := repository.ListEntryFilters{}
-	ListEntryFilter.Query = c.DefaultQuery("q", "")
-	ListEntryFilter.ListID, _ = strconv.Atoi(c.DefaultQuery("list", "0"))
-	ListEntryFilter.ListGroupId, _ = strconv.Atoi(c.DefaultQuery("listGroup", "0"))
-	ListEntryFilter.Present = c.DefaultQuery("isPresent", "false") == "true"
-	ListEntryFilter.NotPresent = c.DefaultQuery("isNotPresent", "false") == "true"
+	filters := repository.ListEntryFilters{}
+	filters.Query = c.DefaultQuery("q", "")
+	filters.ListID, _ = strconv.Atoi(c.DefaultQuery("list", "0"))
+	filters.ListGroupId, _ = strconv.Atoi(c.DefaultQuery("listGroup", "0"))
+	filters.Present = c.DefaultQuery("isPresent", "false") == "true"
+	filters.NotPresent = c.DefaultQuery("isNotPresent", "false") == "true"
+	filters.IDs = queryArrayInt(c, "id");
 
-	
-	lists, err := handler.repo.GetListEntries(end-start, start, sort, order, ids, ListEntryFilter)
+	lists, err := handler.repo.GetListEntries(end-start, start, sort, order, filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -81,7 +80,11 @@ func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 
 	listEntry.Name = listEntryRequest.Name
 	listEntry.Code = listEntryRequest.Code
-	listEntry.ListGroupID = listEntryRequest.ListGroupID
+	if listEntryRequest.ListGroupID > 0{
+		listEntry.ListGroupID = &listEntryRequest.ListGroupID
+	} else {
+		listEntry.ListGroupID = nil
+	}
 	listEntry.AdditionalGuests = listEntryRequest.AdditionalGuests
 	listEntry.AttendedGuests = listEntryRequest.AttendedGuests
 	listEntry.UpdatedByID = &executingUserObj.ID
@@ -112,7 +115,11 @@ func (handler *Handler) CreateListEntry(c *gin.Context) {
 	listEntry.Name = listEntryRequest.Name
 	listEntry.ListID = listEntryRequest.ListID
 	listEntry.Code = listEntryRequest.Code
-	listEntry.ListGroupID = listEntryRequest.ListGroupID
+	if listEntryRequest.ListGroupID > 0{
+		listEntry.ListGroupID = &listEntryRequest.ListGroupID
+	} else {
+		listEntry.ListGroupID = nil
+	}
 	listEntry.AdditionalGuests = listEntryRequest.AdditionalGuests
 	listEntry.AttendedGuests = listEntryRequest.AttendedGuests
 	listEntry.CreatedByID = &executingUserObj.ID

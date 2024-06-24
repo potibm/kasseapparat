@@ -81,7 +81,7 @@ const UserEditForm = (props) => {
         }
       >
         <NumberInput disabled source="id" />
-        <TextInput source="username" />
+        <TextInput source="username" validate={required()} />
         {(permissions === "admin" || isCurrentUser) && (
           <>
             <PasswordInput source="password" validate={[minLength(8)]} />
@@ -111,7 +111,7 @@ export const UserCreate = () => {
     <Create title="Create new user">
       <SimpleForm>
         <NumberInput disabled source="id" />
-        <TextInput source="username" />
+        <TextInput source="username" validate={required()} />
         <PasswordInput
           source="password"
           validate={[required(), minLength(8)]}

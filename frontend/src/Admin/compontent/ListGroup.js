@@ -15,9 +15,10 @@ import {
   Toolbar,
   ReferenceInput,
   SelectInput,
+  required,
 } from "react-admin";
 import { Chip } from "@mui/material";
-import GroupsIcon from "@mui/icons-material/Groups";
+import GroupIcon from "@mui/icons-material/Group";
 import PropTypes from "prop-types";
 
 const QuickFilter = ({ label }) => {
@@ -60,7 +61,10 @@ export const ListGroupEdit = () => {
         }
       >
         <NumberInput disabled source="id" />
-        <TextInput source="name" />
+        <TextInput source="name" validate={required()} />
+        <ReferenceInput source="listId" reference="lists">
+          <SelectInput optionText="name" disabled />
+        </ReferenceInput>
       </SimpleForm>
     </Edit>
   );
@@ -71,10 +75,13 @@ export const ListGroupCreate = () => {
     <Create title="Create new List Group">
       <SimpleForm>
         <NumberInput disabled source="id" />
-        <TextInput source="name" />
+        <TextInput source="name" validate={required()} />
+        <ReferenceInput source="listId" reference="lists">
+          <SelectInput optionText="name" validate={required()} />
+        </ReferenceInput>
       </SimpleForm>
     </Create>
   );
 };
 
-export const ListGroupIcon = () => <GroupsIcon />;
+export const ListGroupIcon = () => <GroupIcon />;

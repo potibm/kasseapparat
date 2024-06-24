@@ -94,7 +94,11 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
 	product.Hidden = productRequest.Hidden
-	product.AssociatedListID = productRequest.AssociatedListId
+	if productRequest.AssociatedListId > 0 {
+		product.AssociatedListID = &productRequest.AssociatedListId
+	} else {
+		product.AssociatedListID = nil
+	}
 	product.UpdatedByID = &executingUserObj.ID
 
 	product, err = handler.repo.UpdateProductByID(id, *product)
@@ -126,7 +130,11 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
 	product.Hidden = productRequest.Hidden
-	product.AssociatedListID = productRequest.AssociatedListId
+	if productRequest.AssociatedListId > 0 {
+		product.AssociatedListID = &productRequest.AssociatedListId
+	} else {
+		product.AssociatedListID = nil
+	}
 	product.CreatedByID = &executingUserObj.ID
 
 	product, err = handler.repo.CreateProduct(product)
