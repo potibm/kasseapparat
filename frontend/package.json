@@ -49,7 +49,7 @@
     "@eslint/create-config": "eslint/create-config",
     "@eslint/eslintrc": "^3.0.2",
     "@eslint/js": "^9.0.0",
-    "@testing-library/dom": "^10.1.0",
+    "@testing-library/dom": "^10.2.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.0.0",
