@@ -92,12 +92,6 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 		apiRouter.DELETE("/listEntries/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteListEntryByID)
 		apiRouter.POST("/listEntries", authMiddleware.MiddlewareFunc(), myhandler.CreateListEntry)
 
-		apiRouter.GET("/listGroups", myhandler.GetListGroups)
-		apiRouter.GET("/listGroups/:id", myhandler.GetListGroupByID)
-		apiRouter.PUT("/listGroups/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateListGroupByID)
-		apiRouter.DELETE("/listGroups/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteListGroupByID)
-		apiRouter.POST("/listGroups", authMiddleware.MiddlewareFunc(), myhandler.CreateListGroup)
-
 		apiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
 		apiRouter.GET("/purchases", myhandler.GetPurchases)
 		apiRouter.GET("/purchases/:id", myhandler.GetPurchaseByID)

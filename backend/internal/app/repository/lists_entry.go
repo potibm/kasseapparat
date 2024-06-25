@@ -26,7 +26,7 @@ func (repo *Repository) GetListEntries(limit int, offset int, sort string, order
 	}
 
 	var listEntries []models.ListEntry
-	query := repo.db.Joins("List").Joins("ListGroup").Order(sort + " " + order + ", list_entries.ID ASC").Limit(limit).Offset(offset);
+	query := repo.db.Joins("List").Order(sort + " " + order + ", list_entries.ID ASC").Limit(limit).Offset(offset);
 	
 	if (len(filters.IDs) > 0) {
 		query = query.Where("list_entries.ID IN ?", filters.IDs)
@@ -37,9 +37,6 @@ func (repo *Repository) GetListEntries(limit int, offset int, sort string, order
 	}
 	if filters.ListID != 0 {
 		query = query.Where("list_entries.list_id = ?", filters.ListID)
-	}
-	if filters.ListGroupId != 0 {
-		query = query.Where("list_entries.list_group_id = ?", filters.ListGroupId)
 	}
 	if filters.Present {
 		query = query.Where("list_entries.attended_guests > 0")
@@ -63,8 +60,6 @@ func getListsEntriesValidFieldName(input string) (string, error) {
 		return "list_entries.Name", nil
 	case "list.name":
 		return "List.Name", nil
-	case "listGroup.name":
-		return "ListGroup.Name", nil
 	}
 
 	return "", errors.New("Invalid field name")
@@ -94,9 +89,6 @@ func (repo *Repository) UpdateListEntryByID(id int, updatedListEntry models.List
 	}
 
 	updatedListEntry.ID = listEntry.ID
-	if updatedListEntry.ListGroup != nil {
-		updatedListEntry.ListID = updatedListEntry.ListGroup.ListID
-	}
 
 	if err := repo.db.Save(&updatedListEntry).Error; err != nil {
 		return nil, errors.New("Failed to update List Entry")
@@ -108,9 +100,6 @@ func (repo *Repository) UpdateListEntryByID(id int, updatedListEntry models.List
 func (repo *Repository) CreateListEntry(listEntry models.ListEntry) (models.ListEntry, error) {
 	result := repo.db.Create(&listEntry)
 
-	if listEntry.ListGroup != nil {
-		listEntry.ListID = listEntry.ListGroup.ListID
-	}
 
 	return listEntry, result.Error
 }

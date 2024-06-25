@@ -15,28 +15,27 @@ import {
   BooleanInput,
   SaveButton,
   Toolbar,
-  ReferenceInput,
-  SelectInput,
   required,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
 
 export const ProductList = () => {
-  const { permissions } = usePermissions();
   const currency = useConfig().currencyOptions;
   const locale = useConfig().Locale;
+
+  const { permissions, isLoading: permissionsLoading } = usePermissions();
+  if (permissionsLoading) return <>Loading...</>;
 
   return (
     <List sort={{ field: "pos", order: "ASC" }}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
-        <TextField source="name" validate={required()} />
+        <TextField source="name" />
         <NumberField source="price" locales={locale} options={currency} />
         <NumberField source="pos" />
         <BooleanField source="wrapAfter" sortable={false} />
         <BooleanField source="hidden" sortable={false} />
-        <TextField source="associatedList.name" sortable={false} />
         {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
       </Datagrid>
     </List>
@@ -60,9 +59,6 @@ export const ProductEdit = () => {
         <BooleanInput source="wrapAfter" />
         <BooleanInput source="hidden" />
         <BooleanInput source="apiExport" />
-        <ReferenceInput source="associatedListId" reference="lists">
-          <SelectInput optionText="name" />
-        </ReferenceInput>
       </SimpleForm>
     </Edit>
   );
@@ -79,9 +75,6 @@ export const ProductCreate = () => {
         <BooleanInput source="wrapAfter" />
         <BooleanInput source="hidden" />
         <BooleanInput source="apiExport" />
-        <ReferenceInput source="associatedListId" reference="lists">
-          <SelectInput optionText="name" />
-        </ReferenceInput>
       </SimpleForm>
     </Create>
   );

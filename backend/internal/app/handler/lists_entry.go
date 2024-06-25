@@ -13,7 +13,6 @@ type ListEntryCreateRequest struct {
 	ListID 		uint  `form:"listId"  json:"listId" binding:"required"`
 	Name      string  `form:"name"  json:"name" binding:"required"`
 	Code      string  `form:"code"  json:"code"`
-	ListGroupID 	uint  `form:"listGroupId"  json:"listGroupId"`
 	AdditionalGuests uint `form:"additionalGuests"  json:"additionalGuests"`
 	AttendedGuests uint `form:"attendedGuests"  json:"attendedGuests"`
 }
@@ -22,7 +21,6 @@ type ListEntryUpdateRequest struct {
 	ListID 		uint  `form:"listId"  json:"listId"`
 	Name      string  `form:"name"  json:"name" binding:"required"`
 	Code      string  `form:"code"  json:"code"`
-	ListGroupID 	uint  `form:"listGroupId"  json:"listGroupId"`
 	AdditionalGuests uint `form:"additionalGuests"  json:"additionalGuests"`
 	AttendedGuests uint `form:"attendedGuests"  json:"attendedGuests"`
 }
@@ -35,7 +33,6 @@ func (handler *Handler) GetListEntries(c *gin.Context) {
 	filters := repository.ListEntryFilters{}
 	filters.Query = c.DefaultQuery("q", "")
 	filters.ListID, _ = strconv.Atoi(c.DefaultQuery("list", "0"))
-	filters.ListGroupId, _ = strconv.Atoi(c.DefaultQuery("listGroup", "0"))
 	filters.Present = c.DefaultQuery("isPresent", "false") == "true"
 	filters.NotPresent = c.DefaultQuery("isNotPresent", "false") == "true"
 	filters.IDs = queryArrayInt(c, "id");
@@ -94,11 +91,6 @@ func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 	} else {
 		listEntry.Code = nil
 	}
-	if listEntryRequest.ListGroupID > 0{
-		listEntry.ListGroupID = &listEntryRequest.ListGroupID
-	} else {
-		listEntry.ListGroupID = nil
-	}
 	if listEntryRequest.ListID > 0{
 		listEntry.ListID = listEntryRequest.ListID
 	} 
@@ -136,11 +128,6 @@ func (handler *Handler) CreateListEntry(c *gin.Context) {
 	} else {
 		listEntry.Code = nil
 	}
-	if listEntryRequest.ListGroupID > 0{
-		listEntry.ListGroupID = &listEntryRequest.ListGroupID
-	} else {
-		listEntry.ListGroupID = nil
-	}
 	listEntry.AdditionalGuests = listEntryRequest.AdditionalGuests
 	listEntry.AttendedGuests = listEntryRequest.AttendedGuests
 	listEntry.CreatedByID = &executingUserObj.ID
@@ -168,7 +155,7 @@ func (handler *Handler) DeleteListEntryByID(c *gin.Context) {
 		return
 	}
 	
-	if !executingUserObj.Admin {
+	if !executingUserObj.Admin && *listEntry.CreatedByID != executingUserObj.ID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}

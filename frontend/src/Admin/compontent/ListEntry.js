@@ -19,6 +19,7 @@ import {
   required,
   BooleanField,
   useRecordContext,
+  useGetIdentity,
 } from "react-admin";
 import { Chip } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
@@ -34,11 +35,8 @@ QuickFilter.propTypes = {
 
 const ListEntryFilters = [
   <SearchInput source="q" alwaysOn key="ID" />,
-  <ReferenceInput source="list" reference="lists" key="ID">
+  <ReferenceInput source="list" reference="lists" key="id">
     <SelectInput label="List" source="list" optionText="name" />
-  </ReferenceInput>,
-  <ReferenceInput source="listGroup" reference="listGroups" key="ID">
-    <SelectInput label="List Group" source="listGroup" optionText="name" />
   </ReferenceInput>,
   <QuickFilter
     source="isPresent"
@@ -67,19 +65,31 @@ const AttendedGuestsBooleanField = (props) => {
   );
 };
 
-export const ListEntryList = () => {
-  const { permissions } = usePermissions();
+const ConditionalDeleteButton = (props) => {
+  const record = useRecordContext(props);
+  const { permissions, isLoading: permissionsLoading } = usePermissions();
+  const { data: identity, isLoading: identityLoading } = useGetIdentity();
+  if (permissionsLoading || identityLoading) return <>Loading...</>;
 
+  const currentUserId = identity.id;
+  const createdByCurrentUser = record && record.createdById === currentUserId;
+
+  if (permissions === "admin" || createdByCurrentUser) {
+    return <DeleteButton {...props} />;
+  }
+  return null;
+};
+
+export const ListEntryList = (props) => {
   return (
     <List sort={{ field: "id", order: "ASC" }} filters={ListEntryFilters}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
         <TextField source="list.name" />
-        <TextField source="listGroup.name" />
         <NumberField source="additionalGuests" sortable={false} />
         <AttendedGuestsBooleanField label="present" sortable={false} />
-        {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
+        <ConditionalDeleteButton mutationMode="pessimistic" />
       </Datagrid>
     </List>
   );
@@ -98,9 +108,6 @@ export const ListEntryEdit = () => {
         <NumberInput disabled source="id" />
         <ReferenceInput source="listId" reference="lists">
           <SelectInput optionText="name" validate={required()} disabled />
-        </ReferenceInput>
-        <ReferenceInput source="listGroupId" reference="listGroups">
-          <SelectInput optionText="name" defaultValue={null} disabled />
         </ReferenceInput>
         <TextInput source="name" validate={required()} />
         <TextInput source="code" helperText="The entrance code on the ticket" />
@@ -126,9 +133,6 @@ export const ListEntryCreate = () => {
         <NumberInput disabled source="id" />
         <ReferenceInput source="listId" reference="lists">
           <SelectInput optionText="name" validate={required()} />
-        </ReferenceInput>
-        <ReferenceInput source="listGroupId" reference="listGroups">
-          <SelectInput optionText="name" defaultValue={null} />
         </ReferenceInput>
         <TextInput source="name" validate={required()} />
         <TextInput source="code" helperText="The entrance code on the ticket" />

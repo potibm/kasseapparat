@@ -58,9 +58,9 @@ export const UserEdit = () => {
 
 const UserEditForm = (props) => {
   const record = useRecordContext(props);
-  const { isLoading, permissions } = usePermissions();
+  const { data: permissions, isLoading: permissionsLoading } = usePermissions();
   const { data: identity, isLoading: identityLoading } = useGetIdentity();
-  if (isLoading || identityLoading) return <>Loading...</>;
+  if (permissionsLoading || identityLoading) return <>Loading...</>;
 
   const equalToPassword = (value, allValues) => {
     if (value !== allValues.password) {

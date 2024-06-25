@@ -16,7 +16,7 @@ func (repo *Repository) GetLists(limit int, offset int, sort string, order strin
 		return nil, err
 	}
 
-	query := repo.db.Order(sort + " " + order + ", Id ASC").Limit(limit).Offset(offset);
+	query := repo.db.Preload("Product").Order(sort + " " + order + ", Id ASC").Limit(limit).Offset(offset);
 
 	if (len(ids) > 0) {
 		query = query.Where("id IN ?", ids)
@@ -66,6 +66,7 @@ func (repo *Repository) UpdateListByID(id int, updatedList models.List) (*models
 
 	list.Name = updatedList.Name
 	list.TypeCode = updatedList.TypeCode
+	list.ProductID = updatedList.ProductID
 	list.UpdatedByID = updatedList.UpdatedByID
 
 	if err := repo.db.Save(&list).Error; err != nil {
@@ -83,6 +84,8 @@ func (repo *Repository) CreateList(list models.List) (models.List, error) {
 
 func (repo *Repository) DeleteList(list models.List, deletedBy models.User) {
 	repo.db.Model(&models.List{}).Where("id = ?", list.ID).Update("DeletedByID", deletedBy.ID)
+	repo.db.Model(&models.ListEntry{}).Where("list_id = ?", list.ID).Update("DeletedByID", deletedBy.ID)
 
+	repo.db.Delete(&models.ListEntry{}, "list_id = ?", list.ID)
 	repo.db.Delete(&list)
 }

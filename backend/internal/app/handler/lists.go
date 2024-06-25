@@ -8,6 +8,19 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
+
+type ListCreateRequest struct {
+	Name      string  `form:"name"  json:"name" binding:"required"`
+	TypeCode bool    `form:"typeCode" json:"typeCode" binding:"boolean"`
+	ProductID uint  `form:"productId" json:"productId" binding:"required"`
+}
+
+type ListUpdateRequest struct {
+	Name      string  `form:"name"  json:"name" binding:"required"`
+	TypeCode bool    `form:"typeCode" json:"typeCode" binding:"boolean"`
+	ProductID uint  `form:"productId" json:"productId" binding:"required"`
+}
+
 func (handler *Handler) GetLists(c *gin.Context) {
 	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
@@ -42,10 +55,6 @@ func (handler *Handler) GetListByID(c *gin.Context) {
 	c.JSON(http.StatusOK, list)
 }
 
-type ListRequest struct {
-	Name      string  `form:"name"  json:"name" binding:"required"`
-	TypeCode bool    `form:"typeCode" json:"typeCode" binding:"boolean"`
-}
 
 func (handler *Handler) UpdateListByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
@@ -61,7 +70,7 @@ func (handler *Handler) UpdateListByID(c *gin.Context) {
 		return
 	}
 
-	var listRequest ListRequest
+	var listRequest ListUpdateRequest
 	if err := c.ShouldBind(&listRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": err.Error()})
 		return
@@ -69,6 +78,9 @@ func (handler *Handler) UpdateListByID(c *gin.Context) {
 
 	list.Name = listRequest.Name
 	list.TypeCode = listRequest.TypeCode
+	if listRequest.ProductID > 0 {
+		list.ProductID = listRequest.ProductID
+	}
 	list.UpdatedByID = &executingUserObj.ID
 
 	list, err = handler.repo.UpdateListByID(id, *list)
@@ -88,7 +100,7 @@ func (handler *Handler) CreateList(c *gin.Context) {
 	}
 
 	var list models.List
-	var listRequest ListRequest
+	var listRequest ListCreateRequest
 	if c.ShouldBind(&listRequest) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
@@ -96,6 +108,7 @@ func (handler *Handler) CreateList(c *gin.Context) {
 
 	list.Name = listRequest.Name
 	list.TypeCode = listRequest.TypeCode
+	list.ProductID = listRequest.ProductID
 	list.CreatedByID = &executingUserObj.ID
 
 	product, err := handler.repo.CreateList(list)
@@ -121,7 +134,7 @@ func (handler *Handler) DeleteListByID(c *gin.Context) {
 		return
 	}
 	
-	if !executingUserObj.Admin {
+	if !executingUserObj.Admin && *list.CreatedByID != executingUserObj.ID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
