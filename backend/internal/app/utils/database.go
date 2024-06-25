@@ -78,7 +78,8 @@ func SeedDatabase(db *gorm.DB) {
 	}
 
 	for i := 1; i < 20; i++ { 
-		db.Create(&models.ListEntry{Name: gofakeit.Name(), Code: gofakeit.Password(false, true, true, false, false, 9), ListID: deineTicketsList.ID, AdditionalGuests: 0})
+		code :=gofakeit.Password(false, true, true, false, false, 9);
+		db.Create(&models.ListEntry{Name: gofakeit.Name(), Code: &code, ListID: deineTicketsList.ID, AdditionalGuests: 0})
 	}
 
 	for i := 1; i < 8; i++ { 

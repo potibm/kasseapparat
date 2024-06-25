@@ -9,6 +9,24 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/repository"
 )
 
+type ListEntryCreateRequest struct {
+	ListID 		uint  `form:"listId"  json:"listId" binding:"required"`
+	Name      string  `form:"name"  json:"name" binding:"required"`
+	Code      string  `form:"code"  json:"code"`
+	ListGroupID 	uint  `form:"listGroupId"  json:"listGroupId"`
+	AdditionalGuests uint `form:"additionalGuests"  json:"additionalGuests"`
+	AttendedGuests uint `form:"attendedGuests"  json:"attendedGuests"`
+}
+
+type ListEntryUpdateRequest struct {
+	ListID 		uint  `form:"listId"  json:"listId"`
+	Name      string  `form:"name"  json:"name" binding:"required"`
+	Code      string  `form:"code"  json:"code"`
+	ListGroupID 	uint  `form:"listGroupId"  json:"listGroupId"`
+	AdditionalGuests uint `form:"additionalGuests"  json:"additionalGuests"`
+	AttendedGuests uint `form:"attendedGuests"  json:"attendedGuests"`
+}
+
 func (handler *Handler) GetListEntries(c *gin.Context) {
 	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
@@ -49,14 +67,6 @@ func (handler *Handler) GetListEntryByID(c *gin.Context) {
 	c.JSON(http.StatusOK, list)
 }
 
-type ListEntryRequest struct {
-	ListID 		uint  `form:"listId"  json:"listId" binding:"required"`
-	Name      string  `form:"name"  json:"name" binding:"required"`
-	Code      string  `form:"code"  json:"code"`
-	ListGroupID 	uint  `form:"listGroupId"  json:"listGroupId"`
-	AdditionalGuests uint `form:"additionalGuests"  json:"additionalGuests"`
-	AttendedGuests uint `form:"attendedGuests"  json:"attendedGuests"`
-}
 
 func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
@@ -72,19 +82,26 @@ func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 		return
 	}
 
-	var listEntryRequest ListEntryRequest
+	var listEntryRequest ListEntryUpdateRequest
 	if err := c.ShouldBind(&listEntryRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": err.Error()})
 		return
 	}
 
 	listEntry.Name = listEntryRequest.Name
-	listEntry.Code = listEntryRequest.Code
+	if listEntryRequest.Code != "" {
+		listEntry.Code = &listEntryRequest.Code
+	} else {
+		listEntry.Code = nil
+	}
 	if listEntryRequest.ListGroupID > 0{
 		listEntry.ListGroupID = &listEntryRequest.ListGroupID
 	} else {
 		listEntry.ListGroupID = nil
 	}
+	if listEntryRequest.ListID > 0{
+		listEntry.ListID = listEntryRequest.ListID
+	} 
 	listEntry.AdditionalGuests = listEntryRequest.AdditionalGuests
 	listEntry.AttendedGuests = listEntryRequest.AttendedGuests
 	listEntry.UpdatedByID = &executingUserObj.ID
@@ -106,7 +123,7 @@ func (handler *Handler) CreateListEntry(c *gin.Context) {
 	}
 
 	var listEntry models.ListEntry
-	var listEntryRequest ListEntryRequest
+	var listEntryRequest ListEntryCreateRequest
 	if c.ShouldBind(&listEntryRequest) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
@@ -114,7 +131,11 @@ func (handler *Handler) CreateListEntry(c *gin.Context) {
 
 	listEntry.Name = listEntryRequest.Name
 	listEntry.ListID = listEntryRequest.ListID
-	listEntry.Code = listEntryRequest.Code
+	if listEntryRequest.Code != "" {
+		listEntry.Code = &listEntryRequest.Code
+	} else {
+		listEntry.Code = nil
+	}
 	if listEntryRequest.ListGroupID > 0{
 		listEntry.ListGroupID = &listEntryRequest.ListGroupID
 	} else {
