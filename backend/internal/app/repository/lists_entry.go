@@ -76,6 +76,7 @@ func (repo *Repository) GetTotalListEntries() (int64, error) {
 func (repo *Repository) GetUnattendedListEntriesByProductID(productId int, q string) (models.ListEntrySummarySlice, error) {
 	var listEntries models.ListEntrySummarySlice
 	query := repo.db.Model(&models.ListEntry{}).
+	Select("list_entries.id, list_entries.name, list_entries.code, lists.name AS list_name, list_entries.additional_guests").
 	Joins("JOIN lists ON list_entries.list_id = lists.id").
     Joins("JOIN products ON lists.product_id = products.id").
     Where("products.id = ? AND list_entries.attended_guests = ?", productId, 0).
@@ -84,7 +85,7 @@ func (repo *Repository) GetUnattendedListEntriesByProductID(productId int, q str
 		query = query.Where("list_entries.name LIKE ? OR code = ?", "%" + q + "%", q)
 	}
 
-	if err := query.Find(&listEntries).Error; err != nil {
+	if err := query.Scan(&listEntries).Error; err != nil {
 		return nil, errors.New("List Entries not found")
 	}
 

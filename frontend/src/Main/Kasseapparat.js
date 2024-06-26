@@ -58,8 +58,8 @@ function Kasseapparat() {
     getHistory();
   }, []); // Empty dependency array to run only once on mount
 
-  const handleAddToCart = (product) => {
-    setCart(addToCart(cart, product));
+  const handleAddToCart = (product, count = 1, listItem = null) => {
+    setCart(addToCart(cart, product, count, listItem));
   };
 
   const handleRemoveFromCart = (product) => {

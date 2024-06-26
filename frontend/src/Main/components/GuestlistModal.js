@@ -1,26 +1,36 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FloatingLabel, Modal, Table } from "flowbite-react";
+import { FloatingLabel, Modal, Table, Avatar, Button } from "flowbite-react";
 import { fetchGuestListByProductId } from "../hooks/Api";
+import { HiShoppingCart } from "react-icons/hi";
 import PropTypes from "prop-types";
 import SidebarKeyboard from "./SidebarKeyboard";
 
 const API_HOST = process.env.REACT_APP_API_HOST;
 
-const GuestlistModal = ({ isOpen, onClose, product }) => {
+const GuestlistModal = ({ isOpen, onClose, product, addToCart }) => {
   const [guestListEntries, setGuestListEntries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handleAddToCart = (listEntry, additionalGuests) => {
+    addToCart(product, additionalGuests + 1, listEntry);
+    onClose(); // close the modal
+  };
 
   const fetchGuestEntries = useCallback(
     async (query = "") => {
       try {
-        const response = await fetchGuestListByProductId(
+        let response = await fetchGuestListByProductId(
           API_HOST,
           product.id,
           searchQuery,
         );
+        if (response === null) {
+          response = [];
+        }
         setGuestListEntries(response);
       } catch (error) {
         console.error("Error fetching guest entries:", error);
+        setGuestListEntries([]);
       }
     },
     [product.id, searchQuery],
@@ -53,15 +63,8 @@ const GuestlistModal = ({ isOpen, onClose, product }) => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            <SidebarKeyboard
-              term={searchQuery}
-              setTerm={setSearchQuery}
-              /*              addToSearchTerm={handleAddToSearchTerm}
-              removeFromSearchTerm={handleRemoveFromSearchTerm}
-              removeSearchTerm={handleRemoveSearchTerm} */
-            />
+            <SidebarKeyboard term={searchQuery} setTerm={setSearchQuery} />
           </div>
-          {/* Scrollable Content */}
           <div
             className="w-3/4 p-4 overflow-y-auto"
             style={{ maxHeight: "calc(100vh - 10rem)" }}
@@ -70,20 +73,57 @@ const GuestlistModal = ({ isOpen, onClose, product }) => {
             <div className="space-y-4">
               <Table hoverable>
                 <Table.Head>
-                  <Table.HeadCell>Id</Table.HeadCell>
+                  <Table.HeadCell></Table.HeadCell>
                   <Table.HeadCell>Name</Table.HeadCell>
-                  <Table.HeadCell>List</Table.HeadCell>
-                  <Table.HeadCell>Code</Table.HeadCell>
+                  <Table.HeadCell>Action</Table.HeadCell>
                 </Table.Head>
                 <Table.Body className="divide-y">
                   {guestListEntries.map((entry) => (
                     <Table.Row key={entry.id}>
-                      <Table.Cell>{entry.id}</Table.Cell>
                       <Table.Cell>
-                        {highlightText(entry.name, searchQuery)}
+                        {!entry.code && (
+                          <Avatar
+                            placeholderInitials={getInitials(entry.name)}
+                            size="md"
+                            rounded
+                          />
+                        )}
                       </Table.Cell>
-                      <Table.Cell>{entry.list}</Table.Cell>
-                      <Table.Cell>{entry.code}</Table.Cell>
+                      <Table.Cell className="">
+                        {!entry.code && (
+                          <>
+                            <div className="text-xl">
+                              {highlightText(entry.name, searchQuery)}
+                            </div>
+                            <div className="text-sm">{entry.listName}</div>
+                          </>
+                        )}
+                        {entry.code !== "" && (
+                          <div className="text-3xl font-mono">
+                            {highlightText(entry.code, searchQuery)}
+                          </div>
+                        )}
+                      </Table.Cell>
+                      <Table.Cell className="flex gap-5">
+                        <Button
+                          className="float"
+                          onClick={() => handleAddToCart(entry, 0)}
+                        >
+                          <HiShoppingCart />
+                        </Button>
+                        {Array.from(
+                          { length: entry.additionalGuests },
+                          (_, i) => (
+                            <Button
+                              key={i}
+                              className="float"
+                              onClick={() => handleAddToCart(entry, i + 1)}
+                            >
+                              +{i + 1}
+                            </Button>
+                          ),
+                        )}
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>
@@ -100,6 +140,7 @@ GuestlistModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   product: PropTypes.object.isRequired,
+  addToCart: PropTypes.func.isRequired,
 };
 
 const highlightText = (text, highlight) => {
@@ -123,56 +164,19 @@ const highlightText = (text, highlight) => {
   );
 };
 
+const getInitials = (name) => {
+  // Split the name by spaces
+  const words = name.split(" ");
+  let initials = "";
+
+  // Iterate through each word and append the first letter to initials
+  words.forEach((word) => {
+    if (word.length > 0) {
+      initials += word[0].toUpperCase();
+    }
+  });
+
+  return initials;
+};
+
 export default GuestlistModal;
-
-/*
-
-                <Table hoverable>
-                  <Table.Head>
-                    <Table.HeadCell>Id</Table.HeadCell>
-                    <Table.HeadCell>Name</Table.HeadCell>
-                    <Table.HeadCell>&nbsp;</Table.HeadCell>
-                    <Table.HeadCell>List</Table.HeadCell>
-                    <Table.HeadCell>Code</Table.HeadCell>
-
-                    <Table.HeadCell>List</Table.HeadCell>
-                  </Table.Head>
-                  <Table.Body className="divide-y">
-                    <Table.Row>
-                      <Table.Cell>1</Table.Cell>
-                      <Table.Cell>Hans Hase</Table.Cell>
-                      <Table.Cell>+1</Table.Cell>
-                      <Table.Cell>GuestList Poti</Table.Cell>
-                      <Table.Cell>123456</Table.Cell>
-                    </Table.Row>
-                  </Table.Body>
-                </Table>
-
-                <Avatar placeholderInitials="RR" size="md" rounded>
-                  <div className="space-y-1 font-medium dark:text-white">
-                    <div>Hans Hase</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Joined in August 2014</div>
-                  </div>
-                </Avatar>
-
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-             
-            </div>
-
-            */

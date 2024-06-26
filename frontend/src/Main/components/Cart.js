@@ -44,6 +44,14 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
             <Table.Row key={cartElement.id}>
               <Table.Cell className="whitespace-nowrap">
                 {cartElement.name}
+                {
+                  // iterate over cartElement.listItems and display them
+                  cartElement.listItems.map((listItem) => (
+                    <div key={listItem.id} className="text-xs text-gray-500">
+                      {listItem.name}
+                    </div>
+                  ))
+                }
               </Table.Cell>
               <Table.Cell className="text-right">
                 {cartElement.quantity}

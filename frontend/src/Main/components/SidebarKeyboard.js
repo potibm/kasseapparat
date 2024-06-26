@@ -8,7 +8,7 @@ const SidebarKeyboardKey = ({ children, onClick, ...props }) => {
     <Button
       onClick={onClick}
       size="md"
-      className="min-w-12 max-w-12 mr-3.5 mb-3.5 me-0"
+      className="min-w-12 max-w-12"
       {...props}
     >
       {children}
@@ -39,7 +39,7 @@ const SidebarKeyboard = ({ term, setTerm }) => {
   );
 
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-5">
       {alphabet.map((letter) => (
         <SidebarKeyboardKey
           key={letter}

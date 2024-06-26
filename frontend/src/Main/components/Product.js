@@ -44,6 +44,7 @@ function Product({ product, addToCart }) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         product={product}
+        addToCart={addToCart}
       />
     </>
   );
