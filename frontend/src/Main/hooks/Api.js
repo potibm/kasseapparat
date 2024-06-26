@@ -14,6 +14,20 @@ export const fetchProducts = async (apiHost) => {
   });
 };
 
+export const fetchGuestListByProductId = async (apiHost, productId, query) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/api/v1/products/${productId}/listEntries?q=${query}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => resolve(data))
+      .catch((error) => reject(error));
+  });
+};
+
 export const storePurchase = async (apiHost, jwtToken, cart) => {
   return new Promise((resolve, reject) => {
     fetch(`${apiHost}/api/v1/purchases`, {

@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -163,4 +164,21 @@ func (handler *Handler) DeleteListEntryByID(c *gin.Context) {
 	handler.repo.DeleteListEntry(*listEntry, *executingUserObj)
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (handler *Handler) GetListEntriesByProductID(c *gin.Context) {
+	productID, _ := strconv.Atoi(c.Param("id"))
+	query := strings.TrimSpace(c.DefaultQuery("q", ""))
+
+	listEntries, err := handler.repo.GetUnattendedListEntriesByProductID(productID, query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if query != "" {
+		listEntries.SortByQuery(query)
+	}
+		
+	c.JSON(http.StatusOK, listEntries)
 }

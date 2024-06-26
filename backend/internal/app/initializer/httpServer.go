@@ -76,6 +76,7 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 	{
 		apiRouter.GET("/products", myhandler.GetProducts)
 		apiRouter.GET("/products/:id", myhandler.GetProductByID)
+		apiRouter.GET("/products/:id/listEntries", myhandler.GetListEntriesByProductID)
 		apiRouter.PUT("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateProductByID)
 		apiRouter.DELETE("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteProductByID)
 		apiRouter.POST("/products", authMiddleware.MiddlewareFunc(), myhandler.CreateProduct)
