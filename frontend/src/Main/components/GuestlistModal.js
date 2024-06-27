@@ -155,6 +155,9 @@ GuestlistModal.propTypes = {
 };
 
 const highlightText = (text, highlight) => {
+  if (!text) {
+    return "";
+  }
   if (!highlight.trim()) {
     return text;
   }
