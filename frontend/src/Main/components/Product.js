@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import GuestlistModal from "./GuestlistModal";
 
-function Product({ product, addToCart }) {
+function Product({ product, addToCart, hasListItem }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddToCart = () => {
@@ -45,6 +45,7 @@ function Product({ product, addToCart }) {
         onClose={() => setIsModalOpen(false)}
         product={product}
         addToCart={addToCart}
+        hasListItem={hasListItem}
       />
     </>
   );
@@ -53,6 +54,7 @@ function Product({ product, addToCart }) {
 Product.propTypes = {
   product: PropTypes.object.isRequired,
   addToCart: PropTypes.func.isRequired,
+  hasListItem: PropTypes.func.isRequired,
 };
 
 export default Product;

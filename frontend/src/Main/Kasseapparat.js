@@ -14,6 +14,7 @@ import {
   removeFromCart,
   removeAllFromCart,
   checkoutCart,
+  containsListItemID,
 } from "./hooks/Cart";
 import { Link } from "react-router-dom";
 import { Button } from "flowbite-react";
@@ -64,6 +65,10 @@ function Kasseapparat() {
 
   const handleRemoveFromCart = (product) => {
     setCart(removeFromCart(cart, product));
+  };
+
+  const hasListItem = (listItemID) => {
+    return containsListItemID(cart, listItemID);
   };
 
   const handleRemoveAllFromCart = () => {
@@ -126,7 +131,11 @@ function Kasseapparat() {
     <div className="App p-2">
       <div className="w-full overflow-hidden">
         <div className="border w-9/12">
-          <ProductList products={products} addToCart={handleAddToCart} />
+          <ProductList
+            products={products}
+            addToCart={handleAddToCart}
+            hasListItem={hasListItem}
+          />
         </div>
         <div className="fixed inset-y-0 right-0 w-3/12 border bg-slate-200 p-2">
           <Cart

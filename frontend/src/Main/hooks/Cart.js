@@ -44,6 +44,13 @@ export const addToCart = (cart, product, count = 1, listItem = null) => {
   }
 };
 
+export const containsListItemID = (cart, listItemID) => {
+  // check if the cart (withing the list of products in the cart) contains a list item with the given ID
+  return cart.some((product) =>
+    product.listItems.some((listItem) => listItem.id === listItemID),
+  );
+};
+
 export const removeFromCart = (cart, product) => {
   const existingProductIndex = cart.findIndex((item) => item.id === product.id);
 

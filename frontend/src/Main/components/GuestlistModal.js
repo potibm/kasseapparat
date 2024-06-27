@@ -7,7 +7,13 @@ import SidebarKeyboard from "./SidebarKeyboard";
 
 const API_HOST = process.env.REACT_APP_API_HOST;
 
-const GuestlistModal = ({ isOpen, onClose, product, addToCart }) => {
+const GuestlistModal = ({
+  isOpen,
+  onClose,
+  product,
+  addToCart,
+  hasListItem,
+}) => {
   const [guestListEntries, setGuestListEntries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -107,6 +113,7 @@ const GuestlistModal = ({ isOpen, onClose, product, addToCart }) => {
                       <Table.Cell className="flex gap-5">
                         <Button
                           className="float"
+                          {...(hasListItem(entry.id) ? { disabled: true } : {})}
                           onClick={() => handleAddToCart(entry, 0)}
                         >
                           <HiShoppingCart />
@@ -117,6 +124,9 @@ const GuestlistModal = ({ isOpen, onClose, product, addToCart }) => {
                             <Button
                               key={i}
                               className="float"
+                              {...(hasListItem(entry.id)
+                                ? { disabled: true }
+                                : {})}
                               onClick={() => handleAddToCart(entry, i + 1)}
                             >
                               +{i + 1}
@@ -141,6 +151,7 @@ GuestlistModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   product: PropTypes.object.isRequired,
   addToCart: PropTypes.func.isRequired,
+  hasListItem: PropTypes.func.isRequired,
 };
 
 const highlightText = (text, highlight) => {
