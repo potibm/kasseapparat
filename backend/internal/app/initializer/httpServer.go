@@ -76,9 +76,22 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 	{
 		apiRouter.GET("/products", myhandler.GetProducts)
 		apiRouter.GET("/products/:id", myhandler.GetProductByID)
+		apiRouter.GET("/products/:id/listEntries", myhandler.GetListEntriesByProductID)
 		apiRouter.PUT("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateProductByID)
 		apiRouter.DELETE("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteProductByID)
 		apiRouter.POST("/products", authMiddleware.MiddlewareFunc(), myhandler.CreateProduct)
+
+		apiRouter.GET("/lists", myhandler.GetLists)
+		apiRouter.GET("/lists/:id", myhandler.GetListByID)
+		apiRouter.PUT("/lists/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateListByID)
+		apiRouter.DELETE("/lists/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteListByID)
+		apiRouter.POST("/lists", authMiddleware.MiddlewareFunc(), myhandler.CreateList)
+
+		apiRouter.GET("/listEntries", myhandler.GetListEntries)
+		apiRouter.GET("/listEntries/:id", myhandler.GetListEntryByID)
+		apiRouter.PUT("/listEntries/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateListEntryByID)
+		apiRouter.DELETE("/listEntries/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteListEntryByID)
+		apiRouter.POST("/listEntries", authMiddleware.MiddlewareFunc(), myhandler.CreateListEntry)
 
 		apiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
 		apiRouter.GET("/purchases", myhandler.GetPurchases)

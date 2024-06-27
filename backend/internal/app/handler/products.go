@@ -8,14 +8,25 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
+type ProductRequest struct {
+	Name      string  `form:"name"  json:"name" binding:"required"`
+	Price     float64 `form:"price" json:"price" binding:"numeric"`
+	WrapAfter bool    `form:"wrapAfter" json:"wrapAfter"`
+	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
+	ApiExport bool    `form:"apiExport" json:"apiExport" binding:"boolean"`
+	Hidden	  bool    `form:"hidden" json:"hidden" binding:"boolean"`
+}
+
+
 func (handler *Handler) GetProducts(c *gin.Context) {
 	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "pos")
 	order := c.DefaultQuery("_order", "ASC")
 	filterHidden := c.DefaultQuery("_filter_hidden", "false")
+	ids := queryArrayInt(c, "id");
 
-	products, err := handler.repo.GetProducts(end-start, start, sort, order)
+	products, err := handler.repo.GetProducts(end-start, start, sort, order, ids)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -56,15 +67,6 @@ func (handler *Handler) GetProductByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, product)
-}
-
-type ProductRequest struct {
-	Name      string  `form:"name"  json:"name" binding:"required"`
-	Price     float64 `form:"price" json:"price" binding:"numeric"`
-	WrapAfter bool    `form:"wrapAfter" json:"wrapAfter"`
-	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
-	ApiExport bool    `form:"apiExport" json:"apiExport" binding:"boolean"`
-	Hidden	  bool    `form:"hidden" json:"hidden" binding:"boolean"`
 }
 
 func (handler *Handler) UpdateProductByID(c *gin.Context) {

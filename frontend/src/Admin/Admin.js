@@ -1,6 +1,6 @@
 // Admin.js
 import React from "react";
-import { Admin, Resource } from "react-admin";
+import { Admin, Layout, Menu, Resource } from "react-admin";
 import dataProvider from "./dataProvider";
 import authProvider from "./authProvider";
 import {
@@ -11,9 +11,18 @@ import {
 } from "./compontent/Product";
 import { PurchaseList, PurchaseShow } from "./compontent/Purchase";
 import { UserCreate, UserEdit, UserIcon, UserList } from "./compontent/User";
+import { ListCreate, ListEdit, ListIcon, ListList } from "./compontent/List";
+import {
+  ListEntryCreate,
+  ListEntryEdit,
+  ListEntryIcon,
+  ListEntryList,
+} from "./compontent/ListEntry";
+import PropTypes from "prop-types";
 
 const AdminPanel = () => (
   <Admin
+    layout={MyLayout}
     dataProvider={dataProvider}
     authProvider={authProvider}
     basename="/admin"
@@ -25,6 +34,21 @@ const AdminPanel = () => (
       create={ProductCreate}
       icon={ProductIcon}
     />
+    <Resource
+      name="lists"
+      list={ListList}
+      edit={ListEdit}
+      create={ListCreate}
+      icon={ListIcon}
+    />
+    <Resource
+      name="listEntries"
+      list={ListEntryList}
+      edit={ListEntryEdit}
+      create={ListEntryCreate}
+      icon={ListEntryIcon}
+      options={{ label: "List Entries" }}
+    />
     <Resource name="purchases" list={PurchaseList} show={PurchaseShow} />
     <Resource
       name="users"
@@ -35,5 +59,29 @@ const AdminPanel = () => (
     />
   </Admin>
 );
+
+const MyMenu = () => (
+  <Menu>
+    <Menu.ResourceItem name="products" />
+    <Menu.ResourceItem name="purchases" />
+
+    <div className="text-right mt-4 text-xs pr-1 font-bold tracking-wide border-b-2 border-b-pink-500 uppercase text-ellipsis">
+      Guestlist
+    </div>
+    <Menu.ResourceItem name="lists" />
+    <Menu.ResourceItem name="listEntries" primaryText="List Entries" />
+
+    <div className="text-right mt-4 text-xs pr-1 font-bold tracking-wide border-b-2 border-b-pink-500 uppercase text-ellipsis">
+      Admin
+    </div>
+    <Menu.ResourceItem name="users" />
+  </Menu>
+);
+
+const MyLayout = ({ children }) => <Layout menu={MyMenu}>{children}</Layout>;
+
+MyLayout.propTypes = {
+  children: PropTypes.object.isRequired,
+};
 
 export default AdminPanel;

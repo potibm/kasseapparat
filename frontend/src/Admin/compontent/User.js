@@ -58,9 +58,9 @@ export const UserEdit = () => {
 
 const UserEditForm = (props) => {
   const record = useRecordContext(props);
-  const { isLoading, permissions } = usePermissions();
+  const { data: permissions, isLoading: permissionsLoading } = usePermissions();
   const { data: identity, isLoading: identityLoading } = useGetIdentity();
-  if (isLoading || identityLoading) return <>Loading...</>;
+  if (permissionsLoading || identityLoading) return <>Loading...</>;
 
   const equalToPassword = (value, allValues) => {
     if (value !== allValues.password) {
@@ -81,7 +81,7 @@ const UserEditForm = (props) => {
         }
       >
         <NumberInput disabled source="id" />
-        <TextInput source="username" />
+        <TextInput source="username" validate={required()} />
         {(permissions === "admin" || isCurrentUser) && (
           <>
             <PasswordInput source="password" validate={[minLength(8)]} />
@@ -111,7 +111,7 @@ export const UserCreate = () => {
     <Create title="Create new user">
       <SimpleForm>
         <NumberInput disabled source="id" />
-        <TextInput source="username" />
+        <TextInput source="username" validate={required()} />
         <PasswordInput
           source="password"
           validate={[required(), minLength(8)]}

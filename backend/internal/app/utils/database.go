@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -25,24 +26,30 @@ func ConnectToLocalDatabase() *gorm.DB {
 }
 
 func PurgeDatabase(db *gorm.DB) {
-	err := db.Migrator().DropTable(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{})
+	err := db.Migrator().DropTable(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.List{}, models.ListEntry{})
 	if err != nil {
 		panic(err)
 	}
 }
 
 func MigrateDatabase(db *gorm.DB) {
-	err := db.AutoMigrate(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{})
+	err := db.AutoMigrate(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.List{}, models.ListEntry{})
 	if err != nil {
 		panic(err)
 	}
 }
 
 func SeedDatabase(db *gorm.DB) {
+	_ = gofakeit.Seed(0)
+
 	// Your own implementation of seeding the database
 	db.Create(&models.Product{Name: "🎟️ Regular", Price: 40, Pos: 1, ApiExport: true})
-	db.Create(&models.Product{Name: "🎟️ Reduced", Price: 20, Pos: 2, ApiExport: true})
-	db.Create(&models.Product{Name: "🎟️ Free", Price: 0, Pos: 3, WrapAfter: true, ApiExport: true})
+	reducedProduct := &models.Product{Name: "🎟️ Reduced", Price: 20, Pos: 2, ApiExport: true}
+	db.Create(reducedProduct)
+	freeProduct := &models.Product{Name: "🎟️ Free", Price: 0, Pos: 3, ApiExport: true}
+	db.Create(freeProduct)
+	prepaidProduct := &models.Product{Name: "🎟️ Prepaid", Price: 0, Pos: 4, WrapAfter: true, ApiExport: true}
+	db.Create(prepaidProduct)
 	db.Create(&models.Product{Name: "👕 T-Shirt Male S", Price: 20, Pos: 10})
 	db.Create(&models.Product{Name: "👕 T-Shirt Male M", Price: 20, Pos: 11})
 	db.Create(&models.Product{Name: "👕 T-Shirt Male L", Price: 20, Pos: 12})
@@ -54,4 +61,33 @@ func SeedDatabase(db *gorm.DB) {
 	db.Create(&models.Product{Name: "☕ Coffee Mug", Price: 1, Pos: 30})
 	db.Create(&models.User{Username: "admin", Password: "admin", Admin: true})
 	db.Create(&models.User{Username: "demo", Password: "demo", Admin: false})
+
+	reducedDkevList := &models.List{Name: "Reduces Digitale Kultur", ProductID: reducedProduct.ID}
+	db.Create(reducedDkevList)
+	for i := 1; i < 5; i++ { 
+		db.Create(&models.ListEntry{Name: gofakeit.Name(), ListID: reducedDkevList.ID, AdditionalGuests: 0})
+	}
+
+	reducedLdList := &models.List{Name: "Long Distance", ProductID: reducedProduct.ID}
+	db.Create(reducedLdList)
+	for i := 1; i < 15; i++ { 
+		db.Create(&models.ListEntry{Name: gofakeit.Name(), ListID: reducedLdList.ID, AdditionalGuests: 0})
+	}
+
+	deineTicketsList := &models.List{Name: "Deine Tickets", TypeCode: true, ProductID: prepaidProduct.ID}
+	db.Create(deineTicketsList)
+	for i := 1; i < 20; i++ { 
+		code :=gofakeit.Password(false, true, true, false, false, 9);
+		db.Create(&models.ListEntry{Name: gofakeit.Name(), Code: &code, ListID: deineTicketsList.ID, AdditionalGuests: 0})
+	}
+
+	for i := 1; i < 8; i++ { 
+		userGuestList := &models.List{Name: "Guestlist " + gofakeit.FirstName(), ProductID: freeProduct.ID}
+		db.Create(userGuestList)
+
+		for j := 0; j < gofakeit.Number(1, 10); j++ {
+
+			db.Create(&models.ListEntry{Name: gofakeit.Name(), ListID: userGuestList.ID, AdditionalGuests: uint(gofakeit.Number(0, 2))})
+		}
+	}	
 }

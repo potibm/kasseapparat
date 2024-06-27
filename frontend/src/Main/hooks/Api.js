@@ -14,8 +14,28 @@ export const fetchProducts = async (apiHost) => {
   });
 };
 
+export const fetchGuestListByProductId = async (apiHost, productId, query) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/api/v1/products/${productId}/listEntries?q=${query}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => resolve(data))
+      .catch((error) => reject(error));
+  });
+};
+
 export const storePurchase = async (apiHost, jwtToken, cart) => {
   return new Promise((resolve, reject) => {
+    // null the cart items list property to avoid unnecessary data transfer
+    const cartPayload = cart;
+    cartPayload.forEach((item) => {
+      item.lists = null;
+    });
+
     fetch(`${apiHost}/api/v1/purchases`, {
       method: "POST",
       headers: {
@@ -23,7 +43,7 @@ export const storePurchase = async (apiHost, jwtToken, cart) => {
         Authorization: `Bearer ${jwtToken}`,
       },
       body: JSON.stringify({
-        cart,
+        cart: cartPayload,
         totalPrice: cart.reduce((total, item) => total + item.totalPrice, 0),
       }), // : )
     })

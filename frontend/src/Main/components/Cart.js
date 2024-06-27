@@ -27,6 +27,14 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
     triggerFlash();
   }, [cart]);
 
+  const displayListItem = (listItem) => {
+    if (listItem.code !== null) {
+      return listItem.code;
+    } else {
+      return listItem.name;
+    }
+  };
+
   return (
     <div>
       <Table
@@ -44,14 +52,22 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
             <Table.Row key={cartElement.id}>
               <Table.Cell className="whitespace-nowrap">
                 {cartElement.name}
+                {
+                  // iterate over cartElement.listItems and display them
+                  cartElement.listItems.map((listItem) => (
+                    <div key={listItem.id} className="text-xs text-gray-500">
+                      {displayListItem(listItem)}
+                    </div>
+                  ))
+                }
               </Table.Cell>
-              <Table.Cell className="text-right">
+              <Table.Cell className="text-right align-top">
                 {cartElement.quantity}
               </Table.Cell>
-              <Table.Cell className="text-right">
+              <Table.Cell className="text-right align-top">
                 {currency.format(cartElement.totalPrice)}
               </Table.Cell>
-              <Table.Cell>
+              <Table.Cell className="align-top">
                 <Button
                   color="failure"
                   onClick={() => removeFromCart(cartElement)}

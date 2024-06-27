@@ -6,7 +6,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-func (repo *Repository) GetProducts(limit int, offset int, sort string, order string) ([]models.Product, error) {
+func (repo *Repository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -17,7 +17,14 @@ func (repo *Repository) GetProducts(limit int, offset int, sort string, order st
 	}
 
 	var products []models.Product
-	if err := repo.db.Order(sort + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset).Find(&products).Error; err != nil {
+
+	query := repo.db.Preload("Lists").Order(sort + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset);
+
+	if (len(ids) > 0) {
+		query = query.Where("Id IN ?", ids)
+	}
+
+	if err := query.Find(&products).Error; err != nil {
 		return nil, errors.New("Products not found")
 	}
 

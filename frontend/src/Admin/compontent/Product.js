@@ -15,14 +15,17 @@ import {
   BooleanInput,
   SaveButton,
   Toolbar,
+  required,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
 
 export const ProductList = () => {
-  const { permissions } = usePermissions();
   const currency = useConfig().currencyOptions;
   const locale = useConfig().Locale;
+
+  const { permissions, isLoading: permissionsLoading } = usePermissions();
+  if (permissionsLoading) return <>Loading...</>;
 
   return (
     <List sort={{ field: "pos", order: "ASC" }}>
@@ -50,7 +53,7 @@ export const ProductEdit = () => {
         }
       >
         <NumberInput disabled source="id" />
-        <TextInput source="name" />
+        <TextInput source="name" validate={required()} />
         <NumberInput source="price" min={0} />
         <NumberInput source="pos" />
         <BooleanInput source="wrapAfter" />
@@ -66,7 +69,7 @@ export const ProductCreate = () => {
     <Create title="Create new product">
       <SimpleForm>
         <NumberInput disabled source="id" />
-        <TextInput source="name" />
+        <TextInput source="name" validate={required()} />
         <NumberInput source="price" min={0} />
         <NumberInput source="pos" />
         <BooleanInput source="wrapAfter" />
