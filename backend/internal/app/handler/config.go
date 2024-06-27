@@ -12,9 +12,11 @@ type Config struct {
     SentryDSN 	string `json:"sentryDSN"`
     SentryTraceSampleRate       float64 `json:"sentryTraceSampleRate"`
     SentryReplaySessionSampleRate     float64 `json:"sentryReplaySessionSampleRate"`
-	 SentryReplayErrorSampleRate     float64 `json:"sentryReplayErrorSampleRate"`
-    Locale      string `json:"locale"`
+	SentryReplayErrorSampleRate     float64 `json:"sentryReplayErrorSampleRate"`
+    CurrencyLocale      string `json:"currencyLocale"`
     CurrencyCode    string `json:"currencyCode"`
+    DateLocale      string `json:"dateLocale"`
+    DateOptions    string `json:"dateOptions"`
     FractionDigitsMin int `json:"fractionDigitsMin"`
     FractionDigitsMax int `json:"fractionDigitsMax"`
 }
@@ -27,8 +29,10 @@ func (handler *Handler) GetConfig(c *gin.Context) {
         SentryTraceSampleRate:       getEnvAsFloat("SENTRY_TRACE_SAMPLE_RATE", 0.1),
         SentryReplaySessionSampleRate:    getEnvAsFloat("SENTRY_REPLAY_SESSION_SAMPLE_RATE", 0.1),
 		SentryReplayErrorSampleRate: getEnvAsFloat("SENTRY_REPLAY_ERROR_SAMPLE_RATE", 0.1),
-        Locale:     getEnv("LOCALE","dk-DK"),
+        CurrencyLocale:     getEnv("CURRENCY_LOCALE","dk-DK"),
         CurrencyCode:   getEnv("CURRENCY_CODE", "DKK"),
+        DateLocale:    getEnv("DATE_LOCALE", "dk-DK"),
+        DateOptions:  getEnv("DATE_OPTIONS", "{\"weekday\":\"long\",\"hour\":\"2-digit\",\"minute\":\"2-digit\"}"),
         FractionDigitsMin: getEnvAsInt("FRACTION_DIGITS_MIN", 0),
         FractionDigitsMax: getEnvAsInt("FRACTION_DIGITS_MAX", 2),
     }

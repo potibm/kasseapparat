@@ -27,9 +27,17 @@ const ConfigProvider = ({ children }) => {
         };
 
         data.currency = new Intl.NumberFormat(
-          data.Locale ?? "dk-DK",
+          data.currencyLocale ?? "dk-DK",
           data.currencyOptions,
         );
+
+        data.dateLocale = data.dateLocale ?? "en-US";
+        try {
+          data.dateOptions = JSON.parse(data.dateOptions ?? "{}");
+        } catch (error) {
+          console.error("Error parsing dateOptions:", error);
+          data.dateOptions = {};
+        }
 
         setConfig(data);
         setLoading(false);
