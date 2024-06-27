@@ -33,6 +33,12 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
   }, [history]);
 
   const currency = useConfig().currency;
+  const dateLocale = useConfig().dateLocale;
+  const dateOptions = useConfig().dateOptions;
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleString(dateLocale, dateOptions);
+  };
 
   return (
     <div className="mt-10">
@@ -76,11 +82,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
           {history.slice(0, 2).map((purchase) => (
             <Table.Row key={purchase.id}>
               <Table.Cell className="text-right">
-                {new Date(purchase.createdAt).toLocaleString("de-DE", {
-                  weekday: "long",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {formatDate(purchase.createdAt)}
               </Table.Cell>
               <Table.Cell className="text-right">
                 {currency.format(purchase.totalPrice)}
