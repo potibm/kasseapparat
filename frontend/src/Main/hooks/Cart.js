@@ -1,5 +1,9 @@
 // Cart.js
 export const addToCart = (cart, product, count = 1, listItem = null) => {
+  if (listItem) {
+    listItem.attendedGuests = count;
+  }
+
   const existingProductIndex = cart.findIndex((item) => item.id === product.id);
   if (existingProductIndex !== -1) {
     // if list item (identified by id) exists in the existing product listItems: do nothing and return
@@ -18,7 +22,7 @@ export const addToCart = (cart, product, count = 1, listItem = null) => {
       updatedCart[existingProductIndex].quantity *
       updatedCart[existingProductIndex].price;
 
-    // add list item to
+    // add list item to cart
     if (listItem) {
       updatedCart[existingProductIndex].listItems.push(listItem);
     }

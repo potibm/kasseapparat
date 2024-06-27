@@ -101,6 +101,15 @@ func (repo *Repository) GetListEntryByID(id int) (*models.ListEntry, error) {
 	return &listEntry, nil
 }
 
+func (repo *Repository) GetFullListEntryByID(id int) (*models.ListEntry, error) {
+	var listEntry models.ListEntry
+	if err := repo.db.Preload("List").Preload("List.Product").First(&listEntry, id).Error; err != nil {
+		return nil, errors.New("List Entry not found")
+	}
+
+	return &listEntry, nil
+}
+
 func (repo *Repository) UpdateListEntryByID(id int, updatedListEntry models.ListEntry) (*models.ListEntry, error) {
 	var listEntry models.ListEntry
 	if err := repo.db.First(&listEntry, id).Error; err != nil {

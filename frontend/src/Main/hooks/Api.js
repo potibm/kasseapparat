@@ -30,6 +30,12 @@ export const fetchGuestListByProductId = async (apiHost, productId, query) => {
 
 export const storePurchase = async (apiHost, jwtToken, cart) => {
   return new Promise((resolve, reject) => {
+    // null the cart items list property to avoid unnecessary data transfer
+    const cartPayload = cart;
+    cartPayload.forEach((item) => {
+      item.lists = null;
+    });
+
     fetch(`${apiHost}/api/v1/purchases`, {
       method: "POST",
       headers: {
@@ -37,7 +43,7 @@ export const storePurchase = async (apiHost, jwtToken, cart) => {
         Authorization: `Bearer ${jwtToken}`,
       },
       body: JSON.stringify({
-        cart,
+        cart: cartPayload,
         totalPrice: cart.reduce((total, item) => total + item.totalPrice, 0),
       }), // : )
     })
