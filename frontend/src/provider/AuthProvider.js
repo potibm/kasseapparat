@@ -39,32 +39,70 @@ const AuthProvider = ({ children }) => {
     }
   }, [auth]);
 
+  // ensure token validity is checked when app is focused or revived
   useEffect(() => {
-    const tokenRefreshInterval = setInterval(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleReviviedApp();
+      }
+    };
+
+    const handleReviviedApp = () => {
       if (auth.token == null) {
         return;
       }
-      refreshJwtToken(API_HOST, auth.token)
-        .then((response) => {
-          const newToken = response.token;
-          const newExpiryDate = response.expire;
-          const username = auth.username;
-          console.log("Refreshed token, Expiry: " + newExpiryDate);
 
-          setAuth({ token: newToken, expiryDate: newExpiryDate, username });
-        })
-        .catch((error) => {
-          console.error("Fehler beim Aktualisieren des Tokens: ", error);
-        });
-
-      // check if token is expired
       const now = new Date();
       const expiryDate = new Date(auth.expiryDate);
       if (now > expiryDate) {
-        // @todo notify user
         setAuth({ token: null, expiryDate: null, username: null });
         window.location = "/logout";
       }
+      // Refresh the token if it will expire in the next two minutes
+      if (expiryDate - now < 2 * 60 * 1000) {
+        performTokenRefresh();
+      }
+    };
+
+    window.addEventListener("focus", handleReviviedApp);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", handleReviviedApp);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  const performTokenRefresh = () => {
+    if (auth.token == null) {
+      return;
+    }
+    refreshJwtToken(API_HOST, auth.token)
+      .then((response) => {
+        const newToken = response.token;
+        const newExpiryDate = response.expire;
+        const username = auth.username;
+        console.log("Refreshed token, Expiry: " + newExpiryDate);
+
+        setAuth({ token: newToken, expiryDate: newExpiryDate, username });
+      })
+      .catch((error) => {
+        console.error("Error refreshing the token", error);
+      });
+
+    // check if token is expired
+    const now = new Date();
+    const expiryDate = new Date(auth.expiryDate);
+    if (now > expiryDate) {
+      // @todo notify user
+      setAuth({ token: null, expiryDate: null, username: null });
+      window.location = "/logout";
+    }
+  };
+
+  useEffect(() => {
+    const tokenRefreshInterval = setInterval(() => {
+      performTokenRefresh();
     }, 60 * 1000); // Refresh the token every 60 seconds
 
     return () => {
