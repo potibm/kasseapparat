@@ -3,7 +3,7 @@ BACKEND_DIR = backend
 DIST_DIR = dist
 BACKEND_BUILD_CMD = go build -o ../$(DIST_DIR)
 
-.PHONY: list run run-fe run-be deps-be run-tool linter linter-fix test test-fe test-be build docker-build docker-run
+.PHONY: list run run-fe run-be deps-be deps-fe run-tool linter linter-fix test test-fe test-be build docker-build docker-run
 
 list:
 	@LC_ALL=C $(MAKE) -pRrq -f $(firstword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/(^|\n)# Files(\n|$$)/,/(^|\n)# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$'
@@ -28,6 +28,10 @@ run-fe:
 deps-be:
 	cd $(BACKEND_DIR) && go get -u -t ./...
 	cd $(BACKEND_DIR) && go mod tidy
+
+deps-fe:
+	cd $(FRONTEND_DIR) && yarn upgrade
+	cd $(FRONTEND_DIR) && yarn outdated -d
 
 linter:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
