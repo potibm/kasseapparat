@@ -5,12 +5,12 @@
   "dependencies": {
     "@sentry/react": "^8.9.2",
     "animate.css": "^4.1.1",
-    "flowbite-react": "^0.9.0",
+    "flowbite-react": "^0.10.0",
     "jwt-decode": "^4.0.0",
     "prop-types": "^15.8.1",
-    "ra-data-json-server": "^4.16.17",
+    "ra-data-json-server": "^5.0.0",
     "react": "^18.2.0",
-    "react-admin": "^4.16.17",
+    "react-admin": "^5.0.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.0",
     "react-scripts": "5.0.1",
@@ -46,7 +46,7 @@
   "license": "MIT",
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@eslint/create-config": "eslint/create-config",
+    "@eslint/create-config": "^1.1.5",
     "@eslint/eslintrc": "^3.0.2",
     "@eslint/js": "^9.0.0",
     "@testing-library/dom": "^10.1.0",
@@ -63,6 +63,6 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-standard": "^5.0.0",
     "globals": "^15.0.0",
-    "prettier": "3.3.1"
+    "prettier": "^3.3.1"
   }
 }
