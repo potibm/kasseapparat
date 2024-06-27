@@ -21,7 +21,6 @@ const AuthProvider = ({ children }) => {
   });
 
   const performTokenRefresh = useCallback(() => {
-    console.log("refreshing token");
     if (auth.token == null) {
       return;
     }
@@ -77,8 +76,6 @@ const AuthProvider = ({ children }) => {
     };
 
     const handleReviviedApp = () => {
-      console.log("app revivied");
-
       if (auth.token == null) {
         return;
       }
