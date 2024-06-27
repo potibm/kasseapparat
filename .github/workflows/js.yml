@@ -22,7 +22,7 @@ jobs:
           cache: "yarn"
           cache-dependency-path: frontend/yarn.lock
       - name: Cache node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/yarn.lock') }}
@@ -66,7 +66,7 @@ jobs:
 
       - name: Upload coverage report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: frontend/coverage
