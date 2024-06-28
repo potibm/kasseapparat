@@ -1,6 +1,10 @@
 package models
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"strings"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -24,6 +28,13 @@ func (u *User) Role() string {
 		return "admin"
 	}	
 	return "user"
+}
+
+func (u *User) GravatarURL() string {
+	hasher := sha256.Sum256([]byte(strings.TrimSpace(u.Email)))
+    hash := hex.EncodeToString(hasher[:])
+	
+	return "https://www.gravatar.com/avatar/" + hash
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {

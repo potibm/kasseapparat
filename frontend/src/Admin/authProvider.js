@@ -1,7 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 
 const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
-
 const ADMIN_STORAGE_KEY = "admin";
 
 let updateTokenIntervalId = null;
@@ -40,10 +39,10 @@ const authProvider = {
       }
       const { token } = await response.json();
       const decodedToken = jwtDecode(token);
-      const { ID, username, role } = decodedToken;
+      const { ID, username, role, gravatarUrl } = decodedToken;
       const expire = new Date(decodedToken.exp * 1000);
 
-      setAdminData({ ID, token, username, role, expire });
+      setAdminData({ ID, token, username, role, expire, gravatarUrl });
     } catch (error) {
       console.error("Login error:", error);
       throw new Error("Network error. Please try again.");
@@ -139,13 +138,13 @@ const authProvider = {
       const adminData = getAdminData();
       const username = adminData ? adminData.username : null;
       const ID = adminData ? adminData.ID : null;
+      const avatar = adminData ? adminData.gravatarUrl : null;
       return username
-        ? Promise.resolve({ id: ID, fullName: username })
+        ? Promise.resolve({ id: ID, fullName: username, avatar })
         : Promise.reject(new Error("No username found."));
     } catch (error) {
       return Promise.reject(error);
     }
   },
 };
-
 export default authProvider;
