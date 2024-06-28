@@ -23,7 +23,6 @@ const ProductStatsCard = () => {
   const currency = useConfig().currency;
 
   useEffect(() => {
-    console.log("Fetching stats");
     // Fetch the stats
     dataProvider
       .getList("productStats", {

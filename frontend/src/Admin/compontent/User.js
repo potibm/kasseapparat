@@ -20,6 +20,8 @@ import {
   BooleanInput,
   required,
   minLength,
+  EmailField,
+  email,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
 
@@ -41,6 +43,7 @@ export const UserList = (props) => {
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="username" />
+        <EmailField source="email" />
         <BooleanField source="admin" />
         <ConditionalDeleteButton />
       </Datagrid>
@@ -82,6 +85,7 @@ const UserEditForm = (props) => {
       >
         <NumberInput disabled source="id" />
         <TextInput source="username" validate={required()} />
+        <TextInput source="email" validate={[required(), email()]} />
         {(permissions === "admin" || isCurrentUser) && (
           <>
             <PasswordInput source="password" validate={[minLength(8)]} />
@@ -112,11 +116,13 @@ export const UserCreate = () => {
       <SimpleForm>
         <NumberInput disabled source="id" />
         <TextInput source="username" validate={required()} />
+        <TextInput source="email" validate={[required(), email()]} />
         <PasswordInput
           source="password"
           validate={[required(), minLength(8)]}
         />
         <PasswordInput source="confirm_password" validate={equalToPassword} />
+        <BooleanField source="passwordChangeRequired" />
         <BooleanInput source="admin" disabled={permissions !== "admin"} />
       </SimpleForm>
     </Create>

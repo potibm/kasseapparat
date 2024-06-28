@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
@@ -75,6 +76,8 @@ func (repo *Repository) GetTotalUsers() (int64, error) {
 }
 
 func (repo *Repository) CreateUser(user models.User) (models.User, error) {
+	user.Username = strings.ToLower(user.Username)
+
 	result := repo.db.Create(&user)
 
 	return user, result.Error
@@ -91,8 +94,10 @@ func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models
 	}
 
 	// Update the product with the new values
-	user.Username = updatedUser.Username
+	user.Username = strings.ToLower(updatedUser.Username)
 	user.Admin = updatedUser.Admin
+	user.PasswordChangeRequired = updatedUser.PasswordChangeRequired
+	user.Email = updatedUser.Email
 	if updatedUser.Password != "" {
 		user.Password = updatedUser.Password
 	}

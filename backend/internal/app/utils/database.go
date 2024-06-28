@@ -42,7 +42,9 @@ func MigrateDatabase(db *gorm.DB) {
 func SeedDatabase(db *gorm.DB) {
 	_ = gofakeit.Seed(0)
 
-	// Your own implementation of seeding the database
+	db.Create(&models.User{Username: "admin", Email: "admin@example.com", Password: "admin", PasswordChangeRequired: false, Admin: true})
+	db.Create(&models.User{Username: "demo",  Email: "demo@example.com", Password: "demo", PasswordChangeRequired: false, Admin: false})
+
 	db.Create(&models.Product{Name: "🎟️ Regular", Price: 40, Pos: 1, ApiExport: true})
 	reducedProduct := &models.Product{Name: "🎟️ Reduced", Price: 20, Pos: 2, ApiExport: true}
 	db.Create(reducedProduct)
@@ -59,9 +61,7 @@ func SeedDatabase(db *gorm.DB) {
 	db.Create(&models.Product{Name: "👕 T-Shirt Female L", Price: 20, Pos: 22})
 	db.Create(&models.Product{Name: "👕 T-Shirt Female XL", Price: 20, Pos: 23, WrapAfter: true})
 	db.Create(&models.Product{Name: "☕ Coffee Mug", Price: 1, Pos: 30})
-	db.Create(&models.User{Username: "admin", Password: "admin", Admin: true})
-	db.Create(&models.User{Username: "demo", Password: "demo", Admin: false})
-
+	
 	reducedDkevList := &models.List{Name: "Reduces Digitale Kultur", ProductID: reducedProduct.ID}
 	db.Create(reducedDkevList)
 	for i := 1; i < 5; i++ { 

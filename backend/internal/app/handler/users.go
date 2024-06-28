@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -45,18 +44,26 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 }
 
 type UserCreateRequest struct {
-	Usermame string `form:"username"  json:"username" binding:"required"`
+	Username string `form:"username"  json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
+	Email   string `form:"email"    json:"email" binding:"required"`
 	Admin	bool   `form:"admin" json:"admin" binding:""`
 }
 
 type UserUpdateRequest struct {
 	Username string `form:"username"  json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:""`
+	Email   string `form:"email"    json:"email" binding:"required"`
 	Admin	bool   `form:"admin" json:"admin" binding:""`
 }
 
 func (handler *Handler) UpdateUserByID(c *gin.Context) {
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
+
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
@@ -72,19 +79,22 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 
 	user.Username = userRequest.Username
 	user.Password = ""
+	user.Email = userRequest.Email
+	user.PasswordChangeRequired = false
 
 	// an admin may change the password of another user
 	// a user may change his own password
-	if user.Admin || int(user.ID) == id {
-		log.Println("password " + userRequest.Password)
+	if executingUserObj.Admin || int(executingUserObj.ID) == id {
 		if userRequest.Password != "" {
-			log.Println("password " + userRequest.Password)
 			user.Password = userRequest.Password
+			if int(executingUserObj.ID) != id {
+				user.PasswordChangeRequired = true	
+			}
 		}
 	}
 
 	// only an admin may change the role of a user
-	if user.Admin {
+	if executingUserObj.Admin {
 		user.Admin = userRequest.Admin
 	}
 
@@ -98,19 +108,27 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 }
 
 func (handler *Handler) CreateUser(c *gin.Context) {
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
+	
 	var user models.User
-
 	var userRequest UserCreateRequest
 	if c.ShouldBind(&userRequest) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	user.Username = userRequest.Usermame
+	// make usernamer lowercase
+	user.Username = userRequest.Username
 	user.Password = userRequest.Password
+	user.Email = userRequest.Email
+	user.PasswordChangeRequired = true
 	
 	// only an admin may change the role of a user
-	if user.Admin {
+	if executingUserObj.Admin {
 		user.Admin = userRequest.Admin
 	} else {
 		user.Admin = false

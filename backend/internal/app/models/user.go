@@ -13,7 +13,9 @@ type User struct {
 	ID uint `gorm:"primarykey" json:"id"`
 	GormModel
 	Username string `json:"username" gorm:"unique"`
+	Email    string `json:"email" gorm:"unique"`
 	Password string `json:"-"`
+	PasswordChangeRequired bool `json:"-" gorm:"default:false"`
 	Admin    bool   `json:"admin"`
 }
 

@@ -84,9 +84,11 @@ func payloadFunc() func(data interface{}) jwt.MapClaims {
 		if v, ok := data.(*models.User); ok {
 			log.Printf("payloadFunc data: %#v\n", v);
 			return jwt.MapClaims{
-				IdentityKey: v.ID,
-				"role":      v.Role(),
-				"username":  v.Username,
+				IdentityKey:  v.ID,
+				"role":       v.Role(),
+				"username":   v.Username,
+				"email":      v.Email,
+				"change_pwd": v.PasswordChangeRequired,
 			}
 		}
 		log.Printf("payloadFunc data: %#v\n", jwt.MapClaims{})
