@@ -26,6 +26,7 @@ const ConfigProvider = ({ children }) => {
           maximumFractionDigits: data.fractionDigitsMax ?? 2,
         };
 
+        data.locale = data.currencyLocale ?? "dk-DK";
         data.currency = new Intl.NumberFormat(
           data.currencyLocale ?? "dk-DK",
           data.currencyOptions,

@@ -19,10 +19,12 @@ import {
   ListEntryList,
 } from "./compontent/ListEntry";
 import PropTypes from "prop-types";
+import Dashboard from "./compontent/Dashboard";
 
 const AdminPanel = () => (
   <Admin
     layout={MyLayout}
+    dashboard={Dashboard}
     dataProvider={dataProvider}
     authProvider={authProvider}
     basename="/admin"
@@ -60,20 +62,29 @@ const AdminPanel = () => (
   </Admin>
 );
 
+const MyMenuDivider = ({ name }) => (
+  <div className="text-right mt-4 text-xs pr-1 font-bold tracking-wide border-b-2 border-b-pink-500 uppercase text-ellipsis">
+    {name}
+  </div>
+);
+
+MyMenuDivider.propTypes = {
+  name: PropTypes.string.isRequired,
+};
+
 const MyMenu = () => (
   <Menu>
+    <Menu.DashboardItem />
+
+    <MyMenuDivider name="POS" />
     <Menu.ResourceItem name="products" />
     <Menu.ResourceItem name="purchases" />
 
-    <div className="text-right mt-4 text-xs pr-1 font-bold tracking-wide border-b-2 border-b-pink-500 uppercase text-ellipsis">
-      Guestlist
-    </div>
+    <MyMenuDivider name="Guestlist" />
     <Menu.ResourceItem name="lists" />
     <Menu.ResourceItem name="listEntries" primaryText="List Entries" />
 
-    <div className="text-right mt-4 text-xs pr-1 font-bold tracking-wide border-b-2 border-b-pink-500 uppercase text-ellipsis">
-      Admin
-    </div>
+    <MyMenuDivider name="Admin" />
     <Menu.ResourceItem name="users" />
   </Menu>
 );
