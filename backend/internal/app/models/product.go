@@ -11,3 +11,10 @@ type Product struct {
 	ApiExport bool    `gorm:"default:false" json:"apiExport"`
 	Lists 	  []List  `json:"lists"`
 }
+
+type ProductStats struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+	SoldItems int `json:"soldItems"`
+	TotalPrice float64 `json:"totalPrice"`
+}
