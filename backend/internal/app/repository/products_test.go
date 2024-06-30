@@ -8,6 +8,7 @@ import (
 	"github.com/gavv/httpexpect/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/handler"
+	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 	"github.com/potibm/kasseapparat/internal/app/utils"
 )
@@ -51,8 +52,14 @@ func setupTestDatabase() {
 	utils.SeedDatabase(db)
 }
 
+func setupMailer() mailer.Mailer {
+	mailer := mailer.NewMailer("smtp://user:password@localhost:1025")
+
+	return *mailer
+}
+
 func TestGetProducts(t *testing.T) {
-	myhandler := handler.NewHandler(repository.NewLocalRepository(), "1.0.0")
+	myhandler := handler.NewHandler(repository.NewLocalRepository(), setupMailer(), "1.0.0")
 
 	gin.SetMode(gin.TestMode)
 	e := setupTest(t, "/example", myhandler.GetProducts)
@@ -75,7 +82,7 @@ func TestGetProducts(t *testing.T) {
 }
 
 func TestGetProduct(t *testing.T) {
-	myhandler := handler.NewHandler(repository.NewLocalRepository(), "1.0.0")
+	myhandler := handler.NewHandler(repository.NewLocalRepository(), setupMailer(), "1.0.0")
 	gin.SetMode(gin.TestMode)
 
 	e := setupTest(t, "/example/:id", myhandler.GetProductByID)

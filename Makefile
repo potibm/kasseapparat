@@ -15,9 +15,16 @@ run:
 stop:
 	lsof -t -i:3000 | xargs kill -9
 	lsof -t -i:3001 | xargs kill -9
+	lsof -t -i:3002 | xargs kill -9
 
 run-be:
 	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001
+
+run-mail:
+	docker run -d \
+		-p 8025:8025 \
+		-p 1025:1025 \
+		axllent/mailpit
 
 run-tool:
 	cd $(BACKEND_DIR) && go run ./tools/main.go --seed --purge
@@ -76,4 +83,4 @@ docker-build:
 	rm VERSION
 
 docker-run:
-	docker run -p 3003:8080 -e "CORS_ALLOW_ORIGINS=http://localhost:3003" -v ./backend/data:/app/data kasseapparat:latest
+	docker run -p 3005:8080 -e "CORS_ALLOW_ORIGINS=http://localhost:3004" -v ./backend/data:/app/data kasseapparat:latest

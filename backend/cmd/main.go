@@ -25,7 +25,8 @@ func main() {
 	}
 
 	repository := repository.NewRepository()
-	myhandler := handler.NewHandler(repository, initializer.GetVersion())
+	mailer := initializer.InitializeMailer()
+	myhandler := handler.NewHandler(repository, mailer, initializer.GetVersion())
 
 	router := initializer.InitializeHttpServer(*myhandler, *repository, staticFiles)
 	log.Println("Listening on " + port + "...")
