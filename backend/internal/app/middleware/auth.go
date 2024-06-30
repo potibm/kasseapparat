@@ -3,6 +3,7 @@ package middleware
 import (
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -16,7 +17,7 @@ var (
 )
 
 type login struct {
-	Username string `form:"username" json:"username" binding:"required"`
+	Login string `form:"login" json:"login" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
@@ -87,10 +88,10 @@ func authenticator(repo *repository.Repository) func(c *gin.Context) (interface{
 		if err := c.ShouldBind(&loginVals); err != nil {
 			return "", jwt.ErrMissingLoginValues
 		}
-		username := loginVals.Username
-		password := loginVals.Password
+		login := strings.TrimSpace(loginVals.Login)
+		password :=  strings.TrimSpace(loginVals.Password)
 
-		user, err := repo.GetUserByUsernameAndPassword(username, password)
+		user, err := repo.GetUserByLoginAndPassword(login, password)
 		if err == nil {
 			c.Set(IdentityKey, user) // Set the user in the context
 			return user, nil

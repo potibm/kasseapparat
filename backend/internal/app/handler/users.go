@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
@@ -145,7 +144,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 }
 
 type UserUpdatePasswordRequest struct {
-	Password string `form:"password1" json:"password1" binding:"required"`
+	Password string `form:"password1" json:"password1" binding:"required,eqfield=PasswordVerify,min=8"`
 	PasswordVerify string `form:"password2" json:"password2" binding:"required"`
 }
 
@@ -159,19 +158,6 @@ func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 	var userPasswordChangeRequest UserUpdatePasswordRequest
 	if c.ShouldBind(&userPasswordChangeRequest) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-		return
-	}
-
-	password := userPasswordChangeRequest.Password
-	password = strings.TrimSpace(password)
-
-	if password != userPasswordChangeRequest.PasswordVerify {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Passwords do not match"})
-		return
-	}
-
-	if len(password) < 8 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Password must be at least 8 characters long"})
 		return
 	}
 

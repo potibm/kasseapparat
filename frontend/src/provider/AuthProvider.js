@@ -17,7 +17,6 @@ const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState({
     token: localStorage.getItem("token"),
     expiryDate: localStorage.getItem("expiryDate"),
-    username: localStorage.getItem("username"),
     userdata: JSON.parse(localStorage.getItem("userdata")),
   });
 
@@ -44,7 +43,6 @@ const AuthProvider = ({ children }) => {
       setAuth({
         token: null,
         expiryDate: null,
-        username: null,
         userdata: null,
       });
       window.location = "/logout";
@@ -62,12 +60,6 @@ const AuthProvider = ({ children }) => {
       localStorage.setItem("expiryDate", auth.expiryDate);
     } else {
       localStorage.removeItem("expiryDate");
-    }
-
-    if (auth.username) {
-      localStorage.setItem("username", auth.username);
-    } else {
-      localStorage.removeItem("username");
     }
 
     if (auth.userdata) {
@@ -96,7 +88,6 @@ const AuthProvider = ({ children }) => {
         setAuth({
           token: null,
           expiryDate: null,
-          username: null,
           userdata: null,
         });
         window.location = "/logout";
@@ -124,7 +115,7 @@ const AuthProvider = ({ children }) => {
     return () => {
       clearInterval(tokenRefreshInterval);
     };
-  }, [auth.expiryDate, auth.token, auth.username, performTokenRefresh]);
+  }, [auth.expiryDate, auth.token, performTokenRefresh]);
 
   const contextValue = useMemo(
     () => ({
@@ -133,13 +124,12 @@ const AuthProvider = ({ children }) => {
       expiryDate: auth.expiryDate,
       setExpiryDate: (expiryDate) =>
         setAuth((prev) => ({ ...prev, expiryDate })),
-      username: auth.username,
-      setUsername: (username) => setAuth((prev) => ({ ...prev, username })),
       userdata: auth.userdata,
       setUserdata: (userdata) => setAuth((prev) => ({ ...prev, userdata })),
       gravatarUrl: auth.userdata?.gravatarUrl ?? "",
       role: auth.userdata?.role ?? "user",
       passwordChangeRequired: auth.userdata?.passwordChangeRequired ?? false,
+      username: auth.userdata?.username ?? "unknown",
     }),
     [auth],
   );

@@ -10,21 +10,20 @@ const API_HOST = process.env.REACT_APP_API_HOST;
 const Login = () => {
   const [error, setError] = useState(null);
 
-  const { setToken, setUsername, setExpiryDate, setUserdata } = useAuth();
+  const { setToken, setExpiryDate, setUserdata } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = (event) => {
     event.preventDefault();
 
-    const username = event.target.username.value;
+    const login = event.target.login.value;
     const password = event.target.password.value;
 
-    getJwtToken(API_HOST, username, password)
+    getJwtToken(API_HOST, login, password)
       .then((auth) => {
         const token = auth.token;
         const expiryDate = auth.expire;
         setToken(token);
-        setUsername(username);
         setExpiryDate(expiryDate);
 
         const userdata = auth;
@@ -55,12 +54,7 @@ const Login = () => {
           <div className="mb-2 block">
             <Label htmlFor="username" value="Your username" />
           </div>
-          <TextInput
-            id="username"
-            type="text"
-            placeholder="Username"
-            required
-          />
+          <TextInput id="login" type="text" placeholder="Username" required />
         </div>
         <div>
           <div className="mb-2 block">

@@ -92,7 +92,7 @@ export const deletePurchaseById = async (apiHost, jwtToken, purchaseId) => {
   });
 };
 
-export const getJwtToken = async (apiHost, username, password) => {
+export const getJwtToken = async (apiHost, login, password) => {
   return new Promise((resolve, reject) => {
     fetch(`${apiHost}/login`, {
       method: "POST",
@@ -100,7 +100,7 @@ export const getJwtToken = async (apiHost, username, password) => {
         "Content-Type": "application/json",
         Credentials: "include",
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ login, password }),
     })
       .then((response) => {
         if (!response.ok) {

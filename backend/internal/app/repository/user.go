@@ -18,15 +18,34 @@ func (repo *Repository) GetUserByID(id int) (*models.User, error) {
 
 func (repo *Repository) GetUserByUsername(username string) (*models.User, error) {
 	var user models.User
-	if err := repo.db.Model(&models.User{}).Where("Username = ?", username).First(&user).Error; err != nil {
+	if err := repo.db.Model(&models.User{}).Where("LOWER(Username) = ?", strings.ToLower(username)).First(&user).Error; err != nil {
+		return nil, errors.New("User not found by username")
+	}
+
+	return &user, nil
+}
+
+func (repo *Repository) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	if err := repo.db.Model(&models.User{}).Where("LOWER(Email) = ?", strings.ToLower(email)).First(&user).Error; err != nil {
+		return nil, errors.New("User not found by email")
+	}
+
+	return &user, nil
+}
+
+
+func (repo *Repository) GetUserByUserameOrEmail(login string) (*models.User, error) {
+	var user models.User
+	if err := repo.db.Model(&models.User{}).Where("LOWER(Username) = ? OR LOWER(Email) = ?", strings.ToLower(login), strings.ToLower(login)).First(&user).Error; err != nil {
 		return nil, errors.New("User not found")
 	}
 
 	return &user, nil
 }
 
-func (repo *Repository) GetUserByUsernameAndPassword(username string, password string) (*models.User, error) {
-	user, err := repo.GetUserByUsername(username)
+func (repo *Repository) GetUserByLoginAndPassword(login string, password string) (*models.User, error) {
+	user, err := repo.GetUserByUserameOrEmail(login)
 	if err != nil {
 		return nil, err
 	}
