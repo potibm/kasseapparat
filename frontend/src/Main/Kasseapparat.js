@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import Cart from "./components/Cart";
 import ProductList from "./components/ProductList";
 import PurchaseHistory from "./components/PurchaseHistory";
@@ -16,7 +17,6 @@ import {
   checkoutCart,
   containsListItemID,
 } from "./hooks/Cart";
-import { Link } from "react-router-dom";
 import { Button } from "flowbite-react";
 import { HiCog, HiOutlineUserCircle } from "react-icons/hi";
 import { useAuth } from "../provider/AuthProvider";
@@ -29,8 +29,8 @@ function Kasseapparat() {
   const [products, setProducts] = useState([]);
   const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const { username, token } = useAuth();
-
+  const { username, token, passwordChangeRequired } = useAuth();
+  const navigate = useNavigate();
   const version = useConfig().version;
 
   useEffect(() => {
@@ -127,6 +127,11 @@ function Kasseapparat() {
     setErrorMessage("");
   };
 
+  if (passwordChangeRequired) {
+    navigate("/password", { replace: true });
+    return;
+  }
+
   return (
     <div className="App p-2">
       <div className="w-full overflow-hidden">
@@ -150,14 +155,23 @@ function Kasseapparat() {
             removeFromPurchaseHistory={handleRemoveFromPurchaseHistory}
           />
 
-          <Button.Group className="mt-10">
+          <Button.Group className="mt-10 ">
             <Button>
               <HiOutlineUserCircle className="mr-2 h-5 w-5" /> {username}
             </Button>
-            <Button as={Link} to="/logout">
+            <Button
+              as={Link}
+              to="/logout"
+              className="hover:bg-cyan-800 hover:text-white"
+            >
               Logout
             </Button>
-            <Button as={Link} target="blank" to="/admin">
+            <Button
+              as={Link}
+              target="blank"
+              to="/admin"
+              className="hover:bg-cyan-800 hover:text-white"
+            >
               <HiCog className="mr-2 h-5 w-5" /> Admin
             </Button>
           </Button.Group>

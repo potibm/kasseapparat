@@ -132,3 +132,32 @@ export const refreshJwtToken = async (apiHost, refreshToken) => {
       .catch((error) => reject(error));
   });
 };
+
+export const changePassword = async (
+  apiHost,
+  jwtToken,
+  newPassword,
+  newPasswordRepeat,
+) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/api/v1/auth/change_password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      body: JSON.stringify({
+        password1: newPassword,
+        password2: newPasswordRepeat,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => resolve(data))
+      .catch((error) => reject(error));
+  });
+};

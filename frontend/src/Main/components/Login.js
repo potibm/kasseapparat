@@ -10,7 +10,7 @@ const API_HOST = process.env.REACT_APP_API_HOST;
 const Login = () => {
   const [error, setError] = useState(null);
 
-  const { setToken, setUsername, setExpiryDate } = useAuth();
+  const { setToken, setUsername, setExpiryDate, setUserdata } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = (event) => {
@@ -23,12 +23,21 @@ const Login = () => {
       .then((auth) => {
         const token = auth.token;
         const expiryDate = auth.expire;
-        console.log(auth);
-        const passwordChangeRequired = auth.passwordChangeRequired;
-        console.log("Password change required", passwordChangeRequired);
         setToken(token);
         setUsername(username);
         setExpiryDate(expiryDate);
+
+        const userdata = auth;
+        delete userdata.token;
+        delete userdata.expire;
+        delete userdata.code;
+        setUserdata(userdata);
+
+        if (userdata.passwordChangeRequired) {
+          navigate("/password", { replace: true });
+          return;
+        }
+
         navigate("/", { replace: true });
       })
       .catch((error) => {
@@ -38,7 +47,7 @@ const Login = () => {
   };
 
   return (
-    <AuthCard>
+    <AuthCard title="Login">
       {error && <Alert color="failure">{error}</Alert>}
 
       <form className="flex flex-col gap-4" onSubmit={handleLogin}>

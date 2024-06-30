@@ -3,7 +3,7 @@ import { Card } from "flowbite-react";
 import { useConfig } from "../../provider/ConfigProvider";
 import PropTypes from "prop-types";
 
-const AuthCard = ({ children }) => {
+const AuthCard = ({ children, title = null }) => {
   const version = useConfig().version;
 
   return (
@@ -18,7 +18,11 @@ const AuthCard = ({ children }) => {
           Kasseapparat
         </h5>
 
-        <div className="my-3">{children}</div>
+        <div className="my-3">
+          {title && <h2 className="text-lg mb-2">{title}</h2>}
+
+          {children}
+        </div>
 
         <hr />
         <p className="text-xs">Version {version}</p>
@@ -29,6 +33,7 @@ const AuthCard = ({ children }) => {
 
 AuthCard.propTypes = {
   children: PropTypes.node.isRequired,
+  title: PropTypes.string,
 };
 
 export default AuthCard;

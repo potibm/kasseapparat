@@ -18,6 +18,7 @@ const AuthProvider = ({ children }) => {
     token: localStorage.getItem("token"),
     expiryDate: localStorage.getItem("expiryDate"),
     username: localStorage.getItem("username"),
+    userdata: JSON.parse(localStorage.getItem("userdata")),
   });
 
   const performTokenRefresh = useCallback(() => {
@@ -28,10 +29,8 @@ const AuthProvider = ({ children }) => {
       .then((response) => {
         const newToken = response.token;
         const newExpiryDate = response.expire;
-        const username = auth.username;
         console.log("Refreshed token, Expiry: " + newExpiryDate);
-
-        setAuth({ token: newToken, expiryDate: newExpiryDate, username });
+        setAuth({ ...auth, token: newToken, expiryDate: newExpiryDate });
       })
       .catch((error) => {
         console.error("Error refreshing the token", error);
@@ -42,10 +41,15 @@ const AuthProvider = ({ children }) => {
     const expiryDate = new Date(auth.expiryDate);
     if (now > expiryDate) {
       // @todo notify user
-      setAuth({ token: null, expiryDate: null, username: null });
+      setAuth({
+        token: null,
+        expiryDate: null,
+        username: null,
+        userdata: null,
+      });
       window.location = "/logout";
     }
-  }, [auth.token, auth.expiryDate, auth.username]);
+  }, [auth]);
 
   useEffect(() => {
     if (auth.token) {
@@ -65,6 +69,12 @@ const AuthProvider = ({ children }) => {
     } else {
       localStorage.removeItem("username");
     }
+
+    if (auth.userdata) {
+      localStorage.setItem("userdata", JSON.stringify(auth.userdata));
+    } else {
+      localStorage.removeItem("userdata");
+    }
   }, [auth]);
 
   // ensure token validity is checked when app is focused or revived
@@ -83,7 +93,12 @@ const AuthProvider = ({ children }) => {
       const now = new Date();
       const expiryDate = new Date(auth.expiryDate);
       if (now > expiryDate) {
-        setAuth({ token: null, expiryDate: null, username: null });
+        setAuth({
+          token: null,
+          expiryDate: null,
+          username: null,
+          userdata: null,
+        });
         window.location = "/logout";
       }
       // Refresh the token if it will expire in the next two minutes
@@ -120,6 +135,11 @@ const AuthProvider = ({ children }) => {
         setAuth((prev) => ({ ...prev, expiryDate })),
       username: auth.username,
       setUsername: (username) => setAuth((prev) => ({ ...prev, username })),
+      userdata: auth.userdata,
+      setUserdata: (userdata) => setAuth((prev) => ({ ...prev, userdata })),
+      gravatarUrl: auth.userdata?.gravatarUrl ?? "",
+      role: auth.userdata?.role ?? "user",
+      passwordChangeRequired: auth.userdata?.passwordChangeRequired ?? false,
     }),
     [auth],
   );

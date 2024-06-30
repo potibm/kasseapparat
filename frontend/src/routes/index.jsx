@@ -6,6 +6,7 @@ import Kasseapparat from "../Main/Kasseapparat";
 import Admin from "../Admin/Admin";
 import Logout from "../Main/components/Logout";
 import Login from "../Main/components/Login";
+import ChangePassword from "../Main/components/ChangePassword";
 
 const Routes = () => {
   const { token } = useAuth();
@@ -31,6 +32,10 @@ const Routes = () => {
         {
           path: "/logout",
           element: <Logout />,
+        },
+        {
+          path: "/password",
+          element: <ChangePassword />,
         },
       ],
     },

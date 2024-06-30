@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../provider/AuthProvider";
 import AuthCard from "./AuthCard";
@@ -8,19 +8,25 @@ const Logout = () => {
   const { setToken } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    setToken();
-    navigate("/", { replace: true });
-  };
+  useEffect(() => {
+    const handleLogout = () => {
+      setToken();
+      navigate("/", { replace: true });
+    };
 
-  setTimeout(() => {
-    handleLogout();
-  }, 3 * 1000);
+    const timer = setTimeout(() => {
+      handleLogout();
+    }, 3 * 1000);
+
+    // Bereinigungsfunktion, um den Timer zu löschen, falls die Komponente vor Ablauf des Timers demontiert wird
+    return () => clearTimeout(timer);
+  }, [setToken, navigate]);
 
   return (
     <AuthCard>
       Logging you out...
-      <Spinner />
+      <br />
+      <Spinner className="mt-3" />
     </AuthCard>
   );
 };

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
@@ -141,6 +142,54 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, product)
+}
+
+type UserUpdatePasswordRequest struct {
+	Password string `form:"password1" json:"password1" binding:"required"`
+	PasswordVerify string `form:"password2" json:"password2" binding:"required"`
+}
+
+func (handler *Handler) UpdateUserPassword(c *gin.Context) {
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
+
+	var userPasswordChangeRequest UserUpdatePasswordRequest
+	if c.ShouldBind(&userPasswordChangeRequest) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	password := userPasswordChangeRequest.Password
+	password = strings.TrimSpace(password)
+
+	if password != userPasswordChangeRequest.PasswordVerify {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Passwords do not match"})
+		return
+	}
+
+	if len(password) < 8 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Password must be at least 8 characters long"})
+		return
+	}
+
+	if !executingUserObj.PasswordChangeRequired {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Password change not required"})
+		return
+	}
+
+	executingUserObj.Password = userPasswordChangeRequest.Password
+	executingUserObj.PasswordChangeRequired = false
+
+	user, err := handler.repo.UpdateUserByID(int(executingUserObj.ID), *executingUserObj)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 }
 
 func (handler *Handler) DeleteUserByID(c *gin.Context) { 
