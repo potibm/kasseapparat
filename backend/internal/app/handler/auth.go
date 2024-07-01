@@ -34,7 +34,6 @@ func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 	}
 
 	user.Password = userPasswordChangeRequest.Password
-	user.PasswordChangeRequired = false
 	user.ChangePasswordToken = nil
 	user.ChangePasswordTokenExpiry = nil
 

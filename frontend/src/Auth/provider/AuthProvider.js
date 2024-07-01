@@ -39,7 +39,6 @@ const AuthProvider = ({ children }) => {
     const now = new Date();
     const expiryDate = new Date(auth.expiryDate);
     if (now > expiryDate) {
-      // @todo notify user
       setAuth({
         token: null,
         expiryDate: null,

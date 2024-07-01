@@ -37,12 +37,11 @@ const authProvider = {
       if (response.status < 200 || response.status >= 300) {
         throw new Error(response.statusText);
       }
-      const { token, role, username, gravatarUrl } = await response.json();
+      const { id, token, role, username, gravatarUrl } = await response.json();
       const decodedToken = jwtDecode(token);
-      const { ID } = decodedToken;
       const expire = new Date(decodedToken.exp * 1000);
 
-      setAdminData({ ID, token, username, role, expire, gravatarUrl });
+      setAdminData({ ID: id, token, username, role, expire, gravatarUrl });
     } catch (error) {
       console.error("Login error:", error);
       throw new Error("Network error. Please try again.");

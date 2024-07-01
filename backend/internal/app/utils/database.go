@@ -42,8 +42,8 @@ func MigrateDatabase(db *gorm.DB) {
 func SeedDatabase(db *gorm.DB) {
 	_ = gofakeit.Seed(0)
 
-	db.Create(&models.User{Username: "admin", Email: "admin@example.com", Password: "admin", PasswordChangeRequired: false, Admin: true})
-	db.Create(&models.User{Username: "demo",  Email: "demo@example.com", Password: "demo", PasswordChangeRequired: false, Admin: false})
+	db.Create(&models.User{Username: "admin", Email: "admin@example.com", Password: "admin", Admin: true})
+	db.Create(&models.User{Username: "demo",  Email: "demo@example.com", Password: "demo", Admin: false})
 
 	db.Create(&models.Product{Name: "🎟️ Regular", Price: 40, Pos: 1, ApiExport: true})
 	reducedProduct := &models.Product{Name: "🎟️ Reduced", Price: 20, Pos: 2, ApiExport: true}

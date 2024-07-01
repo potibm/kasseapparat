@@ -122,7 +122,6 @@ func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models
 	// Update the product with the new values
 	user.Username = strings.ToLower(updatedUser.Username)
 	user.Admin = updatedUser.Admin
-	user.PasswordChangeRequired = updatedUser.PasswordChangeRequired
 	user.Email = updatedUser.Email
 	user.ChangePasswordToken = updatedUser.ChangePasswordToken
 	user.ChangePasswordTokenExpiry = updatedUser.ChangePasswordTokenExpiry

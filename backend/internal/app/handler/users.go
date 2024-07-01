@@ -81,16 +81,12 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 	user.Username = userRequest.Username
 	user.Password = ""
 	user.Email = userRequest.Email
-	user.PasswordChangeRequired = false
 
 	// an admin may change the password of another user
 	// a user may change his own password
 	if executingUserObj.Admin || int(executingUserObj.ID) == id {
 		if userRequest.Password != "" {
 			user.Password = userRequest.Password
-			if int(executingUserObj.ID) != id {
-				user.PasswordChangeRequired = true	
-			}
 		}
 	}
 

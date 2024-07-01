@@ -28,7 +28,7 @@ type loginResponse struct {
 	Role    *string `json:"role"`
 	Username *string `json:"username"`
 	GravatarUrl *string `json:"gravatarUrl"`
-	PasswordChangeRequired *bool `json:"passwordChangeRequired"`
+	Id	  *uint   `json:"id"`
 }
 
 func HandlerMiddleWare(authMiddleware *jwt.GinJWTMiddleware) gin.HandlerFunc {
@@ -106,10 +106,6 @@ func payloadFunc() func(data interface{}) jwt.MapClaims {
 		if v, ok := data.(*models.User); ok {
 			return jwt.MapClaims{
 				IdentityKey:  v.ID,
-				"role":       v.Role(),
-				"username":   v.Username,
-				"gravatarUrl": v.GravatarURL(),
-				"changePwd":  v.PasswordChangeRequired,
 			}
 		}
 		return jwt.MapClaims{}
@@ -161,8 +157,8 @@ func loginReponse (c *gin.Context, code int, token string, expire time.Time, use
 		gravatarUrl := user.GravatarURL()
 		loginResponse.GravatarUrl = &gravatarUrl
 
-		passwordChangeRequired := user.PasswordChangeRequired
-		loginResponse.PasswordChangeRequired = &passwordChangeRequired
+		id := user.ID
+		loginResponse.Id = &id
 	}
 
 	c.JSON(code, loginResponse);

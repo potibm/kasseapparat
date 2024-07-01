@@ -21,7 +21,6 @@ type User struct {
 	Username string `json:"username" gorm:"unique"`
 	Email    string `json:"email" gorm:"unique"`
 	Password string `json:"-"`
-	PasswordChangeRequired bool `json:"-" gorm:"default:false"`
 	Admin    bool   `json:"admin"`
 	ChangePasswordToken *string `json:"-" gorm:"default:null"`
 	ChangePasswordTokenExpiry *int64 `json:"-" gorm:"default:null"`
