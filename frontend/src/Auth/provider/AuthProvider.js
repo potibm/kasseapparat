@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { refreshJwtToken } from "../Main/hooks/Api";
+import { refreshJwtToken } from "../hooks/Api";
 import PropTypes from "prop-types";
 
 const AuthContext = createContext();
@@ -17,7 +17,7 @@ const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState({
     token: localStorage.getItem("token"),
     expiryDate: localStorage.getItem("expiryDate"),
-    username: localStorage.getItem("username"),
+    userdata: JSON.parse(localStorage.getItem("userdata")),
   });
 
   const performTokenRefresh = useCallback(() => {
@@ -28,10 +28,8 @@ const AuthProvider = ({ children }) => {
       .then((response) => {
         const newToken = response.token;
         const newExpiryDate = response.expire;
-        const username = auth.username;
         console.log("Refreshed token, Expiry: " + newExpiryDate);
-
-        setAuth({ token: newToken, expiryDate: newExpiryDate, username });
+        setAuth({ ...auth, token: newToken, expiryDate: newExpiryDate });
       })
       .catch((error) => {
         console.error("Error refreshing the token", error);
@@ -41,11 +39,14 @@ const AuthProvider = ({ children }) => {
     const now = new Date();
     const expiryDate = new Date(auth.expiryDate);
     if (now > expiryDate) {
-      // @todo notify user
-      setAuth({ token: null, expiryDate: null, username: null });
+      setAuth({
+        token: null,
+        expiryDate: null,
+        userdata: null,
+      });
       window.location = "/logout";
     }
-  }, [auth.token, auth.expiryDate, auth.username]);
+  }, [auth]);
 
   useEffect(() => {
     if (auth.token) {
@@ -60,10 +61,10 @@ const AuthProvider = ({ children }) => {
       localStorage.removeItem("expiryDate");
     }
 
-    if (auth.username) {
-      localStorage.setItem("username", auth.username);
+    if (auth.userdata) {
+      localStorage.setItem("userdata", JSON.stringify(auth.userdata));
     } else {
-      localStorage.removeItem("username");
+      localStorage.removeItem("userdata");
     }
   }, [auth]);
 
@@ -83,7 +84,11 @@ const AuthProvider = ({ children }) => {
       const now = new Date();
       const expiryDate = new Date(auth.expiryDate);
       if (now > expiryDate) {
-        setAuth({ token: null, expiryDate: null, username: null });
+        setAuth({
+          token: null,
+          expiryDate: null,
+          userdata: null,
+        });
         window.location = "/logout";
       }
       // Refresh the token if it will expire in the next two minutes
@@ -109,7 +114,7 @@ const AuthProvider = ({ children }) => {
     return () => {
       clearInterval(tokenRefreshInterval);
     };
-  }, [auth.expiryDate, auth.token, auth.username, performTokenRefresh]);
+  }, [auth.expiryDate, auth.token, performTokenRefresh]);
 
   const contextValue = useMemo(
     () => ({
@@ -118,8 +123,11 @@ const AuthProvider = ({ children }) => {
       expiryDate: auth.expiryDate,
       setExpiryDate: (expiryDate) =>
         setAuth((prev) => ({ ...prev, expiryDate })),
-      username: auth.username,
-      setUsername: (username) => setAuth((prev) => ({ ...prev, username })),
+      userdata: auth.userdata,
+      setUserdata: (userdata) => setAuth((prev) => ({ ...prev, userdata })),
+      gravatarUrl: auth.userdata?.gravatarUrl ?? "",
+      role: auth.userdata?.role ?? "user",
+      username: auth.userdata?.username ?? "unknown",
     }),
     [auth],
   );

@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"log"
+	"net/http"
+	"strings"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -15,8 +17,18 @@ var (
 )
 
 type login struct {
-	Username string `form:"username" json:"username" binding:"required"`
+	Login string `form:"login" json:"login" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
+}
+
+type loginResponse struct {
+	Code    int    `json:"code"`
+	Token   string `json:"token"`
+	Expire  string `json:"expire"`
+	Role    *string `json:"role"`
+	Username *string `json:"username"`
+	GravatarUrl *string `json:"gravatarUrl"`
+	Id	  *uint   `json:"id"`
 }
 
 func HandlerMiddleWare(authMiddleware *jwt.GinJWTMiddleware) gin.HandlerFunc {
@@ -58,6 +70,15 @@ func InitParams(repo repository.Repository, realm string, secret string, timeout
 		// TokenLookup: "cookie:token",
 		TokenHeadName: "Bearer",
 		TimeFunc:      time.Now,
+
+		LoginResponse: func(c *gin.Context, code int, message string, time time.Time) {
+			user, err := c.Get(IdentityKey)
+			var userObj *models.User = nil
+			if err {
+				userObj = user.(*models.User)
+			} 
+			loginReponse(c, code, message, time, userObj)
+		},
 	}
 }
 
@@ -67,11 +88,12 @@ func authenticator(repo *repository.Repository) func(c *gin.Context) (interface{
 		if err := c.ShouldBind(&loginVals); err != nil {
 			return "", jwt.ErrMissingLoginValues
 		}
-		username := loginVals.Username
-		password := loginVals.Password
+		login := strings.TrimSpace(loginVals.Login)
+		password :=  strings.TrimSpace(loginVals.Password)
 
-		user, err := repo.GetUserByUsernameAndPassword(username, password)
+		user, err := repo.GetUserByLoginAndPassword(login, password)
 		if err == nil {
+			c.Set(IdentityKey, user) // Set the user in the context
 			return user, nil
 		}
 
@@ -82,14 +104,10 @@ func authenticator(repo *repository.Repository) func(c *gin.Context) (interface{
 func payloadFunc() func(data interface{}) jwt.MapClaims {
 	return func(data interface{}) jwt.MapClaims {
 		if v, ok := data.(*models.User); ok {
-			log.Printf("payloadFunc data: %#v\n", v);
 			return jwt.MapClaims{
-				IdentityKey: v.ID,
-				"role":      v.Role(),
-				"username":  v.Username,
+				IdentityKey:  v.ID,
 			}
 		}
-		log.Printf("payloadFunc data: %#v\n", jwt.MapClaims{})
 		return jwt.MapClaims{}
 	}
 }
@@ -122,12 +140,27 @@ func unauthorized() func(c *gin.Context, code int, message string) {
 	}
 }
 
-/*
-func handleNoRoute() func(c *gin.Context) {
-	return func(c *gin.Context) {
-		claims := jwt.ExtractClaims(c)
-		log.Printf("NoRoute claims: %#v\n", claims)
-		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
+func loginReponse (c *gin.Context, code int, token string, expire time.Time, user *models.User) {
+	loginResponse := loginResponse{
+		Code: http.StatusOK,
+		Token: token,
+		Expire: expire.Format(time.RFC3339),
 	}
+	
+	if (user != nil) {
+		role := user.Role()
+		loginResponse.Role = &role
+
+		username := user.Username
+		loginResponse.Username = &username
+
+		gravatarUrl := user.GravatarURL()
+		loginResponse.GravatarUrl = &gravatarUrl
+
+		id := user.ID
+		loginResponse.Id = &id
+	}
+
+	c.JSON(code, loginResponse);
+	
 }
-*/

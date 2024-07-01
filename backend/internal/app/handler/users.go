@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
@@ -45,18 +46,25 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 }
 
 type UserCreateRequest struct {
-	Usermame string `form:"username"  json:"username" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
+	Username string `form:"username"  json:"username" binding:"required"`
+	Email   string `form:"email"    json:"email" binding:"required"`
 	Admin	bool   `form:"admin" json:"admin" binding:""`
 }
 
 type UserUpdateRequest struct {
 	Username string `form:"username"  json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:""`
+	Email   string `form:"email"    json:"email" binding:"required"`
 	Admin	bool   `form:"admin" json:"admin" binding:""`
 }
 
 func (handler *Handler) UpdateUserByID(c *gin.Context) {
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
+
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
@@ -72,19 +80,18 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 
 	user.Username = userRequest.Username
 	user.Password = ""
+	user.Email = userRequest.Email
 
 	// an admin may change the password of another user
 	// a user may change his own password
-	if user.Admin || int(user.ID) == id {
-		log.Println("password " + userRequest.Password)
+	if executingUserObj.Admin || int(executingUserObj.ID) == id {
 		if userRequest.Password != "" {
-			log.Println("password " + userRequest.Password)
 			user.Password = userRequest.Password
 		}
 	}
 
 	// only an admin may change the role of a user
-	if user.Admin {
+	if executingUserObj.Admin {
 		user.Admin = userRequest.Admin
 	}
 
@@ -98,31 +105,44 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 }
 
 func (handler *Handler) CreateUser(c *gin.Context) {
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		return
+	}
+	
 	var user models.User
-
 	var userRequest UserCreateRequest
 	if c.ShouldBind(&userRequest) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	user.Username = userRequest.Usermame
-	user.Password = userRequest.Password
+	user.Username = userRequest.Username
+	user.Email = userRequest.Email
+	user.GenerateRandomPassword()
+	validity := 3 * time.Hour
+	user.GenerateChangePasswordToken(&validity)
 	
 	// only an admin may change the role of a user
-	if user.Admin {
+	if executingUserObj.Admin {
 		user.Admin = userRequest.Admin
 	} else {
 		user.Admin = false
 	}
 
-	product, err := handler.repo.CreateUser(user)
+	user, err = handler.repo.CreateUser(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	c.JSON(http.StatusOK, product)
+	err = handler.mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken);
+	if err != nil {
+		log.Println("Error sending email", err)
+	}
+
+	c.JSON(http.StatusOK, user)
 }
 
 func (handler *Handler) DeleteUserByID(c *gin.Context) { 
