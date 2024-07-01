@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Cart from "./components/Cart";
 import ProductList from "./components/ProductList";
 import PurchaseHistory from "./components/PurchaseHistory";
@@ -19,7 +19,7 @@ import {
 } from "./hooks/Cart";
 import { Button } from "flowbite-react";
 import { HiCog, HiOutlineUserCircle } from "react-icons/hi";
-import { useAuth } from "../provider/AuthProvider";
+import { useAuth } from "../Auth/provider/AuthProvider";
 import { useConfig } from "../provider/ConfigProvider";
 
 const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
@@ -29,8 +29,7 @@ function Kasseapparat() {
   const [products, setProducts] = useState([]);
   const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const { username, token, passwordChangeRequired } = useAuth();
-  const navigate = useNavigate();
+  const { username, token } = useAuth();
   const version = useConfig().version;
 
   useEffect(() => {
@@ -126,11 +125,6 @@ function Kasseapparat() {
   const handleCloseError = () => {
     setErrorMessage("");
   };
-
-  if (passwordChangeRequired) {
-    navigate("/password", { replace: true });
-    return;
-  }
 
   return (
     <div className="App p-2">

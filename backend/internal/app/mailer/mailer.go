@@ -15,6 +15,8 @@ type Mailer struct {
 
 	from string;
 	subjectPrefix string;
+
+	frontendBaseUrl string;
 }
 
 func NewMailer(dsn string) *Mailer {
@@ -22,6 +24,7 @@ func NewMailer(dsn string) *Mailer {
 	password := ""
 	host := "localhost"
 	port := 1025
+	frontendBaseUrl := "http://localhost:3000"
 	
 	u, err := url.Parse(dsn)
 	if err != nil {
@@ -33,7 +36,15 @@ func NewMailer(dsn string) *Mailer {
 		port, _ = strconv.Atoi(u.Port())
 	}
 
-	return &Mailer{user: user, password: password, host: host, port: port, from: "kasseapparat@example.com", subjectPrefix: "[Kasseapparat] "};
+	return &Mailer{
+		user: user, 
+		password: password, 
+		host: host, 
+		port: port, 
+		from: "kasseapparat@example.com", 
+		subjectPrefix: "[Kasseapparat] ",
+		frontendBaseUrl: frontendBaseUrl,
+	};
 }
 
 func (m *Mailer) SetFrom(from string) {
@@ -44,11 +55,15 @@ func (m *Mailer) SetSubjectPrefix(prefix string) {
 	m.subjectPrefix = prefix
 }
 
+func (m *Mailer) SetFrontendBaseUrl(url string) {
+	m.frontendBaseUrl = url
+}
+
 func (m *Mailer) address() string {
 	return m.host + ":" + strconv.Itoa(m.port);
 }
 
-func (m *Mailer) SendMail(to string, subject string, body string) {
+func (m *Mailer) SendMail(to string, subject string, body string) error {
 
 	header := "From: " + m.from + "\r\n" +
 	"Subject: " + m.subjectPrefix + subject + "\r\n" +
@@ -63,6 +78,7 @@ func (m *Mailer) SendMail(to string, subject string, body string) {
 	} 
 	err := smtp.SendMail(m.address(), auth, m.from, []string{to}, message)
 	if err != nil {
-        log.Fatalln("Error sending mail:", err)
+        log.Println("Error sending mail:", err)
     }
+	return err;
 }

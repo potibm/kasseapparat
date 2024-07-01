@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../provider/AuthProvider";
-import AuthCard from "./AuthCard";
+import { useAuth } from "../provider/AuthProvider";
+import BaseCard from "../../components/BaseCard";
 import { Spinner } from "flowbite-react";
 
 const Logout = () => {
@@ -23,11 +23,11 @@ const Logout = () => {
   }, [setToken, navigate]);
 
   return (
-    <AuthCard>
+    <BaseCard>
       Logging you out...
       <br />
       <Spinner className="mt-3" />
-    </AuthCard>
+    </BaseCard>
   );
 };
 

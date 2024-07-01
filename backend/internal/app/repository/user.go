@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
@@ -103,6 +104,12 @@ func (repo *Repository) CreateUser(user models.User) (models.User, error) {
 }
 
 func (repo *Repository) DeleteUser(user models.User) {
+	// update the user to be deleted: postfix the username with "_deleted" and the current timestamp, and prefix the email with "deleted_" and the current timestamp
+	now := time.Now().Format("20060102150405")
+	user.Username = user.Username + "_deleted_" + now
+	user.Email = "deleted_" + now + "_" + user.Email
+	repo.db.Save(&user)
+
 	repo.db.Delete(&user)
 }
 
@@ -117,6 +124,8 @@ func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models
 	user.Admin = updatedUser.Admin
 	user.PasswordChangeRequired = updatedUser.PasswordChangeRequired
 	user.Email = updatedUser.Email
+	user.ChangePasswordToken = updatedUser.ChangePasswordToken
+	user.ChangePasswordTokenExpiry = updatedUser.ChangePasswordTokenExpiry
 	if updatedUser.Password != "" {
 		user.Password = updatedUser.Password
 	}

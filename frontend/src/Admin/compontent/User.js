@@ -105,24 +105,12 @@ export const UserCreate = () => {
   const { isLoading, permissions } = usePermissions();
   if (isLoading) return <>Loading...</>;
 
-  const equalToPassword = (value, allValues) => {
-    if (value !== allValues.password) {
-      return "The two passwords must match";
-    }
-  };
-
   return (
     <Create title="Create new user">
       <SimpleForm>
         <NumberInput disabled source="id" />
         <TextInput source="username" validate={required()} />
         <TextInput source="email" validate={[required(), email()]} />
-        <PasswordInput
-          source="password"
-          validate={[required(), minLength(8)]}
-        />
-        <PasswordInput source="confirm_password" validate={equalToPassword} />
-        <BooleanField source="passwordChangeRequired" />
         <BooleanInput source="admin" disabled={permissions !== "admin"} />
       </SimpleForm>
     </Create>

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../provider/AuthProvider";
+import { useAuth } from "../provider/AuthProvider";
 import { Label, Button, TextInput, Alert } from "flowbite-react";
 import { getJwtToken } from "../hooks/Api";
-import AuthCard from "./AuthCard";
+import BaseCard from "../../components/BaseCard";
 
 const API_HOST = process.env.REACT_APP_API_HOST;
 
@@ -32,11 +32,6 @@ const Login = () => {
         delete userdata.code;
         setUserdata(userdata);
 
-        if (userdata.passwordChangeRequired) {
-          navigate("/password", { replace: true });
-          return;
-        }
-
         navigate("/", { replace: true });
       })
       .catch((error) => {
@@ -46,7 +41,7 @@ const Login = () => {
   };
 
   return (
-    <AuthCard title="Login">
+    <BaseCard title="Login" linkForgotPassword={true}>
       {error && <Alert color="failure">{error}</Alert>}
 
       <form className="flex flex-col gap-4" onSubmit={handleLogin}>
@@ -64,7 +59,7 @@ const Login = () => {
         </div>
         <Button type="submit">Login</Button>
       </form>
-    </AuthCard>
+    </BaseCard>
   );
 };
 

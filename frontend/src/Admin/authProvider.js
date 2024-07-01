@@ -27,7 +27,7 @@ const authProvider = {
   login: async ({ username, password }) => {
     const request = new Request(`${API_HOST}/login`, {
       method: "POST",
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ login: username, password }),
       headers: new Headers({ "Content-Type": "application/json" }),
       credentials: "include",
     });
@@ -37,9 +37,9 @@ const authProvider = {
       if (response.status < 200 || response.status >= 300) {
         throw new Error(response.statusText);
       }
-      const { token } = await response.json();
+      const { token, role, username, gravatarUrl } = await response.json();
       const decodedToken = jwtDecode(token);
-      const { ID, username, role, gravatarUrl } = decodedToken;
+      const { ID } = decodedToken;
       const expire = new Date(decodedToken.exp * 1000);
 
       setAdminData({ ID, token, username, role, expire, gravatarUrl });

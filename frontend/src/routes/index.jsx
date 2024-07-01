@@ -1,13 +1,14 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import { useAuth } from "../provider/AuthProvider";
+import { useAuth } from "../Auth/provider/AuthProvider";
 import { ProtectedRoute } from "./ProtectedRoute";
 import React from "react";
 import Kasseapparat from "../Main/Kasseapparat";
 import Admin from "../Admin/Admin";
-import Logout from "../Main/components/Logout";
-import Login from "../Main/components/Login";
-import ChangePassword from "../Main/components/ChangePassword";
-import NotFound from "../Main/components/NotFound";
+import Logout from "../Auth/components/Logout";
+import Login from "../Auth/components/Login";
+import ChangePassword from "../Auth/components/ChangePassword";
+import NotFound from "../components/NotFound";
+import ForgotPassword from "../Auth/components/ForgotPassword";
 
 const Routes = () => {
   const { token } = useAuth();
@@ -17,6 +18,10 @@ const Routes = () => {
     {
       path: "/admin/*",
       element: <Admin />,
+    },
+    {
+      path: "/change-password",
+      element: <ChangePassword />,
     },
   ];
 
@@ -34,10 +39,6 @@ const Routes = () => {
           path: "/logout",
           element: <Logout />,
         },
-        {
-          path: "/password",
-          element: <ChangePassword />,
-        },
       ],
     },
   ];
@@ -47,6 +48,10 @@ const Routes = () => {
     {
       path: "/login",
       element: <Login />,
+    },
+    {
+      path: "/forgot-password",
+      element: <ForgotPassword />,
     },
   ];
 

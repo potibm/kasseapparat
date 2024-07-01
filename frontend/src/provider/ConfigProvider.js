@@ -19,6 +19,8 @@ const ConfigProvider = ({ children }) => {
         return response.json();
       })
       .then((data) => {
+        data.apiHost = API_HOST;
+
         data.currencyOptions = {
           style: "currency",
           currency: data.currencyCode ?? "DKK",

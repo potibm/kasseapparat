@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import App from "./App";
 import { test, expect } from "@jest/globals";
 import Routes from "./routes";
-import AuthProvider from "./provider/AuthProvider";
+import AuthProvider from "./Auth/provider/AuthProvider";
 import { ConfigContext } from "./provider/ConfigProvider";
 import PropTypes from "prop-types";
 

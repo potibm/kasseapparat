@@ -1,11 +1,11 @@
 import React from "react";
-import AuthCard from "./AuthCard";
+import BaseCard from "./BaseCard";
 
 const NotFound = () => {
   return (
-    <AuthCard title="404">
+    <BaseCard title="404">
       <p>Page not found.</p>
-    </AuthCard>
+    </BaseCard>
   );
 };
 

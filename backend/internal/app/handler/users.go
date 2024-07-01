@@ -2,8 +2,10 @@ package handler
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
@@ -45,7 +47,6 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 
 type UserCreateRequest struct {
 	Username string `form:"username"  json:"username" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
 	Email   string `form:"email"    json:"email" binding:"required"`
 	Admin	bool   `form:"admin" json:"admin" binding:""`
 }
@@ -121,11 +122,11 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	// make usernamer lowercase
 	user.Username = userRequest.Username
-	user.Password = userRequest.Password
 	user.Email = userRequest.Email
-	user.PasswordChangeRequired = true
+	user.GenerateRandomPassword()
+	validity := 3 * time.Hour
+	user.GenerateChangePasswordToken(&validity)
 	
 	// only an admin may change the role of a user
 	if executingUserObj.Admin {
@@ -134,45 +135,15 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 		user.Admin = false
 	}
 
-	product, err := handler.repo.CreateUser(user)
+	user, err = handler.repo.CreateUser(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	c.JSON(http.StatusOK, product)
-}
-
-type UserUpdatePasswordRequest struct {
-	Password string `form:"password1" json:"password1" binding:"required,eqfield=PasswordVerify,min=8"`
-	PasswordVerify string `form:"password2" json:"password2" binding:"required"`
-}
-
-func (handler *Handler) UpdateUserPassword(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
+	err = handler.mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken);
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
-		return
-	}
-
-	var userPasswordChangeRequest UserUpdatePasswordRequest
-	if c.ShouldBind(&userPasswordChangeRequest) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-		return
-	}
-
-	if !executingUserObj.PasswordChangeRequired {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Password change not required"})
-		return
-	}
-
-	executingUserObj.Password = userPasswordChangeRequest.Password
-	executingUserObj.PasswordChangeRequired = false
-
-	user, err := handler.repo.UpdateUserByID(int(executingUserObj.ID), *executingUserObj)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-		return
+		log.Println("Error sending email", err)
 	}
 
 	c.JSON(http.StatusOK, user)

@@ -15,6 +15,7 @@ type Handler struct {
 	version string
 }
 
+
 func NewHandler(repo *repository.Repository, mailer mailer.Mailer, version string) *Handler {
 	return &Handler{repo: repo, mailer: mailer, version: version}
 }

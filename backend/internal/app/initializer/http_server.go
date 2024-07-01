@@ -107,7 +107,8 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 		apiRouter.DELETE("/users/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteUserByID)
 		apiRouter.POST("/users", authMiddleware.MiddlewareFunc(), myhandler.CreateUser)
 		
-		apiRouter.POST("/auth/change_password", authMiddleware.MiddlewareFunc(), myhandler.UpdateUserPassword)
+		apiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
+		apiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
 
 		apiRouter.GET("/config", myhandler.GetConfig)
 		apiRouter.GET("/purchases/stats", myhandler.GetPurchaseStats)

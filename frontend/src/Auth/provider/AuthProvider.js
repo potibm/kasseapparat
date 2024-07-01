@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { refreshJwtToken } from "../Main/hooks/Api";
+import { refreshJwtToken } from "../hooks/Api";
 import PropTypes from "prop-types";
 
 const AuthContext = createContext();
@@ -128,7 +128,6 @@ const AuthProvider = ({ children }) => {
       setUserdata: (userdata) => setAuth((prev) => ({ ...prev, userdata })),
       gravatarUrl: auth.userdata?.gravatarUrl ?? "",
       role: auth.userdata?.role ?? "user",
-      passwordChangeRequired: auth.userdata?.passwordChangeRequired ?? false,
       username: auth.userdata?.username ?? "unknown",
     }),
     [auth],
