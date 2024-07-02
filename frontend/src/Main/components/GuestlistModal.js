@@ -79,6 +79,7 @@ const GuestlistModal = ({
               label="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus={true}
             />
 
             <SidebarKeyboard term={searchQuery} setTerm={setSearchQuery} />
