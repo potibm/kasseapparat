@@ -17,6 +17,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
     permissions:
       contents: write
       packages: write
