@@ -39,11 +39,24 @@ const ProductStatsCard = () => {
     return <div>Loading...</div>;
   }
 
+  const customCompactTheme = {
+    head: {
+      cell: {
+        base: "px-3 py-2",
+      },
+    },
+    body: {
+      cell: {
+        base: "px-3 py-2",
+      },
+    },
+  };
+
   return (
     <>
       <Card>
         <CardContent>
-          <Table className="mt-5">
+          <Table className="mt-5" theme={customCompactTheme}>
             <Table.Head>
               <Table.HeadCell>Product</Table.HeadCell>
               <Table.HeadCell className="text-right">Units sold</Table.HeadCell>
