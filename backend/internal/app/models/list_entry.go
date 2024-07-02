@@ -14,6 +14,8 @@ type ListEntry struct {
 	Code 		*string`json:"code" gorm:"unique"`
 	AdditionalGuests uint `json:"additionalGuests" gorm:"default:0"`
 	AttendedGuests uint `json:"attendedGuests" gorm:"default:0"`
+	PurchaseID *uint `json:"purchaseId"`
+	Purchase *Purchase `json:"-"`
 }
 
 type ListEntrySummary struct {
