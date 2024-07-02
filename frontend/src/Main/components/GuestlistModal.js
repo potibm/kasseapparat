@@ -1,10 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FloatingLabel, Modal, Table, Avatar, Button } from "flowbite-react";
+import {
+  FloatingLabel,
+  Modal,
+  Table,
+  Avatar,
+  Button,
+  Alert,
+} from "flowbite-react";
 import { fetchGuestListByProductId } from "../hooks/Api";
-import { HiShoppingCart } from "react-icons/hi";
+import { HiShoppingCart, HiInformationCircle } from "react-icons/hi";
 import PropTypes from "prop-types";
 import SidebarKeyboard from "./SidebarKeyboard";
 import { useConfig } from "../../provider/ConfigProvider";
+import { useAuth } from "../../Auth/provider/AuthProvider";
 
 const GuestlistModal = ({
   isOpen,
@@ -14,8 +22,10 @@ const GuestlistModal = ({
   hasListItem,
 }) => {
   const [guestListEntries, setGuestListEntries] = useState([]);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const apiHost = useConfig().apiHost;
+  const { token } = useAuth();
 
   const handleAddToCart = (listEntry, additionalGuests) => {
     addToCart(product, additionalGuests + 1, listEntry);
@@ -27,6 +37,7 @@ const GuestlistModal = ({
       try {
         let response = await fetchGuestListByProductId(
           apiHost,
+          token,
           product.id,
           searchQuery,
         );
@@ -34,12 +45,13 @@ const GuestlistModal = ({
           response = [];
         }
         setGuestListEntries(response);
+        setError(null);
       } catch (error) {
-        console.error("Error fetching guest entries:", error);
+        setError("Error fetching list entries: " + error.message);
         setGuestListEntries([]);
       }
     },
-    [product.id, searchQuery, apiHost],
+    [product.id, searchQuery, apiHost, token],
   );
 
   useEffect(() => {
@@ -56,7 +68,7 @@ const GuestlistModal = ({
       size="7xl"
       dismissible
     >
-      <Modal.Header>Gästeliste für {product.name}</Modal.Header>
+      <Modal.Header>List for {product.name}</Modal.Header>
       <Modal.Body>
         <div className="flex h-full">
           {/* Sidebar */}
@@ -76,6 +88,15 @@ const GuestlistModal = ({
             style={{ maxHeight: "calc(100vh - 10rem)" }}
           >
             <h2 className="text-lg font-semibold mb-4">Content</h2>
+            {error && (
+              <Alert
+                className="my-3"
+                color="failure"
+                icon={HiInformationCircle}
+              >
+                {error}
+              </Alert>
+            )}
             <div className="space-y-4">
               <Table hoverable>
                 <Table.Head>
