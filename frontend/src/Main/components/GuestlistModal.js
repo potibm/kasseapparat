@@ -4,8 +4,7 @@ import { fetchGuestListByProductId } from "../hooks/Api";
 import { HiShoppingCart } from "react-icons/hi";
 import PropTypes from "prop-types";
 import SidebarKeyboard from "./SidebarKeyboard";
-
-const API_HOST = process.env.REACT_APP_API_HOST;
+import { useConfig } from "../../provider/ConfigProvider";
 
 const GuestlistModal = ({
   isOpen,
@@ -16,6 +15,7 @@ const GuestlistModal = ({
 }) => {
   const [guestListEntries, setGuestListEntries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const apiHost = useConfig().apiHost;
 
   const handleAddToCart = (listEntry, additionalGuests) => {
     addToCart(product, additionalGuests + 1, listEntry);
@@ -26,7 +26,7 @@ const GuestlistModal = ({
     async (query = "") => {
       try {
         let response = await fetchGuestListByProductId(
-          API_HOST,
+          apiHost,
           product.id,
           searchQuery,
         );
@@ -39,7 +39,7 @@ const GuestlistModal = ({
         setGuestListEntries([]);
       }
     },
-    [product.id, searchQuery],
+    [product.id, searchQuery, apiHost],
   );
 
   useEffect(() => {
