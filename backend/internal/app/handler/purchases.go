@@ -118,19 +118,21 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 	purchase.TotalPrice = calculatedTotalPrice
 
-	// update the list of listEntries
-	for i := 0; i < len(updatedListEntries); i++ {
-		_, err := handler.repo.UpdateListEntryByID(int(updatedListEntries[i].ID), updatedListEntries[i])
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error", "message": err.Error()})
-			return
-		}
-	}
-
 	purchase, err = handler.repo.StorePurchases(purchase)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error", "message": err.Error()})
 		return
+	}
+
+	// update the list of listEntries
+	for i := 0; i < len(updatedListEntries); i++ {
+		updatedListEntry := updatedListEntries[i]
+		updatedListEntry.PurchaseID = &purchase.ID
+		_, err := handler.repo.UpdateListEntryByID(int(updatedListEntry.ID), updatedListEntry)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error", "message": err.Error()})
+			return
+		}
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Purchase successful", "purchase": purchase})

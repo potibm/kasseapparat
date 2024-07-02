@@ -122,7 +122,7 @@ func (repo *Repository) UpdateListEntryByID(id int, updatedListEntry models.List
 		return nil, errors.New("Failed to update List Entry")
 	}
 
-	return &listEntry, nil
+	return &updatedListEntry, nil
 }
 
 func (repo *Repository) CreateListEntry(listEntry models.ListEntry) (models.ListEntry, error) {
