@@ -22,8 +22,6 @@ import { HiCog, HiOutlineUserCircle } from "react-icons/hi";
 import { useAuth } from "../Auth/provider/AuthProvider";
 import { useConfig } from "../provider/ConfigProvider";
 
-const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
-
 function Kasseapparat() {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
@@ -31,10 +29,11 @@ function Kasseapparat() {
   const [errorMessage, setErrorMessage] = useState("");
   const { username, token } = useAuth();
   const version = useConfig().version;
+  const apiHost = useConfig().apiHost;
 
   useEffect(() => {
     const getProducts = async () => {
-      fetchProducts(API_HOST)
+      fetchProducts(apiHost, token)
         .then((products) => setProducts(products))
         .catch((error) =>
           showError(
@@ -43,9 +42,9 @@ function Kasseapparat() {
         );
     };
     const getHistory = async () => {
-      const history = await fetchPurchases(API_HOST);
+      const history = await fetchPurchases(apiHost, token);
       setPurchaseHistory(history);
-      fetchPurchases(API_HOST)
+      fetchPurchases(apiHost, token)
         .then((history) => setPurchaseHistory(history))
         .catch((error) =>
           showError(
@@ -56,7 +55,7 @@ function Kasseapparat() {
     };
     getProducts();
     getHistory();
-  }, []); // Empty dependency array to run only once on mount
+  }, [apiHost, token]); // Empty dependency array to run only once on mount
 
   const handleAddToCart = (product, count = 1, listItem = null) => {
     setCart(addToCart(cart, product, count, listItem));
@@ -72,7 +71,7 @@ function Kasseapparat() {
 
   const handleRemoveAllFromCart = () => {
     setCart(removeAllFromCart());
-    fetchProducts(API_HOST)
+    fetchProducts(apiHost, token)
       .then((products) => setProducts(products))
       .catch((error) =>
         showError("There was an error fetching the products: " + error.message),
@@ -84,9 +83,9 @@ function Kasseapparat() {
   };
 
   const handleRemoveFromPurchaseHistory = (purchase) => {
-    deletePurchaseById(API_HOST, token, purchase.id)
+    deletePurchaseById(apiHost, token, purchase.id)
       .then((data) => {
-        fetchPurchases(API_HOST)
+        fetchPurchases(apiHost, token)
           .then((history) => setPurchaseHistory(history))
           .catch((error) =>
             showError(
@@ -101,11 +100,11 @@ function Kasseapparat() {
   };
 
   const handleCheckoutCart = async () => {
-    storePurchase(API_HOST, token, cart)
+    storePurchase(apiHost, token, cart)
       .then((createdPurchase) => {
         setCart(checkoutCart());
         handleAddToPurchaseHistory(createdPurchase.purchase);
-        fetchProducts(API_HOST)
+        fetchProducts(apiHost, token)
           .then((products) => setProducts(products))
           .catch((error) =>
             showError(
