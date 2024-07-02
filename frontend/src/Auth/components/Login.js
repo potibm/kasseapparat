@@ -4,14 +4,14 @@ import { useAuth } from "../provider/AuthProvider";
 import { Label, Button, TextInput, Alert } from "flowbite-react";
 import { getJwtToken } from "../hooks/Api";
 import BaseCard from "../../components/BaseCard";
-
-const API_HOST = process.env.REACT_APP_API_HOST;
+import { useConfig } from "../../provider/ConfigProvider";
 
 const Login = () => {
   const [error, setError] = useState(null);
 
   const { setToken, setExpiryDate, setUserdata } = useAuth();
   const navigate = useNavigate();
+  const apiHost = useConfig().apiHost;
 
   const handleLogin = (event) => {
     event.preventDefault();
@@ -19,7 +19,7 @@ const Login = () => {
     const login = event.target.login.value;
     const password = event.target.password.value;
 
-    getJwtToken(API_HOST, login, password)
+    getJwtToken(apiHost, login, password)
       .then((auth) => {
         const token = auth.token;
         const expiryDate = auth.expire;

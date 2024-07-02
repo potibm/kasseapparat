@@ -8,12 +8,13 @@ import React, {
 } from "react";
 import { refreshJwtToken } from "../hooks/Api";
 import PropTypes from "prop-types";
+import { useConfig } from "../../provider/ConfigProvider";
 
 const AuthContext = createContext();
 
-const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
-
 const AuthProvider = ({ children }) => {
+  const apiHost = useConfig().apiHost;
+
   const [auth, setAuth] = useState({
     token: localStorage.getItem("token"),
     expiryDate: localStorage.getItem("expiryDate"),
@@ -24,7 +25,7 @@ const AuthProvider = ({ children }) => {
     if (auth.token == null) {
       return;
     }
-    refreshJwtToken(API_HOST, auth.token)
+    refreshJwtToken(apiHost, auth.token)
       .then((response) => {
         const newToken = response.token;
         const newExpiryDate = response.expire;
@@ -46,7 +47,7 @@ const AuthProvider = ({ children }) => {
       });
       window.location = "/logout";
     }
-  }, [auth]);
+  }, [auth, apiHost]);
 
   useEffect(() => {
     if (auth.token) {
