@@ -8,11 +8,11 @@ import ConfigProvider from "./provider/ConfigProvider";
 function App() {
   return (
     <ConfigProvider>
-      <SentryInitializer>
-        <AuthProvider>
+      <AuthProvider>
+        <SentryInitializer>
           <Routes />
-        </AuthProvider>
-      </SentryInitializer>
+        </SentryInitializer>
+      </AuthProvider>
     </ConfigProvider>
   );
 }

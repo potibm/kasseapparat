@@ -60,6 +60,12 @@ const GuestlistModal = ({
     }
   }, [isOpen, searchQuery, fetchGuestEntries]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchQuery("");
+    }
+  }, [isOpen]);
+
   return (
     <Modal
       show={isOpen}

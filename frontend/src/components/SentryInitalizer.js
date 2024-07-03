@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 import * as Sentry from "@sentry/react";
 import { useConfig } from "../provider/ConfigProvider";
+import { useAuth } from "../Auth/provider/AuthProvider";
 
 const SentryInitializer = ({ children }) => {
   const config = useConfig();
+  const { id, username } = useAuth();
 
   useEffect(() => {
     if (config && config.sentryDSN) {
@@ -11,6 +13,7 @@ const SentryInitializer = ({ children }) => {
         Sentry.init({
           dsn: config.sentryDSN,
           environment: process.env.NODE_ENV,
+          release: "kasseapparat@" + config.version ?? "unknown",
           integrations: [
             Sentry.browserTracingIntegration(),
             Sentry.replayIntegration(),
@@ -19,11 +22,16 @@ const SentryInitializer = ({ children }) => {
           replaysSessionSampleRate: config.sentryReplaySessionSampleRate ?? 0.1,
           replaysOnErrorSampleRate: config.sentryReplayErrorSampleRate ?? 1.0,
         });
+
+        Sentry.setUser({
+          id,
+          username,
+        });
       } catch (error) {
         console.error("Error initializing Sentry:", error);
       }
     }
-  }, [config]);
+  }, [config, id, username]);
 
   return children;
 };

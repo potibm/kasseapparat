@@ -15,11 +15,26 @@ const AuthContext = createContext();
 const AuthProvider = ({ children }) => {
   const apiHost = useConfig().apiHost;
 
-  const [auth, setAuth] = useState({
-    token: localStorage.getItem("token"),
-    expiryDate: localStorage.getItem("expiryDate"),
-    userdata: JSON.parse(localStorage.getItem("userdata")),
-  });
+  const getInitialState = () => {
+    const expiryDate = localStorage.getItem("expiryDate");
+    const currentDate = new Date();
+    const expiryDateObj = new Date(expiryDate);
+
+    if (expiryDateObj > currentDate) {
+      return {
+        token: localStorage.getItem("token"),
+        expiryDate,
+        userdata: JSON.parse(localStorage.getItem("userdata")),
+      };
+    } else {
+      localStorage.removeItem("token");
+      localStorage.removeItem("expiryDate");
+      localStorage.removeItem("userdata");
+      return { token: null, expiryDate: null, userdata: null };
+    }
+  };
+
+  const [auth, setAuth] = useState(getInitialState);
 
   const performTokenRefresh = useCallback(() => {
     if (auth.token == null) {
@@ -129,6 +144,7 @@ const AuthProvider = ({ children }) => {
       gravatarUrl: auth.userdata?.gravatarUrl ?? "",
       role: auth.userdata?.role ?? "user",
       username: auth.userdata?.username ?? "unknown",
+      id: auth.userdata?.id ?? 0,
     }),
     [auth],
   );

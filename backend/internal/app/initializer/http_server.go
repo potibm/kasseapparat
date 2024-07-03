@@ -5,15 +5,18 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/getsentry/sentry-go"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/handler"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
+	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 )
 
@@ -30,8 +33,9 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 	r.Use(static.Serve("/", static.EmbedFolder(staticFiles, "assets")))
 
 	authMiddleware := registerAuthMiddleware(repository)
+	//r.Use(SentryMiddleware())
 	registerApiRoutes(myhandler, authMiddleware)
-
+	
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
 			file, _ := staticFiles.ReadFile("assets/index.html")
@@ -70,47 +74,68 @@ func registerAuthMiddleware(repository repository.Repository) *jwt.GinJWTMiddlew
 	return authMiddleware
 }
 
+func SentryMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, exists := c.Get(middleware.IdentityKey)
+		if exists {
+			if user, ok := user.(*models.User); ok {
+				sentry.ConfigureScope(func(scope *sentry.Scope) {
+					scope.SetUser(sentry.User{
+						ID:    strconv.Itoa(int(user.ID)),
+					})
+				})
+			}
+		}
+		c.Next()
+	}
+}
+
 func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMiddleware) {
 
-	apiRouter := r.Group("/api/v1")
+	protectedApiRouter := r.Group("/api/v1")
+	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
 	{
-		apiRouter.GET("/products", authMiddleware.MiddlewareFunc(), myhandler.GetProducts)
-		apiRouter.GET("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.GetProductByID)
-		apiRouter.GET("/products/:id/listEntries", authMiddleware.MiddlewareFunc(), myhandler.GetListEntriesByProductID)
-		apiRouter.PUT("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateProductByID)
-		apiRouter.DELETE("/products/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteProductByID)
-		apiRouter.POST("/products", authMiddleware.MiddlewareFunc(), myhandler.CreateProduct)
+		protectedApiRouter.GET("/products", myhandler.GetProducts)
+		protectedApiRouter.GET("/products/:id", myhandler.GetProductByID)
+		protectedApiRouter.GET("/products/:id/listEntries", myhandler.GetListEntriesByProductID)
+		protectedApiRouter.PUT("/products/:id", myhandler.UpdateProductByID)
+		protectedApiRouter.DELETE("/products/:id", myhandler.DeleteProductByID)
+		protectedApiRouter.POST("/products", myhandler.CreateProduct)
 
-		apiRouter.GET("/productStats", authMiddleware.MiddlewareFunc(), myhandler.GetProductStats)
+		protectedApiRouter.GET("/productStats", myhandler.GetProductStats)
 		
-		apiRouter.GET("/lists", authMiddleware.MiddlewareFunc(), myhandler.GetLists)
-		apiRouter.GET("/lists/:id", authMiddleware.MiddlewareFunc(), myhandler.GetListByID)
-		apiRouter.PUT("/lists/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateListByID)
-		apiRouter.DELETE("/lists/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteListByID)
-		apiRouter.POST("/lists", authMiddleware.MiddlewareFunc(), myhandler.CreateList)
+		protectedApiRouter.GET("/lists", myhandler.GetLists)
+		protectedApiRouter.GET("/lists/:id", myhandler.GetListByID)
+		protectedApiRouter.PUT("/lists/:id", myhandler.UpdateListByID)
+		protectedApiRouter.DELETE("/lists/:id", myhandler.DeleteListByID)
+		protectedApiRouter.POST("/lists", myhandler.CreateList)
 
-		apiRouter.GET("/listEntries", authMiddleware.MiddlewareFunc(), myhandler.GetListEntries)
-		apiRouter.GET("/listEntries/:id", authMiddleware.MiddlewareFunc(), myhandler.GetListEntryByID)
-		apiRouter.PUT("/listEntries/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateListEntryByID)
-		apiRouter.DELETE("/listEntries/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteListEntryByID)
-		apiRouter.POST("/listEntries", authMiddleware.MiddlewareFunc(), myhandler.CreateListEntry)
+		protectedApiRouter.GET("/listEntries", myhandler.GetListEntries)
+		protectedApiRouter.GET("/listEntries/:id", myhandler.GetListEntryByID)
+		protectedApiRouter.PUT("/listEntries/:id", myhandler.UpdateListEntryByID)
+		protectedApiRouter.DELETE("/listEntries/:id", myhandler.DeleteListEntryByID)
+		protectedApiRouter.POST("/listEntries", myhandler.CreateListEntry)
 
-		apiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
-		apiRouter.GET("/purchases", authMiddleware.MiddlewareFunc(), myhandler.GetPurchases)
-		apiRouter.GET("/purchases/:id", authMiddleware.MiddlewareFunc(), myhandler.GetPurchaseByID)
-		apiRouter.POST("/purchases", authMiddleware.MiddlewareFunc(), myhandler.PostPurchases)
-		apiRouter.DELETE("/purchases/:id", authMiddleware.MiddlewareFunc(), myhandler.DeletePurchase)
+		protectedApiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
+		protectedApiRouter.GET("/purchases", myhandler.GetPurchases)
+		protectedApiRouter.GET("/purchases/:id", myhandler.GetPurchaseByID)
+		protectedApiRouter.POST("/purchases", myhandler.PostPurchases)
+		protectedApiRouter.DELETE("/purchases/:id", myhandler.DeletePurchase)
 
-		apiRouter.GET("/users", authMiddleware.MiddlewareFunc(), myhandler.GetUsers)
-		apiRouter.GET("/users/:id", authMiddleware.MiddlewareFunc(), myhandler.GetUserByID)
-		apiRouter.PUT("/users/:id", authMiddleware.MiddlewareFunc(), myhandler.UpdateUserByID)
-		apiRouter.DELETE("/users/:id", authMiddleware.MiddlewareFunc(), myhandler.DeleteUserByID)
-		apiRouter.POST("/users", authMiddleware.MiddlewareFunc(), myhandler.CreateUser)
+		protectedApiRouter.GET("/users", myhandler.GetUsers)
+		protectedApiRouter.GET("/users/:id", myhandler.GetUserByID)
+		protectedApiRouter.PUT("/users/:id", myhandler.UpdateUserByID)
+		protectedApiRouter.DELETE("/users/:id", myhandler.DeleteUserByID)
+		protectedApiRouter.POST("/users", myhandler.CreateUser)
 		
-		apiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
-		apiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
+		protectedApiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
+		protectedApiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
+	}
 
-		apiRouter.GET("/config", myhandler.GetConfig)
-		apiRouter.GET("/purchases/stats", myhandler.GetPurchaseStats)
+	// unprotected routes
+	unprotectedApiRouter := r.Group("/api/v1")
+	{
+		unprotectedApiRouter.GET("/config", myhandler.GetConfig)
+		unprotectedApiRouter.GET("/purchases/stats", myhandler.GetPurchaseStats)
 	}
 }

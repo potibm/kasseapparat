@@ -18,6 +18,7 @@ func InitializeSentry() {
 		Dsn: os.Getenv("SENTRY_DSN"),
 		Environment: os.Getenv("SENTRY_ENVIRONMENT"),
 		EnableTracing: true,
+		Release: "kasseapparat@" + GetVersion(),
 		// Set TracesSampleRate to 1.0 to capture 100%
 		// of transactions for tracing.
 		// We recommend adjusting this value in production,
