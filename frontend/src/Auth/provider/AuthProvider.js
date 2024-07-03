@@ -15,11 +15,29 @@ const AuthContext = createContext();
 const AuthProvider = ({ children }) => {
   const apiHost = useConfig().apiHost;
 
-  const [auth, setAuth] = useState({
-    token: localStorage.getItem("token"),
-    expiryDate: localStorage.getItem("expiryDate"),
-    userdata: JSON.parse(localStorage.getItem("userdata")),
-  });
+  const getInitialState = () => {
+    const expiryDate = localStorage.getItem("expiryDate");
+    console.log("Expiry Date: " + expiryDate);
+    const currentDate = new Date();
+    const expiryDateObj = new Date(expiryDate);
+
+    if (expiryDateObj > currentDate) {
+      console.log("Token is still valid");
+      return {
+        token: localStorage.getItem("token"),
+        expiryDate,
+        userdata: JSON.parse(localStorage.getItem("userdata")),
+      };
+    } else {
+      console.log("Token is expired");
+      localStorage.removeItem("token");
+      localStorage.removeItem("expiryDate");
+      localStorage.removeItem("userdata");
+      return { token: null, expiryDate: null, userdata: null };
+    }
+  };
+
+  const [auth, setAuth] = useState(getInitialState);
 
   const performTokenRefresh = useCallback(() => {
     if (auth.token == null) {
