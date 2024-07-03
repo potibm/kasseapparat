@@ -17,19 +17,16 @@ const AuthProvider = ({ children }) => {
 
   const getInitialState = () => {
     const expiryDate = localStorage.getItem("expiryDate");
-    console.log("Expiry Date: " + expiryDate);
     const currentDate = new Date();
     const expiryDateObj = new Date(expiryDate);
 
     if (expiryDateObj > currentDate) {
-      console.log("Token is still valid");
       return {
         token: localStorage.getItem("token"),
         expiryDate,
         userdata: JSON.parse(localStorage.getItem("userdata")),
       };
     } else {
-      console.log("Token is expired");
       localStorage.removeItem("token");
       localStorage.removeItem("expiryDate");
       localStorage.removeItem("userdata");
