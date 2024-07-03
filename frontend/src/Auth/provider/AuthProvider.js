@@ -144,6 +144,7 @@ const AuthProvider = ({ children }) => {
       gravatarUrl: auth.userdata?.gravatarUrl ?? "",
       role: auth.userdata?.role ?? "user",
       username: auth.userdata?.username ?? "unknown",
+      id: auth.userdata?.id ?? 0,
     }),
     [auth],
   );
