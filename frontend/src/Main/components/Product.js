@@ -24,18 +24,26 @@ function Product({ product, addToCart, hasListItem }) {
         <h5 className="text-2xl text-left text-balance font-bold tracking-tight text-gray-900 dark:text-white">
           {product.name}
         </h5>
-        <div className="flex-grow" style={{ flexGrow: 0.01 }}></div> {/* Erwägen Sie, eine Tailwind-Klasse zu definieren, falls möglich */}
+        <div className="flex-grow" style={{ flexGrow: 0.01 }}></div>{" "}
+        {/* Erwägen Sie, eine Tailwind-Klasse zu definieren, falls möglich */}
         <div className="flex items-center justify-between mt-auto">
           <p className="text-3xl font-bold text-gray-900 dark:text-white">
             {currency.format(product.price)}
           </p>
           <div className="flex">
             {product.lists.length > 0 && (
-              <Button onClick={handleShowGuestlist} className="mr-4" aria-label="Gästeliste anzeigen">
+              <Button
+                onClick={handleShowGuestlist}
+                className="mr-4"
+                aria-label="Gästeliste anzeigen"
+              >
                 <HiUserAdd className="h-5 w-5" />
               </Button>
             )}
-            <Button onClick={handleAddToCart} aria-label="Zum Warenkorb hinzufügen">
+            <Button
+              onClick={handleAddToCart}
+              aria-label="Zum Warenkorb hinzufügen"
+            >
               <HiShoppingCart className="h-5 w-5" />
             </Button>
           </div>
