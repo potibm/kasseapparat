@@ -20,26 +20,36 @@ function Product({ product, addToCart, hasListItem }) {
 
   return (
     <>
-      <Card
-        className={`w-1/4 mr-1.5 mb-1.5 float-left ${product.wrapAfter ? "float-none" : ""}`}
-      >
-        <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+      <Card className="w-[24%] flex flex-col mb-2 mr-2">
+        <h5 className="text-2xl text-left text-balance font-bold tracking-tight text-gray-900 dark:text-white">
           {product.name}
         </h5>
-        <div className="flex items-center justify-between">
-          <span className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="flex-grow" style={{ flexGrow: 0.01 }}></div>{" "}
+        {/* Erwägen Sie, eine Tailwind-Klasse zu definieren, falls möglich */}
+        <div className="flex items-center justify-between mt-auto">
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
             {currency.format(product.price)}
-          </span>
-          {product.lists.length > 0 && (
-            <Button onClick={handleShowGuestlist}>
-              <HiUserAdd className="h-5 w-5" />
+          </p>
+          <div className="flex">
+            {product.lists.length > 0 && (
+              <Button
+                onClick={handleShowGuestlist}
+                className="mr-4"
+                aria-label="Gästeliste anzeigen"
+              >
+                <HiUserAdd className="h-5 w-5" />
+              </Button>
+            )}
+            <Button
+              onClick={handleAddToCart}
+              aria-label="Zum Warenkorb hinzufügen"
+            >
+              <HiShoppingCart className="h-5 w-5" />
             </Button>
-          )}
-          <Button onClick={handleAddToCart}>
-            <HiShoppingCart className="h-5 w-5" />
-          </Button>
+          </div>
         </div>
       </Card>
+      {product.wrapAfter && <div className="w-full"></div>}
       <GuestlistModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
