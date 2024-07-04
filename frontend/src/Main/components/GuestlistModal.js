@@ -75,11 +75,10 @@ const GuestlistModal = ({
       dismissible
     >
       <Modal.Header>List for {product.name}</Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="overflow-hidden">
         <div className="flex h-full">
           {/* Sidebar */}
           <div className="w-1/4 bg-gray-100 p-4">
-            <h2 className="text-lg font-semibold mb-4">Search</h2>
             <FloatingLabel
               variant="filled"
               label="Search..."
@@ -94,7 +93,6 @@ const GuestlistModal = ({
             className="w-3/4 p-4 overflow-y-auto"
             style={{ maxHeight: "calc(100vh - 10rem)" }}
           >
-            <h2 className="text-lg font-semibold mb-4">Content</h2>
             {error && (
               <Alert
                 className="my-3"

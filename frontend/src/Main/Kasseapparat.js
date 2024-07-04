@@ -128,7 +128,7 @@ function Kasseapparat() {
   return (
     <div className="App p-2">
       <div className="w-full overflow-hidden">
-        <div className="border w-9/12">
+        <div className="w-9/12">
           <ProductList
             products={products}
             addToCart={handleAddToCart}

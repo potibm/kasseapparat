@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 function ProductList({ products, addToCart, hasListItem }) {
   return (
-    <div className="w-full">
+    <div className="flex flex-wrap -m-1.5">
       {products.map((product) => (
         <Product
           key={product.id}
