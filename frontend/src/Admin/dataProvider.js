@@ -5,7 +5,11 @@ const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
 
 const httpClient = (url, options = {}) => {
   if (!options.headers) {
-    options.headers = new Headers({ Accept: "application/json" });
+    options.headers = new Headers();
+    options.headers.set("Accept", "application/json");
+  }
+  if (!options.isUpload) {
+    options.headers.set("Content-Type", "application/json");
   }
   // add your own headers here
   const adminData = localStorage.getItem("admin");
@@ -19,6 +23,21 @@ const httpClient = (url, options = {}) => {
   return fetchUtils.fetchJson(url, options);
 };
 
-const dataProvider = jsonServerProvider(API_HOST + "/api/v1", httpClient);
+const dataProvider = jsonServerProvider(`${API_HOST}/api/v1`, httpClient);
 
-export default dataProvider;
+const myDataProvider = {
+  ...dataProvider,
+  upload: (resource, params) => {
+    const url = `${API_HOST}/api/v1/${resource}`;
+    const options = {
+      method: "POST",
+      body: params.data,
+      isUpload: true,
+    };
+    return httpClient(url, options).then(({ json }) => ({
+      data: json,
+    }));
+  },
+};
+
+export default myDataProvider;

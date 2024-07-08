@@ -12,7 +12,6 @@ import {
   TextInput,
   Create,
   SaveButton,
-  SearchInput,
   Toolbar,
   ReferenceInput,
   SelectInput,
@@ -21,49 +20,9 @@ import {
   useRecordContext,
   useGetIdentity,
 } from "react-admin";
-import { Chip } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
-import PropTypes from "prop-types";
-
-const QuickFilter = ({ label }) => {
-  return <Chip sx={{ marginBottom: 1 }} label={label} />;
-};
-
-QuickFilter.propTypes = {
-  label: PropTypes.string,
-};
-
-const ListEntryFilters = [
-  <SearchInput source="q" alwaysOn key="ID" />,
-  <ReferenceInput source="list" reference="lists" key="id">
-    <SelectInput label="List" source="list" optionText="name" />
-  </ReferenceInput>,
-  <QuickFilter
-    source="isPresent"
-    label="Present"
-    defaultValue={true}
-    key="ID"
-  />,
-  <QuickFilter
-    source="isNotPresent"
-    label="Not Present"
-    defaultValue={true}
-    key="ID"
-  />,
-];
-
-const AttendedGuestsBooleanField = (props) => {
-  const record = useRecordContext();
-  if (!record) return null;
-  const hasAttendedGuests = record.attendedGuests > 0;
-
-  // Erstellen eines temporären Records, der dem BooleanField übergeben wird
-  const tempRecord = { ...record, hasAttendedGuests };
-
-  return (
-    <BooleanField {...props} source="hasAttendedGuests" record={tempRecord} />
-  );
-};
+import ListEntryActions from "./ListEntryAction";
+import { ListEntryFilters } from "./ListEntryFilters";
 
 const ConditionalDeleteButton = (props) => {
   const record = useRecordContext(props);
@@ -80,9 +39,25 @@ const ConditionalDeleteButton = (props) => {
   return null;
 };
 
+const AttendedGuestsBooleanField = (props) => {
+  const record = useRecordContext();
+  if (!record) return null;
+  const hasAttendedGuests = record.attendedGuests > 0;
+
+  const tempRecord = { ...record, hasAttendedGuests };
+
+  return (
+    <BooleanField {...props} source="hasAttendedGuests" record={tempRecord} />
+  );
+};
+
 export const ListEntryList = (props) => {
   return (
-    <List sort={{ field: "id", order: "ASC" }} filters={ListEntryFilters}>
+    <List
+      sort={{ field: "id", order: "ASC" }}
+      filters={ListEntryFilters}
+      actions={<ListEntryActions />}
+    >
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />

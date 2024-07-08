@@ -116,6 +116,8 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 		protectedApiRouter.DELETE("/listEntries/:id", myhandler.DeleteListEntryByID)
 		protectedApiRouter.POST("/listEntries", myhandler.CreateListEntry)
 
+		protectedApiRouter.POST("/listEntriesUpload", myhandler.ImportListEntriesFromDeineTicketsCsv)
+
 		protectedApiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
 		protectedApiRouter.GET("/purchases", myhandler.GetPurchases)
 		protectedApiRouter.GET("/purchases/:id", myhandler.GetPurchaseByID)
