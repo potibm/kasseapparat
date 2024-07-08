@@ -137,3 +137,12 @@ func (repo *Repository) DeleteListEntry(listEntry models.ListEntry, deletedBy mo
 
 	repo.db.Delete(&listEntry)
 }
+
+func (repo *Repository) GetListEntryByCode(code string) (*models.ListEntry, error) {
+	var listEntry models.ListEntry
+	if err := repo.db.Where("code = ?", code).First(&listEntry).Error; err != nil {
+		return nil, errors.New("List Entry not found")
+	}
+
+	return &listEntry, nil
+}
