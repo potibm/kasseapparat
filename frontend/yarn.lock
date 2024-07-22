@@ -1409,10 +1409,10 @@
   resolved "https://registry.yarnpkg.com/@eslint-community/regexpp/-/regexpp-4.11.0.tgz#b0ffd0312b4a3fd2d6f77237e7248a5ad3a680ae"
   integrity sha512-G/M/tIiMrTAxEWRfLfQJMmGNX28IxBg4PBz8XqQhqUHLFI6TL2htpIB1iQCj144V5ee/JaKyT9/WZ0MGZWfA7A==
 
-"@eslint/create-config@^1.1.5":
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/@eslint/create-config/-/create-config-1.1.5.tgz#81f85fa34154f1f2c8a2ac73a437fb087c172b39"
-  integrity sha512-VSvNc8wvX767m5SP6pTTZBGg2rSIKrpGLoaylpmuRO2ex8yYvrd7jhKcVIiRG3G1tHCGTaQiTkLlPg4J+KHOvQ==
+"@eslint/create-config@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@eslint/create-config/-/create-config-1.1.6.tgz#acef7607af1610f6424a46421dd3dc67c3b389a3"
+  integrity sha512-8ryOSkG9Gck70tP4W/WmDhbHXiWuU2WB0ocZxZ0j8pnyoKMUkiqFo39IjKvR04UW5tyICz/PvsEDNITZtt4GDg==
   dependencies:
     cross-spawn "^7.0.2"
     enquirer "^2.3.5"
@@ -8401,7 +8401,7 @@ queue-microtask@^1.2.2:
   resolved "https://registry.yarnpkg.com/queue-microtask/-/queue-microtask-1.2.3.tgz#4929228bbc724dfac43e0efb058caf7b6cfb6243"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
 
-ra-core@^5.0.3, ra-core@^5.0.4:
+ra-core@^5.0.4:
   version "5.0.4"
   resolved "https://registry.yarnpkg.com/ra-core/-/ra-core-5.0.4.tgz#879c8d8b663325b27a46af0158020c923f38934a"
   integrity sha512-NGiogs6pxkQEnVymPlYBwMaiE/GXV5yxcTT3EKQB6IVhvCDYCu2qqBTvKjKLuMcAEirK2gnR5pIuitF1ZmrGmg==
