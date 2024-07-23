@@ -6,7 +6,6 @@ import { useConfig } from "../../provider/ConfigProvider";
 import GuestlistModal from "./GuestlistModal";
 import MyButton from "./MyButton";
 
-
 function Product({ product, addToCart, hasListItem }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -42,12 +41,9 @@ function Product({ product, addToCart, hasListItem }) {
               </MyButton>
             )}
             {product.lists.length === 0 && (
-            <MyButton
-              onClick={handleAddToCart}
-              aria-label="Add to cart"
-            >
-              <HiShoppingCart className="h-5 w-5" />
-            </MyButton>
+              <MyButton onClick={handleAddToCart} aria-label="Add to cart">
+                <HiShoppingCart className="h-5 w-5" />
+              </MyButton>
             )}
           </div>
         </div>
