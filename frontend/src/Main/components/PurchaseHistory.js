@@ -1,9 +1,10 @@
 import { HiXCircle, HiOutlineExclamationCircle } from "react-icons/hi";
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Modal, Table } from "flowbite-react";
+import { Modal, Table } from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
+import MyButton from "./MyButton";
 
 function PurchaseHistory({ history, removeFromPurchaseHistory }) {
   const [openModal, setOpenModal] = useState({ show: false, purchase: null });
@@ -40,6 +41,19 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
     return new Date(date).toLocaleString(dateLocale, dateOptions);
   };
 
+  const compactTableTheme = {
+    head: {
+      cell: {
+        base: "px-4 py-2",
+      },
+    },
+    body: {
+      cell: {
+        base: "px-4 py-2",
+      },
+    },
+  };
+
   return (
     <div className="mt-10">
       <Modal
@@ -56,44 +70,47 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
               Are you sure you want to delete this purchase?
             </h3>
             <div className="flex justify-center gap-4">
-              <Button
+              <MyButton
                 color="failure"
                 onClick={() => confirmDelete(openModal.purchase)}
               >
                 {"Yes, I'm sure"}
-              </Button>
-              <Button color="gray" onClick={() => setOpenModal(false)}>
+              </MyButton>
+              <MyButton color="gray" onClick={() => setOpenModal(false)}>
                 No, cancel
-              </Button>
+              </MyButton>
             </div>
           </div>
         </Modal.Body>
       </Modal>
       <Table
         striped
+        theme={compactTableTheme}
         className={`table-fixed ${flash ? "animate__animated animate__pulse" : ""}`}
       >
         <Table.Head>
-          <Table.HeadCell>Date</Table.HeadCell>
-          <Table.HeadCell className="text-right">Total Price</Table.HeadCell>
-          <Table.HeadCell>Remove</Table.HeadCell>
+          <Table.HeadCell className="w-6/12">Date</Table.HeadCell>
+          <Table.HeadCell className="w-3/12 text-right">
+            Total Price
+          </Table.HeadCell>
+          <Table.HeadCell className="w-3/12 text-right">Remove</Table.HeadCell>
         </Table.Head>
         <Table.Body>
           {history.slice(0, 2).map((purchase) => (
             <Table.Row key={purchase.id}>
-              <Table.Cell className="text-right">
+              <Table.Cell className="whitespace-nowrap">
                 {formatDate(purchase.createdAt)}
               </Table.Cell>
               <Table.Cell className="text-right">
                 {currency.format(purchase.totalPrice)}
               </Table.Cell>
-              <Table.Cell>
-                <Button
+              <Table.Cell className="">
+                <MyButton
                   color="failure"
                   onClick={() => setOpenModal({ show: true, purchase })}
                 >
                   <HiXCircle />
-                </Button>
+                </MyButton>
               </Table.Cell>
             </Table.Row>
           ))}

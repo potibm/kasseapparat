@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { HiXCircle } from "react-icons/hi";
-import { Button, Table } from "flowbite-react";
+import { Table, Tooltip } from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
+import MyButton from "./MyButton";
 
 function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
   const currency = useConfig().currency;
@@ -35,22 +36,40 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
     }
   };
 
+  const compactTableTheme = {
+    head: {
+      cell: {
+        base: "px-4 py-2",
+      },
+    },
+    body: {
+      cell: {
+        base: "px-4 py-2",
+      },
+    },
+  };
+
   return (
     <div>
       <Table
         striped
+        theme={compactTableTheme}
         className={`table-fixed ${flash ? "animate__animated animate__pulse" : ""}`}
       >
         <Table.Head>
-          <Table.HeadCell>Product</Table.HeadCell>
-          <Table.HeadCell className="text-right">Quantity</Table.HeadCell>
-          <Table.HeadCell className="text-right">Total Price</Table.HeadCell>
-          <Table.HeadCell>Remove</Table.HeadCell>
+          <Table.HeadCell className="w-5/12">Product</Table.HeadCell>
+          <Table.HeadCell className="w-2/12 text-right">
+            <Tooltip content="Quantity">Qnt</Tooltip>
+          </Table.HeadCell>
+          <Table.HeadCell className="w-2/12 text-right">
+            Total Price
+          </Table.HeadCell>
+          <Table.HeadCell className="w-3/12">Remove</Table.HeadCell>
         </Table.Head>
         <Table.Body>
           {cart.map((cartElement) => (
             <Table.Row key={cartElement.id}>
-              <Table.Cell className="whitespace-nowrap">
+              <Table.Cell className="whitespace-normal px-4 py-2">
                 {cartElement.name}
                 {
                   // iterate over cartElement.listItems and display them
@@ -61,25 +80,26 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
                   ))
                 }
               </Table.Cell>
-              <Table.Cell className="text-right align-top">
+              <Table.Cell className="text-right">
                 {cartElement.quantity}
               </Table.Cell>
-              <Table.Cell className="text-right align-top">
+              <Table.Cell className="text-right">
                 {currency.format(cartElement.totalPrice)}
               </Table.Cell>
-              <Table.Cell className="align-top">
-                <Button
+              <Table.Cell className="">
+                <MyButton
                   color="failure"
                   onClick={() => removeFromCart(cartElement)}
                 >
                   <HiXCircle />
-                </Button>
+                </MyButton>
               </Table.Cell>
             </Table.Row>
           ))}
           <Table.Row>
-            <Table.Cell className="uppercase font-bold">Total</Table.Cell>
-            <Table.Cell></Table.Cell>
+            <Table.Cell colSpan={2} className="uppercase font-bold">
+              Total
+            </Table.Cell>
             <Table.Cell className="font-bold text-right">
               {currency.format(
                 cart.reduce((total, item) => total + item.totalPrice, 0),
@@ -87,20 +107,20 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
             </Table.Cell>
             <Table.Cell>
               {cart.length ? (
-                <Button color="failure" onClick={() => removeAllFromCart()}>
+                <MyButton color="failure" onClick={() => removeAllFromCart()}>
                   <HiXCircle />
-                </Button>
+                </MyButton>
               ) : (
-                <Button disabled color="failure">
+                <MyButton disabled color="failure">
                   <HiXCircle />
-                </Button>
+                </MyButton>
               )}
             </Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table>
 
-      <Button
+      <MyButton
         {...(cart.length === 0 && { disabled: true })}
         color="success"
         className="w-full mt-2 uppercase"
@@ -111,7 +131,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
           currency.format(
             cart.reduce((total, item) => total + item.totalPrice, 0),
           )}
-      </Button>
+      </MyButton>
     </div>
   );
 }

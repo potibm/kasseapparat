@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { Button, Card } from "flowbite-react";
+import { Card } from "flowbite-react";
 import { HiShoppingCart, HiUserAdd } from "react-icons/hi";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import GuestlistModal from "./GuestlistModal";
+import MyButton from "./MyButton";
+
 
 function Product({ product, addToCart, hasListItem }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,27 +27,28 @@ function Product({ product, addToCart, hasListItem }) {
           {product.name}
         </h5>
         <div className="flex-grow" style={{ flexGrow: 0.01 }}></div>{" "}
-        {/* Erwägen Sie, eine Tailwind-Klasse zu definieren, falls möglich */}
         <div className="flex items-center justify-between mt-auto">
           <p className="text-3xl font-bold text-gray-900 dark:text-white">
             {currency.format(product.price)}
           </p>
           <div className="flex">
             {product.lists.length > 0 && (
-              <Button
+              <MyButton
                 onClick={handleShowGuestlist}
                 className="mr-4"
-                aria-label="Gästeliste anzeigen"
+                aria-label="Show guestlist"
               >
                 <HiUserAdd className="h-5 w-5" />
-              </Button>
+              </MyButton>
             )}
-            <Button
+            {product.lists.length === 0 && (
+            <MyButton
               onClick={handleAddToCart}
-              aria-label="Zum Warenkorb hinzufügen"
+              aria-label="Add to cart"
             >
               <HiShoppingCart className="h-5 w-5" />
-            </Button>
+            </MyButton>
+            )}
           </div>
         </div>
       </Card>
