@@ -1,18 +1,18 @@
 import React from "react";
-import { Button } from "flowbite-react";
 import { HiBackspace, HiOutlineMinusSm, HiOutlineX } from "react-icons/hi";
 import PropTypes from "prop-types";
+import MyButton from "./MyButton";
 
 const SidebarKeyboardKey = ({ children, onClick, ...props }) => {
   return (
-    <Button
+    <MyButton
       onClick={onClick}
       size="md"
       className="min-w-12 max-w-12"
       {...props}
     >
       {children}
-    </Button>
+    </MyButton>
   );
 };
 
