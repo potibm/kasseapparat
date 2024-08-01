@@ -2,13 +2,13 @@ package mailer
 
 import "strconv"
 
-func (mailer *Mailer) SendChangePasswordTokenMail (to string, userId uint, username string, token string) error {
+func (mailer *Mailer) SendChangePasswordTokenMail(to string, userId uint, username string, token string) error {
 
-	body := `Hello `+username+`,
+	body := `Hello ` + username + `,
 
 You have requested to change your password. Please use this link to change it:
 
-`+ mailer.frontendBaseUrl + `/change-password?token=` + token + `&userId=` + strconv.Itoa(int(userId)) + `
+` + mailer.frontendBaseUrl + `/change-password?token=` + token + `&userId=` + strconv.Itoa(int(userId)) + `
 
 This link will expire in 15 minutes.
 
@@ -19,16 +19,16 @@ Kasseapparat
 ---
 This is an automated email, please do not reply to this email.`
 
-	return mailer.SendMail(to, "Change your password", body); 
+	return mailer.SendMail(to, "Change your password", body)
 }
 
-func (mailer *Mailer) SendNewUserTokenMail (to string, userId uint, username string, token string) error {
+func (mailer *Mailer) SendNewUserTokenMail(to string, userId uint, username string, token string) error {
 
-	body := `Hello `+username+`,
+	body := `Hello ` + username + `,
 
 Your account for Kasseapparat has been created. Please use this link to set your password
 
-`+ mailer.frontendBaseUrl + `/change-password?token=` + token + `&userId=` + strconv.Itoa(int(userId)) + `
+` + mailer.frontendBaseUrl + `/change-password?token=` + token + `&userId=` + strconv.Itoa(int(userId)) + `
 
 This link will expire in 3 hours.
 
@@ -39,6 +39,5 @@ Kasseapparat
 ---
 This is an automated email, please do not reply to this email.`
 
-	return mailer.SendMail(to, "Account created", body); 
+	return mailer.SendMail(to, "Account created", body)
 }
-

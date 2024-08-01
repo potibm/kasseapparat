@@ -18,25 +18,25 @@ var (
 type User struct {
 	ID uint `gorm:"primarykey" json:"id"`
 	GormModel
-	Username string `json:"username" gorm:"unique"`
-	Email    string `json:"email" gorm:"unique"`
-	Password string `json:"-"`
-	Admin    bool   `json:"admin"`
-	ChangePasswordToken *string `json:"-" gorm:"default:null"`
-	ChangePasswordTokenExpiry *int64 `json:"-" gorm:"default:null"`
+	Username                  string  `json:"username" gorm:"unique"`
+	Email                     string  `json:"email" gorm:"unique"`
+	Password                  string  `json:"-"`
+	Admin                     bool    `json:"admin"`
+	ChangePasswordToken       *string `json:"-" gorm:"default:null"`
+	ChangePasswordTokenExpiry *int64  `json:"-" gorm:"default:null"`
 }
 
 func (u *User) Role() string {
 	if u.Admin {
 		return "admin"
-	}	
+	}
 	return "user"
 }
 
 func (u *User) GravatarURL() string {
 	hasher := sha256.Sum256([]byte(strings.TrimSpace(u.Email)))
-    hash := hex.EncodeToString(hasher[:])
-	
+	hash := hex.EncodeToString(hasher[:])
+
 	return "https://www.gravatar.com/avatar/" + hash
 }
 
@@ -61,8 +61,8 @@ func (u *User) ComparePassword(password string) error {
 }
 
 func (u *User) ChangePasswordTokenIsValid(token string) bool {
-	return u.ChangePasswordToken != nil && *u.ChangePasswordToken == token && 
-		!u.ChangePasswordTokenIsExpired();	
+	return u.ChangePasswordToken != nil && *u.ChangePasswordToken == token &&
+		!u.ChangePasswordTokenIsExpired()
 }
 
 func (u *User) ChangePasswordTokenIsExpired() bool {
@@ -76,7 +76,7 @@ func (u *User) GenerateChangePasswordToken(validity *time.Duration) {
 		validity = &duration
 	}
 
-	token := randomString(32)	
+	token := randomString(32)
 	u.ChangePasswordToken = &token
 	currentTimestamp := time.Now().Unix()
 	expiry := currentTimestamp + int64(validity.Seconds())

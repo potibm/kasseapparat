@@ -8,22 +8,22 @@ import (
 // List represents a guestlist
 type ListEntry struct {
 	GormOwnedModel
-	ListID 	uint	`json:"listId"`
-	List 	List	`json:"list"`
-	Name      string  `json:"name" `
-	Code 		*string`json:"code" gorm:"unique"`
-	AdditionalGuests uint `json:"additionalGuests" gorm:"default:0"`
-	AttendedGuests uint `json:"attendedGuests" gorm:"default:0"`
-	PurchaseID *uint `json:"purchaseId"`
-	Purchase *Purchase `json:"-"`
+	ListID           uint      `json:"listId"`
+	List             List      `json:"list"`
+	Name             string    `json:"name" `
+	Code             *string   `json:"code" gorm:"unique"`
+	AdditionalGuests uint      `json:"additionalGuests" gorm:"default:0"`
+	AttendedGuests   uint      `json:"attendedGuests" gorm:"default:0"`
+	PurchaseID       *uint     `json:"purchaseId"`
+	Purchase         *Purchase `json:"-"`
 }
 
 type ListEntrySummary struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
-	Code 		*string`json:"code" gorm:"unique"`
-	ListName *string `json:"listName"`
-	AdditionalGuests uint `json:"additionalGuests" gorm:"default:0"`
+	ID               uint    `json:"id"`
+	Name             string  `json:"name"`
+	Code             *string `json:"code" gorm:"unique"`
+	ListName         *string `json:"listName"`
+	AdditionalGuests uint    `json:"additionalGuests" gorm:"default:0"`
 }
 
 type ListEntrySummarySlice []ListEntrySummary
@@ -55,10 +55,10 @@ func (entries ListEntrySummarySlice) SortByQuery(q string) {
 		}
 
 		// Then prioritize names containing the query as the start of any word
-		if strings.Contains(" " + nameI, " " + query) && !strings.Contains(" " + nameJ, " " + query) {
+		if strings.Contains(" "+nameI, " "+query) && !strings.Contains(" "+nameJ, " "+query) {
 			return true
 		}
-		if strings.Contains(" " + nameJ, " " + query) && !strings.Contains(" " + nameI, " " + query) {
+		if strings.Contains(" "+nameJ, " "+query) && !strings.Contains(" "+nameI, " "+query) {
 			return false
 		}
 

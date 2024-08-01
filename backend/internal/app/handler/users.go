@@ -47,15 +47,15 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 
 type UserCreateRequest struct {
 	Username string `form:"username"  json:"username" binding:"required"`
-	Email   string `form:"email"    json:"email" binding:"required"`
-	Admin	bool   `form:"admin" json:"admin" binding:""`
+	Email    string `form:"email"    json:"email" binding:"required"`
+	Admin    bool   `form:"admin" json:"admin" binding:""`
 }
 
 type UserUpdateRequest struct {
 	Username string `form:"username"  json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:""`
-	Email   string `form:"email"    json:"email" binding:"required"`
-	Admin	bool   `form:"admin" json:"admin" binding:""`
+	Email    string `form:"email"    json:"email" binding:"required"`
+	Admin    bool   `form:"admin" json:"admin" binding:""`
 }
 
 func (handler *Handler) UpdateUserByID(c *gin.Context) {
@@ -110,7 +110,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
 		return
 	}
-	
+
 	var user models.User
 	var userRequest UserCreateRequest
 	if c.ShouldBind(&userRequest) != nil {
@@ -123,7 +123,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 	user.GenerateRandomPassword()
 	validity := 3 * time.Hour
 	user.GenerateChangePasswordToken(&validity)
-	
+
 	// only an admin may change the role of a user
 	if executingUserObj.Admin {
 		user.Admin = userRequest.Admin
@@ -137,7 +137,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	err = handler.mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken);
+	err = handler.mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken)
 	if err != nil {
 		log.Println("Error sending email", err)
 	}
@@ -145,13 +145,13 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func (handler *Handler) DeleteUserByID(c *gin.Context) { 
+func (handler *Handler) DeleteUserByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
 		return
 	}
-	
+
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
@@ -172,7 +172,7 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 func (handler *Handler) getUserFromContext(c *gin.Context) (*models.User, error) {
 	user, _ := c.Get(middleware.IdentityKey)
 	sparseUserObjFromJwt, _ := user.(*models.User)
-	
+
 	userObj, err := handler.repo.GetUserByID(int(sparseUserObjFromJwt.ID))
 	if err != nil {
 		return nil, errors.New("User not found")

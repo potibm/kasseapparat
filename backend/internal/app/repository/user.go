@@ -35,7 +35,6 @@ func (repo *Repository) GetUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-
 func (repo *Repository) GetUserByUserameOrEmail(login string) (*models.User, error) {
 	var user models.User
 	if err := repo.db.Model(&models.User{}).Where("LOWER(Username) = ? OR LOWER(Email) = ?", strings.ToLower(login), strings.ToLower(login)).First(&user).Error; err != nil {

@@ -8,17 +8,16 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-
 type ListCreateRequest struct {
-	Name      string  `form:"name"  json:"name" binding:"required"`
-	TypeCode bool    `form:"typeCode" json:"typeCode" binding:"boolean"`
-	ProductID uint  `form:"productId" json:"productId" binding:"required"`
+	Name      string `form:"name"  json:"name" binding:"required"`
+	TypeCode  bool   `form:"typeCode" json:"typeCode" binding:"boolean"`
+	ProductID uint   `form:"productId" json:"productId" binding:"required"`
 }
 
 type ListUpdateRequest struct {
-	Name      string  `form:"name"  json:"name" binding:"required"`
-	TypeCode bool    `form:"typeCode" json:"typeCode" binding:"boolean"`
-	ProductID uint  `form:"productId" json:"productId" binding:"required"`
+	Name      string `form:"name"  json:"name" binding:"required"`
+	TypeCode  bool   `form:"typeCode" json:"typeCode" binding:"boolean"`
+	ProductID uint   `form:"productId" json:"productId" binding:"required"`
 }
 
 func (handler *Handler) GetLists(c *gin.Context) {
@@ -26,14 +25,14 @@ func (handler *Handler) GetLists(c *gin.Context) {
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "ASC")
-	ids := queryArrayInt(c, "id");
-	
+	ids := queryArrayInt(c, "id")
+
 	lists, err := handler.repo.GetLists(end-start, start, sort, order, ids)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-		
+
 	total, err := handler.repo.GetTotalLists()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
@@ -54,7 +53,6 @@ func (handler *Handler) GetListByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, list)
 }
-
 
 func (handler *Handler) UpdateListByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
@@ -133,7 +131,7 @@ func (handler *Handler) DeleteListByID(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	if !executingUserObj.Admin && *list.CreatedByID != executingUserObj.ID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return

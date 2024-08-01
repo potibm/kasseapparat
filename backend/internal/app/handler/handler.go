@@ -10,11 +10,10 @@ import (
 )
 
 type Handler struct {
-	repo *repository.Repository
-	mailer mailer.Mailer
+	repo    *repository.Repository
+	mailer  mailer.Mailer
 	version string
 }
-
 
 func NewHandler(repo *repository.Repository, mailer mailer.Mailer, version string) *Handler {
 	return &Handler{repo: repo, mailer: mailer, version: version}
@@ -34,4 +33,4 @@ func queryArrayInt(c *gin.Context, field string) []int {
 	}
 
 	return ids
-} 
+}

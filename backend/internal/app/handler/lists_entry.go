@@ -11,19 +11,19 @@ import (
 )
 
 type ListEntryCreateRequest struct {
-	ListID 		uint  `form:"listId"  json:"listId" binding:"required"`
-	Name      string  `form:"name"  json:"name" binding:"required"`
-	Code      string  `form:"code"  json:"code"`
-	AdditionalGuests uint `form:"additionalGuests"  json:"additionalGuests"`
-	AttendedGuests uint `form:"attendedGuests"  json:"attendedGuests"`
+	ListID           uint   `form:"listId"  json:"listId" binding:"required"`
+	Name             string `form:"name"  json:"name" binding:"required"`
+	Code             string `form:"code"  json:"code"`
+	AdditionalGuests uint   `form:"additionalGuests"  json:"additionalGuests"`
+	AttendedGuests   uint   `form:"attendedGuests"  json:"attendedGuests"`
 }
 
 type ListEntryUpdateRequest struct {
-	ListID 		uint  `form:"listId"  json:"listId"`
-	Name      string  `form:"name"  json:"name" binding:"required"`
-	Code      string  `form:"code"  json:"code"`
-	AdditionalGuests uint `form:"additionalGuests"  json:"additionalGuests"`
-	AttendedGuests uint `form:"attendedGuests"  json:"attendedGuests"`
+	ListID           uint   `form:"listId"  json:"listId"`
+	Name             string `form:"name"  json:"name" binding:"required"`
+	Code             string `form:"code"  json:"code"`
+	AdditionalGuests uint   `form:"additionalGuests"  json:"additionalGuests"`
+	AttendedGuests   uint   `form:"attendedGuests"  json:"attendedGuests"`
 }
 
 func (handler *Handler) GetListEntries(c *gin.Context) {
@@ -36,14 +36,14 @@ func (handler *Handler) GetListEntries(c *gin.Context) {
 	filters.ListID, _ = strconv.Atoi(c.DefaultQuery("list", "0"))
 	filters.Present = c.DefaultQuery("isPresent", "false") == "true"
 	filters.NotPresent = c.DefaultQuery("isNotPresent", "false") == "true"
-	filters.IDs = queryArrayInt(c, "id");
+	filters.IDs = queryArrayInt(c, "id")
 
 	lists, err := handler.repo.GetListEntries(end-start, start, sort, order, filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-		
+
 	total, err := handler.repo.GetTotalListEntries()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
@@ -64,7 +64,6 @@ func (handler *Handler) GetListEntryByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, list)
 }
-
 
 func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
@@ -92,9 +91,9 @@ func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 	} else {
 		listEntry.Code = nil
 	}
-	if listEntryRequest.ListID > 0{
+	if listEntryRequest.ListID > 0 {
 		listEntry.ListID = listEntryRequest.ListID
-	} 
+	}
 	listEntry.AdditionalGuests = listEntryRequest.AdditionalGuests
 	listEntry.AttendedGuests = listEntryRequest.AttendedGuests
 	listEntry.UpdatedByID = &executingUserObj.ID
@@ -155,7 +154,7 @@ func (handler *Handler) DeleteListEntryByID(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	if !executingUserObj.Admin && *listEntry.CreatedByID != executingUserObj.ID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
@@ -179,6 +178,6 @@ func (handler *Handler) GetListEntriesByProductID(c *gin.Context) {
 	if query != "" {
 		listEntries.SortByQuery(query)
 	}
-		
+
 	c.JSON(http.StatusOK, listEntries)
 }
