@@ -14,9 +14,9 @@ import (
 var staticFiles embed.FS
 
 func main() {
-	initializer.InitializeDotenv();
+	initializer.InitializeDotenv()
 	initializer.InitializeVersion()
-	initializer.InitializeSentry();
+	initializer.InitializeSentry()
 	initializer.OutputVersion()
 
 	port := ":3000" // Default port number

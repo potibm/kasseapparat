@@ -8,8 +8,8 @@ import (
 )
 
 type UserUpdatePasswordRequest struct {
-	UserId int `form:"userId" json:"userId" binding:"required"`
-	Token string `form:"token" json:"token" binding:"required,len=32"`
+	UserId   int    `form:"userId" json:"userId" binding:"required"`
+	Token    string `form:"token" json:"token" binding:"required,len=32"`
 	Password string `form:"password" json:"password" binding:"required,min=8"`
 }
 
@@ -22,8 +22,8 @@ func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 		return
 	}
 
-	user, err := handler.repo.GetUserByID(userPasswordChangeRequest.UserId);
-	if (err != nil) {
+	user, err := handler.repo.GetUserByID(userPasswordChangeRequest.UserId)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found."})
 		return
 	}
@@ -57,8 +57,8 @@ func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 		return
 	}
 
-	user, err := handler.repo.GetUserByUserameOrEmail(request.Login);
-	if (err != nil) {
+	user, err := handler.repo.GetUserByUserameOrEmail(request.Login)
+	if err != nil {
 		c.JSON(http.StatusOK, "OK")
 		return
 	}

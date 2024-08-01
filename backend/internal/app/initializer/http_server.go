@@ -35,7 +35,7 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 	authMiddleware := registerAuthMiddleware(repository)
 	//r.Use(SentryMiddleware())
 	registerApiRoutes(myhandler, authMiddleware)
-	
+
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
 			file, _ := staticFiles.ReadFile("assets/index.html")
@@ -59,7 +59,7 @@ func createCorsMiddleware() gin.HandlerFunc {
 	corsConfig.AllowOrigins = strings.Split(corsAllowOrigins, ",")
 	corsConfig.AllowAllOrigins = false
 	corsConfig.AllowCredentials = true
-	corsConfig.AddAllowHeaders("Authorization","Credentials")
+	corsConfig.AddAllowHeaders("Authorization", "Credentials")
 	corsConfig.AddExposeHeaders("X-Total-Count")
 
 	return cors.New(corsConfig)
@@ -81,7 +81,7 @@ func SentryMiddleware() gin.HandlerFunc {
 			if user, ok := user.(*models.User); ok {
 				sentry.ConfigureScope(func(scope *sentry.Scope) {
 					scope.SetUser(sentry.User{
-						ID:    strconv.Itoa(int(user.ID)),
+						ID: strconv.Itoa(int(user.ID)),
 					})
 				})
 			}
@@ -103,7 +103,7 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 		protectedApiRouter.POST("/products", myhandler.CreateProduct)
 
 		protectedApiRouter.GET("/productStats", myhandler.GetProductStats)
-		
+
 		protectedApiRouter.GET("/lists", myhandler.GetLists)
 		protectedApiRouter.GET("/lists/:id", myhandler.GetListByID)
 		protectedApiRouter.PUT("/lists/:id", myhandler.UpdateListByID)
@@ -129,9 +129,6 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 		protectedApiRouter.PUT("/users/:id", myhandler.UpdateUserByID)
 		protectedApiRouter.DELETE("/users/:id", myhandler.DeleteUserByID)
 		protectedApiRouter.POST("/users", myhandler.CreateUser)
-		
-		protectedApiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
-		protectedApiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
 	}
 
 	// unprotected routes
@@ -139,5 +136,8 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 	{
 		unprotectedApiRouter.GET("/config", myhandler.GetConfig)
 		unprotectedApiRouter.GET("/purchases/stats", myhandler.GetPurchaseStats)
+
+		unprotectedApiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
+		unprotectedApiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
 	}
 }

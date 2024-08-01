@@ -7,12 +7,12 @@ import (
 )
 
 type ListEntryFilters = struct {
-	Query string;
-	ListID int;
-	ListGroupId int;
-	Present bool;
-	NotPresent bool;
-	IDs []int;
+	Query       string
+	ListID      int
+	ListGroupId int
+	Present     bool
+	NotPresent  bool
+	IDs         []int
 }
 
 func (repo *Repository) GetListEntries(limit int, offset int, sort string, order string, filters ListEntryFilters) ([]models.ListEntry, error) {
@@ -26,14 +26,14 @@ func (repo *Repository) GetListEntries(limit int, offset int, sort string, order
 	}
 
 	var listEntries []models.ListEntry
-	query := repo.db.Joins("List").Order(sort + " " + order + ", list_entries.ID ASC").Limit(limit).Offset(offset);
-	
-	if (len(filters.IDs) > 0) {
+	query := repo.db.Joins("List").Order(sort + " " + order + ", list_entries.ID ASC").Limit(limit).Offset(offset)
+
+	if len(filters.IDs) > 0 {
 		query = query.Where("list_entries.ID IN ?", filters.IDs)
 	}
 
 	if filters.Query != "" {
-		query = query.Where("list_entries.Name LIKE ?", "%" + filters.Query + "%")
+		query = query.Where("list_entries.Name LIKE ?", "%"+filters.Query+"%")
 	}
 	if filters.ListID != 0 {
 		query = query.Where("list_entries.list_id = ?", filters.ListID)
@@ -65,7 +65,6 @@ func getListsEntriesValidFieldName(input string) (string, error) {
 	return "", errors.New("Invalid field name")
 }
 
-
 func (repo *Repository) GetTotalListEntries() (int64, error) {
 	var totalRows int64
 	repo.db.Model(&models.ListEntry{}).Count(&totalRows)
@@ -76,13 +75,13 @@ func (repo *Repository) GetTotalListEntries() (int64, error) {
 func (repo *Repository) GetUnattendedListEntriesByProductID(productId int, q string) (models.ListEntrySummarySlice, error) {
 	var listEntries models.ListEntrySummarySlice
 	query := repo.db.Model(&models.ListEntry{}).
-	Select("list_entries.id, list_entries.name, list_entries.code, lists.name AS list_name, list_entries.additional_guests").
-	Joins("JOIN lists ON list_entries.list_id = lists.id").
-    Joins("JOIN products ON lists.product_id = products.id").
-    Where("products.id = ? AND list_entries.attended_guests = ?", productId, 0).
-	Order("list_entries.name ASC")
-    if (q != "") {
-		query = query.Where("list_entries.name LIKE ? OR code = ?", "%" + q + "%", q)
+		Select("list_entries.id, list_entries.name, list_entries.code, lists.name AS list_name, list_entries.additional_guests").
+		Joins("JOIN lists ON list_entries.list_id = lists.id").
+		Joins("JOIN products ON lists.product_id = products.id").
+		Where("products.id = ? AND list_entries.attended_guests = ?", productId, 0).
+		Order("list_entries.name ASC")
+	if q != "" {
+		query = query.Where("list_entries.name LIKE ? OR code = ?", "%"+q+"%", q)
 	}
 
 	if err := query.Scan(&listEntries).Error; err != nil {
@@ -127,7 +126,6 @@ func (repo *Repository) UpdateListEntryByID(id int, updatedListEntry models.List
 
 func (repo *Repository) CreateListEntry(listEntry models.ListEntry) (models.ListEntry, error) {
 	result := repo.db.Create(&listEntry)
-
 
 	return listEntry, result.Error
 }

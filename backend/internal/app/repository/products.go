@@ -18,9 +18,9 @@ func (repo *Repository) GetProducts(limit int, offset int, sort string, order st
 
 	var products []models.Product
 
-	query := repo.db.Preload("Lists").Order(sort + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset);
+	query := repo.db.Preload("Lists").Order(sort + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset)
 
-	if (len(ids) > 0) {
+	if len(ids) > 0 {
 		query = query.Where("Id IN ?", ids)
 	}
 

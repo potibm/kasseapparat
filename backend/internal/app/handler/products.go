@@ -14,9 +14,8 @@ type ProductRequest struct {
 	WrapAfter bool    `form:"wrapAfter" json:"wrapAfter"`
 	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
 	ApiExport bool    `form:"apiExport" json:"apiExport" binding:"boolean"`
-	Hidden	  bool    `form:"hidden" json:"hidden" binding:"boolean"`
+	Hidden    bool    `form:"hidden" json:"hidden" binding:"boolean"`
 }
-
 
 func (handler *Handler) GetProducts(c *gin.Context) {
 	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
@@ -24,14 +23,14 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	sort := c.DefaultQuery("_sort", "pos")
 	order := c.DefaultQuery("_order", "ASC")
 	filterHidden := c.DefaultQuery("_filter_hidden", "false")
-	ids := queryArrayInt(c, "id");
+	ids := queryArrayInt(c, "id")
 
 	products, err := handler.repo.GetProducts(end-start, start, sort, order, ids)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-		
+
 	if filterHidden == "true" {
 		var filteredProducts []models.Product
 		for _, product := range products {

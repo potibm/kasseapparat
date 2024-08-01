@@ -10,11 +10,13 @@ list:
 
 run:
 	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001 &
+	docker run -d -p 8025:8025 -p 1025:1025 mailhog/mailhog
 	cd $(FRONTEND_DIR) && yarn start &
 
 stop:
 	lsof -t -i:3000 | xargs kill -9
 	lsof -t -i:3001 | xargs kill -9
+	docker ps -q --filter "ancestor=mailhog/mailhog" | xargs docker kill
 
 run-be:
 	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001
@@ -24,6 +26,9 @@ run-tool:
 
 run-fe:
 	cd $(FRONTEND_DIR) && yarn start
+
+run-mailhog:
+	docker run -d -p 8025:8025 -p 1025:1025 mailhog/mailhog
 
 deps-be:
 	cd $(BACKEND_DIR) && go get -u -t ./...
@@ -39,7 +44,7 @@ deps-install:
 
 linter:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
-	ctouch $(BACKEND_DIR)/cmd/assets/index.html
+	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(FRONTEND_DIR) && yarn run prettier .. --check
 	cd $(BACKEND_DIR) && golangci-lint run
 	cd $(FRONTEND_DIR) && yarn run eslint 
@@ -48,8 +53,9 @@ linter-fix:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
 	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(FRONTEND_DIR) && yarn run prettier .. --write
-	cd $(BACKEND_DIR) && golangci-lint run --fix
 	cd $(FRONTEND_DIR) && yarn run eslint --fix
+	cd $(BACKEND_DIR) && go fmt ./...
+	cd $(BACKEND_DIR) && golangci-lint run --fix
 
 test:
 	$(MAKE) test-fe

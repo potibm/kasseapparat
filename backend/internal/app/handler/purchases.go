@@ -9,14 +9,14 @@ import (
 )
 
 type PurchaseListItemRequest struct {
-	ID       int `form:"ID" binding:"required"`
+	ID             int  `form:"ID" binding:"required"`
 	AttendedGuests uint `form:"attendedGuests" binding:"required"`
 }
 
 type PurchaseCartRequest struct {
-	ID       int `form:"ID" binding:"required"`
-	Quantity int `form:"quantity" binding:"required"`
-	ListItems	[]PurchaseListItemRequest `form:"listItems" binding:"required,dive"`
+	ID        int                       `form:"ID" binding:"required"`
+	Quantity  int                       `form:"quantity" binding:"required"`
+	ListItems []PurchaseListItemRequest `form:"listItems" binding:"required,dive"`
 }
 
 type PurchaseRequest struct {
@@ -89,18 +89,18 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": "List item not found."})
 				return
 			}
-			
-			if (listEntry.AttendedGuests != 0) {
+
+			if listEntry.AttendedGuests != 0 {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": "List item has already been attended."})
 				return
 			}
 
-			if (listEntry.AdditionalGuests+1 < purchaseRequest.Cart[i].ListItems[j].AttendedGuests) {
+			if listEntry.AdditionalGuests+1 < purchaseRequest.Cart[i].ListItems[j].AttendedGuests {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": "Additional guests exceed available guests."})
 				return
 			}
 
-			if (listEntry.List.ProductID != uint(id)) {
+			if listEntry.List.ProductID != uint(id) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": "List item does not belong to product."})
 				return
 			}

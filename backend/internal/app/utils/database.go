@@ -43,7 +43,7 @@ func SeedDatabase(db *gorm.DB) {
 	_ = gofakeit.Seed(0)
 
 	db.Create(&models.User{Username: "admin", Email: "admin@example.com", Password: "admin", Admin: true})
-	db.Create(&models.User{Username: "demo",  Email: "demo@example.com", Password: "demo", Admin: false})
+	db.Create(&models.User{Username: "demo", Email: "demo@example.com", Password: "demo", Admin: false})
 
 	db.Create(&models.Product{Name: "🎟️ Regular", Price: 40, Pos: 1, ApiExport: true})
 	reducedProduct := &models.Product{Name: "🎟️ Reduced", Price: 20, Pos: 2, ApiExport: true}
@@ -61,27 +61,27 @@ func SeedDatabase(db *gorm.DB) {
 	db.Create(&models.Product{Name: "👕 T-Shirt Female L", Price: 20, Pos: 22})
 	db.Create(&models.Product{Name: "👕 T-Shirt Female XL", Price: 20, Pos: 23, WrapAfter: true})
 	db.Create(&models.Product{Name: "☕ Coffee Mug", Price: 1, Pos: 30})
-	
+
 	reducedDkevList := &models.List{Name: "Reduces Digitale Kultur", ProductID: reducedProduct.ID}
 	db.Create(reducedDkevList)
-	for i := 1; i < 5; i++ { 
+	for i := 1; i < 5; i++ {
 		db.Create(&models.ListEntry{Name: gofakeit.Name(), ListID: reducedDkevList.ID, AdditionalGuests: 0})
 	}
 
 	reducedLdList := &models.List{Name: "Long Distance", ProductID: reducedProduct.ID}
 	db.Create(reducedLdList)
-	for i := 1; i < 15; i++ { 
+	for i := 1; i < 15; i++ {
 		db.Create(&models.ListEntry{Name: gofakeit.Name(), ListID: reducedLdList.ID, AdditionalGuests: 0})
 	}
 
 	deineTicketsList := &models.List{Name: "Deine Tickets", TypeCode: true, ProductID: prepaidProduct.ID}
 	db.Create(deineTicketsList)
-	for i := 1; i < 20; i++ { 
-		code :=gofakeit.Password(false, true, true, false, false, 9);
+	for i := 1; i < 20; i++ {
+		code := gofakeit.Password(false, true, true, false, false, 9)
 		db.Create(&models.ListEntry{Name: gofakeit.Name(), Code: &code, ListID: deineTicketsList.ID, AdditionalGuests: 0})
 	}
 
-	for i := 1; i < 8; i++ { 
+	for i := 1; i < 8; i++ {
 		userGuestList := &models.List{Name: "Guestlist " + gofakeit.FirstName(), ProductID: freeProduct.ID}
 		db.Create(userGuestList)
 
@@ -89,5 +89,5 @@ func SeedDatabase(db *gorm.DB) {
 
 			db.Create(&models.ListEntry{Name: gofakeit.Name(), ListID: userGuestList.ID, AdditionalGuests: uint(gofakeit.Number(0, 2))})
 		}
-	}	
+	}
 }

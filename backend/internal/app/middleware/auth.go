@@ -17,18 +17,18 @@ var (
 )
 
 type login struct {
-	Login string `form:"login" json:"login" binding:"required"`
+	Login    string `form:"login" json:"login" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
 type loginResponse struct {
-	Code    int    `json:"code"`
-	Token   string `json:"token"`
-	Expire  string `json:"expire"`
-	Role    *string `json:"role"`
-	Username *string `json:"username"`
+	Code        int     `json:"code"`
+	Token       string  `json:"token"`
+	Expire      string  `json:"expire"`
+	Role        *string `json:"role"`
+	Username    *string `json:"username"`
 	GravatarUrl *string `json:"gravatarUrl"`
-	Id	  *uint   `json:"id"`
+	Id          *uint   `json:"id"`
 }
 
 func HandlerMiddleWare(authMiddleware *jwt.GinJWTMiddleware) gin.HandlerFunc {
@@ -48,7 +48,7 @@ func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 
 func InitParams(repo repository.Repository, realm string, secret string, timeout int) *jwt.GinJWTMiddleware {
 
-	if (secret == "") {
+	if secret == "" {
 		log.Println("JWT_SECRET is not set, using default value")
 		secret = "secret"
 	}
@@ -76,7 +76,7 @@ func InitParams(repo repository.Repository, realm string, secret string, timeout
 			var userObj *models.User = nil
 			if err {
 				userObj = user.(*models.User)
-			} 
+			}
 			loginReponse(c, code, message, time, userObj)
 		},
 	}
@@ -89,7 +89,7 @@ func authenticator(repo *repository.Repository) func(c *gin.Context) (interface{
 			return "", jwt.ErrMissingLoginValues
 		}
 		login := strings.TrimSpace(loginVals.Login)
-		password :=  strings.TrimSpace(loginVals.Password)
+		password := strings.TrimSpace(loginVals.Password)
 
 		user, err := repo.GetUserByLoginAndPassword(login, password)
 		if err == nil {
@@ -105,7 +105,7 @@ func payloadFunc() func(data interface{}) jwt.MapClaims {
 	return func(data interface{}) jwt.MapClaims {
 		if v, ok := data.(*models.User); ok {
 			return jwt.MapClaims{
-				IdentityKey:  v.ID,
+				IdentityKey: v.ID,
 			}
 		}
 		return jwt.MapClaims{}
@@ -140,14 +140,14 @@ func unauthorized() func(c *gin.Context, code int, message string) {
 	}
 }
 
-func loginReponse (c *gin.Context, code int, token string, expire time.Time, user *models.User) {
+func loginReponse(c *gin.Context, code int, token string, expire time.Time, user *models.User) {
 	loginResponse := loginResponse{
-		Code: http.StatusOK,
-		Token: token,
+		Code:   http.StatusOK,
+		Token:  token,
 		Expire: expire.Format(time.RFC3339),
 	}
-	
-	if (user != nil) {
+
+	if user != nil {
 		role := user.Role()
 		loginResponse.Role = &role
 
@@ -161,6 +161,6 @@ func loginReponse (c *gin.Context, code int, token string, expire time.Time, use
 		loginResponse.Id = &id
 	}
 
-	c.JSON(code, loginResponse);
-	
+	c.JSON(code, loginResponse)
+
 }

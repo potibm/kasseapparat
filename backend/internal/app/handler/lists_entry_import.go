@@ -98,29 +98,29 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 		}
 
 		if !record.validateCode() {
-			warnings = append(warnings, "Invalid code: "+record.Code+ " (" + strconv.Itoa(lineNumber)+")")
+			warnings = append(warnings, "Invalid code: "+record.Code+" ("+strconv.Itoa(lineNumber)+")")
 			continue
 		}
 
 		if !record.validateBlocked() {
-			warnings = append(warnings, "Blocked: "+record.Code + " (" +strconv.Itoa(lineNumber)+")")
+			warnings = append(warnings, "Blocked: "+record.Code+" ("+strconv.Itoa(lineNumber)+")")
 			continue
 		}
 
 		// check if the record already exists
 		_, err = handler.repo.GetListEntryByCode(record.Code)
 		if err == nil {
-			warnings = append(warnings, "Already exists: "+record.Code + " (" +strconv.Itoa(lineNumber)+")")
+			warnings = append(warnings, "Already exists: "+record.Code+" ("+strconv.Itoa(lineNumber)+")")
 			continue
 		}
 
 		// create list entry
 		listEntry := models.ListEntry{
-			ListID: list.ID,
-			Name: record.LastName + " " + record.FirstName + " (" + record.Subject + ")",
-			Code: &record.Code,
+			ListID:           list.ID,
+			Name:             record.LastName + " " + record.FirstName + " (" + record.Subject + ")",
+			Code:             &record.Code,
 			AdditionalGuests: 0,
-			AttendedGuests: 0,
+			AttendedGuests:   0,
 		}
 
 		_, err = handler.repo.CreateListEntry(listEntry)

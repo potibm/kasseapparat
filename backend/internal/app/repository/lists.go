@@ -16,9 +16,9 @@ func (repo *Repository) GetLists(limit int, offset int, sort string, order strin
 		return nil, err
 	}
 
-	query := repo.db.Preload("Product").Order(sort + " " + order + ", Id ASC").Limit(limit).Offset(offset);
+	query := repo.db.Preload("Product").Order(sort + " " + order + ", Id ASC").Limit(limit).Offset(offset)
 
-	if (len(ids) > 0) {
+	if len(ids) > 0 {
 		query = query.Where("id IN ?", ids)
 	}
 
@@ -40,7 +40,6 @@ func getListsValidFieldName(input string) (string, error) {
 
 	return "", errors.New("Invalid field name")
 }
-
 
 func (repo *Repository) GetTotalLists() (int64, error) {
 	var totalRows int64
@@ -65,7 +64,6 @@ func (repo *Repository) GetListWithTypeCode() (*models.List, error) {
 	}
 	return &list, nil
 }
-
 
 func (repo *Repository) UpdateListByID(id int, updatedList models.List) (*models.List, error) {
 	var list models.List
