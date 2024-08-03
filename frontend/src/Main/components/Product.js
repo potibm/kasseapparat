@@ -32,13 +32,21 @@ function Product({ product, addToCart, hasListItem }) {
           </p>
           <div className="flex">
             {product.lists.length > 0 && (
-              <MyButton
-                onClick={handleShowGuestlist}
-                className="mr-4"
-                aria-label="Show guestlist"
-              >
-                <HiUserAdd className="h-5 w-5" />
-              </MyButton>
+              <>
+                <MyButton
+                  onClick={handleShowGuestlist}
+                  aria-label="Show guestlist"
+                >
+                  <HiUserAdd className="h-5 w-5" />
+                </MyButton>
+                <GuestlistModal
+                  isOpen={isModalOpen}
+                  onClose={() => setIsModalOpen(false)}
+                  product={product}
+                  addToCart={addToCart}
+                  hasListItem={hasListItem}
+                />
+              </>
             )}
             {product.lists.length === 0 && (
               <MyButton onClick={handleAddToCart} aria-label="Add to cart">
@@ -49,13 +57,6 @@ function Product({ product, addToCart, hasListItem }) {
         </div>
       </Card>
       {product.wrapAfter && <div className="w-full"></div>}
-      <GuestlistModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        product={product}
-        addToCart={addToCart}
-        hasListItem={hasListItem}
-      />
     </>
   );
 }

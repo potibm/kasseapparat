@@ -44,12 +44,12 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
   const compactTableTheme = {
     head: {
       cell: {
-        base: "px-4 py-2",
+        base: "px-2 py-1",
       },
     },
     body: {
       cell: {
-        base: "px-4 py-2",
+        base: "px-2 py-1",
       },
     },
   };
@@ -89,11 +89,11 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
         className={`table-fixed ${flash ? "animate__animated animate__pulse" : ""}`}
       >
         <Table.Head>
-          <Table.HeadCell className="w-6/12">Date</Table.HeadCell>
-          <Table.HeadCell className="w-3/12 text-right">
+          <Table.HeadCell className="w-[55%]">Date</Table.HeadCell>
+          <Table.HeadCell className="w-[15%] text-right">
             Total Price
           </Table.HeadCell>
-          <Table.HeadCell className="w-3/12 text-right">Remove</Table.HeadCell>
+          <Table.HeadCell className="w-[30%] text-right">Remove</Table.HeadCell>
         </Table.Head>
         <Table.Body>
           {history.slice(0, 2).map((purchase) => (
@@ -104,7 +104,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
               <Table.Cell className="text-right">
                 {currency.format(purchase.totalPrice)}
               </Table.Cell>
-              <Table.Cell className="">
+              <Table.Cell className="flex justify-end">
                 <MyButton
                   color="failure"
                   onClick={() => setOpenModal({ show: true, purchase })}

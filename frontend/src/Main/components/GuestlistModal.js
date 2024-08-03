@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { FloatingLabel, Modal, Table, Avatar, Alert } from "flowbite-react";
 import { fetchGuestListByProductId } from "../hooks/Api";
-import { HiShoppingCart, HiInformationCircle, HiXCircle } from "react-icons/hi";
+import {
+  HiShoppingCart,
+  HiInformationCircle,
+  HiXCircle,
+  HiOutlineX,
+} from "react-icons/hi";
 import PropTypes from "prop-types";
 import SidebarKeyboard from "./SidebarKeyboard";
 import { useConfig } from "../../provider/ConfigProvider";
@@ -20,6 +25,13 @@ const GuestlistModal = ({
   const [searchQuery, setSearchQuery] = useState("");
   const apiHost = useConfig().apiHost;
   const { token } = useAuth();
+
+  let hasCodes = false;
+  product.lists.forEach((list) => {
+    if (list.typeCode) {
+      hasCodes = true;
+    }
+  });
 
   const handleAddToCart = (listEntry, additionalGuests) => {
     addToCart(product, additionalGuests + 1, listEntry);
@@ -76,13 +88,13 @@ const GuestlistModal = ({
       <Modal.Body className="overflow-hidden">
         <div className="flex h-full">
           {/* Sidebar */}
-          <div className="w-1/4 bg-gray-100 p-4">
+          <div className="w-4/12 bg-gray-100 p-4">
             <FloatingLabel
               variant="filled"
               label="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              autoFocus={true}
+              autoFocus={hasCodes}
             />
 
             <SidebarKeyboard term={searchQuery} setTerm={setSearchQuery} />
@@ -99,7 +111,12 @@ const GuestlistModal = ({
             className="w-3/4 p-4 overflow-y-auto"
             style={{ maxHeight: "calc(100vh - 10rem)" }}
           >
-            <div className="text-xl mb-4">List for {product.name}</div>
+            <div className="text-xl mb-4 flex justify-between items-center">
+              <span>List for {product.name}</span>
+              <MyButton onClick={onClose} color="gray">
+                <HiOutlineX />
+              </MyButton>
+            </div>
 
             {error && (
               <Alert

@@ -150,7 +150,8 @@ function Kasseapparat() {
 
           <Button.Group className="mt-10 ">
             <Button>
-              <HiOutlineUserCircle className="mr-2 h-5 w-5" /> {username}
+              <HiOutlineUserCircle className="mr-2 h-5 w-5 max-lg:hidden" />{" "}
+              {username}
             </Button>
             <Button
               as={Link}
@@ -165,7 +166,7 @@ function Kasseapparat() {
               to="/admin"
               className="hover:bg-cyan-800 hover:text-white"
             >
-              <HiCog className="mr-2 h-5 w-5" /> Admin
+              <HiCog className="mr-2 h-5 w-5 max-xl:hidden" /> Admin
             </Button>
           </Button.Group>
 
