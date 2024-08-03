@@ -34,7 +34,6 @@ function Product({ product, addToCart, hasListItem }) {
             {product.lists.length > 0 && (
               <MyButton
                 onClick={handleShowGuestlist}
-                className="mr-4"
                 aria-label="Show guestlist"
               >
                 <HiUserAdd className="h-5 w-5" />
