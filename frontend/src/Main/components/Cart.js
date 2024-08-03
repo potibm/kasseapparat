@@ -39,12 +39,12 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
   const compactTableTheme = {
     head: {
       cell: {
-        base: "px-4 py-2",
+        base: "px-2 py-1",
       },
     },
     body: {
       cell: {
-        base: "px-4 py-2",
+        base: "px-2 py-1",
       },
     },
   };
@@ -57,14 +57,14 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
         className={`table-fixed ${flash ? "animate__animated animate__pulse" : ""}`}
       >
         <Table.Head>
-          <Table.HeadCell className="w-5/12">Product</Table.HeadCell>
-          <Table.HeadCell className="w-2/12 text-right">
+          <Table.HeadCell className="w-[40%]">Product</Table.HeadCell>
+          <Table.HeadCell className="w-[15%] text-right">
             <Tooltip content="Quantity">Qnt</Tooltip>
           </Table.HeadCell>
-          <Table.HeadCell className="w-2/12 text-right">
+          <Table.HeadCell className="w-[15%] text-right">
             Total Price
           </Table.HeadCell>
-          <Table.HeadCell className="w-3/12">Remove</Table.HeadCell>
+          <Table.HeadCell className="w-[30%] text-right">Remove</Table.HeadCell>
         </Table.Head>
         <Table.Body>
           {cart.map((cartElement) => (
@@ -86,7 +86,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
               <Table.Cell className="text-right">
                 {currency.format(cartElement.totalPrice)}
               </Table.Cell>
-              <Table.Cell className="">
+              <Table.Cell className="flex justify-end">
                 <MyButton
                   color="failure"
                   onClick={() => removeFromCart(cartElement)}
@@ -105,7 +105,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
                 cart.reduce((total, item) => total + item.totalPrice, 0),
               )}
             </Table.Cell>
-            <Table.Cell>
+            <Table.Cell className="flex justify-end">
               {cart.length ? (
                 <MyButton color="failure" onClick={() => removeAllFromCart()}>
                   <HiXCircle />
