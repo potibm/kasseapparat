@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { FloatingLabel, Modal, Table, Avatar, Alert } from "flowbite-react";
 import { fetchGuestListByProductId } from "../hooks/Api";
-import { HiShoppingCart, HiInformationCircle, HiXCircle } from "react-icons/hi";
+import { HiShoppingCart, HiInformationCircle, HiXCircle, HiOutlineX } from "react-icons/hi";
 import PropTypes from "prop-types";
 import SidebarKeyboard from "./SidebarKeyboard";
 import { useConfig } from "../../provider/ConfigProvider";
@@ -99,7 +99,15 @@ const GuestlistModal = ({
             className="w-3/4 p-4 overflow-y-auto"
             style={{ maxHeight: "calc(100vh - 10rem)" }}
           >
-            <div className="text-xl mb-4">List for {product.name}</div>
+            <div className="text-xl mb-4 flex justify-between items-center">
+              <span>List for {product.name}</span>
+              <MyButton
+                onClick={onClose}
+                color="gray"
+              >
+                  <HiOutlineX />
+                </MyButton>
+            </div>
 
             {error && (
               <Alert
