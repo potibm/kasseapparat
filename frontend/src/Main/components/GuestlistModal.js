@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { FloatingLabel, Modal, Table, Avatar, Alert } from "flowbite-react";
 import { fetchGuestListByProductId } from "../hooks/Api";
-import { HiShoppingCart, HiInformationCircle, HiXCircle, HiOutlineX } from "react-icons/hi";
+import {
+  HiShoppingCart,
+  HiInformationCircle,
+  HiXCircle,
+  HiOutlineX,
+} from "react-icons/hi";
 import PropTypes from "prop-types";
 import SidebarKeyboard from "./SidebarKeyboard";
 import { useConfig } from "../../provider/ConfigProvider";
@@ -101,12 +106,9 @@ const GuestlistModal = ({
           >
             <div className="text-xl mb-4 flex justify-between items-center">
               <span>List for {product.name}</span>
-              <MyButton
-                onClick={onClose}
-                color="gray"
-              >
-                  <HiOutlineX />
-                </MyButton>
+              <MyButton onClick={onClose} color="gray">
+                <HiOutlineX />
+              </MyButton>
             </div>
 
             {error && (
