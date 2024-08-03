@@ -26,6 +26,13 @@ const GuestlistModal = ({
   const apiHost = useConfig().apiHost;
   const { token } = useAuth();
 
+  let hasCodes = false;
+  product.lists.forEach((list) => {
+    if (list.typeCode) {
+      hasCodes = true;
+    }
+  });
+
   const handleAddToCart = (listEntry, additionalGuests) => {
     addToCart(product, additionalGuests + 1, listEntry);
     onClose(); // close the modal
@@ -87,7 +94,7 @@ const GuestlistModal = ({
               label="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              autoFocus={true}
+              autoFocus={hasCodes}
             />
 
             <SidebarKeyboard term={searchQuery} setTerm={setSearchQuery} />
