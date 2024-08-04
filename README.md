@@ -1,6 +1,6 @@
 # Kasseapparat
 
-![Kasseapparat Logo](frontend/public/favicon.svg)
+![Kasseapparat Logo](doc/kasseapparat.svg)
 
 > _Kasseapparat_ is the Danish term for cash register.
 
@@ -17,3 +17,7 @@ It is a simple point of sale (POS) system aimed at [demoparties](https://en.wiki
   - [React Admin](https://marmelab.com/react-admin/)
 - [SQLite](https://www.sqlite.org)
 - Make
+
+## Documentation
+
+- [User Documentation](doc/manual.md)
