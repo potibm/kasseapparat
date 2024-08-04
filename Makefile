@@ -85,5 +85,12 @@ docker-build:
 	docker build -t kasseapparat:latest .
 	rm VERSION
 
+manual:
+	rm -f doc/manual.pdf
+#   docker buildx create --use
+#	docker buildx build --platform linux/amd64 -t md-to-pdf-converter tools/md-to-pdf --load
+	docker run --platform linux/amd64 --rm -v $(PWD)/doc:/app md-to-pdf-converter manual.md
+	mv doc/manual.pdf $(FRONTEND_DIR)/public/manual.pdf
+
 docker-run:
 	docker run -p 3003:8080 -e "CORS_ALLOW_ORIGINS=http://localhost:3003" -v ./backend/data:/app/data kasseapparat:latest
