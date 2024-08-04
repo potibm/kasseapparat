@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import MinimalBaseCard from "../components/MinimalBaseCard";
+import { Alert, Spinner } from "flowbite-react";
+import { HiInformationCircle } from "react-icons/hi";
 
 const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
 
@@ -53,11 +56,28 @@ const ConfigProvider = ({ children }) => {
   }, []);
 
   if (loading) {
-    return <div>Loading Config...</div>;
+    return (
+      <MinimalBaseCard>
+        Loading Config...
+        <br />
+        <Spinner className="mt-3" />
+      </MinimalBaseCard>
+    );
   }
 
   if (error) {
-    return <div>Error loading config: {error}</div>;
+    return (
+      <MinimalBaseCard>
+        Error loading config:
+        <Alert
+          color="failure"
+          icon={HiInformationCircle}
+          className="mt-3 font-mono"
+        >
+          {error}
+        </Alert>
+      </MinimalBaseCard>
+    );
   }
 
   return (
