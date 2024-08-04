@@ -1,6 +1,6 @@
 import { HiXCircle, HiOutlineExclamationCircle } from "react-icons/hi";
 import React, { useState, useEffect, useRef } from "react";
-import { Modal, Table } from "flowbite-react";
+import { Modal, Table, TableCell, TableRow } from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
@@ -69,6 +69,23 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
             <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
               Are you sure you want to delete this purchase?
             </h3>
+
+            <Table className="mb-5">
+              <Table.Body>
+                {openModal?.purchase?.purchaseItems != null &&
+                  openModal.purchase.purchaseItems.length > 0 &&
+                  openModal.purchase.purchaseItems.map((purchaseItem) => (
+                    <TableRow key={purchaseItem.id}>
+                      <TableCell>{purchaseItem.quantity} x</TableCell>
+                      <TableCell>{purchaseItem.product.name}</TableCell>
+                      <TableCell className="text-right">
+                        {currency.format(purchaseItem.totalPrice)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </Table.Body>
+            </Table>
+
             <div className="flex justify-center gap-4">
               <MyButton
                 color="failure"
@@ -96,7 +113,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
           <Table.HeadCell className="w-[30%] text-right">Remove</Table.HeadCell>
         </Table.Head>
         <Table.Body>
-          {history.slice(0, 2).map((purchase) => (
+          {history.slice(0, 3).map((purchase) => (
             <Table.Row key={purchase.id}>
               <Table.Cell className="whitespace-nowrap">
                 {formatDate(purchase.createdAt)}

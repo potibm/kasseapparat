@@ -48,7 +48,7 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 	}
 
 	var purchases []models.Purchase
-	if err := repo.db.Model(&models.Purchase{}).Preload("CreatedBy").Order(sort + " " + order + ", created_at DESC").Limit(limit).Offset(offset).Find(&purchases).Error; err != nil {
+	if err := repo.db.Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").Preload("CreatedBy").Order(sort + " " + order + ", created_at DESC").Limit(limit).Offset(offset).Find(&purchases).Error; err != nil {
 		return nil, errors.New("Purchases not found")
 	}
 
