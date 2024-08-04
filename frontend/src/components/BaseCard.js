@@ -53,12 +53,9 @@ const BaseCard = ({
               <span className="mx-2">&ndash;</span>
             </>
           )}
-          <Link
-                to="/manual.pdf"
-                className="text-blue-500 hover:underline"
-              >
-                Manual
-              </Link>
+          <Link to="/manual.pdf" className="text-blue-500 hover:underline">
+            Manual
+          </Link>
           <span className="mx-2">&ndash;</span>
           Version {version}
         </p>

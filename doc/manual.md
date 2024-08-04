@@ -4,7 +4,7 @@
 
 Kasseappart is a point of sale and guestlist system for demoparties. It is heavily inspired by Partymeister.
 
-It is separated in a [POS](#pos) and an [admin](#admin) part. 
+It is separated in a [POS](#pos) and an [admin](#admin) part.
 
 You will need the same credentials for both parts.
 
@@ -23,13 +23,13 @@ The interface consists of four main parts:
 
 ### Product List
 
-*Products with a shopping cart button* can be added to the cart directly. For each click on the button one more quantity of the selected product is added to the cart.
+_Products with a shopping cart button_ can be added to the cart directly. For each click on the button one more quantity of the selected product is added to the cart.
 
 ![screenshot of guestlist](pos-list.png)
 
-*Products with a list* will open an additional window, where you can find a list of persons (1). Once you click on the buttons (2) associtated with the users this will be added to the cart (+1 means "plus an additional person" and so on). 
+_Products with a list_ will open an additional window, where you can find a list of persons (1). Once you click on the buttons (2) associtated with the users this will be added to the cart (+1 means "plus an additional person" and so on).
 
-On the left side of the window you may search for those people (3). The Buttons contain letters A to Z, spaces (_), delete the last char (<X) and delete the whole searchterm (x).
+On the left side of the window you may search for those people (3). The Buttons contain letters A to Z, spaces (\_), delete the last char (<X) and delete the whole searchterm (x).
 
 In very rare circumstances you may add a manual entry (without a selected person) using the yellow "manual" button (4).
 
@@ -39,15 +39,15 @@ Neither the products nor the guestlist can be modified using the pos interface. 
 
 ### Cart
 
-The cart shows what the current customer has ordered. 
+The cart shows what the current customer has ordered.
 
 You may delete the whole cart or remove a certain product from the cart. It is not possible to reduce the amount of a certain product (to reduce simplicity). This action is performed without confirmation.
 
-When the order is complete and the user has payed press "checkout" (no confirmation again). Afterwards the cart is empty again and the purchase is shown under the "last purchases" below. 
+When the order is complete and the user has payed press "checkout" (no confirmation again). Afterwards the cart is empty again and the purchase is shown under the "last purchases" below.
 
 ### Last Purchases
 
-Shows the minimal information (date, total value of purchase) on last purchases. 
+Shows the minimal information (date, total value of purchase) on last purchases.
 
 This allows to revert a previous purchase. Simply click on the button and confirm the dialogue.
 
@@ -57,14 +57,14 @@ To revert previous purchases use the admin, please.
 
 ## <a name="admin">Admin</a>
 
-The admin interface is needed to modify the products, manage the users and modify the guestlists. You will need the same credentials as for the POS. 
+The admin interface is needed to modify the products, manage the users and modify the guestlists. You will need the same credentials as for the POS.
 
 ![admin interface](admin.png)
 
 The Interface consists of several areas:
 
 - The menu (1) where you can select the entity to modify
-- The action bar (2) to create an entity. Might contain tools to search or filter the entities. 
+- The action bar (2) to create an entity. Might contain tools to search or filter the entities.
 - The list of entities (3) with some basic information. Once you click on an entity, you will see details or an option to modify it
 - A pagination bar (4)
 
@@ -75,25 +75,25 @@ To create a product click on "POS > Products" in the menu, then "+ Create" in th
 You will have to fill out some fields:
 
 - Name
-- Price 
+- Price
 - Pos (products will be ordered by this position in the POS, simply enter a value that is between the product that should be before and the product that should be after your product)
 - Wrap After (set this to true and the next product will be shown on a new line in the POS)
 - Hidden (set this to true and your product will not be shown)
 - API export (should be true for visitor, false for merchandise and co. all those with value true will count towards the number of visitors)
 
-Save. 
+Save.
 
 You will need to reload the POS to show your product.
 
 ### Disable a product
 
-Big warning sign here: you probably do *not* want to delete a product once the initial setup was done. 
+Big warning sign here: you probably do _not_ want to delete a product once the initial setup was done.
 
-When you run out of stock and do not want to a product to be shown in the POS, simply disable it. This can be reverted anytime. 
+When you run out of stock and do not want to a product to be shown in the POS, simply disable it. This can be reverted anytime.
 
 Simply click on the product you would like to disable, click on the "Hidden" toggle and Save.
 
-Done. 
+Done.
 
 You will need to reload the POS to see the effect.
 
@@ -101,7 +101,7 @@ You will need to reload the POS to see the effect.
 
 When you need to delete an older purchase -- for whatever reason -- you may use the admin.
 
-Click on "POS > Purchases". 
+Click on "POS > Purchases".
 
 Purchases are ordered by the checkout time. In addition you should see the cart´s value and the user that performed the action.
 
@@ -115,11 +115,11 @@ Click on "Admin > Users". And "+ Create" in the action bar.
 
 Enter the follwing information:
 
-- Username 
+- Username
 - Email address
 - Admin (only available when you are an admin yourself)
 
-Save. 
+Save.
 
 The user will receive an email with a password reset link.
 
@@ -141,7 +141,7 @@ Enter the following information:
 - Type code (probably false, true when the list contains barcodes)
 - Product (probably "Free", the associated product)
 
-Save. 
+Save.
 
 #### Add the user to your guestlist
 
@@ -154,4 +154,4 @@ Enter the following information:
 - Code (leave empty)
 - Additional guests (number of additional guests the person is allowed to bring)
 
-Save. 
+Save.
