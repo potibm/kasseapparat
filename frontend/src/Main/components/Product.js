@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import { Card } from "flowbite-react";
-import { HiShoppingCart, HiUserAdd } from "react-icons/hi";
+import { HiShoppingCart, HiUserAdd, HiQrcode } from "react-icons/hi";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import GuestlistModal from "./GuestlistModal";
 import MyButton from "./MyButton";
+import ScannerModal from "./ScannerModal";
 
 function Product({ product, addToCart, hasListItem }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const handleAddToCart = () => {
     addToCart(product);
   };
 
   const handleShowGuestlist = () => {
-    setIsModalOpen(true); // Öffnen des Modals
+    setIsModalOpen(true); 
   };
 
   const currency = useConfig().currency;
@@ -33,6 +35,20 @@ function Product({ product, addToCart, hasListItem }) {
           <div className="flex">
             {product.lists.length > 0 && (
               <>
+                <MyButton
+                  onClick={() => setIsScannerOpen(true)}
+                  aria-label="Open scanner"
+                >
+                  <HiQrcode />
+                </MyButton>
+                <ScannerModal 
+                  isOpen={isScannerOpen} 
+                  onClose={() => setIsScannerOpen(false)}
+                  product={product}
+                  addToCart={addToCart}
+                  hasListItem={hasListItem}>
+                </ScannerModal>
+
                 <MyButton
                   onClick={handleShowGuestlist}
                   aria-label="Show guestlist"
