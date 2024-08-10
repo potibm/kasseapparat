@@ -26,9 +26,11 @@ var authMiddleware *jwt.GinJWTMiddleware
 func InitializeHttpServer(myhandler handler.Handler, repository repository.Repository, staticFiles embed.FS) *gin.Engine {
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	r = gin.Default()
+	r.Use(sentrygin.New(sentrygin.Options{}))
+
+	r.GET("/api/v1/purchases/stats", myhandler.GetPurchaseStats);
 
 	r.Use(createCorsMiddleware())
-	r.Use(sentrygin.New(sentrygin.Options{}))
 
 	r.Use(static.Serve("/", static.EmbedFolder(staticFiles, "assets")))
 
@@ -135,7 +137,6 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 	unprotectedApiRouter := r.Group("/api/v1")
 	{
 		unprotectedApiRouter.GET("/config", myhandler.GetConfig)
-		unprotectedApiRouter.GET("/purchases/stats", myhandler.GetPurchaseStats)
 
 		unprotectedApiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
 		unprotectedApiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
