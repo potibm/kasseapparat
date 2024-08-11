@@ -1,19 +1,24 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../provider/AuthProvider";
-import { Label, Button, TextInput, Alert } from "flowbite-react";
+import { Label, Button, TextInput, Alert, Spinner } from "flowbite-react";
 import { getJwtToken } from "../hooks/Api";
 import BaseCard from "../../components/BaseCard";
 import { useConfig } from "../../provider/ConfigProvider";
 
 const Login = () => {
   const [error, setError] = useState(null);
+  const [disabled, setDisabled] = useState(false);
 
   const { setToken, setExpiryDate, setUserdata } = useAuth();
   const navigate = useNavigate();
   const apiHost = useConfig().apiHost;
 
   const handleLogin = (event) => {
+    if (disabled) {
+      return;
+    }
+    setDisabled(true);
     event.preventDefault();
 
     const login = event.target.login.value;
@@ -35,14 +40,23 @@ const Login = () => {
         navigate("/", { replace: true });
       })
       .catch((error) => {
-        console.error("Login error:", error);
-        setError("Invalid username or password. Please try again.");
+        setError({"message": "There was an error logging you in.", "details": error.message});
+        setDisabled(false);
       });
   };
 
   return (
     <BaseCard title="Login" linkForgotPassword={true}>
-      {error && <Alert color="failure">{error}</Alert>}
+      {error && (
+        <Alert color="failure" className="mb-2">
+          <>
+            <div>{error.message}</div>
+            {error.details && (
+              <div className="mt-2 font-mono">{error.details}</div>
+            )}
+          </>
+        </Alert>
+      )}
 
       <form className="flex flex-col gap-4" onSubmit={handleLogin}>
         <div>
@@ -57,7 +71,7 @@ const Login = () => {
           </div>
           <TextInput id="password" type="password" required />
         </div>
-        <Button type="submit">Login</Button>
+        <Button type="submit" disabled={disabled}>Login  {disabled && <Spinner className="ml-3" />}</Button>
       </form>
     </BaseCard>
   );

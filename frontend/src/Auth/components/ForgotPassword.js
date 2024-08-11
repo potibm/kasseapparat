@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Label, Button, TextInput, Alert } from "flowbite-react";
+import { Label, Button, TextInput, Alert, Spinner } from "flowbite-react";
 import BaseCard from "../../components/BaseCard";
 import { useConfig } from "../../provider/ConfigProvider";
 import { requestChangePasswordToken } from "../hooks/Api";
@@ -8,14 +8,17 @@ const RequestToken = () => {
   const [login, setLogin] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [disabled, setDisabled] = useState(false);
 
   const apiHost = useConfig().apiHost;
 
   const handleForgotPassword = (event) => {
-    event.preventDefault();
+    if (disabled) {
+      return;
+    }
+    setDisabled(true);
 
-    console.log("login", login);
-    console.log("apiHost", apiHost);
+    event.preventDefault();
 
     requestChangePasswordToken(apiHost, login)
       .then((auth) => {
@@ -24,6 +27,7 @@ const RequestToken = () => {
       .catch((error) => {
         console.error("Error:", error);
         setError("There was an unknown error to request a password change.");
+        setDisabled(false);
       });
   };
 
@@ -67,7 +71,7 @@ const RequestToken = () => {
                 />
               </div>
 
-              <Button type="submit">Forgot my password</Button>
+              <Button type="submit" disabled={disabled}>Forgot my password {disabled && <Spinner className="ml-3" />}</Button>
             </form>
           </>
         )}
