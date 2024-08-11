@@ -82,7 +82,7 @@ func importUsers(filename string) {
 			Admin:    record[2] == "true",
 		}
 		user.GenerateRandomPassword()
-		validity := 3 * time.Hour
+		validity := 24 * time.Hour
 		user.GenerateChangePasswordToken(&validity)
 
 		user, err := repo.CreateUser(user)
