@@ -11,7 +11,7 @@ export const getJwtToken = async (apiHost, login, password) => {
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.error || "Network response was not ok");
+            throw new Error(errorBody.message || "Network response was not ok");
           });
         }
         return response.json();
@@ -33,7 +33,7 @@ export const refreshJwtToken = async (apiHost, refreshToken) => {
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.error || "Network response was not ok");
+            throw new Error(errorBody.message || "Network response was not ok");
           });
         }
         return response.json();

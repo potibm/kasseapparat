@@ -17,7 +17,7 @@ import {
   checkoutCart,
   containsListItemID,
 } from "./hooks/Cart";
-import { Button } from "flowbite-react";
+import { Button, Spinner } from "flowbite-react";
 import { HiCog, HiOutlineUserCircle } from "react-icons/hi";
 import { useAuth } from "../Auth/provider/AuthProvider";
 import { useConfig } from "../provider/ConfigProvider";
@@ -33,12 +33,13 @@ function Kasseapparat() {
 
   useEffect(() => {
     const getProducts = async () => {
-      fetchProducts(apiHost, token)
+      return fetchProducts(apiHost, token)
         .then((products) => setProducts(products))
         .catch((error) =>
-          showError(
+          /*          showError(
             "There was an error fetching the products: " + error.message,
-          ),
+          ), */
+          console.log("error", error),
         );
     };
     const getHistory = async () => {
@@ -82,8 +83,8 @@ function Kasseapparat() {
     setPurchaseHistory([purchase, ...purchaseHistory]);
   };
 
-  const handleRemoveFromPurchaseHistory = (purchase) => {
-    deletePurchaseById(apiHost, token, purchase.id)
+  const handleRemoveFromPurchaseHistory = async (purchase) => {
+    return deletePurchaseById(apiHost, token, purchase.id)
       .then((data) => {
         fetchPurchases(apiHost, token)
           .then((history) => setPurchaseHistory(history))
@@ -100,7 +101,7 @@ function Kasseapparat() {
   };
 
   const handleCheckoutCart = async () => {
-    storePurchase(apiHost, token, cart)
+    return storePurchase(apiHost, token, cart)
       .then((createdPurchase) => {
         setCart(checkoutCart());
         handleAddToPurchaseHistory(createdPurchase.purchase);
@@ -128,13 +129,21 @@ function Kasseapparat() {
   return (
     <div className="App p-2">
       <div className="w-full overflow-hidden">
-        <div className="w-9/12">
-          <ProductList
-            products={products}
-            addToCart={handleAddToCart}
-            hasListItem={hasListItem}
-          />
-        </div>
+        {products.length === 0 && (
+          <div className="w-9/12 text-gray-500 text-left p-5">
+            Loading products...
+            <Spinner className="ml-2" />
+          </div>
+        )}
+        {purchaseHistory.length > 0 && (
+          <div className="w-9/12">
+            <ProductList
+              products={products}
+              addToCart={handleAddToCart}
+              hasListItem={hasListItem}
+            />
+          </div>
+        )}
         <div className="fixed inset-y-0 right-0 w-3/12 border bg-slate-200 p-2">
           <Cart
             cart={cart}

@@ -1,6 +1,6 @@
 import { HiXCircle, HiOutlineExclamationCircle } from "react-icons/hi";
 import React, { useState, useEffect, useRef } from "react";
-import { Modal, Table, TableCell, TableRow } from "flowbite-react";
+import { Modal, Spinner, Table, TableCell, TableRow } from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
@@ -8,10 +8,17 @@ import MyButton from "./MyButton";
 
 function PurchaseHistory({ history, removeFromPurchaseHistory }) {
   const [openModal, setOpenModal] = useState({ show: false, purchase: null });
+  const [processing, setProcessing] = useState(false);
 
   const confirmDelete = (purchase) => {
-    setOpenModal({ show: false });
-    removeFromPurchaseHistory(purchase);
+    if (processing) {
+      return;
+    }
+    setProcessing(true);
+    removeFromPurchaseHistory(purchase).then(() => {
+      setProcessing(false);
+      setOpenModal({ show: false });
+    });
   };
 
   const [flash, setFlash] = useState(false);
@@ -61,6 +68,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
         size="md"
         onClose={() => setOpenModal({ show: false })}
         popup
+        dismissible
       >
         <Modal.Header />
         <Modal.Body>
@@ -89,11 +97,13 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
             <div className="flex justify-center gap-4">
               <MyButton
                 color="failure"
+                disabled={processing}
                 onClick={() => confirmDelete(openModal.purchase)}
               >
-                {"Yes, I'm sure"}
+                Yes, I&apos;m sure
+                {processing && <Spinner color="gray" className="ml-2" />}
               </MyButton>
-              <MyButton color="gray" onClick={() => setOpenModal(false)}>
+              <MyButton color="black" onClick={() => setOpenModal(false)}>
                 No, cancel
               </MyButton>
             </div>
@@ -113,6 +123,13 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
           <Table.HeadCell className="w-[30%] text-right">Remove</Table.HeadCell>
         </Table.Head>
         <Table.Body>
+          {history.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={3} className="text-left">
+                Purchases loading or empty... <Spinner className="ml-2" />
+              </TableCell>
+            </TableRow>
+          )}
           {history.slice(0, 3).map((purchase) => (
             <Table.Row key={purchase.id}>
               <Table.Cell className="whitespace-nowrap">

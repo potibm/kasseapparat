@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FloatingLabel, Modal, Table, Avatar, Alert } from "flowbite-react";
+import {
+  FloatingLabel,
+  Modal,
+  Table,
+  Avatar,
+  Alert,
+  Spinner,
+} from "flowbite-react";
 import { fetchGuestListByProductId } from "../hooks/Api";
 import {
   HiShoppingCart,
@@ -21,8 +28,10 @@ const GuestlistModal = ({
   hasListItem,
 }) => {
   const [guestListEntries, setGuestListEntries] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loadedSearchQuery, setLoadedSearchQuery] = useState("");
   const apiHost = useConfig().apiHost;
   const { token } = useAuth();
 
@@ -45,6 +54,7 @@ const GuestlistModal = ({
 
   const fetchGuestEntries = useCallback(
     async (query = "") => {
+      setLoading(true);
       try {
         let response = await fetchGuestListByProductId(
           apiHost,
@@ -57,9 +67,13 @@ const GuestlistModal = ({
         }
         setGuestListEntries(response);
         setError(null);
+        setLoading(false);
+        setLoadedSearchQuery(searchQuery);
       } catch (error) {
         setError("Error fetching list entries: " + error.message);
         setGuestListEntries([]);
+        setLoading(false);
+        setLoadedSearchQuery("");
       }
     },
     [product.id, searchQuery, apiHost, token],
@@ -110,6 +124,7 @@ const GuestlistModal = ({
           <div
             className="w-3/4 p-4 overflow-y-auto"
             style={{ maxHeight: "calc(100vh - 10rem)" }}
+            id="results"
           >
             <div className="text-xl mb-4 flex justify-between items-center">
               <span>List for {product.name}</span>
@@ -118,89 +133,100 @@ const GuestlistModal = ({
               </MyButton>
             </div>
 
-            {error && (
-              <Alert
-                className="my-3"
-                color="failure"
-                icon={HiInformationCircle}
-              >
-                {error}
-              </Alert>
-            )}
+            <div
+              className="relative"
+              style={{ maxHeight: "calc(100vh - 10rem)", minHeight: "200px" }}
+            >
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
+                  <Spinner size="xl" />
+                </div>
+              )}
 
-            {guestListEntries.length === 0 && (
-              <Alert className="my-3" color="warning" icon={HiXCircle}>
-                No entries found
-              </Alert>
-            )}
+              {error && (
+                <Alert
+                  className="my-3"
+                  color="failure"
+                  icon={HiInformationCircle}
+                >
+                  {error}
+                </Alert>
+              )}
 
-            {guestListEntries.length > 0 && (
-              <div className="space-y-4">
-                <Table hoverable>
-                  <Table.Head>
-                    <Table.HeadCell></Table.HeadCell>
-                    <Table.HeadCell>Name</Table.HeadCell>
-                    <Table.HeadCell>Action</Table.HeadCell>
-                  </Table.Head>
-                  <Table.Body className="divide-y">
-                    {guestListEntries.map((entry) => (
-                      <Table.Row key={entry.id}>
-                        <Table.Cell>
-                          {!entry.code && (
-                            <Avatar
-                              placeholderInitials={getInitials(entry.name)}
-                              size="md"
-                              rounded
-                            />
-                          )}
-                        </Table.Cell>
-                        <Table.Cell className="">
-                          {!entry.code && (
-                            <>
-                              <div className="text-xl">
-                                {highlightText(entry.name, searchQuery)}
+              {!loading && guestListEntries.length === 0 && (
+                <Alert className="my-3" color="warning" icon={HiXCircle}>
+                  No entries found
+                </Alert>
+              )}
+
+              {guestListEntries.length > 0 && (
+                <div className="space-y-4">
+                  <Table hoverable>
+                    <Table.Head>
+                      <Table.HeadCell></Table.HeadCell>
+                      <Table.HeadCell>Name</Table.HeadCell>
+                      <Table.HeadCell>Action</Table.HeadCell>
+                    </Table.Head>
+                    <Table.Body className="divide-y">
+                      {guestListEntries.map((entry) => (
+                        <Table.Row key={entry.id}>
+                          <Table.Cell>
+                            {!entry.code && (
+                              <Avatar
+                                placeholderInitials={getInitials(entry.name)}
+                                size="md"
+                                rounded
+                              />
+                            )}
+                          </Table.Cell>
+                          <Table.Cell className="">
+                            {!entry.code && (
+                              <>
+                                <div className="text-xl">
+                                  {highlightText(entry.name, loadedSearchQuery)}
+                                </div>
+                                <div className="text-sm">{entry.listName}</div>
+                              </>
+                            )}
+                            {entry.code !== "" && (
+                              <div className="text-3xl font-mono">
+                                {highlightText(entry.code, loadedSearchQuery)}
                               </div>
-                              <div className="text-sm">{entry.listName}</div>
-                            </>
-                          )}
-                          {entry.code !== "" && (
-                            <div className="text-3xl font-mono">
-                              {highlightText(entry.code, searchQuery)}
-                            </div>
-                          )}
-                        </Table.Cell>
-                        <Table.Cell className="flex gap-5">
-                          <MyButton
-                            className="float"
-                            {...(hasListItem(entry.id)
-                              ? { disabled: true }
-                              : {})}
-                            onClick={() => handleAddToCart(entry, 0)}
-                          >
-                            <HiShoppingCart />
-                          </MyButton>
-                          {Array.from(
-                            { length: entry.additionalGuests },
-                            (_, i) => (
-                              <MyButton
-                                key={i}
-                                className="float"
-                                {...(hasListItem(entry.id)
-                                  ? { disabled: true }
-                                  : {})}
-                                onClick={() => handleAddToCart(entry, i + 1)}
-                              >
-                                +{i + 1}
-                              </MyButton>
-                            ),
-                          )}
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table>
-              </div>
-            )}
+                            )}
+                          </Table.Cell>
+                          <Table.Cell className="flex gap-5">
+                            <MyButton
+                              className="float"
+                              {...(hasListItem(entry.id)
+                                ? { disabled: true }
+                                : {})}
+                              onClick={() => handleAddToCart(entry, 0)}
+                            >
+                              <HiShoppingCart />
+                            </MyButton>
+                            {Array.from(
+                              { length: entry.additionalGuests },
+                              (_, i) => (
+                                <MyButton
+                                  key={i}
+                                  className="float"
+                                  {...(hasListItem(entry.id)
+                                    ? { disabled: true }
+                                    : {})}
+                                  onClick={() => handleAddToCart(entry, i + 1)}
+                                >
+                                  +{i + 1}
+                                </MyButton>
+                              ),
+                            )}
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
+                    </Table.Body>
+                  </Table>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </Modal.Body>
