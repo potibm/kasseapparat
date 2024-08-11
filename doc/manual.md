@@ -22,7 +22,7 @@ You should have received an email with a link guiding you to the change password
 
 Click on this link and choose a password with more than 8 characters. Using a password manager is a good thing!
 
-After that you are redirected to the login dialogue. 
+After that you are redirected to the login dialogue.
 
 If your password reset token has expired, request a new password by following the 'Forgot password' steps.
 
@@ -32,18 +32,18 @@ In case you forgot your password: click on "Forgot password" below the login dia
 
 <img src="forgot-password.png" height="300">
 
-Enter your email or username and you will receive an email within seconds. 
+Enter your email or username and you will receive an email within seconds.
 
 Click on this link and choose a password with more than 8 characters. Using a password manager is a good practice!
 
-After that, you are redirected to the login dialogue. 
+After that, you are redirected to the login dialogue.
 
 If you do not receive an email:
 
-* the username or email does not exist
-* you already have a password validation process running (you will have to wait for some time)
-* the mail is in your spam folder
-* some problem occurred (e.g. sending the mail was not successful)
+- the username or email does not exist
+- you already have a password validation process running (you will have to wait for some time)
+- the mail is in your spam folder
+- some problem occurred (e.g. sending the mail was not successful)
 
 <div class="page-break"></div>
 
