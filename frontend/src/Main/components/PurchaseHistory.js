@@ -123,6 +123,13 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
           <Table.HeadCell className="w-[30%] text-right">Remove</Table.HeadCell>
         </Table.Head>
         <Table.Body>
+          {history.length === 0 && ( 
+            <TableRow>
+              <TableCell colSpan={3} className="text-left">
+                Purchases loading or empty... <Spinner className="ml-2" />
+              </TableCell>
+            </TableRow>
+          )}
           {history.slice(0, 3).map((purchase) => (
             <Table.Row key={purchase.id}>
               <Table.Cell className="whitespace-nowrap">
