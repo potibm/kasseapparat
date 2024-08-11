@@ -2,11 +2,48 @@
 
 ![Kasseapparat Logo](kasseapparat.svg)
 
-Kasseappart is a point of sale and guestlist system for demoparties. It is heavily inspired by Partymeister.
+Kasseapparat is a point of sale and guestlist system for demoparties. It is heavily inspired by Partymeister.
 
 It is separated in a [POS](#pos) and an [admin](#admin) part.
 
 You will need the same credentials for both parts.
+
+<div class="page-break"></div>
+
+## Credentials
+
+You may log in with either your username or your email address. Both pieces of information can be found in the initial email you received.
+
+### Initial login
+
+You should have received an email with a link guiding you to the change password dialogue.
+
+<img src="change-password.png" height="300">
+
+Click on this link and choose a password with more than 8 characters. Using a password manager is a good thing!
+
+After that you are redirected to the login dialogue. 
+
+If your password reset token has expired, request a new password by following the 'Forgot password' steps.
+
+### Forgot your password
+
+In case you forgot your password: click on "Forgot password" below the login dialogue.
+
+<img src="forgot-password.png" height="300">
+
+Enter your email or username and you will receive an email within seconds. 
+
+Click on this link and choose a password with more than 8 characters. Using a password manager is a good practice!
+
+After that, you are redirected to the login dialogue. 
+
+If you do not receive an email:
+
+* the username or email does not exist
+* you already have a password validation process running (you will have to wait for some time)
+* the mail is in your spam folder
+* some problem occurred (e.g. sending the mail was not successful)
 
 <div class="page-break"></div>
 
@@ -27,9 +64,9 @@ _Products with a shopping cart button_ can be added to the cart directly. For ea
 
 ![screenshot of guestlist](pos-list.png)
 
-_Products with a list_ will open an additional window, where you can find a list of persons (1). Once you click on the buttons (2) associtated with the users this will be added to the cart (+1 means "plus an additional person" and so on).
+_Products with a list_ will open an additional window, where you can find a list of persons (1). Once you click on the buttons (2) associated with the users this will be added to the cart (+1 means "plus an additional person" and so on).
 
-On the left side of the window you may search for those people (3). The Buttons contain letters A to Z, spaces (\_), delete the last char (<X) and delete the whole searchterm (x).
+On the left side of the window you may search for these people (3). The Buttons contain letters A to Z, spaces (\_), delete the last character (<X) and delete the whole searchterm (x).
 
 In very rare circumstances you may add a manual entry (without a selected person) using the yellow "manual" button (4).
 
@@ -43,7 +80,7 @@ The cart shows what the current customer has ordered.
 
 You may delete the whole cart or remove a certain product from the cart. It is not possible to reduce the amount of a certain product (to reduce simplicity). This action is performed without confirmation.
 
-When the order is complete and the user has payed press "checkout" (no confirmation again). Afterwards the cart is empty again and the purchase is shown under the "last purchases" below.
+When the order is complete and the user has paid press "checkout" (no confirmation again). Afterwards the cart is empty again and the purchase is shown under the "last purchases" below.
 
 ### Last Purchases
 
@@ -103,7 +140,7 @@ When you need to delete an older purchase -- for whatever reason -- you may use 
 
 Click on "POS > Purchases".
 
-Purchases are ordered by the checkout time. In addition you should see the cart´s value and the user that performed the action.
+Purchases are ordered by the checkout time. In addition you should see the cart's value and the user that performed the action.
 
 Clicking on the purchase gives some more details.
 
@@ -113,7 +150,7 @@ Once you are really sure, simply click on "Delete" and confirm.
 
 Click on "Admin > Users". And "+ Create" in the action bar.
 
-Enter the follwing information:
+Enter the following information:
 
 - Username
 - Email address
@@ -131,7 +168,7 @@ This is probably a two step process, as the list entries are organized in separa
 
 (In case you already added a guestlist or would like to add a person to an existing guestlist, you may skip this part)
 
-Please, create a guestlist for you. It would be just great to follow the naming scheme like "Guestlist [yourname]".
+Please, create a guestlist for you. It is recommended to follow a naming scheme such as "Guestlist [yourname]".
 
 Click on "Guestlist > Lists". Click on "+ CREATE" in the action bar.
 
@@ -150,7 +187,7 @@ Click on "Guestlist > List Entries". Click on "+ CREATE" in the action bar.
 Enter the following information:
 
 - List (the one from the previous step)
-- Name (Realname of the person)
+- Name (real name of the person)
 - Code (leave empty)
 - Additional guests (number of additional guests the person is allowed to bring)
 
