@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FloatingLabel, Modal, Table, Avatar, Alert, Spinner } from "flowbite-react";
+import {
+  FloatingLabel,
+  Modal,
+  Table,
+  Avatar,
+  Alert,
+  Spinner,
+} from "flowbite-react";
 import { fetchGuestListByProductId } from "../hooks/Api";
 import {
   HiShoppingCart,
@@ -96,14 +103,14 @@ const GuestlistModal = ({
         <div className="flex h-full">
           {/* Sidebar */}
           <div className="w-4/12 bg-gray-100 p-4">
-           <FloatingLabel
-                  variant="filled"
-                  label="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  autoFocus={hasCodes}
-                />
-           
+            <FloatingLabel
+              variant="filled"
+              label="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus={hasCodes}
+            />
+
             <SidebarKeyboard term={searchQuery} setTerm={setSearchQuery} />
 
             <MyButton
@@ -116,10 +123,9 @@ const GuestlistModal = ({
           </div>
           <div
             className="w-3/4 p-4 overflow-y-auto"
-            style={{ maxHeight: "calc(100vh - 10rem)"  }}
+            style={{ maxHeight: "calc(100vh - 10rem)" }}
             id="results"
           >
-            
             <div className="text-xl mb-4 flex justify-between items-center">
               <span>List for {product.name}</span>
               <MyButton onClick={onClose} color="gray">
@@ -127,7 +133,10 @@ const GuestlistModal = ({
               </MyButton>
             </div>
 
-            <div className="relative" style={{ maxHeight: "calc(100vh - 10rem)", minHeight: "200px" }}>
+            <div
+              className="relative"
+              style={{ maxHeight: "calc(100vh - 10rem)", minHeight: "200px" }}
+            >
               {loading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
                   <Spinner size="xl" />

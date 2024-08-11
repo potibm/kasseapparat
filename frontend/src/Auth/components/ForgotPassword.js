@@ -71,7 +71,9 @@ const RequestToken = () => {
                 />
               </div>
 
-              <Button type="submit" disabled={disabled}>Forgot my password {disabled && <Spinner className="ml-3" />}</Button>
+              <Button type="submit" disabled={disabled}>
+                Forgot my password {disabled && <Spinner className="ml-3" />}
+              </Button>
             </form>
           </>
         )}

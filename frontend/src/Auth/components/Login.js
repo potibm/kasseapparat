@@ -40,7 +40,10 @@ const Login = () => {
         navigate("/", { replace: true });
       })
       .catch((error) => {
-        setError({"message": "There was an error logging you in.", "details": error.message});
+        setError({
+          message: "There was an error logging you in.",
+          details: error.message,
+        });
         setDisabled(false);
       });
   };
@@ -71,7 +74,9 @@ const Login = () => {
           </div>
           <TextInput id="password" type="password" required />
         </div>
-        <Button type="submit" disabled={disabled}>Login {disabled && <Spinner className="ml-3" />}</Button>
+        <Button type="submit" disabled={disabled}>
+          Login {disabled && <Spinner className="ml-3" />}
+        </Button>
       </form>
     </BaseCard>
   );

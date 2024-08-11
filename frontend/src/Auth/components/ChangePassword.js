@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Label, Button, TextInput, Alert, Modal, Spinner } from "flowbite-react";
+import {
+  Label,
+  Button,
+  TextInput,
+  Alert,
+  Modal,
+  Spinner,
+} from "flowbite-react";
 import { changePassword } from "../hooks/Api";
 import BaseCard from "../../components/BaseCard";
 import { useConfig } from "../../provider/ConfigProvider";
@@ -40,7 +47,7 @@ const ChangePassword = () => {
       return;
     }
     setDisabled(true);
-    
+
     e.preventDefault();
 
     if (password.length < 8) {
@@ -73,12 +80,11 @@ const ChangePassword = () => {
             link: "/forgot-password",
             linkText: "Request new token",
           });
-  
         } else {
           setValidationMessage({
             message: "The password could not be changed. Please try again.",
             details: error.message,
-          });  
+          });
         }
       });
 
@@ -138,8 +144,15 @@ const ChangePassword = () => {
             onChange={(e) => setPasswordRepeat(e.target.value.trim())}
           />
         </div>
-        <Button type="submit" disabled={disabled}>Change password {disabled && <Spinner className="ml-3" />}</Button>
-        <Button type="cancel" disabled={disabled} color="warning" onClick={() => navigate("/")}>
+        <Button type="submit" disabled={disabled}>
+          Change password {disabled && <Spinner className="ml-3" />}
+        </Button>
+        <Button
+          type="cancel"
+          disabled={disabled}
+          color="warning"
+          onClick={() => navigate("/")}
+        >
           Cancel
         </Button>
       </form>

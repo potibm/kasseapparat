@@ -36,9 +36,9 @@ function Kasseapparat() {
       return fetchProducts(apiHost, token)
         .then((products) => setProducts(products))
         .catch((error) =>
-/*          showError(
+          /*          showError(
             "There was an error fetching the products: " + error.message,
-          ),*/
+          ), */
           console.log("error", error),
         );
     };
@@ -83,7 +83,7 @@ function Kasseapparat() {
     setPurchaseHistory([purchase, ...purchaseHistory]);
   };
 
-  const handleRemoveFromPurchaseHistory = async(purchase) => {
+  const handleRemoveFromPurchaseHistory = async (purchase) => {
     return deletePurchaseById(apiHost, token, purchase.id)
       .then((data) => {
         fetchPurchases(apiHost, token)
@@ -136,14 +136,14 @@ function Kasseapparat() {
           </div>
         )}
         {purchaseHistory.length > 0 && (
-        <div className="w-9/12">
-          <ProductList
-            products={products}
-            addToCart={handleAddToCart}
-            hasListItem={hasListItem}
-          />
-        </div>
-        )}  
+          <div className="w-9/12">
+            <ProductList
+              products={products}
+              addToCart={handleAddToCart}
+              hasListItem={hasListItem}
+            />
+          </div>
+        )}
         <div className="fixed inset-y-0 right-0 w-3/12 border bg-slate-200 p-2">
           <Cart
             cart={cart}

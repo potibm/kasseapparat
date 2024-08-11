@@ -26,12 +26,10 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
     }
     setCheckoutProcessing(true);
 
-    checkoutCart().then(
-      () => {
-        setCheckoutProcessing(false);
-      }
-    );
-  }
+    checkoutCart().then(() => {
+      setCheckoutProcessing(false);
+    });
+  };
 
   useEffect(() => {
     // not 100% sure why this is called twice
@@ -145,7 +143,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
           currency.format(
             cart.reduce((total, item) => total + item.totalPrice, 0),
           )}
-          {checkoutProcessing && <Spinner color="gray" className="ml-3" />}
+        {checkoutProcessing && <Spinner color="gray" className="ml-3" />}
       </MyButton>
     </div>
   );
