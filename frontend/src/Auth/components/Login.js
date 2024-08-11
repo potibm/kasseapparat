@@ -71,7 +71,7 @@ const Login = () => {
           </div>
           <TextInput id="password" type="password" required />
         </div>
-        <Button type="submit" disabled={disabled}>Login  {disabled && <Spinner className="ml-3" />}</Button>
+        <Button type="submit" disabled={disabled}>Login {disabled && <Spinner className="ml-3" />}</Button>
       </form>
     </BaseCard>
   );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { HiXCircle } from "react-icons/hi";
-import { Table, Tooltip } from "flowbite-react";
+import { Spinner, Table, Tooltip } from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
@@ -10,6 +10,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
   const currency = useConfig().currency;
 
   const [flash, setFlash] = useState(false);
+  const [checkoutProcessing, setCheckoutProcessing] = useState(false);
   const flashCount = useRef(0);
 
   const triggerFlash = () => {
@@ -18,6 +19,19 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
       setFlash(false);
     }, 500);
   };
+
+  const handleCheckoutCart = async () => {
+    if (checkoutProcessing) {
+      return;
+    }
+    setCheckoutProcessing(true);
+
+    checkoutCart().then(
+      () => {
+        setCheckoutProcessing(false);
+      }
+    );
+  }
 
   useEffect(() => {
     // not 100% sure why this is called twice
@@ -121,16 +135,17 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
       </Table>
 
       <MyButton
-        {...(cart.length === 0 && { disabled: true })}
+        {...((cart.length === 0 || checkoutProcessing) && { disabled: true })}
         color="success"
         className="w-full mt-2 uppercase"
-        onClick={checkoutCart}
+        onClick={handleCheckoutCart}
       >
         Checkout&nbsp;
         {cart.length > 0 &&
           currency.format(
             cart.reduce((total, item) => total + item.totalPrice, 0),
           )}
+          {checkoutProcessing && <Spinner color="gray" className="ml-3" />}
       </MyButton>
     </div>
   );

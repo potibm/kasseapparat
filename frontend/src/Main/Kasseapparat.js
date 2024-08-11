@@ -82,8 +82,8 @@ function Kasseapparat() {
     setPurchaseHistory([purchase, ...purchaseHistory]);
   };
 
-  const handleRemoveFromPurchaseHistory = (purchase) => {
-    deletePurchaseById(apiHost, token, purchase.id)
+  const handleRemoveFromPurchaseHistory = async(purchase) => {
+    return deletePurchaseById(apiHost, token, purchase.id)
       .then((data) => {
         fetchPurchases(apiHost, token)
           .then((history) => setPurchaseHistory(history))
@@ -100,7 +100,7 @@ function Kasseapparat() {
   };
 
   const handleCheckoutCart = async () => {
-    storePurchase(apiHost, token, cart)
+    return storePurchase(apiHost, token, cart)
       .then((createdPurchase) => {
         setCart(checkoutCart());
         handleAddToPurchaseHistory(createdPurchase.purchase);
