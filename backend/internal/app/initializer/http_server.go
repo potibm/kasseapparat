@@ -28,7 +28,7 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 	r = gin.Default()
 	r.Use(sentrygin.New(sentrygin.Options{}))
 
-	r.GET("/api/v1/purchases/stats", myhandler.GetPurchaseStats);
+	r.GET("/api/v1/purchases/stats", myhandler.GetPurchaseStats)
 
 	r.Use(createCorsMiddleware())
 

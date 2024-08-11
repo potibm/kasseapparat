@@ -100,7 +100,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
                 disabled={processing}
                 onClick={() => confirmDelete(openModal.purchase)}
               >
-                Yes, I'm sure
+                Yes, I&apos;m sure
                 {processing && <Spinner color="gray" className="ml-2" />}
               </MyButton>
               <MyButton color="black" onClick={() => setOpenModal(false)}>
