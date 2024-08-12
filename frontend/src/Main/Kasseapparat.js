@@ -130,13 +130,17 @@ function Kasseapparat() {
       });
   };
 
-  const handleAddProductInterest = (productId) => {
-    console.log("Adding product interest for product: ", productId);
-    return addProductInterest(apiHost, token, productId).catch((error) => {
-      showError(
-        "There was an error adding the product interest: " + error.message,
-      );
-    });
+  const handleAddProductInterest = (product) => {
+    console.log("Adding product interest for product: ", product.id);
+    return addProductInterest(apiHost, token, product.id)
+      .then(() => {
+        product.soldOutRequestCount++;
+      })
+      .catch((error) => {
+        showError(
+          "There was an error adding the product interest: " + error.message,
+        );
+      });
   };
 
   const showError = (message) => {

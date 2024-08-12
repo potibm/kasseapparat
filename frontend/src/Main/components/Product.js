@@ -57,7 +57,7 @@ function Product({
       >
         {product.soldOut && (
           <Badge className="absolute top-2 right-2" color="gray">
-            Sold Out
+            Sold Out ({product.soldOutRequestCount})
           </Badge>
         )}
         <div className="flex items-center justify-between mt-auto">

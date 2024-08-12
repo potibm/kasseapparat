@@ -51,3 +51,18 @@ func (repo *Repository) CreateProductInterest(productInterest models.ProductInte
 
 	return productInterest, result.Error
 }
+
+func (repo *Repository) GetProductInterestCountByProductID(productID uint) (int, error) {
+	var count int
+
+	err := repo.db.Table("product_interests").
+		Select("COUNT(*)").
+		Where("product_interests.product_id = ? AND product_interests.deleted_at IS NULL", productID).
+		Scan(&count).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

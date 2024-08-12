@@ -66,7 +66,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	// iterate over all products and set the SoldOutRequestCount and UnitsSold
 	for i := range products {
 		products[i].UnitsSold, _ = handler.repo.GetPurchasedQuantitiesByProductID(products[i].ID)
-		products[i].SoldOutRequestCount = -1
+		products[i].SoldOutRequestCount, _ = handler.repo.GetProductInterestCountByProductID(products[i].ID)
 	}
 
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
@@ -82,7 +82,7 @@ func (handler *Handler) GetProductByID(c *gin.Context) {
 	}
 
 	product.UnitsSold, _ = handler.repo.GetPurchasedQuantitiesByProductID(product.ID)
-	product.SoldOutRequestCount = -1
+	product.SoldOutRequestCount, _ = handler.repo.GetProductInterestCountByProductID(product.ID)
 
 	c.JSON(http.StatusOK, product)
 }

@@ -15,7 +15,7 @@ const ProductInterestModal = ({
     setProcessing(true);
 
     // Simulate API call
-    addProductInterest(product.id)
+    addProductInterest(product)
       .then(() => {
         setProcessing(false);
         onClose();
