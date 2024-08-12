@@ -134,7 +134,7 @@ function Kasseapparat() {
             <Spinner className="ml-2" />
           </div>
         )}
-        {purchaseHistory.length > 0 && (
+        {products.length > 0 && (
           <div className="w-9/12">
             <ProductList
               products={products}

@@ -25,11 +25,21 @@ function Product({ product, addToCart, hasListItem }) {
     },
   };
 
+  const handleCardClick = () => {
+    if (product.lists.length > 0 ) {
+      handleShowGuestlist()
+    } else {
+      handleAddToCart()
+    }
+  }
+
   return (
     <>
       <Card
         theme={compactCardTheme}
-        className="w-[24%] flex flex-col mb-2 mr-2"
+        className="w-[22%] flex flex-col mb-5 mr-5"
+        href="#"
+        onClick={handleCardClick}
       >
         <h5 className="text-1xl text-left text-balance font-bold tracking-tight text-gray-900 dark:text-white">
           {product.name}
