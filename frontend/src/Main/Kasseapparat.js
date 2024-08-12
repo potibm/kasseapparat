@@ -36,10 +36,9 @@ function Kasseapparat() {
       return fetchProducts(apiHost, token)
         .then((products) => setProducts(products))
         .catch((error) =>
-          /*          showError(
+          showError(
             "There was an error fetching the products: " + error.message,
-          ), */
-          console.log("error", error),
+          ),
         );
     };
     const getHistory = async () => {

@@ -1,4 +1,8 @@
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import {
+  Navigate,
+  RouterProvider,
+  createBrowserRouter,
+} from "react-router-dom";
 import { useAuth } from "../Auth/provider/AuthProvider";
 import { ProtectedRoute } from "./ProtectedRoute";
 import React from "react";
@@ -9,6 +13,7 @@ import Login from "../Auth/components/Login";
 import ChangePassword from "../Auth/components/ChangePassword";
 import NotFound from "../components/NotFound";
 import ForgotPassword from "../Auth/components/ForgotPassword";
+import { LoggedinErrorMessage } from "./LoggedinErrorMessage";
 
 const Routes = () => {
   const { token } = useAuth();
@@ -38,6 +43,14 @@ const Routes = () => {
         {
           path: "/logout",
           element: <Logout />,
+        },
+        {
+          path: "/login",
+          element: <Navigate to="/" />,
+        },
+        {
+          path: "/forgot-password",
+          element: <LoggedinErrorMessage />,
         },
       ],
     },
