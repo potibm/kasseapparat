@@ -26,12 +26,12 @@ function Product({ product, addToCart, hasListItem }) {
   };
 
   const handleCardClick = () => {
-    if (product.lists.length > 0 ) {
-      handleShowGuestlist()
+    if (product.lists.length > 0) {
+      handleShowGuestlist();
     } else {
-      handleAddToCart()
+      handleAddToCart();
     }
-  }
+  };
 
   return (
     <>
