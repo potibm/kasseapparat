@@ -24,6 +24,7 @@ import {
   email,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
+import { UserFilters } from "./UserFilters";
 
 const ConditionalDeleteButton = (props) => {
   const { permissions } = usePermissions();
@@ -39,7 +40,7 @@ const ConditionalDeleteButton = (props) => {
 
 export const UserList = (props) => {
   return (
-    <List sort={{ field: "id", order: "ASC" }}>
+    <List sort={{ field: "id", order: "ASC" }} filters={UserFilters}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="username" />

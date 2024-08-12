@@ -8,6 +8,12 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
+type UserFilters = struct {
+	Query   string
+	IsAdmin bool
+	IDs     []int
+}
+
 func (repo *Repository) GetUserByID(id int) (*models.User, error) {
 	var user models.User
 	if err := repo.db.Model(&models.User{}).First(&user, id).Error; err != nil {
@@ -58,18 +64,27 @@ func (repo *Repository) GetUserByLoginAndPassword(login string, password string)
 	return user, nil
 }
 
-func (repo *Repository) GetUsers(limit int, offset int, sort string, order string) ([]models.User, error) {
-	if order != "ASC" && order != "DESC" {
-		order = "ASC"
-	}
-
+func (repo *Repository) GetUsers(limit int, offset int, sort string, order string, filters UserFilters) ([]models.User, error) {
 	sort, err := getUsersValidFieldName(sort)
 	if err != nil {
 		return nil, err
 	}
+	if order != "ASC" && order != "DESC" {
+		order = "ASC"
+	}
+
+	query := repo.db.Order(sort + " " + order + ", ID ASC").Limit(limit).Offset(offset)
+
+	if filters.Query != "" {
+		query = query.Where("Username LIKE ? OR Email LIKE ?", "%"+filters.Query+"%", "%"+filters.Query+"%")
+	}
+
+	if filters.IsAdmin {
+		query = query.Where("Admin = ?", true)
+	}
 
 	var users []models.User
-	if err := repo.db.Order(sort + " " + order + ", ID ASC").Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+	if err := query.Find(&users).Error; err != nil {
 		return nil, errors.New("Users not found")
 	}
 
