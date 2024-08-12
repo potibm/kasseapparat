@@ -26,14 +26,14 @@ func ConnectToLocalDatabase() *gorm.DB {
 }
 
 func PurgeDatabase(db *gorm.DB) {
-	err := db.Migrator().DropTable(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.List{}, models.ListEntry{})
+	err := db.Migrator().DropTable(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.List{}, models.ListEntry{}, models.ProductInterest{})
 	if err != nil {
 		panic(err)
 	}
 }
 
 func MigrateDatabase(db *gorm.DB) {
-	err := db.AutoMigrate(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.List{}, models.ListEntry{})
+	err := db.AutoMigrate(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.List{}, models.ListEntry{}, models.ProductInterest{})
 	if err != nil {
 		panic(err)
 	}
@@ -52,18 +52,18 @@ func SeedDatabase(db *gorm.DB) {
 	db.Create(freeProduct)
 	prepaidProduct := &models.Product{Name: "🎟️ Prepaid", Price: 0, Pos: 4, WrapAfter: true, ApiExport: true}
 	db.Create(prepaidProduct)
-	db.Create(&models.Product{Name: "👕 Male S", Price: 20, Pos: 10})
-	db.Create(&models.Product{Name: "👕 Male M", Price: 20, Pos: 11})
-	db.Create(&models.Product{Name: "👕 Male L", Price: 20, Pos: 12})
-	db.Create(&models.Product{Name: "👕 Male XL", Price: 20, Pos: 13})
-	db.Create(&models.Product{Name: "👕 Male XXL", Price: 20, Pos: 15})
-	db.Create(&models.Product{Name: "👕 Male XXXL", Price: 20, Pos: 16})
-	db.Create(&models.Product{Name: "👕 Male 4XL", Price: 20, Pos: 17, WrapAfter: true})
-	db.Create(&models.Product{Name: "👕 Female S", Price: 20, Pos: 20})
-	db.Create(&models.Product{Name: "👕 Female M", Price: 20, Pos: 21})
-	db.Create(&models.Product{Name: "👕 Female L", Price: 20, Pos: 22})
-	db.Create(&models.Product{Name: "👕 Female XL", Price: 20, Pos: 23})
-	db.Create(&models.Product{Name: "👕 Female XXL", Price: 20, Pos: 24, WrapAfter: true})
+	db.Create(&models.Product{Name: "👕 Male S", Price: 20, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Male M", Price: 20, Pos: 11, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Male L", Price: 20, Pos: 12, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Male XL", Price: 20, Pos: 13, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Male XXL", Price: 20, Pos: 15, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Male XXXL", Price: 20, Pos: 16, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Male 4XL", Price: 20, Pos: 17, WrapAfter: true, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Female S", Price: 20, Pos: 20, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Female M", Price: 20, Pos: 21, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Female L", Price: 20, Pos: 22, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Female XL", Price: 20, Pos: 23, TotalStock: gofakeit.IntRange(5, 30)})
+	db.Create(&models.Product{Name: "👕 Female XXL", Price: 20, Pos: 24, WrapAfter: true, TotalStock: gofakeit.IntRange(5, 30)})
 	db.Create(&models.Product{Name: "☕ Coffee Mug", Price: 1, Pos: 30})
 
 	reducedDkevList := &models.List{Name: "Reduces Digitale Kultur", ProductID: reducedProduct.ID}

@@ -18,6 +18,10 @@ import {
   ListEntryIcon,
   ListEntryList,
 } from "./compontent/ListEntry";
+import {
+  ProductInterestList,
+  ProductInterestIcon,
+} from "./compontent/ProductInterest";
 import PropTypes from "prop-types";
 import Dashboard from "./compontent/Dashboard";
 
@@ -35,6 +39,12 @@ const AdminPanel = () => (
       edit={ProductEdit}
       create={ProductCreate}
       icon={ProductIcon}
+    />
+    <Resource
+      name="productInterests"
+      list={ProductInterestList}
+      icon={ProductInterestIcon}
+      options={{ label: "Product Interest" }}
     />
     <Resource
       name="lists"
@@ -79,6 +89,7 @@ const MyMenu = () => (
     <MyMenuDivider name="POS" />
     <Menu.ResourceItem name="products" />
     <Menu.ResourceItem name="purchases" />
+    <Menu.ResourceItem name="productInterests" />
 
     <MyMenuDivider name="Guestlist" />
     <Menu.ResourceItem name="lists" />

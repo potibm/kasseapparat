@@ -131,6 +131,10 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 		protectedApiRouter.PUT("/users/:id", myhandler.UpdateUserByID)
 		protectedApiRouter.DELETE("/users/:id", myhandler.DeleteUserByID)
 		protectedApiRouter.POST("/users", myhandler.CreateUser)
+
+		protectedApiRouter.GET("/productInterests", myhandler.GetProductInterests)
+		protectedApiRouter.DELETE("/productInterests/:id", myhandler.DeleteProductInterestByID)
+		protectedApiRouter.POST("/productInterests", myhandler.CreateProductInterest)
 	}
 
 	// unprotected routes

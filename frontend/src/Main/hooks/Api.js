@@ -125,3 +125,28 @@ export const deletePurchaseById = async (apiHost, jwtToken, purchaseId) => {
       .catch((error) => reject(error));
   });
 };
+
+export const addProductInterest = async (apiHost, jwtToken, productId) => {
+  return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/api/v1/productInterests`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      body: JSON.stringify({
+        productId,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((errorBody) => {
+            throw new Error(errorBody.error || "Network response was not ok");
+          });
+        }
+        return response.json();
+      })
+      .then((data) => resolve(data))
+      .catch((error) => reject(error));
+  });
+};

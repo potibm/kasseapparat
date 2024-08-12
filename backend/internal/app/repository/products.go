@@ -6,7 +6,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-func (repo *Repository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error) {
+func (repo *Repository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.ProductWithSalesAndInterrest, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -16,9 +16,9 @@ func (repo *Repository) GetProducts(limit int, offset int, sort string, order st
 		return nil, err
 	}
 
-	var products []models.Product
+	var products []models.ProductWithSalesAndInterrest
 
-	query := repo.db.Preload("Lists").Order(sort + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset)
+	query := repo.db.Table("Products").Preload("Lists").Order(sort + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset)
 
 	if len(ids) > 0 {
 		query = query.Where("Id IN ?", ids)
@@ -55,7 +55,16 @@ func (repo *Repository) GetTotalProducts() (int64, error) {
 
 func (repo *Repository) GetProductByID(id int) (*models.Product, error) {
 	var product models.Product
-	if err := repo.db.First(&product, id).Error; err != nil {
+	if err := repo.db.Table("Products").First(&product, id).Error; err != nil {
+		return nil, errors.New("Product not found")
+	}
+
+	return &product, nil
+}
+
+func (repo *Repository) GetProductByIDWithSalesAndInterrest(id int) (*models.ProductWithSalesAndInterrest, error) {
+	var product models.ProductWithSalesAndInterrest
+	if err := repo.db.Table("Products").First(&product, id).Error; err != nil {
 		return nil, errors.New("Product not found")
 	}
 
@@ -76,6 +85,8 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	product.ApiExport = updatedProduct.ApiExport
 	product.UpdatedByID = updatedProduct.UpdatedByID
 	product.Hidden = updatedProduct.Hidden
+	product.SoldOut = updatedProduct.SoldOut
+	product.TotalStock = updatedProduct.TotalStock
 
 	// Save the updated product to the database
 	if err := repo.db.Save(&product).Error; err != nil {
