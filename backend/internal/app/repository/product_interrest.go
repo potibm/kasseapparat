@@ -6,7 +6,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-func (repo *Repository) GetProductInterrests(limit int, offset int, ids []int) ([]models.ProductInterrest, error) {
+func (repo *Repository) GetProductInterests(limit int, offset int, ids []int) ([]models.ProductInterest, error) {
 
 	query := repo.db.Preload("Product").Order("created_at DESC").Limit(limit).Offset(offset)
 
@@ -14,40 +14,40 @@ func (repo *Repository) GetProductInterrests(limit int, offset int, ids []int) (
 		query = query.Where("id IN ?", ids)
 	}
 
-	var productInterrests []models.ProductInterrest
-	if err := query.Find(&productInterrests).Error; err != nil {
-		return nil, errors.New("ProductInterrests not found")
+	var productInterests []models.ProductInterest
+	if err := query.Find(&productInterests).Error; err != nil {
+		return nil, errors.New("ProductInterests not found")
 	}
 
-	return productInterrests, nil
+	return productInterests, nil
 }
 
-func (repo *Repository) GetTotalroductInterrests() (int64, error) {
+func (repo *Repository) GetTotalroductInterests() (int64, error) {
 	var totalRows int64
-	repo.db.Model(&models.ProductInterrest{}).Count(&totalRows)
+	repo.db.Model(&models.ProductInterest{}).Count(&totalRows)
 
 	return totalRows, nil
 }
 
-func (repo *Repository) GetProductInterrestByID(id int) (*models.ProductInterrest, error) {
-	var productInterrest models.ProductInterrest
-	if err := repo.db.Preload("Product").First(&productInterrest, id).Error; err != nil {
-		return nil, errors.New("ProductInterrest not found")
+func (repo *Repository) GetProductInterestByID(id int) (*models.ProductInterest, error) {
+	var productInterest models.ProductInterest
+	if err := repo.db.Preload("Product").First(&productInterest, id).Error; err != nil {
+		return nil, errors.New("ProductInterest not found")
 	}
 
-	return &productInterrest, nil
+	return &productInterest, nil
 }
 
-func (repo *Repository) DeleteProductInterrest(productInterrest models.ProductInterrest, deletedBy models.User) {
-	repo.db.Model(&models.ProductInterrest{}).Where("id = ?", productInterrest.ID).Update("DeletedByID", deletedBy.ID)
+func (repo *Repository) DeleteProductInterest(productInterest models.ProductInterest, deletedBy models.User) {
+	repo.db.Model(&models.ProductInterest{}).Where("id = ?", productInterest.ID).Update("DeletedByID", deletedBy.ID)
 
-	repo.db.Delete(&productInterrest)
+	repo.db.Delete(&productInterest)
 }
 
-func (repo *Repository) CreateProductInterrest(productInterrest models.ProductInterrest, createdBy models.User) (models.ProductInterrest, error) {
-	productInterrest.CreatedByID = &createdBy.ID
+func (repo *Repository) CreateProductInterest(productInterest models.ProductInterest, createdBy models.User) (models.ProductInterest, error) {
+	productInterest.CreatedByID = &createdBy.ID
 
-	result := repo.db.Create(&productInterrest)
+	result := repo.db.Create(&productInterest)
 
-	return productInterrest, result.Error
+	return productInterest, result.Error
 }

@@ -8,16 +8,16 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-type ProductInterrestCreateRequest struct {
+type ProductInterestCreateRequest struct {
 	ProductID uint `form:"productId" json:"productId" binding:"required"`
 }
 
-func (handler *Handler) GetProductInterrests(c *gin.Context) {
+func (handler *Handler) GetProductInterests(c *gin.Context) {
 	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	ids := queryArrayInt(c, "id")
 
-	lists, err := handler.repo.GetProductInterrests(end-start, start, ids)
+	lists, err := handler.repo.GetProductInterests(end-start, start, ids)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -33,7 +33,7 @@ func (handler *Handler) GetProductInterrests(c *gin.Context) {
 	c.JSON(http.StatusOK, lists)
 }
 
-func (handler *Handler) DeleteProductInterrestByID(c *gin.Context) {
+func (handler *Handler) DeleteProductInterestByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
@@ -41,43 +41,43 @@ func (handler *Handler) DeleteProductInterrestByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	productInterrest, err := handler.repo.GetProductInterrestByID(id)
+	productInterest, err := handler.repo.GetProductInterestByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
-	handler.repo.DeleteProductInterrest(*productInterrest, *executingUserObj)
+	handler.repo.DeleteProductInterest(*productInterest, *executingUserObj)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-func (handler *Handler) CreateProductInterrest(c *gin.Context) {
+func (handler *Handler) CreateProductInterest(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
 		return
 	}
 
-	var productInterrest models.ProductInterrest
-	var productInterrestRequest ProductInterrestCreateRequest
-	if c.ShouldBind(&productInterrestRequest) != nil {
+	var productInterest models.ProductInterest
+	var productInterestRequest ProductInterestCreateRequest
+	if c.ShouldBind(&productInterestRequest) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	productInterrest.ProductID = productInterrestRequest.ProductID
-	product, err := handler.repo.GetProductByID(int(productInterrest.ProductID)) // check if product exists
+	productInterest.ProductID = productInterestRequest.ProductID
+	product, err := handler.repo.GetProductByID(int(productInterest.ProductID)) // check if product exists
 	if product == nil || err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Product not found"})
 		return
 	}
 
-	productInterrest, err = handler.repo.CreateProductInterrest(productInterrest, *executingUserObj)
+	productInterest, err = handler.repo.CreateProductInterest(productInterest, *executingUserObj)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	c.JSON(http.StatusOK, productInterrest)
+	c.JSON(http.StatusOK, productInterest)
 }

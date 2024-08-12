@@ -11,7 +11,6 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
   const [isGuestListModalOpen, setIsGuestListModalOpen] = useState(false);
   const [isPIModalOpen, setIsPIModalOpen] = useState(false);
 
-
   const handleAddToCart = () => {
     addToCart(product);
   };
@@ -33,7 +32,7 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
 
   const handleCardClick = () => {
     if (product.soldOut) {
-      console.log("ioen")
+      console.log("ioen");
       setIsPIModalOpen(true);
     } else if (product.lists.length > 0) {
       handleShowGuestlist();
@@ -97,15 +96,19 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
       {product.wrapAfter && <div className="w-full"></div>}
       {!product.soldOut && product.lists.length > 0 && (
         <GuestlistModal
-                    isOpen={isGuestListModalOpen}
-                    onClose={handleHideGuestlist}
-                    product={product}
-                    addToCart={addToCart}
-                    hasListItem={hasListItem}
-                  />
+          isOpen={isGuestListModalOpen}
+          onClose={handleHideGuestlist}
+          product={product}
+          addToCart={addToCart}
+          hasListItem={hasListItem}
+        />
       )}
       {product.soldOut && (
-        <ProductInterestModal show={isPIModalOpen} onClose={() => setIsPIModalOpen(false)} product={product} />
+        <ProductInterestModal
+          show={isPIModalOpen}
+          onClose={() => setIsPIModalOpen(false)}
+          product={product}
+        />
       )}
     </>
   );
