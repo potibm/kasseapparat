@@ -26,14 +26,14 @@ func ConnectToLocalDatabase() *gorm.DB {
 }
 
 func PurgeDatabase(db *gorm.DB) {
-	err := db.Migrator().DropTable(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.List{}, models.ListEntry{})
+	err := db.Migrator().DropTable(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.List{}, models.ListEntry{}, models.ProductInterrest{})
 	if err != nil {
 		panic(err)
 	}
 }
 
 func MigrateDatabase(db *gorm.DB) {
-	err := db.AutoMigrate(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.List{}, models.ListEntry{})
+	err := db.AutoMigrate(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.List{}, models.ListEntry{}, models.ProductInterrest{})
 	if err != nil {
 		panic(err)
 	}
