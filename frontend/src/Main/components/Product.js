@@ -14,9 +14,12 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
   };
 
   const handleShowGuestlist = () => {
-    setIsModalOpen(true); // Öffnen des Modals
+    setIsModalOpen(true);
   };
 
+  const handleHideGuestlist = () => {
+    setIsModalOpen(false);
+  };
   const currency = useConfig().currency;
 
   const compactCardTheme = {
@@ -51,7 +54,7 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
         )}
         <div className="flex items-center justify-between mt-auto">
           <h5 className="text-1xl text-left text-balance font-bold tracking-tight text-gray-900 dark:text-white">
-            {product.name}
+            {product.name} {isModalOpen?.toString()}
           </h5>
           {!product.soldOut && product.totalStock > 0 && (
             <div className="text-sm">
@@ -78,13 +81,6 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
                 <MyButton aria-label="Show guestlist">
                   <HiUserAdd className="h-5 w-5" />
                 </MyButton>
-                <GuestlistModal
-                  isOpen={isModalOpen}
-                  onClose={() => setIsModalOpen(false)}
-                  product={product}
-                  addToCart={addToCart}
-                  hasListItem={hasListItem}
-                />
               </>
             )}
             {!product.soldOut && product.lists.length === 0 && (
@@ -96,6 +92,15 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
         </div>
       </Card>
       {product.wrapAfter && <div className="w-full"></div>}
+      {!product.soldOut && product.lists.length > 0 && (
+        <GuestlistModal
+                    isOpen={isModalOpen}
+                    onClose={handleHideGuestlist}
+                    product={product}
+                    addToCart={addToCart}
+                    hasListItem={hasListItem}
+                  />
+      )}
     </>
   );
 }
