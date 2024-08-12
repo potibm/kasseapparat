@@ -61,7 +61,9 @@ function Product({
           </Badge>
         )}
         <div className="flex items-center justify-between mt-auto">
-          <h5 className="text-1xl text-left text-balance font-bold tracking-tight text-gray-900 dark:text-white">
+          <h5
+            className={`"text-1xl text-left text-balance font-bold tracking-tight ${product.soldOut ? "text-gray-400" : "text-gray-900 dark:text-white"}`}
+          >
             {product.name}
           </h5>
           {!product.soldOut && product.totalStock > 0 && (
