@@ -1,18 +1,29 @@
 import { Modal, Spinner } from "flowbite-react";
 import MyButton from "./MyButton";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
+import PropTypes from "prop-types";
 
-const ProductInterestModal = ({ show, onClose, product }) => {
+const ProductInterestModal = ({
+  show,
+  onClose,
+  product,
+  addProductInterest,
+}) => {
   const [processing, setProcessing] = useState(false);
 
   const handleRegisterInterest = () => {
     setProcessing(true);
 
     // Simulate API call
-    setTimeout(() => {
-      setProcessing(false);
-      onClose();
-    }, 2000);
+    addProductInterest(product.id)
+      .then(() => {
+        setProcessing(false);
+        onClose();
+      })
+      .catch((error) => {
+        console.error("Error registering interest: ", error);
+        setProcessing(false);
+      });
   };
 
   return (
@@ -25,8 +36,8 @@ const ProductInterestModal = ({ show, onClose, product }) => {
           <p className="mb-2">{product.name} is currently sold out.</p>
 
           <p className="mb-5">
-            To improve our stock management, it would be nice to record people's
-            interest in this product.
+            To improve our stock management, it would be nice to record
+            people&apos;s interest in this product.
           </p>
 
           <div className="flex justify-center gap-4">
@@ -45,6 +56,13 @@ const ProductInterestModal = ({ show, onClose, product }) => {
       </Modal.Body>
     </Modal>
   );
+};
+
+ProductInterestModal.propTypes = {
+  show: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  product: PropTypes.object.isRequired,
+  addProductInterest: PropTypes.func.isRequired,
 };
 
 export default ProductInterestModal;

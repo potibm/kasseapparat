@@ -7,7 +7,13 @@ import GuestlistModal from "./GuestlistModal";
 import MyButton from "./MyButton";
 import ProductInterestModal from "./ProductInterestModal";
 
-function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
+function Product({
+  product,
+  addToCart,
+  hasListItem,
+  quantityByProductInCart,
+  addProductInterest,
+}) {
   const [isGuestListModalOpen, setIsGuestListModalOpen] = useState(false);
   const [isPIModalOpen, setIsPIModalOpen] = useState(false);
 
@@ -108,6 +114,7 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
           show={isPIModalOpen}
           onClose={() => setIsPIModalOpen(false)}
           product={product}
+          addProductInterest={addProductInterest}
         />
       )}
     </>
@@ -119,6 +126,7 @@ Product.propTypes = {
   addToCart: PropTypes.func.isRequired,
   hasListItem: PropTypes.func.isRequired,
   quantityByProductInCart: PropTypes.func.isRequired,
+  addProductInterest: PropTypes.func.isRequired,
 };
 
 export default Product;

@@ -9,6 +9,7 @@ import {
   fetchProducts,
   fetchPurchases,
   storePurchase,
+  addProductInterest,
 } from "./hooks/Api";
 import {
   addToCart,
@@ -129,6 +130,15 @@ function Kasseapparat() {
       });
   };
 
+  const handleAddProductInterest = (productId) => {
+    console.log("Adding product interest for product: ", productId);
+    return addProductInterest(apiHost, token, productId).catch((error) => {
+      showError(
+        "There was an error adding the product interest: " + error.message,
+      );
+    });
+  };
+
   const showError = (message) => {
     setErrorMessage(message);
   };
@@ -153,6 +163,7 @@ function Kasseapparat() {
               addToCart={handleAddToCart}
               hasListItem={hasListItem}
               quantityByProductInCart={getQuantityByProductInCart}
+              addProductInterest={handleAddProductInterest}
             />
           </div>
         )}

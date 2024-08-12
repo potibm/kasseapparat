@@ -7,6 +7,7 @@ function ProductList({
   addToCart,
   hasListItem,
   quantityByProductInCart,
+  addProductInterest,
 }) {
   return (
     <div className="flex flex-wrap -m-1.5">
@@ -17,6 +18,7 @@ function ProductList({
           addToCart={addToCart}
           hasListItem={hasListItem}
           quantityByProductInCart={quantityByProductInCart}
+          addProductInterest={addProductInterest}
         />
       ))}
     </div>
@@ -28,6 +30,7 @@ ProductList.propTypes = {
   addToCart: PropTypes.func.isRequired,
   hasListItem: PropTypes.func.isRequired,
   quantityByProductInCart: PropTypes.func.isRequired,
+  addProductInterest: PropTypes.func.isRequired,
 };
 
 export default ProductList;
