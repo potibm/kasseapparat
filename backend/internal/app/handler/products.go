@@ -8,13 +8,23 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-type ProductRequest struct {
-	Name      string  `form:"name"  json:"name" binding:"required"`
-	Price     float64 `form:"price" json:"price" binding:"numeric"`
-	WrapAfter bool    `form:"wrapAfter" json:"wrapAfter"`
-	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
-	ApiExport bool    `form:"apiExport" json:"apiExport" binding:"boolean"`
-	Hidden    bool    `form:"hidden" json:"hidden" binding:"boolean"`
+type ProductRequestCreate struct {
+	Name       string  `form:"name"  json:"name" binding:"required"`
+	Price      float64 `form:"price" json:"price" binding:"numeric"`
+	WrapAfter  bool    `form:"wrapAfter" json:"wrapAfter"`
+	Pos        int     `form:"pos" json:"pos" binding:"numeric,required"`
+	Hidden     bool    `form:"hidden" json:"hidden" binding:"boolean"`
+}
+
+type ProductRequestUpdate struct {
+	Name       string  `form:"name"  json:"name" binding:"required"`
+	Price      float64 `form:"price" json:"price" binding:"numeric"`
+	WrapAfter  bool    `form:"wrapAfter" json:"wrapAfter"`
+	Pos        int     `form:"pos" json:"pos" binding:"numeric,required"`
+	ApiExport  bool    `form:"apiExport" json:"apiExport" binding:"boolean"`
+	Hidden     bool    `form:"hidden" json:"hidden" binding:"boolean"`
+	SoldOut    bool    `form:"soldOut" json:"soldOut" binding:"boolean"`
+	TotalStock int     `form:"totalStock" json:"totalStock" binding:"numeric"`
 }
 
 func (handler *Handler) GetProducts(c *gin.Context) {
@@ -82,7 +92,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 		return
 	}
 
-	var productRequest ProductRequest
+	var productRequest ProductRequestUpdate
 	if err := c.ShouldBind(&productRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": err.Error()})
 		return
@@ -95,6 +105,8 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.ApiExport = productRequest.ApiExport
 	product.Hidden = productRequest.Hidden
 	product.UpdatedByID = &executingUserObj.ID
+	product.SoldOut = productRequest.SoldOut
+	product.TotalStock = productRequest.TotalStock
 
 	product, err = handler.repo.UpdateProductByID(id, *product)
 	if err != nil {
@@ -113,7 +125,7 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	}
 
 	var product models.Product
-	var productRequest ProductRequest
+	var productRequest ProductRequestCreate
 	if c.ShouldBind(&productRequest) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return

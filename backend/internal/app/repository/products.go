@@ -76,6 +76,8 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	product.ApiExport = updatedProduct.ApiExport
 	product.UpdatedByID = updatedProduct.UpdatedByID
 	product.Hidden = updatedProduct.Hidden
+	product.SoldOut = updatedProduct.SoldOut
+	product.TotalStock = updatedProduct.TotalStock
 
 	// Save the updated product to the database
 	if err := repo.db.Save(&product).Error; err != nil {

@@ -16,6 +16,9 @@ import {
   SaveButton,
   Toolbar,
   required,
+  TabbedForm,
+  Form,
+  FormTab,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
@@ -35,6 +38,7 @@ export const ProductList = () => {
         <NumberField source="price" locales={locale} options={currency} />
         <NumberField source="pos" />
         <BooleanField source="wrapAfter" sortable={false} />
+        <BooleanField source="soldOut" sortable={false} />
         <BooleanField source="hidden" sortable={false} />
         {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
       </Datagrid>
@@ -45,21 +49,38 @@ export const ProductList = () => {
 export const ProductEdit = () => {
   return (
     <Edit>
-      <SimpleForm
+      <TabbedForm
         toolbar={
           <Toolbar>
             <SaveButton />
           </Toolbar>
         }
       >
-        <NumberInput disabled source="id" />
-        <TextInput source="name" validate={required()} />
-        <NumberInput source="price" min={0} />
-        <NumberInput source="pos" />
-        <BooleanInput source="wrapAfter" />
-        <BooleanInput source="hidden" />
-        <BooleanInput source="apiExport" />
-      </SimpleForm>
+        <FormTab label="General">
+          <NumberInput disabled source="id" />
+          <TextInput source="name" validate={required()} />
+          <NumberInput source="price" min={0} />
+
+        </FormTab>
+        <FormTab label="Layout">
+          <NumberInput source="pos" helperText="The products will shown in this order" />
+          <BooleanInput source="wrapAfter" helperText="Create a line break afther this product" />
+          <BooleanInput source="hidden" helperText="Hide this product from the POS" />
+ 
+        </FormTab>
+        <FormTab label="Stock">
+          <h3>Stock</h3>
+          <NumberInput source="totalStock" min={0} step={1} helperText="Number of available items. Shown for informational purposes, only." />
+          <NumberInput source="unitsSold" min={0} step={1} disabled={true} helperText="Number of sold items. Shown for informational purposes, only." />
+        </FormTab>
+        <FormTab label="Sold Out">
+          <BooleanInput source="soldOut" helperText="Still show the product to collect information how big the interrest is" />
+          <NumberInput source="soldOutRequestCount"  disabled={true} />
+        </FormTab>
+        <FormTab label="API">
+          <BooleanInput source="apiExport" />
+        </FormTab>
+      </TabbedForm>
     </Edit>
   );
 };
@@ -71,10 +92,9 @@ export const ProductCreate = () => {
         <NumberInput disabled source="id" />
         <TextInput source="name" validate={required()} />
         <NumberInput source="price" min={0} />
-        <NumberInput source="pos" />
-        <BooleanInput source="wrapAfter" />
+        <NumberInput source="pos" helperText="The products will shown in this order"  />
+        <BooleanInput source="wrapAfter" helperText="Create a line break afther this product" />
         <BooleanInput source="hidden" />
-        <BooleanInput source="apiExport" />
       </SimpleForm>
     </Create>
   );
