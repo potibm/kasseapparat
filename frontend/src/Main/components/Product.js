@@ -5,20 +5,23 @@ import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import GuestlistModal from "./GuestlistModal";
 import MyButton from "./MyButton";
+import ProductInterestModal from "./ProductInterestModal";
 
 function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isGuestListModalOpen, setIsGuestListModalOpen] = useState(false);
+  const [isPIModalOpen, setIsPIModalOpen] = useState(false);
+
 
   const handleAddToCart = () => {
     addToCart(product);
   };
 
   const handleShowGuestlist = () => {
-    setIsModalOpen(true);
+    setIsGuestListModalOpen(true);
   };
 
   const handleHideGuestlist = () => {
-    setIsModalOpen(false);
+    setIsGuestListModalOpen(false);
   };
   const currency = useConfig().currency;
 
@@ -30,9 +33,9 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
 
   const handleCardClick = () => {
     if (product.soldOut) {
-      return;
-    }
-    if (product.lists.length > 0) {
+      console.log("ioen")
+      setIsPIModalOpen(true);
+    } else if (product.lists.length > 0) {
       handleShowGuestlist();
     } else {
       handleAddToCart();
@@ -54,7 +57,7 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
         )}
         <div className="flex items-center justify-between mt-auto">
           <h5 className="text-1xl text-left text-balance font-bold tracking-tight text-gray-900 dark:text-white">
-            {product.name} {isModalOpen?.toString()}
+            {product.name}
           </h5>
           {!product.soldOut && product.totalStock > 0 && (
             <div className="text-sm">
@@ -94,12 +97,15 @@ function Product({ product, addToCart, hasListItem, quantityByProductInCart }) {
       {product.wrapAfter && <div className="w-full"></div>}
       {!product.soldOut && product.lists.length > 0 && (
         <GuestlistModal
-                    isOpen={isModalOpen}
+                    isOpen={isGuestListModalOpen}
                     onClose={handleHideGuestlist}
                     product={product}
                     addToCart={addToCart}
                     hasListItem={hasListItem}
                   />
+      )}
+      {product.soldOut && (
+        <ProductInterestModal show={isPIModalOpen} onClose={() => setIsPIModalOpen(false)} product={product} />
       )}
     </>
   );
