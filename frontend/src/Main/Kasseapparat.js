@@ -16,6 +16,7 @@ import {
   removeAllFromCart,
   checkoutCart,
   containsListItemID,
+  getCartProductQuantity,
 } from "./hooks/Cart";
 import { Button, Spinner } from "flowbite-react";
 import { HiCog, HiOutlineUserCircle } from "react-icons/hi";
@@ -72,7 +73,7 @@ function Kasseapparat() {
   const handleRemoveAllFromCart = () => {
     setCart(removeAllFromCart());
     fetchProducts(apiHost, token)
-      .then((products) => setProducts(products))
+      .then((products) => fetchProducts(products))
       .catch((error) =>
         showError("There was an error fetching the products: " + error.message),
       );
@@ -93,10 +94,21 @@ function Kasseapparat() {
                 error.message,
             ),
           );
+        fetchProducts(apiHost, token)
+          .then((products) => setProducts(products))
+          .catch((error) =>
+            this.showError(
+              "There was an error fetching the products: " + error.message,
+            ),
+          );
       })
       .catch((error) => {
         showError("There was an error deleting the purchase: " + error.message);
       });
+  };
+
+  const getQuantityByProductInCart = (product) => {
+    return getCartProductQuantity(cart, product);
   };
 
   const handleCheckoutCart = async () => {
@@ -140,6 +152,7 @@ function Kasseapparat() {
               products={products}
               addToCart={handleAddToCart}
               hasListItem={hasListItem}
+              quantityByProductInCart={getQuantityByProductInCart}
             />
           </div>
         )}

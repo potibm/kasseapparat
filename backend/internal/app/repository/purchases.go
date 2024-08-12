@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"errors"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -96,4 +97,24 @@ func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
 	}
 
 	return purchases, nil
+}
+
+func (repo *Repository) GetPurchasedQuantitiesByProductID(productID uint) (int, error) {
+	var sum sql.NullInt64
+
+	err := repo.db.Table("purchase_items").
+		Select("SUM(quantity)").
+		Joins("JOIN purchases ON purchase_items.purchase_id = purchases.id").
+		Where("purchase_items.product_id = ? AND purchase_items.deleted_at IS NULL AND purchases.deleted_at IS NULL", productID).
+		Scan(&sum).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	if !sum.Valid {
+		return 0, nil
+	}
+
+	return int(sum.Int64), nil
 }

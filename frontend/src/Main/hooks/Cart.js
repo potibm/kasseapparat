@@ -35,6 +35,7 @@ export const addToCart = (cart, product, count = 1, listItem = null) => {
       totalPrice: product.price,
       listItems: [],
     };
+    updatedProduct.unitsSold += count;
 
     if (listItem) {
       updatedProduct.listItems.push(listItem);
@@ -69,4 +70,13 @@ export const removeAllFromCart = () => {
 
 export const checkoutCart = () => {
   return [];
+};
+
+export const getCartProductQuantity = (cart, product) => {
+  const existingProductIndex = cart.findIndex((item) => item.id === product.id);
+  if (existingProductIndex !== -1) {
+    return cart[existingProductIndex].quantity;
+  } else {
+    return 0;
+  }
 };

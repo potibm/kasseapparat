@@ -9,11 +9,11 @@ import (
 )
 
 type ProductRequestCreate struct {
-	Name       string  `form:"name"  json:"name" binding:"required"`
-	Price      float64 `form:"price" json:"price" binding:"numeric"`
-	WrapAfter  bool    `form:"wrapAfter" json:"wrapAfter"`
-	Pos        int     `form:"pos" json:"pos" binding:"numeric,required"`
-	Hidden     bool    `form:"hidden" json:"hidden" binding:"boolean"`
+	Name      string  `form:"name"  json:"name" binding:"required"`
+	Price     float64 `form:"price" json:"price" binding:"numeric"`
+	WrapAfter bool    `form:"wrapAfter" json:"wrapAfter"`
+	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
+	Hidden    bool    `form:"hidden" json:"hidden" binding:"boolean"`
 }
 
 type ProductRequestUpdate struct {
@@ -42,7 +42,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	}
 
 	if filterHidden == "true" {
-		var filteredProducts []models.Product
+		var filteredProducts []models.ProductWithSalesAndInterrest
 		for _, product := range products {
 			if product.Hidden && product.WrapAfter {
 				// find last product in filteredProducts and set wrapAfter to true
@@ -63,17 +63,26 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 		return
 	}
 
+	// iterate over all products and set the SoldOutRequestCount and UnitsSold
+	for i := range products {
+		products[i].UnitsSold, _ = handler.repo.GetPurchasedQuantitiesByProductID(products[i].ID)
+		products[i].SoldOutRequestCount = -1
+	}
+
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
 	c.JSON(http.StatusOK, products)
 }
 
 func (handler *Handler) GetProductByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	product, err := handler.repo.GetProductByID(id)
+	product, err := handler.repo.GetProductByIDWithSalesAndInterrest(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+
+	product.UnitsSold, _ = handler.repo.GetPurchasedQuantitiesByProductID(product.ID)
+	product.SoldOutRequestCount = -1
 
 	c.JSON(http.StatusOK, product)
 }
@@ -135,7 +144,6 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.Price = productRequest.Price
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
-	product.ApiExport = productRequest.ApiExport
 	product.Hidden = productRequest.Hidden
 	product.CreatedByID = &executingUserObj.ID
 

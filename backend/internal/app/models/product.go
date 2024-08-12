@@ -16,6 +16,12 @@ type Product struct {
 	Lists               []List  `json:"lists"`
 }
 
+type ProductWithSalesAndInterrest struct {
+	Product
+	UnitsSold           int `json:"unitsSold"`
+	SoldOutRequestCount int `json:"soldOutRequestCount"`
+}
+
 type ProductStats struct {
 	ID         uint    `json:"id"`
 	Name       string  `json:"name"`
