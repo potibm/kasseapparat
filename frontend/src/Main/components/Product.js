@@ -67,7 +67,7 @@ function Product({
             {product.name}
           </h5>
           {!product.soldOut && product.totalStock > 0 && (
-            <div className="text-sm">
+            <div className="text-sm dark:text-white">
               {product.unitsSold + quantityByProductInCart(product)} /{" "}
               {product.totalStock}
             </div>

@@ -102,7 +102,7 @@ const GuestlistModal = ({
       <Modal.Body className="overflow-hidden">
         <div className="flex h-full">
           {/* Sidebar */}
-          <div className="w-4/12 bg-gray-100 p-4">
+          <div className="w-4/12 bg-gray-100 dark:bg-gray-900 p-4">
             <FloatingLabel
               variant="filled"
               label="Search..."
