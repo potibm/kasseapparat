@@ -152,7 +152,7 @@ function Kasseapparat() {
   };
 
   return (
-    <div className="App p-2">
+    <div className="App p-2 dark:bg-black">
       <div className="w-full overflow-hidden">
         {products.length === 0 && (
           <div className="w-9/12 text-gray-500 text-left p-5">
@@ -171,7 +171,7 @@ function Kasseapparat() {
             />
           </div>
         )}
-        <div className="fixed inset-y-0 right-0 w-3/12 border bg-slate-200 p-2">
+        <div className="fixed inset-y-0 right-0 w-3/12 bg-slate-200 dark:bg-gray-900 p-2">
           <Cart
             cart={cart}
             removeFromCart={handleRemoveFromCart}
@@ -184,7 +184,7 @@ function Kasseapparat() {
             removeFromPurchaseHistory={handleRemoveFromPurchaseHistory}
           />
 
-          <Button.Group className="mt-10 ">
+          <Button.Group className="mt-10">
             <Button>
               <HiOutlineUserCircle className="mr-2 h-5 w-5 max-lg:hidden" />{" "}
               {username}
@@ -206,7 +206,7 @@ function Kasseapparat() {
             </Button>
           </Button.Group>
 
-          <p className="text-xs mt-10">Version {version}</p>
+          <p className="text-xs mt-10 dark:text-white">Version {version}</p>
         </div>
       </div>
       <ErrorModal message={errorMessage} onClose={handleCloseError} />
