@@ -27,7 +27,7 @@ import { useConfig } from "../provider/ConfigProvider";
 function Kasseapparat() {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
-  const [purchaseHistory, setPurchaseHistory] = useState([]);
+  const [purchaseHistory, setPurchaseHistory] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const { username, token } = useAuth();
   const version = useConfig().version;
@@ -81,6 +81,9 @@ function Kasseapparat() {
   };
 
   const handleAddToPurchaseHistory = (purchase) => {
+    if (purchaseHistory === null) {
+      return;
+    }
     setPurchaseHistory([purchase, ...purchaseHistory]);
   };
 
