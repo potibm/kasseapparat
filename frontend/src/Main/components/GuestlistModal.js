@@ -267,18 +267,22 @@ const highlightText = (text, highlight) => {
 };
 
 const getInitials = (name) => {
-  // Split the name by spaces
-  const words = name.split(" ");
-  let initials = "";
+  // Remove all non-alphabetical characters except spaces
+  const cleanedName = name.replace(/[^a-zA-Z\s]/g, '').trim();
+  
+  // Split the cleaned name into words
+  const words = cleanedName.split(" ").filter(word => word.length > 0);
 
-  // Iterate through each word and append the first letter to initials
-  words.forEach((word) => {
-    if (word.length > 0) {
-      initials += word[0].toUpperCase();
-    }
-  });
+  // If there's only one word, take the first letter twice
+  if (words.length === 1) {
+    return words[0][0].toUpperCase() + words[0][0].toUpperCase();
+  }
 
-  return initials;
+  // For multiple words, take the first letter of the first and last word
+  const firstInitial = words[0][0].toUpperCase();
+  const lastInitial = words[words.length - 1][0].toUpperCase();
+
+  return firstInitial + lastInitial;
 };
 
 export default GuestlistModal;
