@@ -163,9 +163,9 @@ const GuestlistModal = ({
                 <div className="space-y-4">
                   <Table hoverable>
                     <Table.Head>
-                      <Table.HeadCell></Table.HeadCell>
-                      <Table.HeadCell>Name</Table.HeadCell>
-                      <Table.HeadCell>Action</Table.HeadCell>
+                      <Table.HeadCell className="w-1/12"></Table.HeadCell>
+                      <Table.HeadCell className="w-5/12">Name</Table.HeadCell>
+                      <Table.HeadCell className="w-6/12">Action</Table.HeadCell>
                     </Table.Head>
                     <Table.Body className="divide-y">
                       {guestListEntries.map((entry) => (
@@ -197,6 +197,7 @@ const GuestlistModal = ({
                           <Table.Cell className="flex gap-5">
                             <MyButton
                               className="float"
+                              key={0}
                               {...(hasListItem(entry.id)
                                 ? { disabled: true }
                                 : {})}
@@ -208,14 +209,14 @@ const GuestlistModal = ({
                               { length: entry.additionalGuests },
                               (_, i) => (
                                 <MyButton
-                                  key={i}
+                                  key={i + 1}
                                   className="float"
                                   {...(hasListItem(entry.id)
                                     ? { disabled: true }
                                     : {})}
                                   onClick={() => handleAddToCart(entry, i + 1)}
                                 >
-                                  +{i + 1}
+                                  <div className="text-xs">+{i + 1}</div>
                                 </MyButton>
                               ),
                             )}
@@ -275,7 +276,7 @@ const getInitials = (name) => {
 
   // If there's only one word, take the first letter twice
   if (words.length === 1) {
-    return words[0][0].toUpperCase() + words[0][0].toUpperCase();
+    return words[0][0].toUpperCase();
   }
 
   // For multiple words, take the first letter of the first and last word
