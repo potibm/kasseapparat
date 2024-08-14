@@ -268,10 +268,10 @@ const highlightText = (text, highlight) => {
 
 const getInitials = (name) => {
   // Remove all non-alphabetical characters except spaces
-  const cleanedName = name.replace(/[^a-zA-Z\s]/g, '').trim();
-  
+  const cleanedName = name.replace(/[^a-zA-Z\s]/g, "").trim();
+
   // Split the cleaned name into words
-  const words = cleanedName.split(" ").filter(word => word.length > 0);
+  const words = cleanedName.split(" ").filter((word) => word.length > 0);
 
   // If there's only one word, take the first letter twice
   if (words.length === 1) {
