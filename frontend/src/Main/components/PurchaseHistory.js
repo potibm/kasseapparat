@@ -44,6 +44,8 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
   const dateLocale = useConfig().dateLocale;
   const dateOptions = useConfig().dateOptions;
 
+  console.log("history", history);
+
   const formatDate = (date) => {
     return new Date(date).toLocaleString(dateLocale, dateOptions);
   };
@@ -123,31 +125,39 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
           <Table.HeadCell className="w-[30%] text-right">Remove</Table.HeadCell>
         </Table.Head>
         <Table.Body>
-          {history.length === 0 && (
+          {history === null && (
             <TableRow>
               <TableCell colSpan={3} className="text-left">
-                Purchases loading or empty... <Spinner className="ml-2" />
+                Purchases loading <Spinner className="ml-2" />
               </TableCell>
             </TableRow>
           )}
-          {history.slice(0, 3).map((purchase) => (
-            <Table.Row key={purchase.id}>
-              <Table.Cell className="whitespace-nowrap">
-                {formatDate(purchase.createdAt)}
-              </Table.Cell>
-              <Table.Cell className="text-right">
-                {currency.format(purchase.totalPrice)}
-              </Table.Cell>
-              <Table.Cell className="flex justify-end">
-                <MyButton
-                  color="failure"
-                  onClick={() => setOpenModal({ show: true, purchase })}
-                >
-                  <HiXCircle />
-                </MyButton>
-              </Table.Cell>
-            </Table.Row>
-          ))}
+          {history !== null && history.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={3} className="text-left">
+                No purchases, yet.
+              </TableCell>
+            </TableRow>
+          )}
+          {history !== null &&
+            history.slice(0, 3).map((purchase) => (
+              <Table.Row key={purchase.id}>
+                <Table.Cell className="whitespace-nowrap">
+                  {formatDate(purchase.createdAt)}
+                </Table.Cell>
+                <Table.Cell className="text-right">
+                  {currency.format(purchase.totalPrice)}
+                </Table.Cell>
+                <Table.Cell className="flex justify-end">
+                  <MyButton
+                    color="failure"
+                    onClick={() => setOpenModal({ show: true, purchase })}
+                  >
+                    <HiXCircle />
+                  </MyButton>
+                </Table.Cell>
+              </Table.Row>
+            ))}
         </Table.Body>
       </Table>
     </div>
