@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/transform"
 )
 
 type deineTicketsRecord struct {
@@ -29,20 +31,6 @@ func (r *deineTicketsRecord) validateBlocked() bool {
 }
 
 func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
-	/*executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
-		return
-	}
-
-	var listEntry models.ListEntry
-	var listEntryRequest ListEntryCreateRequest
-	if c.ShouldBind(&listEntryRequest) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-		return
-	}
-	*/
-
 	// get the file from the request
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -58,8 +46,11 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 	}
 	defer fileContent.Close()
 
-	// read file line by line
-	reader := csv.NewReader(fileContent)
+	// Create a transform.Reader to decode ISO-8859-1 to UTF-8
+	utf8Reader := transform.NewReader(fileContent, charmap.ISO8859_1.NewDecoder())
+
+	// read file line by line using csv.NewReader
+	reader := csv.NewReader(utf8Reader)
 	reader.Comma = ';'
 
 	// Skip the header line
@@ -117,7 +108,7 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 		// create list entry
 		listEntry := models.ListEntry{
 			ListID:           list.ID,
-			Name:             record.LastName + " " + record.FirstName + " (" + record.Subject + ")",
+			Name:             record.FirstName + " " + record.LastName + " (" + record.Subject + ")",
 			Code:             &record.Code,
 			AdditionalGuests: 0,
 			AttendedGuests:   0,
