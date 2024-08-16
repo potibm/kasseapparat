@@ -48,7 +48,7 @@ const GuestlistModal = ({
   };
 
   const handleManualAddToCart = () => {
-    addToCart(product, 0, null);
+    addToCart(product, 1, null);
     onClose(); // close the modal
   };
 

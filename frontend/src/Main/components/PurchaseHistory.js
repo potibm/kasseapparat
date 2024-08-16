@@ -44,8 +44,6 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
   const dateLocale = useConfig().dateLocale;
   const dateOptions = useConfig().dateOptions;
 
-  console.log("history", history);
-
   const formatDate = (date) => {
     return new Date(date).toLocaleString(dateLocale, dateOptions);
   };
@@ -165,7 +163,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
 }
 
 PurchaseHistory.propTypes = {
-  history: PropTypes.array.isRequired,
+  history: PropTypes.array,
   removeFromPurchaseHistory: PropTypes.func.isRequired,
 };
 
