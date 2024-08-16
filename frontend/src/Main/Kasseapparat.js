@@ -74,7 +74,7 @@ function Kasseapparat() {
   const handleRemoveAllFromCart = () => {
     setCart(removeAllFromCart());
     fetchProducts(apiHost, token)
-      .then((products) => fetchProducts(products))
+      .then((products) => setProducts(products))
       .catch((error) =>
         showError("There was an error fetching the products: " + error.message),
       );
