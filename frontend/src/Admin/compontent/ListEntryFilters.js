@@ -1,5 +1,5 @@
 import React from "react";
-import { SearchInput, ReferenceInput, SelectInput, AutocompleteInput } from "react-admin";
+import { SearchInput, ReferenceInput, AutocompleteInput } from "react-admin";
 import { Chip } from "@mui/material";
 import PropTypes from "prop-types";
 

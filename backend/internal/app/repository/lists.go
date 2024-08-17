@@ -7,8 +7,8 @@ import (
 )
 
 type ListFilters = struct {
-	Query       string
-	IDs         []int
+	Query string
+	IDs   []int
 }
 
 func (repo *Repository) GetLists(limit int, offset int, sort string, order string, filters ListFilters) ([]models.List, error) {
