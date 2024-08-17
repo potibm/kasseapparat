@@ -19,6 +19,7 @@ import {
   BooleanField,
   useRecordContext,
   useGetIdentity,
+  AutocompleteInput,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
 import ListEntryActions from "./ListEntryAction";
@@ -107,7 +108,7 @@ export const ListEntryCreate = () => {
       <SimpleForm>
         <NumberInput disabled source="id" />
         <ReferenceInput source="listId" reference="lists">
-          <SelectInput optionText="name" validate={required()} />
+          <AutocompleteInput optionText="name" validate={required()} />
         </ReferenceInput>
         <TextInput source="name" validate={required()} />
         <TextInput source="code" helperText="The entrance code on the ticket" />

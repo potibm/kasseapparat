@@ -1,5 +1,5 @@
 import React from "react";
-import { SearchInput, ReferenceInput, SelectInput } from "react-admin";
+import { SearchInput, ReferenceInput, AutocompleteInput } from "react-admin";
 import { Chip } from "@mui/material";
 import PropTypes from "prop-types";
 
@@ -14,7 +14,7 @@ QuickFilter.propTypes = {
 export const ListEntryFilters = [
   <SearchInput source="q" alwaysOn key="ID" />,
   <ReferenceInput source="list" reference="lists" key="id">
-    <SelectInput label="List" source="list" optionText="name" />
+    <AutocompleteInput optionText="name" />
   </ReferenceInput>,
   <QuickFilter
     source="isPresent"

@@ -85,7 +85,7 @@ func SeedDatabase(db *gorm.DB) {
 		db.Create(&models.ListEntry{Name: gofakeit.Name(), Code: &code, ListID: deineTicketsList.ID, AdditionalGuests: 0})
 	}
 
-	for i := 1; i < 8; i++ {
+	for i := 1; i < 38; i++ {
 		userGuestList := &models.List{Name: "Guestlist " + gofakeit.FirstName(), ProductID: freeProduct.ID}
 		db.Create(userGuestList)
 
