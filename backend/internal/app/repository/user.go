@@ -6,12 +6,28 @@ import (
 	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"gorm.io/gorm"
 )
 
-type UserFilters = struct {
+type UserFilters struct {
 	Query   string
 	IsAdmin bool
 	IDs     []int
+}
+
+func (filters UserFilters) AddWhere(query *gorm.DB) *gorm.DB {
+	if len(filters.IDs) > 0 {
+		query = query.Where("list_entries.ID IN ?", filters.IDs)
+	}
+	if filters.Query != "" {
+		query = query.Where("Username LIKE ? OR Email LIKE ?", "%"+filters.Query+"%", "%"+filters.Query+"%")
+	}
+
+	if filters.IsAdmin {
+		query = query.Where("Admin = ?", true)
+	}
+
+	return query
 }
 
 func (repo *Repository) GetUserByID(id int) (*models.User, error) {
@@ -74,14 +90,7 @@ func (repo *Repository) GetUsers(limit int, offset int, sort string, order strin
 	}
 
 	query := repo.db.Order(sort + " " + order + ", ID ASC").Limit(limit).Offset(offset)
-
-	if filters.Query != "" {
-		query = query.Where("Username LIKE ? OR Email LIKE ?", "%"+filters.Query+"%", "%"+filters.Query+"%")
-	}
-
-	if filters.IsAdmin {
-		query = query.Where("Admin = ?", true)
-	}
+	query = filters.AddWhere(query)
 
 	var users []models.User
 	if err := query.Find(&users).Error; err != nil {
@@ -102,9 +111,13 @@ func getUsersValidFieldName(input string) (string, error) {
 	return "", errors.New("Invalid field name")
 }
 
-func (repo *Repository) GetTotalUsers() (int64, error) {
+func (repo *Repository) GetTotalUsers(filters *UserFilters) (int64, error) {
 	var totalRows int64
-	repo.db.Model(&models.User{}).Count(&totalRows)
+	query := repo.db.Model(&models.User{})
+	if filters != nil {
+		query = filters.AddWhere(query)
+	}
+	query.Count(&totalRows)
 
 	return totalRows, nil
 }

@@ -6,7 +6,6 @@ import CardContent from "@mui/material/CardContent";
 import { Title, useDataProvider } from "react-admin";
 import { Table } from "flowbite-react";
 import { useConfig } from "../../provider/ConfigProvider";
-import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   return (
@@ -65,11 +64,7 @@ const ProductStatsCard = () => {
             <Table.Body className="divide-y">
               {stats.map((stat) => (
                 <Table.Row key={stat.id}>
-                  <Table.Cell>
-                    <Link to={"products/" + stat.id + "/view"}>
-                      {stat.name}
-                    </Link>
-                  </Table.Cell>
+                  <Table.Cell>{stat.name}</Table.Cell>
                   <Table.Cell className="text-right">
                     {stat.soldItems}
                   </Table.Cell>

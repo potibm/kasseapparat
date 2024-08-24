@@ -4,15 +4,37 @@ import (
 	"errors"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"gorm.io/gorm"
 )
 
-type ListEntryFilters = struct {
+type ListEntryFilters struct {
 	Query       string
 	ListID      int
 	ListGroupId int
 	Present     bool
 	NotPresent  bool
 	IDs         []int
+}
+
+func (filters ListEntryFilters) AddWhere(query *gorm.DB) *gorm.DB {
+	if len(filters.IDs) > 0 {
+		query = query.Where("list_entries.ID IN ?", filters.IDs)
+	}
+
+	if filters.Query != "" {
+		query = query.Where("list_entries.Name LIKE ? OR list_entries.Code LIKE ?", "%"+filters.Query+"%", filters.Query+"%")
+	}
+	if filters.ListID != 0 {
+		query = query.Where("list_entries.list_id = ?", filters.ListID)
+	}
+	if filters.Present {
+		query = query.Where("list_entries.attended_guests > 0")
+	}
+	if filters.NotPresent {
+		query = query.Where("list_entries.attended_guests = 0")
+	}
+
+	return query
 }
 
 func (repo *Repository) GetListEntries(limit int, offset int, sort string, order string, filters ListEntryFilters) ([]models.ListEntry, error) {
@@ -27,23 +49,7 @@ func (repo *Repository) GetListEntries(limit int, offset int, sort string, order
 
 	var listEntries []models.ListEntry
 	query := repo.db.Joins("List").Order(sort + " " + order + ", list_entries.ID ASC").Limit(limit).Offset(offset)
-
-	if len(filters.IDs) > 0 {
-		query = query.Where("list_entries.ID IN ?", filters.IDs)
-	}
-
-	if filters.Query != "" {
-		query = query.Where("list_entries.Name LIKE ?", "%"+filters.Query+"%")
-	}
-	if filters.ListID != 0 {
-		query = query.Where("list_entries.list_id = ?", filters.ListID)
-	}
-	if filters.Present {
-		query = query.Where("list_entries.attended_guests > 0")
-	}
-	if filters.NotPresent {
-		query = query.Where("list_entries.attended_guests = 0")
-	}
+	query = filters.AddWhere(query)
 
 	if err := query.Find(&listEntries).Error; err != nil {
 		return nil, errors.New("List Entries not found")
@@ -65,9 +71,15 @@ func getListsEntriesValidFieldName(input string) (string, error) {
 	return "", errors.New("Invalid field name")
 }
 
-func (repo *Repository) GetTotalListEntries() (int64, error) {
+func (repo *Repository) GetTotalListEntries(filters *ListEntryFilters) (int64, error) {
 	var totalRows int64
-	repo.db.Model(&models.ListEntry{}).Count(&totalRows)
+
+	query := repo.db.Model(&models.ListEntry{}).Joins("List")
+	if filters != nil {
+		query = filters.AddWhere(query)
+	}
+
+	query.Count(&totalRows)
 
 	return totalRows, nil
 }

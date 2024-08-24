@@ -28,7 +28,7 @@ func (handler *Handler) GetUsers(c *gin.Context) {
 		return
 	}
 
-	total, err := handler.repo.GetTotalUsers()
+	total, err := handler.repo.GetTotalUsers(&filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
