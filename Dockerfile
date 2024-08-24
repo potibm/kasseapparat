@@ -7,7 +7,7 @@ COPY frontend .
 RUN yarn run build
 
 # Build the backend
-FROM golang:1.22-alpine AS backend-build
+FROM golang:1.23-alpine AS backend-build
 WORKDIR /app/backend
 RUN apk update && apk add --no-cache gcc g++
 COPY backend .
