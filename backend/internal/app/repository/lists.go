@@ -43,7 +43,7 @@ func getListsValidFieldName(input string) (string, error) {
 	case "id":
 		return "ID", nil
 	case "name":
-		return "Name", nil
+		return "LOWER(Name)", nil
 	}
 
 	return "", errors.New("Invalid field name")

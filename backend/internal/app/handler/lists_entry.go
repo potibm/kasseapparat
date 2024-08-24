@@ -44,7 +44,7 @@ func (handler *Handler) GetListEntries(c *gin.Context) {
 		return
 	}
 
-	total, err := handler.repo.GetTotalListEntries()
+	total, err := handler.repo.GetTotalListEntries(&filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return

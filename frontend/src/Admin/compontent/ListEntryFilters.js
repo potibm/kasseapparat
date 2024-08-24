@@ -13,7 +13,12 @@ QuickFilter.propTypes = {
 
 export const ListEntryFilters = [
   <SearchInput source="q" alwaysOn key="ID" />,
-  <ReferenceInput source="list" reference="lists" key="id">
+  <ReferenceInput
+    source="list"
+    reference="lists"
+    key="id"
+    sort={{ field: "name", order: "ASC" }}
+  >
     <AutocompleteInput optionText="name" />
   </ReferenceInput>,
   <QuickFilter
