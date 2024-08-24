@@ -22,7 +22,7 @@ func (filters ListEntryFilters) AddWhere(query *gorm.DB) *gorm.DB {
 	}
 
 	if filters.Query != "" {
-		query = query.Where("list_entries.Name LIKE ?", "%"+filters.Query+"%")
+		query = query.Where("list_entries.Name LIKE ? OR list_entries.Code LIKE ?", "%"+filters.Query+"%", filters.Query+"%")
 	}
 	if filters.ListID != 0 {
 		query = query.Where("list_entries.list_id = ?", filters.ListID)
