@@ -4,16 +4,16 @@ This documentation will give hints how to set up Kasseapparat on a server.
 
 ## Prequisites
 
-* Server with minimal specs (the staging environment is running smoothly on a VPS with 2 cores and 2 GB ram)
-* Current Ubuntu (as we are using docker a different setup will probably work just as fine.)
-* Docker including docker compose installed
-* A mail account (will be used to send password reset mails)
+- Server with minimal specs (the staging environment is running smoothly on a VPS with 2 cores and 2 GB ram)
+- Current Ubuntu (as we are using docker a different setup will probably work just as fine.)
+- Docker including docker compose installed
+- A mail account (will be used to send password reset mails)
 
 ## Set up directories
 
-* create directory /app/kassepparat
-* create directory /app/kassepparat/data
-* create directory /app/kassepparat/backup
+- create directory /app/kassepparat
+- create directory /app/kassepparat/data
+- create directory /app/kassepparat/backup
 
 ## create /app/kasseapparat/.env
 
@@ -41,7 +41,7 @@ Generate a random JWT secret e.g. by calling
 < /dev/urandom tr -dc 'A-Za-z0-9!@#$%^&*()_+=' | head -c 16
 ```
 
-or 
+or
 
 ```
 openssl rand -base64 32
@@ -139,11 +139,11 @@ volumes:
 
 ### Urls
 
-Replace the urls above with the one that you will use. 
+Replace the urls above with the one that you will use.
 
 ### Password
 
-According to https://doc.traefik.io/traefik/middlewares/http/basicauth/ you may generate a password with 
+According to https://doc.traefik.io/traefik/middlewares/http/basicauth/ you may generate a password with
 
 ```
 echo $(htpasswd -nB user) | sed -e s/\\$/\\$\\$/g
@@ -154,7 +154,7 @@ echo $(htpasswd -nB user) | sed -e s/\\$/\\$\\$/g
 ```
 #!/bin/bash
 
-# Backup database 
+# Backup database
 BASEDIR=$(dirname $0)
 FILENAME=$BASEDIR/backup/data_`date +"%Y%m%d_%H%M%S"`.tar.gz
 tar cfvz $FILENAME $BASEDIR/data/
@@ -182,7 +182,7 @@ docker compose exec kasseapparat /app/kasseapparat-tool
 
 # Optional: Clean up dangling images
 docker image prune -f
-````
+```
 
 Make the script executable.
 
