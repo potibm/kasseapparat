@@ -17,7 +17,7 @@ This documentation will give hints how to set up Kasseapparat on a server.
 
 ## create /app/kasseapparat/.env
 
-````
+```
 JWT_SECRET=1234
 SENTRY_DSN=""
 SENTRY_TRACE_SAMPLE_RATE="0.1"
@@ -39,7 +39,7 @@ Generate a random JWT secret e.g. by calling
 
 ```
 < /dev/urandom tr -dc 'A-Za-z0-9!@#$%^&*()_+=' | head -c 16
-````
+```
 
 or 
 
@@ -51,7 +51,7 @@ Using the default value is a major security risk. You should really add some ent
 
 ### SENTRY
 
-We are using [sentry.io] for fetching some bugs. Please ignore those settings.
+We are using https://sentry.io/ for fetching some bugs. Please ignore those settings.
 
 ### LOCALE
 
@@ -143,7 +143,7 @@ Replace the urls above with the one that you will use.
 
 ### Password
 
-According to [https://doc.traefik.io/traefik/middlewares/http/basicauth/] you may generate a password with 
+According to https://doc.traefik.io/traefik/middlewares/http/basicauth/ you may generate a password with 
 
 ```
 echo $(htpasswd -nB user) | sed -e s/\\$/\\$\\$/g
