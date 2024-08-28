@@ -20,4 +20,5 @@ It is a simple point of sale (POS) system aimed at [demoparties](https://en.wiki
 
 ## Documentation
 
+- [Admin Documentation](doc/admin.md)
 - [User Documentation](doc/manual.md)
