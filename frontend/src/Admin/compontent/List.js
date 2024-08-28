@@ -20,11 +20,14 @@ import {
   SelectInput,
   useGetIdentity,
   useRecordContext,
+  CreateButton,
 } from "react-admin";
 import GroupsIcon from "@mui/icons-material/Groups";
+import { useNavigate } from "react-router-dom";
 
 const ConditionalDeleteButton = (props) => {
   const record = useRecordContext(props);
+
   const { permissions, isLoading: permissionsLoading } = usePermissions();
   const { data: identity, isLoading: identityLoading } = useGetIdentity();
   if (permissionsLoading || identityLoading) return <>Loading...</>;
@@ -38,15 +41,37 @@ const ConditionalDeleteButton = (props) => {
   return null;
 };
 
+const CreateListEntryButton = (props) => {
+  const record = useRecordContext(props);
+  const navigate = useNavigate();
+
+  const handleCreateEntry = (guestlistId) => {
+    navigate(`/admin/listEntries/create?list_id=${guestlistId}`);
+  };
+
+  return (
+    <CreateButton
+      {...props}
+      label="Create Entry"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleCreateEntry(record?.id);
+      }}
+    />
+  );
+};
+
 export const ListList = (props) => {
   return (
-    <List sort={{ field: "id", order: "ASC" }}>
+    <List {...props} sort={{ field: "id", order: "ASC" }}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
         <BooleanField source="typeCode" sortable={false} />
         <TextField source="product.name" sortable={false} />
         <ConditionalDeleteButton mutationMode="pessimistic" />
+        <CreateListEntryButton />
       </Datagrid>
     </List>
   );

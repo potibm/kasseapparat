@@ -20,10 +20,15 @@ import {
   useRecordContext,
   useGetIdentity,
   AutocompleteInput,
+  useRedirect,
+  useNotify,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
 import ListEntryActions from "./ListEntryAction";
 import { ListEntryFilters } from "./ListEntryFilters";
+import { useLocation } from "react-router-dom";
+import { useFormContext } from "react-hook-form";
+import PropTypes from "prop-types";
 
 const ConditionalDeleteButton = (props) => {
   const record = useRecordContext(props);
@@ -102,10 +107,44 @@ export const ListEntryEdit = () => {
   );
 };
 
-export const ListEntryCreate = () => {
+const ListEntryCreateToolbar = ({ guestlistId, ...props }) => {
+  const redirect = useRedirect();
+  const { reset } = useFormContext();
+  const notify = useNotify();
+
+  const onSuccess = (data) => {
+    notify(`Entry saved!`);
+    reset();
+    redirect(`/admin/listEntries/create?list_id=${data.listId}`);
+  };
+
   return (
-    <Create title="Create new List Entry">
-      <SimpleForm>
+    <Toolbar {...props}>
+      <SaveButton />
+      <SaveButton
+        type="button"
+        label="Save and Add another"
+        mutationOptions={{ onSuccess }}
+        style={{ marginLeft: "10px" }}
+      />
+    </Toolbar>
+  );
+};
+ListEntryCreateToolbar.propTypes = {
+  guestlistId: PropTypes.number.isRequired,
+};
+
+export const ListEntryCreate = (props) => {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const guestlistId = parseInt(params.get("list_id"), 10);
+
+  return (
+    <Create {...props} title="Create new List Entry">
+      <SimpleForm
+        defaultValues={{ listId: guestlistId }}
+        toolbar={<ListEntryCreateToolbar guestlistId={guestlistId} />}
+      >
         <NumberInput disabled source="id" />
         <ReferenceInput source="listId" reference="lists">
           <AutocompleteInput optionText="name" validate={required()} />
