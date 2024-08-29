@@ -40,13 +40,13 @@ func (handler *Handler) GetListEntries(c *gin.Context) {
 
 	lists, err := handler.repo.GetListEntries(end-start, start, sort, order, filters)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
 	}
 
 	total, err := handler.repo.GetTotalListEntries(&filters)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 
@@ -58,7 +58,7 @@ func (handler *Handler) GetListEntryByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	list, err := handler.repo.GetListEntryByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
@@ -68,20 +68,20 @@ func (handler *Handler) GetListEntryByID(c *gin.Context) {
 func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	listEntry, err := handler.repo.GetListEntryByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
 	var listEntryRequest ListEntryUpdateRequest
 	if err := c.ShouldBind(&listEntryRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
@@ -100,7 +100,7 @@ func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 
 	listEntry, err = handler.repo.UpdateListEntryByID(id, *listEntry)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
 	}
 
@@ -110,14 +110,14 @@ func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 func (handler *Handler) CreateListEntry(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
 	var listEntry models.ListEntry
 	var listEntryRequest ListEntryCreateRequest
-	if c.ShouldBind(&listEntryRequest) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	if err := c.ShouldBind(&listEntryRequest); err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
@@ -134,29 +134,29 @@ func (handler *Handler) CreateListEntry(c *gin.Context) {
 
 	product, err := handler.repo.CreateListEntry(listEntry)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, product)
+	c.JSON(http.StatusCreated, product)
 }
 
 func (handler *Handler) DeleteListEntryByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	listEntry, err := handler.repo.GetListEntryByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
 	if !executingUserObj.Admin && *listEntry.CreatedByID != executingUserObj.ID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+		_ = c.Error(Forbidden)
 		return
 	}
 
@@ -171,7 +171,7 @@ func (handler *Handler) GetListEntriesByProductID(c *gin.Context) {
 
 	listEntries, err := handler.repo.GetUnattendedListEntriesByProductID(productID, query)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
 	}
 

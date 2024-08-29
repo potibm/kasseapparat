@@ -34,14 +34,14 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 	// get the file from the request
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		_ = c.Error(BadRequest)
 		return
 	}
 
 	// open the file
 	fileContent, err := file.Open()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error opening file"})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Error opening file"))
 		return
 	}
 	defer fileContent.Close()
@@ -55,14 +55,14 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 
 	// Skip the header line
 	if _, err := reader.Read(); err != nil {
-		c.String(http.StatusBadRequest, "Failed to read header: %v", err)
+		_ = c.Error(ExtendHttpErrorWithDetails(BadRequest, "Failed to read header"))
 		return
 	}
 
 	// find a list with Type Code
 	list, err := handler.repo.GetListWithTypeCode()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "List not found"})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "List not found"))
 		return
 	}
 
@@ -76,7 +76,7 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 			break
 		}
 		if err != nil {
-			c.String(http.StatusInternalServerError, "Error reading CSV file: %v", err)
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Error reading CSV file"))
 			return
 		}
 
@@ -116,7 +116,7 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 
 		_, err = handler.repo.CreateListEntry(listEntry)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create list entry"})
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create list entry"))
 			return
 		}
 		createdEntries++

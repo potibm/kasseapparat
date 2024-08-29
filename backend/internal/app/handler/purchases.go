@@ -32,7 +32,7 @@ func (handler *Handler) OptionsPurchases(c *gin.Context) {
 func (handler *Handler) DeletePurchase(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
@@ -46,7 +46,7 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 func (handler *Handler) PostPurchases(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
@@ -54,8 +54,8 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	var updatedListEntries []models.ListEntry = make([]models.ListEntry, 0)
 
 	var purchaseRequest PurchaseRequest
-	if c.ShouldBind(&purchaseRequest) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	if err := c.ShouldBind(&purchaseRequest); err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
@@ -67,7 +67,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 		product, err := handler.repo.GetProductByID(id)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": "Product not found."})
+			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Product not found"))
 			return
 		}
 		calculatedPurchaseItemPrice := product.Price * float64(quantity)
@@ -86,22 +86,22 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			var listEntry *models.ListEntry
 			listEntry, err = handler.repo.GetFullListEntryByID(purchaseRequest.Cart[i].ListItems[j].ID)
 			if err != nil || listEntry == nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": "List item not found."})
+				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item not found"))
 				return
 			}
 
 			if listEntry.AttendedGuests != 0 {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": "List item has already been attended."})
+				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item has already been attended"))
 				return
 			}
 
 			if listEntry.AdditionalGuests+1 < purchaseRequest.Cart[i].ListItems[j].AttendedGuests {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": "Additional guests exceed available guests."})
+				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Additional guests exceed available guests"))
 				return
 			}
 
 			if listEntry.List.ProductID != uint(id) {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": "List item does not belong to product."})
+				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item does not belong to product"))
 				return
 			}
 
@@ -112,7 +112,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	}
 	// check that total price is correct
 	if calculatedTotalPrice != purchaseRequest.TotalPrice {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": "Total price does not match."})
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Total price does not match"))
 		return
 	}
 
@@ -120,7 +120,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 	purchase, err = handler.repo.StorePurchases(purchase)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error", "message": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
 	}
 
@@ -130,7 +130,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		updatedListEntry.PurchaseID = &purchase.ID
 		_, err := handler.repo.UpdateListEntryByID(int(updatedListEntry.ID), updatedListEntry)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error", "message": err.Error()})
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 			return
 		}
 	}
@@ -146,13 +146,13 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 
 	products, err := handler.repo.GetPurchases(end-start, start, sort, order)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
 	}
 
 	total, err := handler.repo.GetTotalPurchases()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 
@@ -164,7 +164,7 @@ func (handler *Handler) GetPurchaseByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	purchase, err := handler.repo.GetPurchaseByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
@@ -175,7 +175,7 @@ func (handler *Handler) GetPurchaseStats(c *gin.Context) {
 
 	stats, err := handler.repo.GetPurchaseStats()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error", "message": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
 	}
 

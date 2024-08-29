@@ -27,6 +27,7 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	r = gin.Default()
 	r.Use(sentrygin.New(sentrygin.Options{}))
+	r.Use(middleware.ErrorHandlingMiddleware())
 
 	r.GET("/api/v1/purchases/stats", myhandler.GetPurchaseStats)
 
@@ -35,7 +36,6 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 	r.Use(static.Serve("/", static.EmbedFolder(staticFiles, "assets")))
 
 	authMiddleware := registerAuthMiddleware(repository)
-	//r.Use(SentryMiddleware())
 	registerApiRoutes(myhandler, authMiddleware)
 
 	r.NoRoute(func(c *gin.Context) {
