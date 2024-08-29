@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   usePermissions,
   List,
@@ -25,6 +25,7 @@ import {
   BooleanInput,
   TabbedForm,
   FormTab,
+  DateField,
   DateTimeInput,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
@@ -33,7 +34,8 @@ import { ListEntryFilters } from "./ListEntryFilters";
 import { useLocation } from "react-router-dom";
 import { useFormContext } from "react-hook-form";
 import PropTypes from "prop-types";
-import { Button, Checkbox, FormControlLabel } from "@mui/material";
+import { Box } from "@mui/material";
+import { useConfig } from "../../provider/ConfigProvider";
 
 const ConditionalDeleteButton = (props) => {
   const record = useRecordContext(props);
@@ -62,7 +64,21 @@ const AttendedGuestsBooleanField = (props) => {
   );
 };
 
+const ArrivedAtOrNullField = (props) => {
+  const record = useRecordContext();
+  if (!record) return null;
+  const hasArrived = record.arrivedAt != null;
+
+  if (!hasArrived) {
+    return <Box>The person has not arrived, yet</Box>;
+  }
+
+  return <DateTimeInput source="arrivedAt" disabled={true} />;
+};
+
 export const ListEntryList = (props) => {
+  const locale = useConfig().Locale;
+
   return (
     <List
       sort={{ field: "id", order: "ASC" }}
@@ -75,6 +91,13 @@ export const ListEntryList = (props) => {
         <TextField source="list.name" />
         <NumberField source="additionalGuests" sortable={false} />
         <AttendedGuestsBooleanField label="present" sortable={false} />
+        <DateField
+          source="arrivedAt"
+          showTime={true}
+          emptyText="-"
+          locales={locale}
+          options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
+        />
         <ConditionalDeleteButton mutationMode="pessimistic" />
       </Datagrid>
     </List>
@@ -84,76 +107,44 @@ export const ListEntryList = (props) => {
 export const ListEntryEdit = () => {
   return (
     <Edit>
-      <ListEntryEditForm />
+      <TabbedForm
+        toolbar={
+          <Toolbar>
+            <SaveButton />
+          </Toolbar>
+        }
+      >
+        <FormTab label="General">
+          <NumberInput disabled source="id" />
+          <ReferenceInput source="listId" reference="lists">
+            <SelectInput optionText="name" validate={required()} disabled />
+          </ReferenceInput>
+          <TextInput source="name" validate={required()} />
+          <TextInput
+            source="code"
+            helperText="The entrance code on the ticket"
+          />
+        </FormTab>
+        <FormTab label="Additional Guests">
+          <NumberInput
+            source="additionalGuests"
+            min={0}
+            helperText="Number of additional guests (read as +1)"
+          />
+          <NumberInput
+            source="attendedGuests"
+            min={0}
+            helperText="Number of visitors that are present"
+          />
+        </FormTab>
+        <FormTab label="Arrival">
+          <ArrivedAtOrNullField />
+
+          <TextInput source="arrivalNote" />
+          <BooleanInput source="notifyOnArrival" />
+        </FormTab>
+      </TabbedForm>
     </Edit>
-  );
-};
-
-export const ListEntryEditForm = () => {
-  const record = useRecordContext();
-
-  // Initialize state based on whether `arrivedAt` is null in the record
-  const [isArrivedAtNull, setIsArrivedAtNull] = useState(
-    record?.arrivedAt === null,
-  );
-
-  // Update state if record changes (this can happen when data is fetched)
-  useEffect(() => {
-    setIsArrivedAtNull(record?.arrivedAt === null);
-  }, [record]);
-
-  const handleNullChange = () => {
-    setIsArrivedAtNull(!isArrivedAtNull);
-  };
-
-  return (
-    <TabbedForm
-      toolbar={
-        <Toolbar>
-          <SaveButton />
-        </Toolbar>
-      }
-    >
-      <FormTab label="General">
-        <NumberInput disabled source="id" />
-        <ReferenceInput source="listId" reference="lists">
-          <SelectInput optionText="name" validate={required()} disabled />
-        </ReferenceInput>
-        <TextInput source="name" validate={required()} />
-        <TextInput source="code" helperText="The entrance code on the ticket" />
-      </FormTab>
-      <FormTab label="Additional Guests">
-        <NumberInput
-          source="additionalGuests"
-          min={0}
-          helperText="Number of additional guests (read as +1)"
-        />
-        <NumberInput
-          source="attendedGuests"
-          min={0}
-          helperText="Number of visitors that are present"
-        />
-      </FormTab>
-      <FormTab label="Arrival">
-        <DateTimeInput source="arrivedAt" disabled={isArrivedAtNull} />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={isArrivedAtNull}
-              onChange={handleNullChange}
-              color="primary"
-            />
-          }
-          label="Clear Arrival Time"
-        />
-        <Button onClick={() => setIsArrivedAtNull(true)}>
-          Clear Arrival Time
-        </Button>
-
-        <TextInput source="arrivalNote" />
-        <BooleanInput source="notifyOnArrival" />
-      </FormTab>
-    </TabbedForm>
   );
 };
 

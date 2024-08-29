@@ -21,7 +21,12 @@ export const PurchaseList = () => {
     <List sort={{ field: "createdAt", order: "DESC" }}>
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <NumberField source="id" />
-        <DateField source="createdAt" showTime={true} />
+        <DateField
+          source="createdAt"
+          showTime={true}
+          locales={locale}
+          options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
+        />
         <NumberField source="totalPrice" locales={locale} options={currency} />
         <TextField source="createdBy.username" />
         <DeleteButton mutationMode="pessimistic" />

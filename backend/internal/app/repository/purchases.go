@@ -21,7 +21,7 @@ func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchas
 
 func (repo *Repository) DeletePurchaseByID(id int, deletedBy models.User) {
 	// rollback list entries
-	repo.db.Model(&models.ListEntry{}).Where("purchase_id = ?", id).Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0})
+	repo.db.Model(&models.ListEntry{}).Where("purchase_id = ?", id).Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil})
 
 	repo.db.Model(&models.Purchase{}).Where("id = ?", id).Update("DeletedByID", deletedBy.ID)
 	repo.db.Delete(&models.Purchase{}, id)
