@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   usePermissions,
   List,
@@ -22,6 +22,10 @@ import {
   AutocompleteInput,
   useRedirect,
   useNotify,
+  BooleanInput,
+  TabbedForm,
+  FormTab,
+  DateTimeInput,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
 import ListEntryActions from "./ListEntryAction";
@@ -29,6 +33,7 @@ import { ListEntryFilters } from "./ListEntryFilters";
 import { useLocation } from "react-router-dom";
 import { useFormContext } from "react-hook-form";
 import PropTypes from "prop-types";
+import { Button, Checkbox, FormControlLabel } from "@mui/material";
 
 const ConditionalDeleteButton = (props) => {
   const record = useRecordContext(props);
@@ -79,19 +84,45 @@ export const ListEntryList = (props) => {
 export const ListEntryEdit = () => {
   return (
     <Edit>
-      <SimpleForm
-        toolbar={
-          <Toolbar>
-            <SaveButton />
-          </Toolbar>
-        }
-      >
+      <ListEntryEditForm />
+    </Edit>
+  );
+};
+
+export const ListEntryEditForm = () => {
+  const record = useRecordContext();
+
+  // Initialize state based on whether `arrivedAt` is null in the record
+  const [isArrivedAtNull, setIsArrivedAtNull] = useState(
+    record?.arrivedAt === null,
+  );
+
+  // Update state if record changes (this can happen when data is fetched)
+  useEffect(() => {
+    setIsArrivedAtNull(record?.arrivedAt === null);
+  }, [record]);
+
+  const handleNullChange = () => {
+    setIsArrivedAtNull(!isArrivedAtNull);
+  };
+
+  return (
+    <TabbedForm
+      toolbar={
+        <Toolbar>
+          <SaveButton />
+        </Toolbar>
+      }
+    >
+      <FormTab label="General">
         <NumberInput disabled source="id" />
         <ReferenceInput source="listId" reference="lists">
           <SelectInput optionText="name" validate={required()} disabled />
         </ReferenceInput>
         <TextInput source="name" validate={required()} />
         <TextInput source="code" helperText="The entrance code on the ticket" />
+      </FormTab>
+      <FormTab label="Additional Guests">
         <NumberInput
           source="additionalGuests"
           min={0}
@@ -102,8 +133,27 @@ export const ListEntryEdit = () => {
           min={0}
           helperText="Number of visitors that are present"
         />
-      </SimpleForm>
-    </Edit>
+      </FormTab>
+      <FormTab label="Arrival">
+        <DateTimeInput source="arrivedAt" disabled={isArrivedAtNull} />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={isArrivedAtNull}
+              onChange={handleNullChange}
+              color="primary"
+            />
+          }
+          label="Clear Arrival Time"
+        />
+        <Button onClick={() => setIsArrivedAtNull(true)}>
+          Clear Arrival Time
+        </Button>
+
+        <TextInput source="arrivalNote" />
+        <BooleanInput source="notifyOnArrival" />
+      </FormTab>
+    </TabbedForm>
   );
 };
 
@@ -157,6 +207,8 @@ export const ListEntryCreate = (props) => {
           defaultValue={0}
           helperText="Number of additional guests (read as +1)"
         />
+        <TextInput source="arrivalNote" />
+        <BooleanInput source="notifyOnArrival" />
       </SimpleForm>
     </Create>
   );

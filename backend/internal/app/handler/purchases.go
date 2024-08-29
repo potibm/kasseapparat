@@ -106,6 +106,8 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			}
 
 			listEntry.AttendedGuests = purchaseRequest.Cart[i].ListItems[j].AttendedGuests
+			listEntry.MarkAsArrived()
+
 			updatedListEntries = append(updatedListEntries, *listEntry)
 		}
 
