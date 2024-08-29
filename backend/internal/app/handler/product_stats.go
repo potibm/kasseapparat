@@ -10,7 +10,7 @@ import (
 func (handler *Handler) GetProductStats(c *gin.Context) {
 	products, err := handler.repo.GetProductStats()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 

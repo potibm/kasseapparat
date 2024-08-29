@@ -15,21 +15,19 @@ type UserUpdatePasswordRequest struct {
 
 func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 	var userPasswordChangeRequest UserUpdatePasswordRequest
-	err := c.ShouldBind(&userPasswordChangeRequest)
-	if err != nil {
-		log.Println("Invalid request", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	if err := c.ShouldBind(&userPasswordChangeRequest); err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
 	user, err := handler.repo.GetUserByID(userPasswordChangeRequest.UserId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found."})
+		_ = c.Error(ExtendHttpErrorWithDetails(BadRequest, "User not found"))
 		return
 	}
 
 	if !user.ChangePasswordTokenIsValid(userPasswordChangeRequest.Token) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Token is invalid or has expired."})
+		_ = c.Error(ExtendHttpErrorWithDetails(BadRequest, "Token is invalid or has expired"))
 		return
 	}
 
@@ -39,7 +37,7 @@ func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 
 	user, err = handler.repo.UpdateUserByID(int(user.ID), *user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 
@@ -52,8 +50,8 @@ type RequestChangePasswordTokenRequest struct {
 
 func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 	var request RequestChangePasswordTokenRequest
-	if c.ShouldBind(&request) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	if err := c.ShouldBind(&request); err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
@@ -72,7 +70,7 @@ func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 
 	user, err = handler.repo.UpdateUserByID(int(user.ID), *user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 

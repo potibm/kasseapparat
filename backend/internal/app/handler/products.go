@@ -37,7 +37,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 
 	products, err := handler.repo.GetProducts(end-start, start, sort, order, ids)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
 	}
 
@@ -59,7 +59,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 
 	total, err := handler.repo.GetTotalProducts()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (handler *Handler) GetProductByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByIDWithSalesAndInterrest(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
@@ -90,20 +90,20 @@ func (handler *Handler) GetProductByID(c *gin.Context) {
 func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
 	var productRequest ProductRequestUpdate
 	if err := c.ShouldBind(&productRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
@@ -119,7 +119,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 
 	product, err = handler.repo.UpdateProductByID(id, *product)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 
@@ -129,14 +129,14 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 func (handler *Handler) CreateProduct(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
 	var product models.Product
 	var productRequest ProductRequestCreate
-	if c.ShouldBind(&productRequest) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	if err := c.ShouldBind(&productRequest); err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
@@ -149,28 +149,28 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 
 	product, err = handler.repo.CreateProduct(product)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, product)
+	c.JSON(http.StatusCreated, product)
 }
 
 func (handler *Handler) DeleteProductByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 	if !executingUserObj.Admin {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+		_ = c.Error(Forbidden)
 		return
 	}
 

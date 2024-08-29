@@ -24,13 +24,13 @@ func (handler *Handler) GetUsers(c *gin.Context) {
 
 	products, err := handler.repo.GetUsers(end-start, start, sort, order, filters)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
 	}
 
 	total, err := handler.repo.GetTotalUsers(&filters)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 
@@ -42,7 +42,7 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetUserByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
@@ -65,20 +65,20 @@ type UserUpdateRequest struct {
 func (handler *Handler) UpdateUserByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
 	var userRequest UserUpdateRequest
 	if err := c.ShouldBind(&userRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request", "message": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
@@ -101,7 +101,7 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 
 	user, err = handler.repo.UpdateUserByID(id, *user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 
@@ -111,14 +111,14 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 func (handler *Handler) CreateUser(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
 	var user models.User
 	var userRequest UserCreateRequest
-	if c.ShouldBind(&userRequest) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	if err := c.ShouldBind(&userRequest); err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
@@ -137,7 +137,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 
 	user, err = handler.repo.CreateUser(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		_ = c.Error(InternalServerError)
 		return
 	}
 
@@ -146,25 +146,25 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 		log.Println("Error sending email", err)
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusCreated, user)
 }
 
 func (handler *Handler) DeleteUserByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve the executing user"})
+		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 	// only admins are allowed to delete users, and not themselves
 	if !executingUserObj.Admin || executingUserObj.ID == user.ID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+		_ = c.Error(Forbidden)
 		return
 	}
 
