@@ -8,12 +8,12 @@ const SentryInitializer = ({ children }) => {
   const { id, username } = useAuth();
 
   useEffect(() => {
-    if (config && config.sentryDSN) {
+    if (config?.sentryDSN) {
       try {
         Sentry.init({
           dsn: config.sentryDSN,
           environment: process.env.NODE_ENV,
-          release: "kasseapparat@" + config.version ?? "unknown",
+          release: `kasseapparat@${config?.version ?? "unknown"}`,
           integrations: [
             Sentry.browserTracingIntegration(),
             Sentry.replayIntegration(),

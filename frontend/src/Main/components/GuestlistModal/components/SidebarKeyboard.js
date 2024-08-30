@@ -1,7 +1,7 @@
 import React from "react";
 import { HiBackspace, HiOutlineMinusSm, HiOutlineX } from "react-icons/hi";
 import PropTypes from "prop-types";
-import MyButton from "./MyButton";
+import MyButton from "../../MyButton";
 
 const SidebarKeyboardKey = ({ children, onClick, ...props }) => {
   return (

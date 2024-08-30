@@ -52,41 +52,37 @@ const ProductStatsCard = () => {
   };
 
   return (
-    <>
-      <Card>
-        <CardContent>
-          <Table className="mt-5" theme={customCompactTheme}>
-            <Table.Head>
-              <Table.HeadCell>Product</Table.HeadCell>
-              <Table.HeadCell className="text-right">Units sold</Table.HeadCell>
-              <Table.HeadCell className="text-right">Revenue</Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
-              {stats.map((stat) => (
-                <Table.Row key={stat.id}>
-                  <Table.Cell>{stat.name}</Table.Cell>
-                  <Table.Cell className="text-right">
-                    {stat.soldItems}
-                  </Table.Cell>
-                  <Table.Cell className="text-right">
-                    {currency.format(stat.totalPrice)}
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-              <Table.Row>
-                <Table.Cell className="font-bold">Total</Table.Cell>
-                <Table.Cell className="font-bold text-right">-</Table.Cell>
-                <Table.Cell className="font-bold text-right">
-                  {currency.format(
-                    stats.reduce((acc, stat) => acc + stat.totalPrice, 0),
-                  )}
+    <Card>
+      <CardContent>
+        <Table className="mt-5" theme={customCompactTheme}>
+          <Table.Head>
+            <Table.HeadCell>Product</Table.HeadCell>
+            <Table.HeadCell className="text-right">Units sold</Table.HeadCell>
+            <Table.HeadCell className="text-right">Revenue</Table.HeadCell>
+          </Table.Head>
+          <Table.Body className="divide-y">
+            {stats.map((stat) => (
+              <Table.Row key={stat.id}>
+                <Table.Cell>{stat.name}</Table.Cell>
+                <Table.Cell className="text-right">{stat.soldItems}</Table.Cell>
+                <Table.Cell className="text-right">
+                  {currency.format(stat.totalPrice)}
                 </Table.Cell>
               </Table.Row>
-            </Table.Body>
-          </Table>
-        </CardContent>
-      </Card>
-    </>
+            ))}
+            <Table.Row>
+              <Table.Cell className="font-bold">Total</Table.Cell>
+              <Table.Cell className="font-bold text-right">-</Table.Cell>
+              <Table.Cell className="font-bold text-right">
+                {currency.format(
+                  stats.reduce((acc, stat) => acc + stat.totalPrice, 0),
+                )}
+              </Table.Cell>
+            </Table.Row>
+          </Table.Body>
+        </Table>
+      </CardContent>
+    </Card>
   );
 };
 

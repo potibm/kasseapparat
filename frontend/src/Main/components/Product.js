@@ -3,7 +3,7 @@ import { Badge, Card } from "flowbite-react";
 import { HiShoppingCart, HiUserAdd, HiOutlineThumbUp } from "react-icons/hi";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
-import GuestlistModal from "./GuestlistModal";
+import GuestlistModal from "./GuestlistModal/GuestlistModal";
 import MyButton from "./MyButton";
 import ProductInterestModal from "./ProductInterestModal";
 
@@ -87,11 +87,9 @@ function Product({
               </MyButton>
             )}
             {!product.soldOut && product.lists.length > 0 && (
-              <>
-                <MyButton aria-label="Show guestlist">
-                  <HiUserAdd className="h-5 w-5" />
-                </MyButton>
-              </>
+              <MyButton aria-label="Show guestlist">
+                <HiUserAdd className="h-5 w-5" />
+              </MyButton>
             )}
             {!product.soldOut && product.lists.length === 0 && (
               <MyButton aria-label="Add to cart">

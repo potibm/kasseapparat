@@ -27,6 +27,10 @@ import {
   FormTab,
   DateField,
   DateTimeInput,
+  minValue,
+  maxValue,
+  email,
+  number,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
 import ListEntryActions from "./ListEntryAction";
@@ -51,6 +55,14 @@ const ConditionalDeleteButton = (props) => {
   }
   return null;
 };
+
+const ValidateAdditionalGuests = [
+  required(),
+  number(),
+  minValue(0),
+  maxValue(5),
+];
+const ValidateAttendedGuests = [required(), number(), minValue(0), maxValue(6)];
 
 const AttendedGuestsBooleanField = (props) => {
   const record = useRecordContext();
@@ -89,7 +101,12 @@ export const ListEntryList = (props) => {
         <NumberField source="id" />
         <TextField source="name" />
         <TextField source="list.name" />
-        <NumberField source="additionalGuests" sortable={false} />
+        <NumberField
+          source="additionalGuests"
+          min={0}
+          max={5}
+          sortable={false}
+        />
         <AttendedGuestsBooleanField label="present" sortable={false} />
         <DateField
           source="arrivedAt"
@@ -129,19 +146,34 @@ export const ListEntryEdit = () => {
           <NumberInput
             source="additionalGuests"
             min={0}
+            max={5}
+            defaultValue={0}
+            validate={ValidateAdditionalGuests}
             helperText="Number of additional guests (read as +1)"
           />
           <NumberInput
             source="attendedGuests"
             min={0}
+            max={5}
+            defaultValue={0}
+            validate={ValidateAttendedGuests}
             helperText="Number of visitors that are present"
           />
         </FormTab>
         <FormTab label="Arrival">
           <ArrivedAtOrNullField />
 
-          <TextInput source="arrivalNote" />
-          <BooleanInput source="notifyOnArrival" />
+          <TextInput
+            source="arrivalNote"
+            label="Note"
+            helperText="A text that will be displayed when selecting this person."
+          />
+          <TextInput
+            source="notifyOnArrivalEmail"
+            validate={email()}
+            label="Notify Email"
+            helperText="Email to notify on arrival"
+          />
         </FormTab>
       </TabbedForm>
     </Edit>
@@ -195,7 +227,9 @@ export const ListEntryCreate = (props) => {
         <NumberInput
           source="additionalGuests"
           min={0}
+          max={5}
           defaultValue={0}
+          validate={ValidateAdditionalGuests}
           helperText="Number of additional guests (read as +1)"
         />
         <TextInput source="arrivalNote" />

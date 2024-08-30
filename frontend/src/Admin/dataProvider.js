@@ -15,7 +15,7 @@ const httpClient = (url, options = {}) => {
   const adminData = localStorage.getItem("admin");
   if (adminData) {
     const parsedAdminData = JSON.parse(adminData);
-    if (parsedAdminData && parsedAdminData.token) {
+    if (parsedAdminData?.token) {
       options.headers.set("Authorization", `Bearer ${parsedAdminData.token}`);
     }
   }

@@ -49,7 +49,7 @@ const authProvider = {
   },
   updateToken: async () => {
     const adminData = getAdminData();
-    if (!adminData || !adminData.token) {
+    if (!adminData?.token) {
       return Promise.reject(new Error("No token found. Please log in."));
     }
 
@@ -103,7 +103,7 @@ const authProvider = {
   },
   checkAuth: () => {
     const adminData = getAdminData();
-    if (!adminData || !adminData.token) {
+    if (!adminData?.token) {
       return Promise.reject(new Error("No token found. Please log in."));
     }
     // check if the token is expired

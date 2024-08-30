@@ -6,6 +6,8 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
+const ErrListNotFound = "List not found"
+
 type ListFilters = struct {
 	Query string
 	IDs   []int
@@ -59,7 +61,7 @@ func (repo *Repository) GetTotalLists() (int64, error) {
 func (repo *Repository) GetListByID(id int) (*models.List, error) {
 	var list models.List
 	if err := repo.db.First(&list, id).Error; err != nil {
-		return nil, errors.New("List not found")
+		return nil, errors.New(ErrListNotFound)
 	}
 
 	return &list, nil
@@ -68,7 +70,7 @@ func (repo *Repository) GetListByID(id int) (*models.List, error) {
 func (repo *Repository) GetListWithTypeCode() (*models.List, error) {
 	var list models.List
 	if err := repo.db.Where("type_code = ?", "1").First(&list).Error; err != nil {
-		return nil, errors.New("List not found")
+		return nil, errors.New(ErrListNotFound)
 	}
 	return &list, nil
 }
@@ -76,7 +78,7 @@ func (repo *Repository) GetListWithTypeCode() (*models.List, error) {
 func (repo *Repository) UpdateListByID(id int, updatedList models.List) (*models.List, error) {
 	var list models.List
 	if err := repo.db.First(&list, id).Error; err != nil {
-		return nil, errors.New("List not found")
+		return nil, errors.New(ErrListNotFound)
 	}
 
 	list.Name = updatedList.Name

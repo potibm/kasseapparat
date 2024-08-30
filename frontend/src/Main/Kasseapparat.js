@@ -101,7 +101,7 @@ function Kasseapparat() {
         fetchProducts(apiHost, token)
           .then((products) => setProducts(products))
           .catch((error) =>
-            this.showError(
+            showError(
               "There was an error fetching the products: " + error.message,
             ),
           );

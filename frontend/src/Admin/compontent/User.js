@@ -76,29 +76,24 @@ const UserEditForm = (props) => {
   const isCurrentUser = record && record.id === currentUserId;
 
   return (
-    <>
-      <SimpleForm
-        toolbar={
-          <Toolbar>
-            <SaveButton />
-          </Toolbar>
-        }
-      >
-        <NumberInput disabled source="id" />
-        <TextInput source="username" validate={required()} />
-        <TextInput source="email" validate={[required(), email()]} />
-        {(permissions === "admin" || isCurrentUser) && (
-          <>
-            <PasswordInput source="password" validate={[minLength(8)]} />
-            <PasswordInput
-              source="confirm_password"
-              validate={equalToPassword}
-            />
-          </>
-        )}
-        <BooleanInput source="admin" disabled={permissions !== "admin"} />
-      </SimpleForm>
-    </>
+    <SimpleForm
+      toolbar={
+        <Toolbar>
+          <SaveButton />
+        </Toolbar>
+      }
+    >
+      <NumberInput disabled source="id" />
+      <TextInput source="username" validate={required()} />
+      <TextInput source="email" validate={[required(), email()]} />
+      {(permissions === "admin" || isCurrentUser) && (
+        <>
+          <PasswordInput source="password" validate={[minLength(8)]} />
+          <PasswordInput source="confirm_password" validate={equalToPassword} />
+        </>
+      )}
+      <BooleanInput source="admin" disabled={permissions !== "admin"} />
+    </SimpleForm>
   );
 };
 

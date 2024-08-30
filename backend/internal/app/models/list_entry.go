@@ -9,17 +9,17 @@ import (
 // List represents a guestlist
 type ListEntry struct {
 	GormOwnedModel
-	ListID           uint       `json:"listId"`
-	List             List       `json:"list"`
-	Name             string     `json:"name" `
-	Code             *string    `json:"code" gorm:"unique"`
-	AdditionalGuests uint       `json:"additionalGuests" gorm:"default:0"`
-	AttendedGuests   uint       `json:"attendedGuests" gorm:"default:0"`
-	ArrivedAt        *time.Time `json:"arrivedAt"`
-	ArrivalNote      *string    `json:"arrivalNote"`
-	NotifyOnArrival  bool       `json:"notifyOnArrival" gorm:"default:false"`
-	PurchaseID       *uint      `json:"purchaseId"`
-	Purchase         *Purchase  `json:"-"`
+	ListID               uint       `json:"listId"`
+	List                 List       `json:"list"`
+	Name                 string     `json:"name" `
+	Code                 *string    `json:"code" gorm:"unique"`
+	AdditionalGuests     uint       `json:"additionalGuests" gorm:"default:0"`
+	AttendedGuests       uint       `json:"attendedGuests" gorm:"default:0"`
+	ArrivedAt            *time.Time `json:"arrivedAt"`
+	ArrivalNote          *string    `json:"arrivalNote"`
+	NotifyOnArrivalEmail *string    `json:"notifyOnArrivalEmail"`
+	PurchaseID           *uint      `json:"purchaseId"`
+	Purchase             *Purchase  `json:"-"`
 }
 
 type ListEntrySummary struct {
@@ -28,6 +28,7 @@ type ListEntrySummary struct {
 	Code             *string `json:"code" gorm:"unique"`
 	ListName         *string `json:"listName"`
 	AdditionalGuests uint    `json:"additionalGuests" gorm:"default:0"`
+	ArrivalNote      *string `json:"arrivalNote"`
 }
 
 type ListEntrySummarySlice []ListEntrySummary

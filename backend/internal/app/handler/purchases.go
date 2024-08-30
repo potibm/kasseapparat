@@ -24,11 +24,6 @@ type PurchaseRequest struct {
 	Cart       []PurchaseCartRequest `form:"cart" binding:"required,dive"`
 }
 
-func (handler *Handler) OptionsPurchases(c *gin.Context) {
-
-	c.JSON(http.StatusOK, nil)
-}
-
 func (handler *Handler) DeletePurchase(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {

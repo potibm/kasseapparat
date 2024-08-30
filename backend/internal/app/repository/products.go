@@ -6,6 +6,8 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
+const ErrProductNotFound = "Product not found"
+
 func (repo *Repository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.ProductWithSalesAndInterrest, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
@@ -56,7 +58,7 @@ func (repo *Repository) GetTotalProducts() (int64, error) {
 func (repo *Repository) GetProductByID(id int) (*models.Product, error) {
 	var product models.Product
 	if err := repo.db.Table("Products").First(&product, id).Error; err != nil {
-		return nil, errors.New("Product not found")
+		return nil, errors.New(ErrProductNotFound)
 	}
 
 	return &product, nil
@@ -65,7 +67,7 @@ func (repo *Repository) GetProductByID(id int) (*models.Product, error) {
 func (repo *Repository) GetProductByIDWithSalesAndInterrest(id int) (*models.ProductWithSalesAndInterrest, error) {
 	var product models.ProductWithSalesAndInterrest
 	if err := repo.db.Table("Products").First(&product, id).Error; err != nil {
-		return nil, errors.New("Product not found")
+		return nil, errors.New(ErrProductNotFound)
 	}
 
 	return &product, nil
@@ -74,7 +76,7 @@ func (repo *Repository) GetProductByIDWithSalesAndInterrest(id int) (*models.Pro
 func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error) {
 	var product models.Product
 	if err := repo.db.First(&product, id).Error; err != nil {
-		return nil, errors.New("Product not found")
+		return nil, errors.New(ErrProductNotFound)
 	}
 
 	// Update the product with the new values

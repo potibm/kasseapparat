@@ -41,19 +41,20 @@ func (u *User) GravatarURL() string {
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	// hash the password
-	bytes, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcryptCost)
-	u.Password = string(bytes)
+	u.Password = hashPassword(u.Password)
 
 	return
 }
 
 func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
-	// hash the password
-	bytes, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcryptCost)
-	u.Password = string(bytes)
+	u.Password = hashPassword(u.Password)
 
 	return
+}
+
+func hashPassword(password string) string {
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(password), bcryptCost)
+	return string(bytes)
 }
 
 func (u *User) ComparePassword(password string) error {

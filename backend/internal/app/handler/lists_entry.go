@@ -12,24 +12,24 @@ import (
 )
 
 type ListEntryCreateRequest struct {
-	ListID           uint    `form:"listId"  json:"listId" binding:"required"`
-	Name             string  `form:"name"  json:"name" binding:"required"`
-	Code             string  `form:"code"  json:"code"`
-	AdditionalGuests uint    `form:"additionalGuests"  json:"additionalGuests"`
-	AttendedGuests   uint    `form:"attendedGuests"  json:"attendedGuests"`
-	ArrivalNote      *string `form:"arrivalNote" json:"arrivalNote"`
-	NotifyOnArrival  bool    `form:"notifyOnArrival" json:"notifyOnArrival"`
+	ListID               uint    `form:"listId"  json:"listId" binding:"required"`
+	Name                 string  `form:"name"  json:"name" binding:"required"`
+	Code                 string  `form:"code"  json:"code"`
+	AdditionalGuests     uint    `form:"additionalGuests"  json:"additionalGuests"`
+	AttendedGuests       uint    `form:"attendedGuests"  json:"attendedGuests"`
+	ArrivalNote          *string `form:"arrivalNote" json:"arrivalNote"`
+	NotifyOnArrivalEmail *string `form:"notifyOnArrivalEmail" json:"notifyOnArrivalEmail"`
 }
 
 type ListEntryUpdateRequest struct {
-	ListID           uint       `form:"listId"  json:"listId"`
-	Name             string     `form:"name"  json:"name" binding:"required"`
-	Code             string     `form:"code"  json:"code"`
-	AdditionalGuests uint       `form:"additionalGuests"  json:"additionalGuests"`
-	AttendedGuests   uint       `form:"attendedGuests"  json:"attendedGuests"`
-	ArrivedAt        *time.Time `form:"arrivedAt" json:"arrivedAt"`
-	ArrivalNote      *string    `form:"arrivalNote" json:"arrivalNote"`
-	NotifyOnArrival  bool       `form:"notifyOnArrival" json:"notifyOnArrival"`
+	ListID               uint       `form:"listId"  json:"listId"`
+	Name                 string     `form:"name"  json:"name" binding:"required"`
+	Code                 string     `form:"code"  json:"code"`
+	AdditionalGuests     uint       `form:"additionalGuests"  json:"additionalGuests"`
+	AttendedGuests       uint       `form:"attendedGuests"  json:"attendedGuests"`
+	ArrivedAt            *time.Time `form:"arrivedAt" json:"arrivedAt"`
+	ArrivalNote          *string    `form:"arrivalNote" json:"arrivalNote"`
+	NotifyOnArrivalEmail *string    `form:"notifyOnArrivalEmail" json:"notifyOnArrivalEmail"`
 }
 
 func (handler *Handler) GetListEntries(c *gin.Context) {
@@ -105,7 +105,7 @@ func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 	listEntry.UpdatedByID = &executingUserObj.ID
 	listEntry.ArrivedAt = listEntryRequest.ArrivedAt
 	listEntry.ArrivalNote = listEntryRequest.ArrivalNote
-	listEntry.NotifyOnArrival = listEntryRequest.NotifyOnArrival
+	listEntry.NotifyOnArrivalEmail = listEntryRequest.NotifyOnArrivalEmail
 
 	listEntry, err = handler.repo.UpdateListEntryByID(id, *listEntry)
 	if err != nil {
@@ -141,7 +141,7 @@ func (handler *Handler) CreateListEntry(c *gin.Context) {
 	listEntry.AttendedGuests = listEntryRequest.AttendedGuests
 	listEntry.CreatedByID = &executingUserObj.ID
 	listEntry.ArrivalNote = listEntryRequest.ArrivalNote
-	listEntry.NotifyOnArrival = listEntryRequest.NotifyOnArrival
+	listEntry.NotifyOnArrivalEmail = listEntryRequest.NotifyOnArrivalEmail
 
 	product, err := handler.repo.CreateListEntry(listEntry)
 	if err != nil {
