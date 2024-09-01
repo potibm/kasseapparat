@@ -132,6 +132,13 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		}
 	}
 
+	for i := 0; i < len(updatedListEntries); i++ {
+		updatedListEntry := updatedListEntries[i]
+		if updatedListEntry.NotifyOnArrivalEmail != nil {
+			_ = handler.mailer.SendNotificationOnArrival(*updatedListEntry.NotifyOnArrivalEmail, updatedListEntry.Name)
+		}
+	}
+
 	c.JSON(http.StatusCreated, gin.H{"message": "Purchase successful", "purchase": purchase})
 }
 

@@ -11,5 +11,5 @@ Kasseapparat
 ---
 This is an automated email, please do not reply to this email.`
 
-	return mailer.SendMail(to, "Guest has arrived", body)
+	return mailer.SendMail(to, "Guest has arrived 🔔", body)
 }
