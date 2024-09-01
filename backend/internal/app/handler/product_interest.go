@@ -23,7 +23,7 @@ func (handler *Handler) GetProductInterests(c *gin.Context) {
 		return
 	}
 
-	total, err := handler.repo.GetTotalroductInterests()
+	total, err := handler.repo.GetTotalProductInterests()
 	if err != nil {
 		_ = c.Error(InternalServerError)
 		return
