@@ -22,6 +22,14 @@ import {
   AutocompleteInput,
   useRedirect,
   useNotify,
+  TabbedForm,
+  FormTab,
+  DateField,
+  DateTimeInput,
+  minValue,
+  maxValue,
+  email,
+  number,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
 import ListEntryActions from "./ListEntryAction";
@@ -29,6 +37,8 @@ import { ListEntryFilters } from "./ListEntryFilters";
 import { useLocation } from "react-router-dom";
 import { useFormContext } from "react-hook-form";
 import PropTypes from "prop-types";
+import { Box } from "@mui/material";
+import { useConfig } from "../../provider/ConfigProvider";
 
 const ConditionalDeleteButton = (props) => {
   const record = useRecordContext(props);
@@ -45,6 +55,14 @@ const ConditionalDeleteButton = (props) => {
   return null;
 };
 
+const ValidateAdditionalGuests = [
+  required(),
+  number(),
+  minValue(0),
+  maxValue(5),
+];
+const ValidateAttendedGuests = [required(), number(), minValue(0), maxValue(6)];
+
 const AttendedGuestsBooleanField = (props) => {
   const record = useRecordContext();
   if (!record) return null;
@@ -57,7 +75,21 @@ const AttendedGuestsBooleanField = (props) => {
   );
 };
 
+const ArrivedAtOrNullField = (props) => {
+  const record = useRecordContext();
+  if (!record) return null;
+  const hasArrived = record.arrivedAt != null;
+
+  if (!hasArrived) {
+    return <Box>The person has not arrived, yet</Box>;
+  }
+
+  return <DateTimeInput source="arrivedAt" disabled={true} />;
+};
+
 export const ListEntryList = (props) => {
+  const locale = useConfig().Locale;
+
   return (
     <List
       sort={{ field: "id", order: "ASC" }}
@@ -68,8 +100,20 @@ export const ListEntryList = (props) => {
         <NumberField source="id" />
         <TextField source="name" />
         <TextField source="list.name" />
-        <NumberField source="additionalGuests" sortable={false} />
+        <NumberField
+          source="additionalGuests"
+          min={0}
+          max={5}
+          sortable={false}
+        />
         <AttendedGuestsBooleanField label="present" sortable={false} />
+        <DateField
+          source="arrivedAt"
+          showTime={true}
+          emptyText="-"
+          locales={locale}
+          options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
+        />
         <ConditionalDeleteButton mutationMode="pessimistic" />
       </Datagrid>
     </List>
@@ -79,30 +123,58 @@ export const ListEntryList = (props) => {
 export const ListEntryEdit = () => {
   return (
     <Edit>
-      <SimpleForm
+      <TabbedForm
         toolbar={
           <Toolbar>
             <SaveButton />
           </Toolbar>
         }
       >
-        <NumberInput disabled source="id" />
-        <ReferenceInput source="listId" reference="lists">
-          <SelectInput optionText="name" validate={required()} disabled />
-        </ReferenceInput>
-        <TextInput source="name" validate={required()} />
-        <TextInput source="code" helperText="The entrance code on the ticket" />
-        <NumberInput
-          source="additionalGuests"
-          min={0}
-          helperText="Number of additional guests (read as +1)"
-        />
-        <NumberInput
-          source="attendedGuests"
-          min={0}
-          helperText="Number of visitors that are present"
-        />
-      </SimpleForm>
+        <FormTab label="General">
+          <NumberInput disabled source="id" />
+          <ReferenceInput source="listId" reference="lists">
+            <SelectInput optionText="name" validate={required()} disabled />
+          </ReferenceInput>
+          <TextInput source="name" validate={required()} />
+          <TextInput
+            source="code"
+            helperText="The entrance code on the ticket"
+          />
+        </FormTab>
+        <FormTab label="Additional Guests">
+          <NumberInput
+            source="additionalGuests"
+            min={0}
+            max={5}
+            defaultValue={0}
+            validate={ValidateAdditionalGuests}
+            helperText="Number of additional guests (read as +1)"
+          />
+          <NumberInput
+            source="attendedGuests"
+            min={0}
+            max={5}
+            defaultValue={0}
+            validate={ValidateAttendedGuests}
+            helperText="Number of visitors that are present"
+          />
+        </FormTab>
+        <FormTab label="Arrival">
+          <ArrivedAtOrNullField />
+
+          <TextInput
+            source="arrivalNote"
+            label="Note"
+            helperText="A text that will be displayed when selecting this person."
+          />
+          <TextInput
+            source="notifyOnArrivalEmail"
+            validate={email()}
+            label="Notify Email"
+            helperText="Email to notify on arrival"
+          />
+        </FormTab>
+      </TabbedForm>
     </Edit>
   );
 };
@@ -154,8 +226,21 @@ export const ListEntryCreate = (props) => {
         <NumberInput
           source="additionalGuests"
           min={0}
+          max={5}
           defaultValue={0}
+          validate={ValidateAdditionalGuests}
           helperText="Number of additional guests (read as +1)"
+        />
+        <TextInput
+          source="arrivalNote"
+          label="Note"
+          helperText="A text that will be displayed when selecting this person."
+        />
+        <TextInput
+          source="notifyOnArrivalEmail"
+          validate={email()}
+          label="Notify Email"
+          helperText="Email to notify on arrival"
         />
       </SimpleForm>
     </Create>

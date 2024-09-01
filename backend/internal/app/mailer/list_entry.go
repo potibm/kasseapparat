@@ -1,0 +1,29 @@
+package mailer
+
+import (
+	"bytes"
+	"fmt"
+	"html/template"
+)
+
+const (
+	arrivalNotificationSubject = "Guest has arrived 🔔"
+)
+
+func (mailer *Mailer) SendNotificationOnArrival(to string, username string) error {
+
+	template, err := template.ParseFiles("templates/mail/notification_on_arrival.txt")
+	if err != nil {
+		return fmt.Errorf("failed to parse email template: %w", err)
+	}
+
+	var body bytes.Buffer
+	err = template.Execute(&body, map[string]string{
+		"Username": username,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to execute email template: %w", err)
+	}
+
+	return mailer.SendMail(to, arrivalNotificationSubject, body.String())
+}

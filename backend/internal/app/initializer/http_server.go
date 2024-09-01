@@ -97,44 +97,16 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 	protectedApiRouter := r.Group("/api/v1")
 	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
 	{
-		protectedApiRouter.GET("/products", myhandler.GetProducts)
-		protectedApiRouter.GET("/products/:id", myhandler.GetProductByID)
-		protectedApiRouter.GET("/products/:id/listEntries", myhandler.GetListEntriesByProductID)
-		protectedApiRouter.PUT("/products/:id", myhandler.UpdateProductByID)
-		protectedApiRouter.DELETE("/products/:id", myhandler.DeleteProductByID)
-		protectedApiRouter.POST("/products", myhandler.CreateProduct)
-
+		registerProductRoutes(protectedApiRouter, myhandler)
+		registerProductInterestRoutes(protectedApiRouter, myhandler)
 		protectedApiRouter.GET("/productStats", myhandler.GetProductStats)
 
-		protectedApiRouter.GET("/lists", myhandler.GetLists)
-		protectedApiRouter.GET("/lists/:id", myhandler.GetListByID)
-		protectedApiRouter.PUT("/lists/:id", myhandler.UpdateListByID)
-		protectedApiRouter.DELETE("/lists/:id", myhandler.DeleteListByID)
-		protectedApiRouter.POST("/lists", myhandler.CreateList)
-
-		protectedApiRouter.GET("/listEntries", myhandler.GetListEntries)
-		protectedApiRouter.GET("/listEntries/:id", myhandler.GetListEntryByID)
-		protectedApiRouter.PUT("/listEntries/:id", myhandler.UpdateListEntryByID)
-		protectedApiRouter.DELETE("/listEntries/:id", myhandler.DeleteListEntryByID)
-		protectedApiRouter.POST("/listEntries", myhandler.CreateListEntry)
-
+		registerListRoutes(protectedApiRouter, myhandler)
+		registerListEntryRoutes(protectedApiRouter, myhandler)
 		protectedApiRouter.POST("/listEntriesUpload", myhandler.ImportListEntriesFromDeineTicketsCsv)
 
-		protectedApiRouter.OPTIONS("/purchases", myhandler.OptionsPurchases)
-		protectedApiRouter.GET("/purchases", myhandler.GetPurchases)
-		protectedApiRouter.GET("/purchases/:id", myhandler.GetPurchaseByID)
-		protectedApiRouter.POST("/purchases", myhandler.PostPurchases)
-		protectedApiRouter.DELETE("/purchases/:id", myhandler.DeletePurchase)
-
-		protectedApiRouter.GET("/users", myhandler.GetUsers)
-		protectedApiRouter.GET("/users/:id", myhandler.GetUserByID)
-		protectedApiRouter.PUT("/users/:id", myhandler.UpdateUserByID)
-		protectedApiRouter.DELETE("/users/:id", myhandler.DeleteUserByID)
-		protectedApiRouter.POST("/users", myhandler.CreateUser)
-
-		protectedApiRouter.GET("/productInterests", myhandler.GetProductInterests)
-		protectedApiRouter.DELETE("/productInterests/:id", myhandler.DeleteProductInterestByID)
-		protectedApiRouter.POST("/productInterests", myhandler.CreateProductInterest)
+		registerPurchaseRoutes(protectedApiRouter, myhandler)
+		registerUserRoutes(protectedApiRouter, myhandler)
 	}
 
 	// unprotected routes
@@ -144,5 +116,69 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 
 		unprotectedApiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
 		unprotectedApiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
+	}
+}
+
+func registerProductRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+	products := rg.Group("/products")
+	{
+		products.GET("", handler.GetProducts)
+		products.GET("/:id", handler.GetProductByID)
+		products.GET("/:id/listEntries", handler.GetListEntriesByProductID)
+		products.PUT("/:id", handler.UpdateProductByID)
+		products.DELETE("/:id", handler.DeleteProductByID)
+		products.POST("", handler.CreateProduct)
+	}
+}
+
+func registerListRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+	lists := rg.Group("/lists")
+	{
+		lists.GET("", handler.GetLists)
+		lists.GET("/:id", handler.GetListByID)
+		lists.PUT("/:id", handler.UpdateListByID)
+		lists.DELETE(":id", handler.DeleteListByID)
+		lists.POST("", handler.CreateList)
+	}
+}
+
+func registerListEntryRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+	listEntries := rg.Group("/listEntries")
+	{
+		listEntries.GET("", handler.GetListEntries)
+		listEntries.GET(":id", handler.GetListEntryByID)
+		listEntries.PUT("/:id", handler.UpdateListEntryByID)
+		listEntries.DELETE(":id", handler.DeleteListEntryByID)
+		listEntries.POST("", handler.CreateListEntry)
+	}
+}
+
+func registerPurchaseRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+	purchases := rg.Group("/purchases")
+	{
+		purchases.GET("", handler.GetPurchases)
+		purchases.GET("/:id", handler.GetPurchaseByID)
+		purchases.POST("", handler.PostPurchases)
+		purchases.DELETE("/:id", handler.DeletePurchase)
+	}
+}
+
+func registerUserRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+	users := rg.Group("/users")
+	{
+		users.GET("", handler.GetUsers)
+		users.GET("/:id", handler.GetUserByID)
+		users.PUT("/:id", handler.UpdateUserByID)
+		users.DELETE("/:id", handler.DeleteUserByID)
+		users.POST("", handler.CreateUser)
+	}
+}
+
+func registerProductInterestRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+	productInterests := rg.Group("/productInterests")
+	{
+		productInterests.GET("", handler.GetProductInterests)
+		productInterests.DELETE("/:id", handler.DeleteProductInterestByID)
+		productInterests.POST("", handler.CreateProductInterest)
 	}
 }

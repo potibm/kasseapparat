@@ -3,19 +3,23 @@ package models
 import (
 	"sort"
 	"strings"
+	"time"
 )
 
 // List represents a guestlist
 type ListEntry struct {
 	GormOwnedModel
-	ListID           uint      `json:"listId"`
-	List             List      `json:"list"`
-	Name             string    `json:"name" `
-	Code             *string   `json:"code" gorm:"unique"`
-	AdditionalGuests uint      `json:"additionalGuests" gorm:"default:0"`
-	AttendedGuests   uint      `json:"attendedGuests" gorm:"default:0"`
-	PurchaseID       *uint     `json:"purchaseId"`
-	Purchase         *Purchase `json:"-"`
+	ListID               uint       `json:"listId"`
+	List                 List       `json:"list"`
+	Name                 string     `json:"name" `
+	Code                 *string    `json:"code" gorm:"unique"`
+	AdditionalGuests     uint       `json:"additionalGuests" gorm:"default:0"`
+	AttendedGuests       uint       `json:"attendedGuests" gorm:"default:0"`
+	ArrivedAt            *time.Time `json:"arrivedAt"`
+	ArrivalNote          *string    `json:"arrivalNote"`
+	NotifyOnArrivalEmail *string    `json:"notifyOnArrivalEmail"`
+	PurchaseID           *uint      `json:"purchaseId"`
+	Purchase             *Purchase  `json:"-"`
 }
 
 type ListEntrySummary struct {
@@ -24,45 +28,42 @@ type ListEntrySummary struct {
 	Code             *string `json:"code" gorm:"unique"`
 	ListName         *string `json:"listName"`
 	AdditionalGuests uint    `json:"additionalGuests" gorm:"default:0"`
+	ArrivalNote      *string `json:"arrivalNote"`
 }
 
 type ListEntrySummarySlice []ListEntrySummary
 
+func (entry *ListEntry) MarkAsArrived() {
+	now := time.Now()
+	entry.ArrivedAt = &now
+}
+
 func (entries ListEntrySummarySlice) SortByQuery(q string) {
-	// Define custom sorting logic
+	query := strings.ToLower(q)
 	sort.Slice(entries, func(i, j int) bool {
-		// Convert names and query to lowercase for case-insensitive comparison
-		nameI, nameJ := strings.ToLower(entries[i].Name), strings.ToLower(entries[j].Name)
-		query := strings.ToLower(q)
+		nameI := strings.ToLower(entries[i].Name)
+		nameJ := strings.ToLower(entries[j].Name)
 
-		// Prioritize exact matches on name
-		if nameI == query && nameJ != query {
-			return true
-		}
-		if nameJ == query && nameI != query {
-			return false
-		}
+		weightI := calculateWeight(nameI, query)
+		weightJ := calculateWeight(nameJ, query)
 
-		// Then prioritize exact matches on code (not shown in summary)
-		// You would need to modify the summary to include code for this part
-
-		// Then prioritize names starting with the query
-		if strings.HasPrefix(nameI, query) && !strings.HasPrefix(nameJ, query) {
-			return true
+		// Sort by weight first, then alphabetically
+		if weightI != weightJ {
+			return weightI > weightJ
 		}
-		if strings.HasPrefix(nameJ, query) && !strings.HasPrefix(nameI, query) {
-			return false
-		}
-
-		// Then prioritize names containing the query as the start of any word
-		if strings.Contains(" "+nameI, " "+query) && !strings.Contains(" "+nameJ, " "+query) {
-			return true
-		}
-		if strings.Contains(" "+nameJ, " "+query) && !strings.Contains(" "+nameI, " "+query) {
-			return false
-		}
-
-		// Finally, sort alphabetically
 		return nameI < nameJ
 	})
+}
+
+func calculateWeight(name, query string) int {
+	switch {
+	case name == query:
+		return 3
+	case strings.HasPrefix(name, query):
+		return 2
+	case strings.Contains(" "+name, " "+query):
+		return 1
+	default:
+		return 0
+	}
 }

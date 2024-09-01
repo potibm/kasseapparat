@@ -22,7 +22,7 @@ func (repo *Repository) GetProductInterests(limit int, offset int, ids []int) ([
 	return productInterests, nil
 }
 
-func (repo *Repository) GetTotalroductInterests() (int64, error) {
+func (repo *Repository) GetTotalProductInterests() (int64, error) {
 	var totalRows int64
 	repo.db.Model(&models.ProductInterest{}).Count(&totalRows)
 

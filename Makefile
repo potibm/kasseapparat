@@ -28,7 +28,7 @@ run-fe:
 	cd $(FRONTEND_DIR) && yarn start
 
 run-mailhog:
-	docker run -d -p 8025:8025 -p 1025:1025 mailhog/mailhog
+	docker run -d -p 8025:8025 -p 1025:1025 --platform "linux/amd64" mailhog/mailhog
 
 deps-be:
 	cd $(BACKEND_DIR) && go get -u -t ./...

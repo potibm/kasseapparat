@@ -24,11 +24,6 @@ type PurchaseRequest struct {
 	Cart       []PurchaseCartRequest `form:"cart" binding:"required,dive"`
 }
 
-func (handler *Handler) OptionsPurchases(c *gin.Context) {
-
-	c.JSON(http.StatusOK, nil)
-}
-
 func (handler *Handler) DeletePurchase(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
@@ -106,6 +101,8 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			}
 
 			listEntry.AttendedGuests = purchaseRequest.Cart[i].ListItems[j].AttendedGuests
+			listEntry.MarkAsArrived()
+
 			updatedListEntries = append(updatedListEntries, *listEntry)
 		}
 
@@ -132,6 +129,13 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 			return
+		}
+	}
+
+	for i := 0; i < len(updatedListEntries); i++ {
+		updatedListEntry := updatedListEntries[i]
+		if updatedListEntry.NotifyOnArrivalEmail != nil {
+			_ = handler.mailer.SendNotificationOnArrival(*updatedListEntry.NotifyOnArrivalEmail, updatedListEntry.Name)
 		}
 	}
 

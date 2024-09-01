@@ -7,6 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const ErrListEntryNotFound = "List Entry not found"
+
 type ListEntryFilters struct {
 	Query       string
 	ListID      int
@@ -87,7 +89,7 @@ func (repo *Repository) GetTotalListEntries(filters *ListEntryFilters) (int64, e
 func (repo *Repository) GetUnattendedListEntriesByProductID(productId int, q string) (models.ListEntrySummarySlice, error) {
 	var listEntries models.ListEntrySummarySlice
 	query := repo.db.Model(&models.ListEntry{}).
-		Select("list_entries.id, list_entries.name, list_entries.code, lists.name AS list_name, list_entries.additional_guests").
+		Select("list_entries.id, list_entries.name, list_entries.code, lists.name AS list_name, list_entries.additional_guests, list_entries.arrival_note").
 		Joins("JOIN lists ON list_entries.list_id = lists.id").
 		Joins("JOIN products ON lists.product_id = products.id").
 		Where("products.id = ? AND list_entries.attended_guests = ?", productId, 0).
@@ -106,7 +108,7 @@ func (repo *Repository) GetUnattendedListEntriesByProductID(productId int, q str
 func (repo *Repository) GetListEntryByID(id int) (*models.ListEntry, error) {
 	var listEntry models.ListEntry
 	if err := repo.db.First(&listEntry, id).Error; err != nil {
-		return nil, errors.New("List Entry not found")
+		return nil, errors.New(ErrListEntryNotFound)
 	}
 
 	return &listEntry, nil
@@ -115,7 +117,7 @@ func (repo *Repository) GetListEntryByID(id int) (*models.ListEntry, error) {
 func (repo *Repository) GetFullListEntryByID(id int) (*models.ListEntry, error) {
 	var listEntry models.ListEntry
 	if err := repo.db.Preload("List").Preload("List.Product").First(&listEntry, id).Error; err != nil {
-		return nil, errors.New("List Entry not found")
+		return nil, errors.New(ErrListEntryNotFound)
 	}
 
 	return &listEntry, nil
@@ -124,7 +126,7 @@ func (repo *Repository) GetFullListEntryByID(id int) (*models.ListEntry, error) 
 func (repo *Repository) UpdateListEntryByID(id int, updatedListEntry models.ListEntry) (*models.ListEntry, error) {
 	var listEntry models.ListEntry
 	if err := repo.db.First(&listEntry, id).Error; err != nil {
-		return nil, errors.New("List Entry not found")
+		return nil, errors.New(ErrListEntryNotFound)
 	}
 
 	updatedListEntry.ID = listEntry.ID
@@ -151,7 +153,7 @@ func (repo *Repository) DeleteListEntry(listEntry models.ListEntry, deletedBy mo
 func (repo *Repository) GetListEntryByCode(code string) (*models.ListEntry, error) {
 	var listEntry models.ListEntry
 	if err := repo.db.Where("code = ?", code).First(&listEntry).Error; err != nil {
-		return nil, errors.New("List Entry not found")
+		return nil, errors.New(ErrListEntryNotFound)
 	}
 
 	return &listEntry, nil
