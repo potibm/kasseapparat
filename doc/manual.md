@@ -190,5 +190,7 @@ Enter the following information:
 - Name (real name of the person)
 - Code (leave empty)
 - Additional guests (number of additional guests the person is allowed to bring)
+- Arrival Note (This message will be presented in the POS, when the user is selected. It is intended for information like "Will receive a Shirt". Refrain from adding funny stuff here.)
+- Notify Email (Add your email address here, in case you you would like to be informed once the person arrives)
 
 Save.

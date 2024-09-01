@@ -22,7 +22,6 @@ import {
   AutocompleteInput,
   useRedirect,
   useNotify,
-  BooleanInput,
   TabbedForm,
   FormTab,
   DateField,
@@ -232,8 +231,17 @@ export const ListEntryCreate = (props) => {
           validate={ValidateAdditionalGuests}
           helperText="Number of additional guests (read as +1)"
         />
-        <TextInput source="arrivalNote" />
-        <BooleanInput source="notifyOnArrival" />
+        <TextInput
+          source="arrivalNote"
+          label="Note"
+          helperText="A text that will be displayed when selecting this person."
+        />
+        <TextInput
+          source="notifyOnArrivalEmail"
+          validate={email()}
+          label="Notify Email"
+          helperText="Email to notify on arrival"
+        />
       </SimpleForm>
     </Create>
   );
