@@ -91,6 +91,13 @@ const GuestListResultTableRow = ({
   );
 };
 
+let uniqueIdCounter = 0; // Initialisierung eines Zählers
+
+const generateUniqueId = () => {
+  uniqueIdCounter += 1; // Erhöhe den Zähler
+  return `key-${Date.now()}-${uniqueIdCounter}`; // Kombiniere Zeitstempel und Zähler
+};
+
 const highlightText = (text, highlight) => {
   if (!text) {
     return "";
@@ -98,19 +105,22 @@ const highlightText = (text, highlight) => {
   if (!highlight.trim()) {
     return text;
   }
+
   const regex = new RegExp(`(${highlight})`, "gi");
   const parts = text.split(regex);
+
   return (
     <>
-      {parts.map((part, i) =>
-        regex.test(part) ? (
-          <span key={`${i}`} className="font-bold underline">
+      {parts.map((part, i) => {
+        const key = generateUniqueId();
+        return regex.test(part) ? (
+          <span key={key} className="font-bold underline">
             {part}
           </span>
         ) : (
           part
-        ),
-      )}
+        );
+      })}
     </>
   );
 };
