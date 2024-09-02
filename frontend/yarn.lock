@@ -8389,10 +8389,10 @@ queue-microtask@^1.2.2:
   resolved "https://registry.yarnpkg.com/queue-microtask/-/queue-microtask-1.2.3.tgz#4929228bbc724dfac43e0efb058caf7b6cfb6243"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
 
-ra-core@^5.1.2:
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/ra-core/-/ra-core-5.1.2.tgz#1ff6c7a2906564aa67832b9d82e059dde77a4ce3"
-  integrity sha512-WWv1wAsxTjUvC1Od+QA+CjlMI2qhhVAXrTmyrV/EgKvxY8uXIjjWVm0FEczNiiYXvFRGMTDPuqL1d6xKC/0OHA==
+ra-core@^5.1.2, ra-core@^5.1.3:
+  version "5.1.3"
+  resolved "https://registry.yarnpkg.com/ra-core/-/ra-core-5.1.3.tgz#c563741010c419f232118eb08a2ca53bf92c3128"
+  integrity sha512-4SQ2paJm9Kj4U3P6o6ahxB5dXy+bj4lnebnU2Tkdo6p4t74RO/XQZrCjrK0qGDy1RzhCLxTNV9IIwyJdfjtprQ==
   dependencies:
     "@tanstack/react-query" "^5.8.4"
     clsx "^2.1.1"
@@ -8406,13 +8406,13 @@ ra-core@^5.1.2:
     react-error-boundary "^4.0.13"
     react-is "^18.2.0"
 
-ra-data-json-server@^5.1.2:
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/ra-data-json-server/-/ra-data-json-server-5.1.2.tgz#a081cb30d07d2a120c60afc81e23a4ac5e65254c"
-  integrity sha512-CFC5VOb48X1fQKBTYYc2cJR/RDhp1Dby9kJtoYeSO4l5jUGak1oE0+dzm9FDtV5XOBEvMgREBildP1hDJEOfvQ==
+ra-data-json-server@^5.1.3:
+  version "5.1.3"
+  resolved "https://registry.yarnpkg.com/ra-data-json-server/-/ra-data-json-server-5.1.3.tgz#39ab4aa35c1854b18f6e2c06ee34cfee3db0e60d"
+  integrity sha512-1LsCARS9ZDi7Bl1Wa66WdZR+avg6CYo8jyty+HNHDpasEiJfvelknuNFgZuWlPwIyJmxSkfSAkDM3It1SZZBNw==
   dependencies:
     query-string "^7.1.3"
-    ra-core "^5.1.2"
+    ra-core "^5.1.3"
 
 ra-i18n-polyglot@^5.1.2:
   version "5.1.2"
