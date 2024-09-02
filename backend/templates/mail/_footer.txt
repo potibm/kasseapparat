@@ -1,0 +1,5 @@
+{{ define "footer" }}
+Kasseapparat
+---
+This is an automated email, please do not reply to this email.
+{{ end }}

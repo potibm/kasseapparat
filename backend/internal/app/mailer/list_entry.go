@@ -3,7 +3,7 @@ package mailer
 import (
 	"bytes"
 	"fmt"
-	"html/template"
+	"text/template"
 )
 
 const (
@@ -12,7 +12,10 @@ const (
 
 func (mailer *Mailer) SendNotificationOnArrival(to string, username string) error {
 
-	template, err := template.ParseFiles("templates/mail/notification_on_arrival.txt")
+	template, err := template.ParseFiles(
+		"templates/mail/notification_on_arrival.txt",
+		footerTemplate,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to parse email template: %w", err)
 	}
