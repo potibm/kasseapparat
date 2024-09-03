@@ -19,6 +19,10 @@ type Mailer struct {
 	frontendBaseUrl string
 }
 
+const (
+	footerTemplate = "templates/mail/_footer.txt"
+)
+
 func NewMailer(dsn string) *Mailer {
 	user := ""
 	password := ""

@@ -1,43 +1,48 @@
 package mailer
 
-import "strconv"
+import (
+	"bytes"
+	"fmt"
+	"text/template"
+)
+
+const (
+	changePasswordSubject = "Change your password"
+	accountCreatedSubject = "Account created"
+)
+
+func generateChangePasswordLink(baseUrl string, token string, userId uint) string {
+	return fmt.Sprintf("%s/change-password?token=%s&userId=%d", baseUrl, token, userId)
+}
 
 func (mailer *Mailer) SendChangePasswordTokenMail(to string, userId uint, username string, token string) error {
-
-	body := `Hello ` + username + `,
-
-You have requested to change your password. Please use this link to change it:
-
-` + mailer.frontendBaseUrl + `/change-password?token=` + token + `&userId=` + strconv.Itoa(int(userId)) + `
-
-This link will expire in 15 minutes.
-
-If you did not request this, please ignore this email.
-
-Thank you,
-Kasseapparat
----
-This is an automated email, please do not reply to this email.`
-
-	return mailer.SendMail(to, "Change your password", body)
+	return mailer.sendTokenMail(to, userId, username, token, "templates/mail/token_change_password.txt", changePasswordSubject)
 }
 
 func (mailer *Mailer) SendNewUserTokenMail(to string, userId uint, username string, token string) error {
 
-	body := `Hello ` + username + `,
+	return mailer.sendTokenMail(to, userId, username, token, "templates/mail/token_new_user.txt", accountCreatedSubject)
+}
 
-Your account for Kasseapparat has been created. Please use this link to set your password
+func (mailer *Mailer) sendTokenMail(to string, userId uint, username string, token string, templateFilename string, subject string) error {
 
-` + mailer.frontendBaseUrl + `/change-password?token=` + token + `&userId=` + strconv.Itoa(int(userId)) + `
+	template, err := template.ParseFiles(
+		templateFilename,
+		footerTemplate,
+	)
+	if err != nil {
+		return fmt.Errorf("Failed to parse email template: %w", err)
+	}
 
-This link will expire in 3 hours.
+	data := map[string]interface{}{
+		"Username": username,
+		"Link":     generateChangePasswordLink(mailer.frontendBaseUrl, token, userId),
+	}
 
-If you did not request this, please ignore this email.
+	var body bytes.Buffer
+	if err := template.Execute(&body, data); err != nil {
+		return fmt.Errorf("Failed to execute email template: %w", err)
+	}
 
-Thank you,
-Kasseapparat
----
-This is an automated email, please do not reply to this email.`
-
-	return mailer.SendMail(to, "Account created", body)
+	return mailer.SendMail(to, subject, body.String())
 }

@@ -3,6 +3,4 @@ Hello,
 We would like to inform you that {{.Username}} has arrived.
 
 Best regards,
-Kasseapparat
----
-This is an automated email, please do not reply to this email.
+{{ template "footer" }}
