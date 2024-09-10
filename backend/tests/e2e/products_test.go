@@ -1,20 +1,13 @@
-package repository_test
+package tests_e2e
 
 import (
 	"net/http"
-	"os"
 	"testing"
-
-	"github.com/gavv/httpexpect/v2"
-	"github.com/gin-gonic/gin"
-	"github.com/potibm/kasseapparat/internal/app/handler"
-	"github.com/potibm/kasseapparat/internal/app/mailer"
-	"github.com/potibm/kasseapparat/internal/app/repository"
-	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
 //var e *httpexpect.Expect
 
+/*
 func TestMain(m *testing.M) {
 	// Setup test environment
 	setupTestDatabase()
@@ -57,18 +50,53 @@ func setupMailer() mailer.Mailer {
 
 	return *mailer
 }
+*/
 
 func TestGetProducts(t *testing.T) {
-	myhandler := handler.NewHandler(repository.NewLocalRepository(), setupMailer(), "1.0.0")
+	_, cleanup := setupTestEnvironment(t)
+    defer cleanup()
 
-	gin.SetMode(gin.TestMode)
-	e := setupTest(t, "/example", myhandler.GetProducts)
+	/*
+	// Setze Umgebungsvariablen
+    t.Setenv("CORS_ALLOW_ORIGINS", "http://localhost:3000")
 
-	obj := e.GET("/example").
-		Expect().
-		Status(http.StatusOK).JSON().Array()
+    // Initialisiere Repository, Mailer und Handler
+    repo := repository.NewLocalRepository()
+    mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
+    handler := handler.NewHandler(repo, *mailer, "v1")
 
-	obj.Length().Ge(1)
+    // Initialisiere den Gin-Router
+    router := initializer.InitializeHttpServer(*handler, *repo, embed.FS{})
+
+    // Erstelle den Testserver
+    ts := httptest.NewServer(router)
+
+	e := httpexpect.WithConfig(httpexpect.Config{
+		Client: &http.Client{
+			Transport: httpexpect.NewBinder(router),
+			Jar:       httpexpect.NewCookieJar(),
+		},
+		Reporter: httpexpect.NewAssertReporter(t),
+		Printers: []httpexpect.Printer{
+			httpexpect.NewDebugPrinter(t, true),
+		},
+	})
+
+	defer ts.Close()
+	*/
+	
+	res := e.GET("/api/v1/products").
+		WithHeader("Authorization", "Bearer " + getJwtForDemoUser()).
+		Expect()
+
+	res.Status(http.StatusOK)
+
+	totalCountHeader := res.Header("X-Total-Count").AsNumber()
+    totalCountHeader.Gt(10)
+
+    // Überprüfen der JSON-Antwort
+    obj := res.JSON().Array()
+    obj.Length().Ge(1)
 
 	for i := 0; i < len(obj.Iter()); i++ {
 		product := obj.Value(i).Object()
@@ -82,12 +110,17 @@ func TestGetProducts(t *testing.T) {
 }
 
 func TestGetProduct(t *testing.T) {
+	/*
 	myhandler := handler.NewHandler(repository.NewLocalRepository(), setupMailer(), "1.0.0")
 	gin.SetMode(gin.TestMode)
 
 	e := setupTest(t, "/example/:id", myhandler.GetProductByID)
+	*/
+	_, cleanup := setupTestEnvironment(t)
+    defer cleanup()
 
-	obj := e.GET("/example/1").
+	obj := e.GET("/api/v1/products/1").
+		WithHeader("Authorization", "Bearer " + getJwtForDemoUser()).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
