@@ -16,8 +16,9 @@ import (
 )
 
 var (
-	e       *httpexpect.Expect
-	demoJwt string
+	e        *httpexpect.Expect
+	demoJwt  string
+	adminJwt string
 )
 
 func TestMain(m *testing.M) {
@@ -78,4 +79,11 @@ func getJwtForDemoUser() string {
 		demoJwt = getJwtForUser("demo", "demo")
 	}
 	return demoJwt
+}
+
+func getJwtForAdminUser() string {
+	if adminJwt == "" {
+		adminJwt = getJwtForUser("admin", "admin")
+	}
+	return adminJwt
 }

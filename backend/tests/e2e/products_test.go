@@ -2,6 +2,7 @@ package tests_e2e
 
 import (
 	"net/http"
+	"strconv"
 	"testing"
 )
 
@@ -73,4 +74,87 @@ func TestGetProduct(t *testing.T) {
 	product.Value("soldOutRequestCount").Number().IsEqual(0)
 	product.Value("apiExport").Boolean().IsTrue()
 	product.Value("lists").IsNull()
+}
+
+func TestCreateUpdateAndDeleteProduct(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	product := e.POST("/api/v1/products").
+		WithJSON(map[string]interface{}{
+			"name":      "Test Product",
+			"price":     10,
+			"wrapAfter": false,
+			"pos":       123,
+			"hidden":    false,
+		}).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusCreated).JSON().Object()
+
+	product.Value("id").Number().Gt(0)
+	product.Value("name").String().Contains("Test Product")
+
+	productId := product.Value("id").Number().Raw()
+	productUrl := "/api/v1/products/" + strconv.FormatFloat(productId, 'f', -1, 64)
+
+	product = e.GET(productUrl).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	product.Value("id").Number().Gt(0)
+	product.Value("name").String().Contains("Test Product")
+
+	e.PUT(productUrl).
+		WithJSON(map[string]interface{}{
+			"name":      "Test Product Updated",
+			"price":     10,
+			"wrapAfter": false,
+			"pos":       123,
+			"hidden":    false,
+		}).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	product = e.GET(productUrl).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	product.Value("id").Number().Gt(0)
+	product.Value("name").String().Contains("Test Product Updated")
+
+	e.DELETE(productUrl).
+		WithHeader("Authorization", "Bearer "+getJwtForAdminUser()).
+		Expect().
+		Status(http.StatusOK)
+
+	e.GET(productUrl).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusNotFound)
+
+}
+
+func TestDemoUserIsNotAllowedToDeleteAProduct(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	e.DELETE("/api/v1/products/1").
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusForbidden)
+}
+
+func TestProductAuthentication(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	e.Request("GET", "/api/v1/products").Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", "/api/v1/products/1").Expect().Status(http.StatusUnauthorized)
+	e.Request("POST", "/api/v1/products/").Expect().Status(http.StatusUnauthorized)
+	e.Request("PUT", "/api/v1/products/1").Expect().Status(http.StatusUnauthorized)
+	e.Request("DELETE", "/api/v1/products/1").Expect().Status(http.StatusUnauthorized)
 }
