@@ -48,7 +48,16 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 
 	ts := httptest.NewServer(router)
 
-	e = httpexpect.Default(t, ts.URL)
+	e = httpexpect.WithConfig(httpexpect.Config{
+		Client: &http.Client{
+			Transport: httpexpect.NewBinder(router),
+			Jar:       httpexpect.NewCookieJar(),
+		},
+		Reporter: httpexpect.NewAssertReporter(t),
+		Printers: []httpexpect.Printer{
+			httpexpect.NewDebugPrinter(t, true),
+		},
+	})
 
 	cleanup := func() {
 		ts.Close()
