@@ -5,98 +5,21 @@ import (
 	"testing"
 )
 
-//var e *httpexpect.Expect
-
-/*
-func TestMain(m *testing.M) {
-	// Setup test environment
-	setupTestDatabase()
-
-	code := m.Run()
-
-	os.Exit(code)
-}
-
-func setupTest(t *testing.T, route string, handlerFunc gin.HandlerFunc) *httpexpect.Expect {
-	// Initialize Gin router
-	engine := gin.New()
-
-	// Add route to your handler
-	engine.GET(route, handlerFunc)
-
-	e := httpexpect.WithConfig(httpexpect.Config{
-		Client: &http.Client{
-			Transport: httpexpect.NewBinder(engine),
-			Jar:       httpexpect.NewCookieJar(),
-		},
-		Reporter: httpexpect.NewAssertReporter(t),
-		Printers: []httpexpect.Printer{
-			httpexpect.NewDebugPrinter(t, true),
-		},
-	})
-
-	return e
-}
-
-func setupTestDatabase() {
-	db := utils.ConnectToLocalDatabase()
-	utils.PurgeDatabase(db)
-	utils.MigrateDatabase(db)
-	utils.SeedDatabase(db)
-}
-
-func setupMailer() mailer.Mailer {
-	mailer := mailer.NewMailer("smtp://user:password@localhost:1025")
-
-	return *mailer
-}
-*/
-
 func TestGetProducts(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
-    defer cleanup()
+	defer cleanup()
 
-	/*
-	// Setze Umgebungsvariablen
-    t.Setenv("CORS_ALLOW_ORIGINS", "http://localhost:3000")
-
-    // Initialisiere Repository, Mailer und Handler
-    repo := repository.NewLocalRepository()
-    mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
-    handler := handler.NewHandler(repo, *mailer, "v1")
-
-    // Initialisiere den Gin-Router
-    router := initializer.InitializeHttpServer(*handler, *repo, embed.FS{})
-
-    // Erstelle den Testserver
-    ts := httptest.NewServer(router)
-
-	e := httpexpect.WithConfig(httpexpect.Config{
-		Client: &http.Client{
-			Transport: httpexpect.NewBinder(router),
-			Jar:       httpexpect.NewCookieJar(),
-		},
-		Reporter: httpexpect.NewAssertReporter(t),
-		Printers: []httpexpect.Printer{
-			httpexpect.NewDebugPrinter(t, true),
-		},
-	})
-
-	defer ts.Close()
-	*/
-	
 	res := e.GET("/api/v1/products").
-		WithHeader("Authorization", "Bearer " + getJwtForDemoUser()).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
 		Expect()
 
 	res.Status(http.StatusOK)
 
 	totalCountHeader := res.Header("X-Total-Count").AsNumber()
-    totalCountHeader.Gt(10)
+	totalCountHeader.Gt(10)
 
-    // Überprüfen der JSON-Antwort
-    obj := res.JSON().Array()
-    obj.Length().Ge(1)
+	obj := res.JSON().Array()
+	obj.Length().IsEqual(10)
 
 	for i := 0; i < len(obj.Iter()); i++ {
 		product := obj.Value(i).Object()
@@ -106,28 +29,48 @@ func TestGetProducts(t *testing.T) {
 		product.Value("wrapAfter").Boolean()
 		product.Value("pos").Number().Ge(0)
 		product.Value("apiExport").Boolean()
+		product.Value("totalStock").Number().Ge(0)
+		product.Value("unitsSold").Number().Ge(0)
+		product.Value("soldOutRequestCount").Number().Ge(0)
+		product.Value("lists").Array()
 	}
+
+	product := obj.Value(0).Object()
+	product.Value("id").Number().IsEqual(1)
+	product.Value("name").String().Contains("Regular")
+	product.Value("price").Number().IsEqual(40)
+	product.Value("wrapAfter").Boolean().IsFalse()
+	product.Value("hidden").Boolean().IsFalse()
+	product.Value("pos").Number().IsEqual(1)
+	product.Value("totalStock").Number().IsEqual(0)
+	product.Value("unitsSold").Number().IsEqual(0)
+	product.Value("soldOutRequestCount").Number().IsEqual(0)
+	product.Value("apiExport").Boolean().IsTrue()
+	product.Value("lists").Array().IsEmpty()
+
+	productWithList := obj.Value(1).Object()
+	productWithList.Value("name").String().Contains("Reduced")
+	productWithList.Value("lists").Array().Length().IsEqual(2)
 }
 
 func TestGetProduct(t *testing.T) {
-	/*
-	myhandler := handler.NewHandler(repository.NewLocalRepository(), setupMailer(), "1.0.0")
-	gin.SetMode(gin.TestMode)
-
-	e := setupTest(t, "/example/:id", myhandler.GetProductByID)
-	*/
 	_, cleanup := setupTestEnvironment(t)
-    defer cleanup()
+	defer cleanup()
 
-	obj := e.GET("/api/v1/products/1").
-		WithHeader("Authorization", "Bearer " + getJwtForDemoUser()).
+	product := e.GET("/api/v1/products/1").
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	obj.Value("id").Number().Gt(0)
-	obj.Value("name").String().NotEmpty()
-	obj.Value("price").Number().Ge(0)
-	obj.Value("wrapAfter").Boolean()
-	obj.Value("pos").Number().Ge(0)
-	obj.Value("apiExport").Boolean()
+	product.Value("id").Number().IsEqual(1)
+	product.Value("name").String().Contains("Regular")
+	product.Value("price").Number().IsEqual(40)
+	product.Value("wrapAfter").Boolean().IsFalse()
+	product.Value("hidden").Boolean().IsFalse()
+	product.Value("pos").Number().IsEqual(1)
+	product.Value("totalStock").Number().IsEqual(0)
+	product.Value("unitsSold").Number().IsEqual(0)
+	product.Value("soldOutRequestCount").Number().IsEqual(0)
+	product.Value("apiExport").Boolean().IsTrue()
+	product.Value("lists").IsNull()
 }

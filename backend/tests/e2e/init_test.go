@@ -16,19 +16,15 @@ import (
 )
 
 var (
-	e  *httpexpect.Expect
-	ts *httptest.Server
+	e       *httpexpect.Expect
 	demoJwt string
 )
 
 func TestMain(m *testing.M) {
-	// Globales Setup nur einmal durchführen
 	setup()
 
-	// Tests ausführen
 	code := m.Run()
-	
-	// Exit mit dem Test-Exitcode
+
 	os.Exit(code)
 }
 
@@ -44,28 +40,27 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 	t.Setenv("JWT_SECRET", "test")
 
 	repo := repository.NewLocalRepository()
-    mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
-    handler := handler.NewHandler(repo, *mailer, "v1")
+	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
+	handler := handler.NewHandler(repo, *mailer, "v1")
 
 	router := initializer.InitializeHttpServer(*handler, *repo, embed.FS{})
 
-    ts := httptest.NewServer(router)
+	ts := httptest.NewServer(router)
 
-    e = httpexpect.Default(t, ts.URL)
+	e = httpexpect.Default(t, ts.URL)
 
 	cleanup := func() {
 		ts.Close()
-    }
+	}
 
-    return ts, cleanup
+	return ts, cleanup
 }
-
 
 func getJwtForUser(username, password string) string {
 	// Login durchführen
 	login := e.POST("/login").
 		WithJSON(map[string]string{
-			"login": username,
+			"login":    username,
 			"password": password,
 		}).
 		Expect().
@@ -74,7 +69,7 @@ func getJwtForUser(username, password string) string {
 
 	// JWT auslesen
 	jwt := login.Value("token").String().Raw()
-	
+
 	return jwt
 }
 
