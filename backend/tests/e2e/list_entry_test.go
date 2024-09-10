@@ -3,6 +3,7 @@ package tests_e2e
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -101,6 +102,77 @@ func TestGetListEntriesWithQuery(t *testing.T) {
 		listEntry := obj.Value(i).Object()
 		listEntry.Value("name").String().Contains(name)
 	}
+}
+
+func TestCreateUpdateAndDeleteListEntry(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	listEntry := e.POST("/api/v1/listEntries").
+		WithJSON(map[string]interface{}{
+			"listId":               1,
+			"name":                 "Tessy Test",
+			"additionalGuests":     2,
+			"attendedGuests":       0,
+			"arrivalNote":          "Hand out a tshirt",
+			"notifyOnArrivalEmail": "test@example.com",
+		}).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusCreated).JSON().Object()
+
+	listEntry.Value("id").Number().Gt(0)
+	listEntry.Value("name").String().Contains("Tessy Test")
+	listEntry.Value("additionalGuests").Number().IsEqual(2)
+	listEntry.Value("attendedGuests").Number().IsEqual(0)
+	listEntry.Value("arrivalNote").String().IsEqual("Hand out a tshirt")
+	listEntry.Value("notifyOnArrivalEmail").String().IsEqual("test@example.com")
+
+	listEntryId := listEntry.Value("id").Number().Raw()
+	listEntryUrl := "/api/v1/listEntries/" + strconv.FormatFloat(listEntryId, 'f', -1, 64)
+
+	listEntry = e.GET(listEntryUrl).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	listEntry.Value("id").Number().Gt(0)
+	listEntry.Value("name").String().Contains("Tessy Test")
+
+	e.PUT(listEntryUrl).
+		WithJSON(map[string]interface{}{
+			"name":                 "Tessy Test Updated",
+			"additionalGuests":     3,
+			"attendedGuests":       0,
+			"arrivalNote":          nil,
+			"notifyOnArrivalEmail": nil,
+		}).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	listEntry = e.GET(listEntryUrl).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	listEntry.Value("id").Number().Gt(0)
+	listEntry.Value("name").String().Contains("Tessy Test Updated")
+	listEntry.Value("additionalGuests").Number().IsEqual(3)
+	listEntry.Value("attendedGuests").Number().IsEqual(0)
+	listEntry.Value("arrivalNote").IsNull()
+	listEntry.Value("notifyOnArrivalEmail").IsNull()
+
+	e.DELETE(listEntryUrl).
+		WithHeader("Authorization", "Bearer "+getJwtForAdminUser()).
+		Expect().
+		Status(http.StatusOK)
+
+	e.GET(listEntryUrl).
+		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+		Expect().
+		Status(http.StatusNotFound)
+
 }
 
 func TestListEntryAuthentication(t *testing.T) {
