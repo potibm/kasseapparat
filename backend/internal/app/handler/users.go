@@ -16,7 +16,7 @@ import (
 func (handler *Handler) GetUsers(c *gin.Context) {
 	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
-	sort := c.DefaultQuery("_sort", "pos")
+	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "ASC")
 	filters := repository.UserFilters{}
 	filters.Query = c.DefaultQuery("q", "")
