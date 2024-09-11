@@ -4,39 +4,36 @@ import (
 	"net/http"
 	"strconv"
 	"testing"
+
+	"github.com/gavv/httpexpect/v2"
+)
+
+var (
+	userBaseUrl   = "/api/v1/users"
+	userUrlWithId = userBaseUrl + "/1"
 )
 
 func TestGetUsers(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := e.GET("/api/v1/users").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	res := withDemoUserAuthToken(e.GET(userBaseUrl)).
 		Expect()
 
 	res.Status(http.StatusOK)
 
-	totalCountHeader := res.Header("X-Total-Count").AsNumber()
-	totalCountHeader.Ge(2)
+	res.Header(totalCountHeader).AsNumber().Ge(2)
 
 	obj := res.JSON().Array()
 	obj.Length().Ge(2)
 
 	for i := 0; i < len(obj.Iter()); i++ {
 		user := obj.Value(i).Object()
-		user.Value("id").Number().Gt(0)
-		user.Value("username").String().NotEmpty()
-		user.Value("email").String().NotEmpty().Contains("@")
-		user.Value("admin").Boolean()
-		user.NotContainsKey("password")
+		validateUserObject(user)
 	}
 
 	user := obj.Value(0).Object()
-	user.Value("id").Number().IsEqual(1)
-	user.Value("username").String().Contains("admin")
-	user.Value("email").String().IsEqual("admin@example.com")
-	user.Value("admin").Boolean().IsTrue()
-	user.NotContainsKey("password")
+	validateUserObjectAdmin(user)
 }
 
 func TestGetUsersWithFilters(t *testing.T) {
@@ -44,58 +41,125 @@ func TestGetUsersWithFilters(t *testing.T) {
 	defer cleanup()
 
 	// search for admin users
-	res := e.GET("/api/v1/users").
+	res := withDemoUserAuthToken(e.GET(userBaseUrl)).
 		WithQuery("isAdmin", "true").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
 		Expect()
 
 	res.Status(http.StatusOK)
 
-	res.Header("X-Total-Count").AsNumber().IsEqual(1)
+	res.Header(totalCountHeader).AsNumber().IsEqual(1)
 
 	obj := res.JSON().Array()
 	obj.Length().IsEqual(1)
 
 	user := obj.Value(0).Object()
-	user.Value("id").Number().IsEqual(1)
-	user.Value("username").String().Contains("admin")
+	validateUserObjectAdmin(user)
 
 	// search for the demo user
-	res = e.GET("/api/v1/users").
+	res = withDemoUserAuthToken(e.GET(userBaseUrl)).
 		WithQuery("q", "demo").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
 		Expect()
 
 	res.Status(http.StatusOK)
 
-	res.Header("X-Total-Count").AsNumber().IsEqual(1)
+	res.Header(totalCountHeader).AsNumber().IsEqual(1)
 
 	obj = res.JSON().Array()
 	obj.Length().IsEqual(1)
 
 	user = obj.Value(0).Object()
-	user.Value("id").Number().IsEqual(2)
-	user.Value("username").String().Contains("demo")
+	validateUserObjectDemo(user)
 
 	// search for a user that does not exist
-	res = e.GET("/api/v1/users").
+	res = withDemoUserAuthToken(e.GET(userBaseUrl)).
 		WithQuery("q", "doesnotexist").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
 		Expect()
 
 	res.Status(http.StatusOK)
-	res.Header("X-Total-Count").AsNumber().IsEqual(0)
+	res.Header(totalCountHeader).AsNumber().IsEqual(0)
 }
 
 func TestGetUser(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	user := e.GET("/api/v1/users/1").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	user := withDemoUserAuthToken(e.GET(userUrlWithId)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
+	validateUserObjectAdmin(user)
+}
+
+func TestCreateUpdateAndDeleteUser(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	var originalUsername = "test user"
+	var originalEmail = "test@example.com"
+	var changedUsername = "test user changed"
+	var changedEmail = "changed@example.com"
+
+	user := withDemoUserAuthToken(e.POST(userBaseUrl)).
+		WithJSON(map[string]interface{}{
+			"username": originalUsername,
+			"email":    originalEmail,
+		}).
+		Expect().
+		Status(http.StatusCreated).JSON().Object()
+
+	user.Value("id").Number().Gt(0)
+	user.Value("username").String().IsEqual(originalUsername)
+	user.Value("email").String().IsEqual(originalEmail)
+
+	userId := user.Value("id").Number().Raw()
+	userUrl := userBaseUrl + "/" + strconv.FormatFloat(userId, 'f', -1, 64)
+
+	user = withDemoUserAuthToken(e.GET(userUrl)).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	user.Value("id").Number().Gt(0)
+	user.Value("username").String().IsEqual(originalUsername)
+	user.Value("email").String().IsEqual(originalEmail)
+
+	withDemoUserAuthToken(e.PUT(userUrl)).
+		WithJSON(map[string]interface{}{
+			"username": changedUsername,
+			"email":    changedEmail,
+		}).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	user = withDemoUserAuthToken(e.GET(userUrl)).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	user.Value("id").Number().Gt(0)
+	user.Value("username").String().IsEqual(changedUsername)
+	user.Value("email").String().IsEqual(changedEmail)
+
+	withAdminUserAuthToken(e.DELETE(userUrl)).
+		Expect().
+		Status(http.StatusOK)
+
+	withDemoUserAuthToken(e.GET(userUrl)).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
+func TestUserAuthentication(t *testing.T) {
+	testAuthenticationForEntityEndpoints(t, userBaseUrl, userUrlWithId)
+}
+
+func validateUserObject(user *httpexpect.Object) {
+	user.Value("id").Number().Gt(0)
+	user.Value("username").String().NotEmpty()
+	user.Value("email").String().NotEmpty().Contains("@")
+	user.Value("admin").Boolean()
+	user.NotContainsKey("password")
+}
+
+func validateUserObjectAdmin(user *httpexpect.Object) {
 	user.Value("id").Number().IsEqual(1)
 	user.Value("username").String().Contains("admin")
 	user.Value("email").String().IsEqual("admin@example.com")
@@ -103,68 +167,10 @@ func TestGetUser(t *testing.T) {
 	user.NotContainsKey("password")
 }
 
-func TestCreateUpdateAndDeleteUser(t *testing.T) {
-	_, cleanup := setupTestEnvironment(t)
-	defer cleanup()
-
-	user := e.POST("/api/v1/users").
-		WithJSON(map[string]interface{}{
-			"username": "Test User",
-			"email":    "test@example.com",
-		}).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
-		Expect().
-		Status(http.StatusCreated).JSON().Object()
-
-	user.Value("id").Number().Gt(0)
-	user.Value("username").String().IsEqual("test user")
-
-	userId := user.Value("id").Number().Raw()
-	userUrl := "/api/v1/users/" + strconv.FormatFloat(userId, 'f', -1, 64)
-
-	user = e.GET(userUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
-		Expect().
-		Status(http.StatusOK).JSON().Object()
-
-	user.Value("id").Number().Gt(0)
-	user.Value("username").String().IsEqual("test user")
-
-	e.PUT(userUrl).
-		WithJSON(map[string]interface{}{
-			"username": "Test User Changed",
-			"email":    "changed@example.com",
-		}).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
-		Expect().
-		Status(http.StatusOK).JSON().Object()
-
-	user = e.GET(userUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
-		Expect().
-		Status(http.StatusOK).JSON().Object()
-
-	user.Value("id").Number().Gt(0)
-	user.Value("username").String().IsEqual("test user changed")
-
-	e.DELETE(userUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForAdminUser()).
-		Expect().
-		Status(http.StatusOK)
-
-	e.GET(userUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
-		Expect().
-		Status(http.StatusNotFound)
-}
-
-func TestUserAuthentication(t *testing.T) {
-	_, cleanup := setupTestEnvironment(t)
-	defer cleanup()
-
-	e.Request("GET", "/api/v1/users").Expect().Status(http.StatusUnauthorized)
-	e.Request("GET", "/api/v1/users/1").Expect().Status(http.StatusUnauthorized)
-	e.Request("POST", "/api/v1/users/").Expect().Status(http.StatusUnauthorized)
-	e.Request("PUT", "/api/v1/users/1").Expect().Status(http.StatusUnauthorized)
-	e.Request("DELETE", "/api/v1/users/1").Expect().Status(http.StatusUnauthorized)
+func validateUserObjectDemo(user *httpexpect.Object) {
+	user.Value("id").Number().IsEqual(2)
+	user.Value("username").String().Contains("demo")
+	user.Value("email").String().IsEqual("demo@example.com")
+	user.Value("admin").Boolean().IsFalse()
+	user.NotContainsKey("password")
 }
