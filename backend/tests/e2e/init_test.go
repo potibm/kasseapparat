@@ -16,9 +16,10 @@ import (
 )
 
 var (
-	e        *httpexpect.Expect
-	demoJwt  string
-	adminJwt string
+	e                *httpexpect.Expect
+	demoJwt          string
+	adminJwt         string
+	totalCountHeader = "X-Total-Count"
 )
 
 func TestMain(m *testing.M) {
@@ -95,4 +96,23 @@ func getJwtForAdminUser() string {
 		adminJwt = getJwtForUser("admin", "admin")
 	}
 	return adminJwt
+}
+
+func withAuthToken(req *httpexpect.Request, token string) *httpexpect.Request {
+	return req.WithHeader("Authorization", "Bearer "+token)
+}
+
+func withDemoUserAuthToken(req *httpexpect.Request) *httpexpect.Request {
+	return withAuthToken(req, getJwtForDemoUser())
+}
+
+func testAuthenticationForEntityEndpoints(t *testing.T, baseUrl string, urlWithId string) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	e.Request("GET", baseUrl).Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", urlWithId).Expect().Status(http.StatusUnauthorized)
+	e.Request("POST", baseUrl).Expect().Status(http.StatusUnauthorized)
+	e.Request("PUT", urlWithId).Expect().Status(http.StatusUnauthorized)
+	e.Request("DELETE", urlWithId).Expect().Status(http.StatusUnauthorized)
 }
