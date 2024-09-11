@@ -106,6 +106,10 @@ func withDemoUserAuthToken(req *httpexpect.Request) *httpexpect.Request {
 	return withAuthToken(req, getJwtForDemoUser())
 }
 
+func withAdminUserAuthToken(req *httpexpect.Request) *httpexpect.Request {
+	return withAuthToken(req, getJwtForAdminUser())
+}
+
 func testAuthenticationForEntityEndpoints(t *testing.T, baseUrl string, urlWithId string) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()

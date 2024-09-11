@@ -6,74 +6,49 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/gavv/httpexpect/v2"
+)
+
+var (
+	listEntryBaseUrl   = "/api/v1/listEntries"
+	listEntryUrlWithId = listEntryBaseUrl + "/1"
 )
 
 func TestGetListEntries(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := e.GET("/api/v1/listEntries").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	res := withDemoUserAuthToken(e.GET(listEntryBaseUrl)).
 		Expect()
 
 	res.Status(http.StatusOK)
 
-	totalCountHeader := res.Header("X-Total-Count").AsNumber()
-	totalCountHeader.Gt(10)
+	res.Header(totalCountHeader).AsNumber().Gt(10)
 
 	obj := res.JSON().Array()
 	obj.Length().IsEqual(10)
 
 	for i := 0; i < len(obj.Iter()); i++ {
 		listEntry := obj.Value(i).Object()
-		listEntry.Value("id").Number().Gt(0)
-		listEntry.Value("name").String().NotEmpty()
-		listEntry.Value("listId").Number().Gt(0)
-		listEntry.Value("list").Object()
-		code := listEntry.Value("code")
-		if code.Raw() != nil {
-			code.String().NotEmpty()
-		} else {
-			code.IsNull()
-		}
-		listEntry.Value("additionalGuests").Number().Ge(0)
-		listEntry.Value("attendedGuests").Number().Ge(0)
-		notifyOnArrivalEmail := listEntry.Value("notifyOnArrivalEmail")
-		if notifyOnArrivalEmail.Raw() != nil {
-			notifyOnArrivalEmail.String()
-		} else {
-			notifyOnArrivalEmail.IsNull()
-		}
-		purchaseId := listEntry.Value("purchaseId")
-		if purchaseId.Raw() != nil {
-			purchaseId.Number().Ge(0)
-		} else {
-			purchaseId.IsNull()
-		}
+		validateListEntryObject(listEntry)
 	}
 
 	listEntry := obj.Value(0).Object()
-	listEntry.Value("id").Number().IsEqual(1)
-	listEntry.Value("name").String().Length().Gt(5)
-	listEntry.Value("code").IsNull()
-	listEntry.Value("additionalGuests").Number().IsEqual(0)
-	listEntry.Value("attendedGuests").Number().IsEqual(0)
-	listEntry.Value("notifyOnArrivalEmail").IsNull()
-	listEntry.Value("purchaseId").IsNull()
+	validateListEntryObjectOne(listEntry)
 }
 
 func TestGetListEntriesWithQuery(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := e.GET("/api/v1/listEntries").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	res := withDemoUserAuthToken(e.GET(listEntryBaseUrl)).
 		Expect()
 
 	res.Status(http.StatusOK)
 
-	totalCountHeader := res.Header("X-Total-Count").AsNumber()
-	totalCountHeader.Gt(10)
+	totalCountHeaderValue := res.Header(totalCountHeader).AsNumber()
+	totalCountHeaderValue.Gt(10)
 
 	obj := res.JSON().Array()
 
@@ -83,17 +58,16 @@ func TestGetListEntriesWithQuery(t *testing.T) {
 	name = strings.Split(name, " ")[0]
 	log.Println("name: ", name)
 
-	res = e.GET("/api/v1/listEntries").
+	res = withDemoUserAuthToken(e.GET(listEntryBaseUrl)).
 		WithQuery("q", name).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
 		Expect().
 		Status(http.StatusOK)
 
 	res.JSON().Array()
 
-	totalCountHeaderWithQuery := res.Header("X-Total-Count").AsNumber()
+	totalCountHeaderWithQuery := res.Header(totalCountHeader).AsNumber()
 	totalCountHeaderWithQuery.Ge(1)
-	totalCountHeaderWithQuery.Lt(totalCountHeader.Raw())
+	totalCountHeaderWithQuery.Lt(totalCountHeaderValue.Raw())
 
 	obj = res.JSON().Array()
 	obj.Length().Ge(1)
@@ -104,84 +78,124 @@ func TestGetListEntriesWithQuery(t *testing.T) {
 	}
 }
 
+func TestGetListEntry(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	listEntry := withDemoUserAuthToken(e.GET(listEntryUrlWithId)).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	validateListEntryObjectOne(listEntry)
+}
+
 func TestCreateUpdateAndDeleteListEntry(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	listEntry := e.POST("/api/v1/listEntries").
+	originalName := "Tessy Test"
+	changedName := "Tessy Test Updated"
+	notifyEmail := "test@example.com"
+	arrivalNote := "Hand out a tshirt"
+
+	listEntry := withDemoUserAuthToken(e.POST("/api/v1/listEntries")).
 		WithJSON(map[string]interface{}{
 			"listId":               1,
-			"name":                 "Tessy Test",
+			"name":                 originalName,
 			"additionalGuests":     2,
 			"attendedGuests":       0,
-			"arrivalNote":          "Hand out a tshirt",
-			"notifyOnArrivalEmail": "test@example.com",
+			"arrivalNote":          arrivalNote,
+			"notifyOnArrivalEmail": notifyEmail,
 		}).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
 
 	listEntry.Value("id").Number().Gt(0)
-	listEntry.Value("name").String().Contains("Tessy Test")
+	listEntry.Value("name").String().Contains(originalName)
 	listEntry.Value("additionalGuests").Number().IsEqual(2)
 	listEntry.Value("attendedGuests").Number().IsEqual(0)
-	listEntry.Value("arrivalNote").String().IsEqual("Hand out a tshirt")
-	listEntry.Value("notifyOnArrivalEmail").String().IsEqual("test@example.com")
+	listEntry.Value("arrivalNote").String().IsEqual(arrivalNote)
+	listEntry.Value("notifyOnArrivalEmail").String().IsEqual(notifyEmail)
 
 	listEntryId := listEntry.Value("id").Number().Raw()
-	listEntryUrl := "/api/v1/listEntries/" + strconv.FormatFloat(listEntryId, 'f', -1, 64)
+	listEntryUrl := listEntryBaseUrl + "/" + strconv.FormatFloat(listEntryId, 'f', -1, 64)
 
-	listEntry = e.GET(listEntryUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	listEntry = withDemoUserAuthToken(e.GET(listEntryUrl)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	listEntry.Value("id").Number().Gt(0)
-	listEntry.Value("name").String().Contains("Tessy Test")
+	listEntry.Value("name").String().Contains(originalName)
 
-	e.PUT(listEntryUrl).
+	withDemoUserAuthToken(e.PUT(listEntryUrl)).
 		WithJSON(map[string]interface{}{
-			"name":                 "Tessy Test Updated",
+			"name":                 changedName,
 			"additionalGuests":     3,
 			"attendedGuests":       0,
 			"arrivalNote":          nil,
 			"notifyOnArrivalEmail": nil,
 		}).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	listEntry = e.GET(listEntryUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	listEntry = withDemoUserAuthToken(e.GET(listEntryUrl)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	listEntry.Value("id").Number().Gt(0)
-	listEntry.Value("name").String().Contains("Tessy Test Updated")
+	listEntry.Value("name").String().Contains(changedName)
 	listEntry.Value("additionalGuests").Number().IsEqual(3)
 	listEntry.Value("attendedGuests").Number().IsEqual(0)
 	listEntry.Value("arrivalNote").IsNull()
 	listEntry.Value("notifyOnArrivalEmail").IsNull()
 
-	e.DELETE(listEntryUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForAdminUser()).
+	withDemoUserAuthToken(e.DELETE(listEntryUrl)).
 		Expect().
 		Status(http.StatusOK)
 
-	e.GET(listEntryUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	withDemoUserAuthToken(e.GET(listEntryUrl)).
 		Expect().
 		Status(http.StatusNotFound)
 
 }
 
 func TestListEntryAuthentication(t *testing.T) {
-	_, cleanup := setupTestEnvironment(t)
-	defer cleanup()
+	testAuthenticationForEntityEndpoints(t, listEntryBaseUrl, listEntryUrlWithId)
+}
 
-	e.Request("GET", "/api/v1/listEntries").Expect().Status(http.StatusUnauthorized)
-	e.Request("GET", "/api/v1/listEntries/1").Expect().Status(http.StatusUnauthorized)
-	e.Request("POST", "/api/v1/listEntries/").Expect().Status(http.StatusUnauthorized)
-	e.Request("PUT", "/api/v1/listEntries/1").Expect().Status(http.StatusUnauthorized)
-	e.Request("DELETE", "/api/v1/listEntries/1").Expect().Status(http.StatusUnauthorized)
+func validateListEntryObject(listEntry *httpexpect.Object) {
+	listEntry.Value("id").Number().Gt(0)
+	listEntry.Value("name").String().NotEmpty()
+	listEntry.Value("listId").Number().Gt(0)
+	listEntry.Value("list").Object()
+	code := listEntry.Value("code")
+	if code.Raw() != nil {
+		code.String().NotEmpty()
+	} else {
+		code.IsNull()
+	}
+	listEntry.Value("additionalGuests").Number().Ge(0)
+	listEntry.Value("attendedGuests").Number().Ge(0)
+	notifyOnArrivalEmail := listEntry.Value("notifyOnArrivalEmail")
+	if notifyOnArrivalEmail.Raw() != nil {
+		notifyOnArrivalEmail.String()
+	} else {
+		notifyOnArrivalEmail.IsNull()
+	}
+	purchaseId := listEntry.Value("purchaseId")
+	if purchaseId.Raw() != nil {
+		purchaseId.Number().Ge(0)
+	} else {
+		purchaseId.IsNull()
+	}
+}
+
+func validateListEntryObjectOne(listEntry *httpexpect.Object) {
+	listEntry.Value("id").Number().IsEqual(1)
+	listEntry.Value("name").String().Length().Gt(5)
+	listEntry.Value("code").IsNull()
+	listEntry.Value("additionalGuests").Number().IsEqual(0)
+	listEntry.Value("attendedGuests").Number().IsEqual(0)
+	listEntry.Value("notifyOnArrivalEmail").IsNull()
+	listEntry.Value("purchaseId").IsNull()
 }
