@@ -6,13 +6,16 @@ import (
 	"testing"
 )
 
+var (
+	purchaseBaseUrl = "/api/v1/purchases"
+)
+
 func TestCreatePurchaseWithList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
 	// Create a purchase
-	purchaseResponse := e.POST("/api/v1/purchases").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"totalPrice": 20.0,
 			"cart": []map[string]interface{}{
@@ -39,11 +42,10 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	purchase.Value("totalPrice").Number().IsEqual(20.0)
 
 	purchaseId := purchase.Value("id").Number().Raw()
-	purchaseUrl := "/api/v1/purchases/" + strconv.FormatFloat(purchaseId, 'f', -1, 64)
+	purchaseUrl := purchaseBaseUrl + "/" + strconv.FormatFloat(purchaseId, 'f', -1, 64)
 
 	// Get the purchase
-	purchase = e.GET(purchaseUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	purchase = withDemoUserAuthToken(e.GET(purchaseUrl)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
@@ -51,13 +53,11 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	purchase.Value("totalPrice").Number().IsEqual(20.0)
 
 	// Delete the purchase
-	e.DELETE(purchaseUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	withDemoUserAuthToken(e.DELETE(purchaseUrl)).
 		Expect().
 		Status(http.StatusOK)
 
-	e.GET(purchaseUrl).
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	withDemoUserAuthToken(e.GET(purchaseUrl)).
 		Expect().
 		Status(http.StatusNotFound)
 }
@@ -67,8 +67,7 @@ func TestCreatePurchaseWithWrongTotalPrice(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase, but with a wrong total price
-	errrorResponse := e.POST("/api/v1/purchases").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"totalPrice": 21.0,
 			"cart": []map[string]interface{}{
@@ -82,8 +81,7 @@ func TestCreatePurchaseWithWrongTotalPrice(t *testing.T) {
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object()
 
-	// we probably want to change this at one point :)
-	errrorResponse.Value("details").String().IsEqual("Total price does not match")
+	validateErrorDetailMessage(errorResponse, "Total price does not match")
 }
 
 func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
@@ -91,8 +89,7 @@ func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase, but with a wrong total price
-	errrorResponse := e.POST("/api/v1/purchases").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"totalPrice": 21.0,
 			"cart": []map[string]interface{}{
@@ -106,7 +103,7 @@ func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object()
 
-	errrorResponse.Value("details").String().IsEqual("Product not found")
+	validateErrorDetailMessage(errorResponse, "Product not found")
 }
 
 func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
@@ -114,8 +111,7 @@ func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase
-	errrorResponse := e.POST("/api/v1/purchases").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"totalPrice": 0.0,
 			"cart": []map[string]interface{}{
@@ -134,7 +130,7 @@ func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object()
 
-	errrorResponse.Value("details").String().IsEqual("List item does not belong to product")
+	validateErrorDetailMessage(errorResponse, "List item does not belong to product")
 }
 
 func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
@@ -142,8 +138,7 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase
-	errrorResponse := e.POST("/api/v1/purchases").
-		WithHeader("Authorization", "Bearer "+getJwtForDemoUser()).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"totalPrice": 0.0,
 			"cart": []map[string]interface{}{
@@ -162,5 +157,5 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object()
 
-	errrorResponse.Value("details").String().IsEqual("Additional guests exceed available guests")
+	validateErrorDetailMessage(errorResponse, "Additional guests exceed available guests")
 }

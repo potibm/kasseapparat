@@ -120,3 +120,7 @@ func testAuthenticationForEntityEndpoints(t *testing.T, baseUrl string, urlWithI
 	e.Request("PUT", urlWithId).Expect().Status(http.StatusUnauthorized)
 	e.Request("DELETE", urlWithId).Expect().Status(http.StatusUnauthorized)
 }
+
+func validateErrorDetailMessage(err *httpexpect.Object, message string) {
+	err.Value("details").String().IsEqual(message)
+}
