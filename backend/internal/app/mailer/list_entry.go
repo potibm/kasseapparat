@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"text/template"
+
+	"github.com/potibm/kasseapparat/templates"
 )
 
 const (
@@ -12,8 +14,9 @@ const (
 
 func (mailer *Mailer) SendNotificationOnArrival(to string, username string) error {
 
-	template, err := template.ParseFiles(
-		"templates/mail/notification_on_arrival.txt",
+	template, err := template.ParseFS(
+		templates.MailTemplateFiles,
+		"mail/notification_on_arrival.txt",
 		footerTemplate,
 	)
 	if err != nil {

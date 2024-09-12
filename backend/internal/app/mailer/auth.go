@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"text/template"
+
+	"github.com/potibm/kasseapparat/templates"
 )
 
 const (
@@ -16,17 +18,18 @@ func generateChangePasswordLink(baseUrl string, token string, userId uint) strin
 }
 
 func (mailer *Mailer) SendChangePasswordTokenMail(to string, userId uint, username string, token string) error {
-	return mailer.sendTokenMail(to, userId, username, token, "templates/mail/token_change_password.txt", changePasswordSubject)
+	return mailer.sendTokenMail(to, userId, username, token, "mail/token_change_password.txt", changePasswordSubject)
 }
 
 func (mailer *Mailer) SendNewUserTokenMail(to string, userId uint, username string, token string) error {
 
-	return mailer.sendTokenMail(to, userId, username, token, "templates/mail/token_new_user.txt", accountCreatedSubject)
+	return mailer.sendTokenMail(to, userId, username, token, "mail/token_new_user.txt", accountCreatedSubject)
 }
 
 func (mailer *Mailer) sendTokenMail(to string, userId uint, username string, token string, templateFilename string, subject string) error {
 
-	template, err := template.ParseFiles(
+	template, err := template.ParseFS(
+		templates.MailTemplateFiles,
 		templateFilename,
 		footerTemplate,
 	)
