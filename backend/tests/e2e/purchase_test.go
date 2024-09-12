@@ -159,3 +159,29 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 
 	validateErrorDetailMessage(errorResponse, "Additional guests exceed available guests")
 }
+
+func createPurchase() string {
+	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+		WithJSON(map[string]interface{}{
+			"totalPrice": 40.0,
+			"cart": []map[string]interface{}{
+				{
+					"ID":        1,
+					"quantity":  1,
+					"listItems": []map[string]interface{}{},
+				},
+			},
+		}).
+		Expect().
+		Status(http.StatusCreated).JSON().Object()
+
+	purchase := purchaseResponse.Value("purchase").Object()
+	purchaseId := purchase.Value("id").Number().Raw()
+	return purchaseBaseUrl + "/" + strconv.FormatFloat(purchaseId, 'f', -1, 64)
+}
+
+func deletePurchase(purchaseUrl string) {
+	withDemoUserAuthToken(e.DELETE(purchaseUrl)).
+		Expect().
+		Status(http.StatusOK)
+}
