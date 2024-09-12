@@ -52,6 +52,19 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	purchase.Value("id").Number().IsEqual(purchaseId)
 	purchase.Value("totalPrice").Number().IsEqual(20.0)
 
+	// Get the purchase list
+	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+		Expect().
+		Status(http.StatusOK)
+
+	purchaseListResponse.Header(totalCountHeader).AsNumber().IsEqual(1)
+
+	purchaseList := purchaseListResponse.JSON().Array()
+
+	purchaseList.Length().IsEqual(1)
+	purchaseListItem := purchaseList.Value(0).Object()
+	purchaseListItem.Value("id").Number().IsEqual(purchaseId)
+
 	// Delete the purchase
 	withDemoUserAuthToken(e.DELETE(purchaseUrl)).
 		Expect().

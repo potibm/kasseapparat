@@ -67,7 +67,8 @@ test-fe:
 test-be:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
 	touch $(BACKEND_DIR)/cmd/assets/index.html
-	cd $(BACKEND_DIR) && go test -cover -v ./...
+	cd $(BACKEND_DIR) && go test -cover -coverprofile=coverage.out -coverpkg=./... -v ./...
+	cd $(BACKEND_DIR) && go tool cover -html=coverage.out -o coverage.html
 
 build:
 	rm -rf $(BACKEND_DIR)/cmd/assets

@@ -61,7 +61,7 @@ func getTotalCountOfProductInterests() *httpexpect.Number {
 	return res.Header(totalCountHeader).AsNumber()
 }
 
-func TestProductIntrestAuthentication(t *testing.T) {
+func TestProductInterestAuthentication(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 

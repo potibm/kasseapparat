@@ -163,11 +163,34 @@ func TestListEntryAuthentication(t *testing.T) {
 	testAuthenticationForEntityEndpoints(t, listEntryBaseUrl, listEntryUrlWithId)
 }
 
-func validateListEntryObject(listEntry *httpexpect.Object) {
+func TestGetListEntriesByProduct(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	url := "/api/v1/products/2/listEntries"
+
+	res := withDemoUserAuthToken(e.GET(url)).
+		WithQuery("q", "e").
+		Expect().
+		Status(http.StatusOK)
+
+	obj := res.JSON().Array()
+	obj.Length().Ge(1)
+
+	for i := 0; i < len(obj.Iter()); i++ {
+		listEntry := obj.Value(i).Object()
+		validateListEntrySummaryObject(listEntry)
+
+		name := listEntry.Value("name").String().Raw()
+		if !strings.Contains(strings.ToLower(name), "e") {
+			t.Errorf("Name does not contain 'e' or 'E': %s", name)
+		}
+	}
+}
+
+func validateListEntryBasicObject(listEntry *httpexpect.Object) {
 	listEntry.Value("id").Number().Gt(0)
 	listEntry.Value("name").String().NotEmpty()
-	listEntry.Value("listId").Number().Gt(0)
-	listEntry.Value("list").Object()
 	code := listEntry.Value("code")
 	if code.Raw() != nil {
 		code.String().NotEmpty()
@@ -175,7 +198,25 @@ func validateListEntryObject(listEntry *httpexpect.Object) {
 		code.IsNull()
 	}
 	listEntry.Value("additionalGuests").Number().Ge(0)
+	arrivalNote := listEntry.Value("arrivalNote")
+	if arrivalNote.Raw() != nil {
+		arrivalNote.String()
+	} else {
+		arrivalNote.IsNull()
+	}
+}
+
+func validateListEntrySummaryObject(listEntry *httpexpect.Object) {
+	validateListEntryBasicObject(listEntry)
+	listEntry.Value("listName").String().NotEmpty()
+}
+
+func validateListEntryObject(listEntry *httpexpect.Object) {
+	validateListEntryBasicObject(listEntry)
+	listEntry.Value("listId").Number().Gt(0)
+	listEntry.Value("list").Object()
 	listEntry.Value("attendedGuests").Number().Ge(0)
+
 	notifyOnArrivalEmail := listEntry.Value("notifyOnArrivalEmail")
 	if notifyOnArrivalEmail.Raw() != nil {
 		notifyOnArrivalEmail.String()

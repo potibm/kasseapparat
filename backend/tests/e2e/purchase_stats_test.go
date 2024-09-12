@@ -29,5 +29,4 @@ func TestPurchaseStats(t *testing.T) {
 	res.JSON().Object().Value("totalQuantity").Number().IsEqual(1)
 
 	deletePurchase(purchaseUrl)
-
 }
