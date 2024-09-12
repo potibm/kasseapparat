@@ -33,7 +33,7 @@ func TestCreateAndDeleteProductInterest(t *testing.T) {
 
 	productInterest := withDemoUserAuthToken(e.POST(productInterestBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"productId":  1,
+			"productId": 1,
 		}).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
@@ -49,7 +49,7 @@ func TestCreateAndDeleteProductInterest(t *testing.T) {
 		Expect().
 		Status(http.StatusOK)
 
-	getTotalCountOfProductInterests().IsEqual(0)	
+	getTotalCountOfProductInterests().IsEqual(0)
 
 }
 
