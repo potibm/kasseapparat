@@ -70,6 +70,9 @@ test-be:
 	cd $(BACKEND_DIR) && go test -cover -coverprofile=coverage.out -coverpkg=./... -v ./...
 	cd $(BACKEND_DIR) && go tool cover -html=coverage.out -o coverage.html
 
+sec-be:
+	cd $(BACKEND_DIR) && gosec ./...
+
 build:
 	rm -rf $(BACKEND_DIR)/cmd/assets
 	mkdir -p $(BACKEND_DIR)/cmd/assets
