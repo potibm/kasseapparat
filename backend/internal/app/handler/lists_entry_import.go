@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/repository"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 )
@@ -28,6 +29,33 @@ func (r *deineTicketsRecord) validateCode() bool {
 
 func (r *deineTicketsRecord) validateBlocked() bool {
 	return r.Blocked == ""
+}
+
+func (r *deineTicketsRecord) Validate(repo *repository.Repository) (bool, string) {
+	if !r.validateCode() {
+		return false, "Invalid code"
+	}
+
+	if !r.validateBlocked() {
+		return false, "Blocked"
+	}
+
+	_, err := repo.GetListEntryByCode(r.Code)
+	if err == nil {
+		return false, "Already exists"
+	}
+
+	return true, ""
+}
+
+func (r *deineTicketsRecord) GetListEntry(listId uint) models.ListEntry {
+	return models.ListEntry{
+		ListID:           listId,
+		Name:             r.FirstName + " " + r.LastName + " (" + r.Subject + ")",
+		Code:             &r.Code,
+		AdditionalGuests: 0,
+		AttendedGuests:   0,
+	}
 }
 
 func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
@@ -88,33 +116,13 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 			Blocked:   line[4],
 		}
 
-		if !record.validateCode() {
-			warnings = append(warnings, "Invalid code: "+record.Code+" ("+strconv.Itoa(lineNumber)+")")
+		valid, warningMessage := record.Validate(handler.repo)
+		if !valid {
+			warnings = append(warnings, warningMessage+": "+record.Code+" ("+strconv.Itoa(lineNumber)+")")
 			continue
 		}
 
-		if !record.validateBlocked() {
-			warnings = append(warnings, "Blocked: "+record.Code+" ("+strconv.Itoa(lineNumber)+")")
-			continue
-		}
-
-		// check if the record already exists
-		_, err = handler.repo.GetListEntryByCode(record.Code)
-		if err == nil {
-			warnings = append(warnings, "Already exists: "+record.Code+" ("+strconv.Itoa(lineNumber)+")")
-			continue
-		}
-
-		// create list entry
-		listEntry := models.ListEntry{
-			ListID:           list.ID,
-			Name:             record.FirstName + " " + record.LastName + " (" + record.Subject + ")",
-			Code:             &record.Code,
-			AdditionalGuests: 0,
-			AttendedGuests:   0,
-		}
-
-		_, err = handler.repo.CreateListEntry(listEntry)
+		_, err = handler.repo.CreateListEntry(record.GetListEntry(list.ID))
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create list entry"))
 			return

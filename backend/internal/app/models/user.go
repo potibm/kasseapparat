@@ -3,10 +3,11 @@ package models
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"math/rand"
+	"math"
 	"strings"
 	"time"
 
+	"github.com/sethvargo/go-password/password"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -41,21 +42,19 @@ func (u *User) GravatarURL() string {
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	u.Password, err = hashPassword(u.Password)
-	if err != nil {
-		return err
-	}
-
-	return
+	return u.hashAndSetPassword()
 }
 
 func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
+	return u.hashAndSetPassword()
+}
+
+func (u *User) hashAndSetPassword() (err error) {
 	u.Password, err = hashPassword(u.Password)
 	if err != nil {
 		return err
 	}
-
-	return
+	return nil
 }
 
 func hashPassword(password string) (string, error) {
@@ -98,12 +97,9 @@ func (u *User) GenerateRandomPassword() {
 }
 
 func randomString(length int) string {
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
+	result, err := password.Generate(length, int(math.Round(float64(length)/4)), 0, false, false)
+	if err != nil {
+		panic(err)
 	}
-	return string(b)
+	return result
 }

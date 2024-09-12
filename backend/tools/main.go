@@ -59,7 +59,7 @@ func importUsers(filename string) {
 	repo := repository.NewRepository()
 	mailer := initializer.InitializeMailer()
 
-	file, err := os.Open(filename)
+	file, err := os.Open(filename) // #nosec G304
 	if err != nil {
 		log.Fatal(err)
 	}

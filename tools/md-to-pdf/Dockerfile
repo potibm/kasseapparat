@@ -1,4 +1,4 @@
-FROM ghcr.io/puppeteer/puppeteer:latest
+FROM ghcr.io/puppeteer/puppeteer:23
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
