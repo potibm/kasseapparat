@@ -1,5 +1,9 @@
 package order
 
+import "github.com/shopspring/decimal"
+
 type Order struct {
-	ID uint
+	ID         uint
+	TotalPrice decimal.Decimal
+	LineItens  []OrderLineItem
 }
