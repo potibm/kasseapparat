@@ -10,15 +10,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type GuestListModel struct {
+type GuestlistModel struct {
 	models.GormOwnedModel
 	Name      string          ``
 	TypeCode  bool            `gorm:"default:false"`
 	ProductID uint            ``
-	Product   product.Product `gorm:""`
+	Product   product.Product `gorm:"foreignKey:ProductID"`
 }
 
-func (m GuestListModel) CreateEntity() *guestlist.Guestlist {
+func (m GuestlistModel) CreateEntity() *guestlist.Guestlist {
 	return &guestlist.Guestlist{
 		ID:       m.ID,
 		Name:     m.Name,
@@ -36,12 +36,12 @@ func (r *GuestlistRepository) FindAll(ctx context.Context) ([]*guestlist.Guestli
 }
 
 func (r *GuestlistRepository) FindByID(ctx context.Context, id int) (*guestlist.Guestlist, error) {
-	var list GuestListModel
+	var list GuestlistModel
 	if err := r.db.First(&list, id).Error; err != nil {
 		return nil, errors.New("Guestlist not found")
 	}
 
-	return nil, nil
+	return list.CreateEntity(), nil
 }
 
 func (r *GuestlistRepository) Save(ctx context.Context, guestlist *guestlist.Guestlist) error {
