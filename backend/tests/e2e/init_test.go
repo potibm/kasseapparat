@@ -37,7 +37,7 @@ func setup() {
 	utils.SeedDatabase(db)
 }
 
-func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
+func insetupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 	t.Setenv("CORS_ALLOW_ORIGINS", "http://localhost:3000")
 	t.Setenv("JWT_SECRET", "test")
 

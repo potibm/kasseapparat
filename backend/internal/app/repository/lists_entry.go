@@ -68,6 +68,8 @@ func getListsEntriesValidFieldName(input string) (string, error) {
 		return "list_entries.Name", nil
 	case "list.name":
 		return "List.Name", nil
+	case "arrivedAt":
+		return "list_entries.arrived_at", nil
 	}
 
 	return "", errors.New("Invalid field name")
