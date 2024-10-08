@@ -37,6 +37,22 @@ func TestGetLists(t *testing.T) {
 	list.Value("product").Object().Value("id").Number().IsEqual(2)
 }
 
+func TestGetListsWithSort(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// define an array of sort fields
+	sortFields := []string{"id", "name"}
+
+	for _, sortField := range sortFields {
+
+		withDemoUserAuthToken(e.GET(listBaseUrl)).
+			WithQuery("_sort", sortField).
+			Expect().
+			Status(http.StatusOK)
+	}
+}
+
 func TestGetList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()

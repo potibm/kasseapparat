@@ -10,6 +10,22 @@ var (
 	purchaseBaseUrl = "/api/v1/purchases"
 )
 
+func TestGetPurchasesWithSort(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// define an array of sort fields
+	sortFields := []string{"id", "createdAt", "totalPrice", "createdBy.username"}
+
+	for _, sortField := range sortFields {
+
+		withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+			WithQuery("_sort", sortField).
+			Expect().
+			Status(http.StatusOK)
+	}
+}
+
 func TestCreatePurchaseWithList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()

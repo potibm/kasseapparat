@@ -27,6 +27,22 @@ func TestGetProductInterest(t *testing.T) {
 	res.JSON().Array().IsEmpty()
 }
 
+func TestGetProductInterestsWithSort(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// define an array of sort fields
+	sortFields := []string{"id", "pos", "createdAt", "product.id", "product.name"}
+
+	for _, sortField := range sortFields {
+
+		withDemoUserAuthToken(e.GET(productInterestBaseUrl)).
+			WithQuery("_sort", sortField).
+			Expect().
+			Status(http.StatusOK)
+	}
+}
+
 func TestCreateAndDeleteProductInterest(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()

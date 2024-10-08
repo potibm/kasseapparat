@@ -108,6 +108,10 @@ func getUsersValidFieldName(input string) (string, error) {
 		return "ID", nil
 	case "username":
 		return "Username", nil
+	case "email":
+		return "email", nil
+	case "admin":
+		return "admin", nil
 	}
 
 	return "", errors.New("Invalid field name")
