@@ -37,7 +37,7 @@ func TestGetLists(t *testing.T) {
 	list.Value("product").Object().Value("id").Number().IsEqual(2)
 }
 
-func TestGetListsWiithSort(t *testing.T) {
+func TestGetListsWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
