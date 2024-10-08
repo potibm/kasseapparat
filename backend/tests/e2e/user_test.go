@@ -36,6 +36,22 @@ func TestGetUsers(t *testing.T) {
 	validateUserObjectAdmin(user)
 }
 
+func TestGetUsersWithSort(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// define an array of sort fields
+	sortFields := []string{"id", "username", "email", "admin"}
+
+	for _, sortField := range sortFields {
+
+		withDemoUserAuthToken(e.GET(userBaseUrl)).
+			WithQuery("_sort", sortField).
+			Expect().
+			Status(http.StatusOK)
+	}
+}
+
 func TestGetUsersWithFilters(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()

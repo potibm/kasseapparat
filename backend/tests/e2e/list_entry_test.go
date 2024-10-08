@@ -78,6 +78,22 @@ func TestGetListEntriesWithQuery(t *testing.T) {
 	}
 }
 
+func TestGetListEntriesWithSort(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// define an array of sort fields
+	sortFields := []string{"id", "name", "list.name", "arrivedAt"}
+
+	for _, sortField := range sortFields {
+
+		withDemoUserAuthToken(e.GET(listEntryBaseUrl)).
+			WithQuery("_sort", sortField).
+			Expect().
+			Status(http.StatusOK)
+	}
+}
+
 func TestGetListEntry(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
