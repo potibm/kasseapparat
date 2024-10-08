@@ -49,7 +49,7 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 	}
 
 	var purchases []models.Purchase
-	if err := repo.db.Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").Preload("CreatedBy").Order(sort + " " + order + ", created_at DESC").Limit(limit).Offset(offset).Find(&purchases).Error; err != nil {
+	if err := repo.db.Joins("CreatedBy").Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").Order(sort + " " + order + ", purchases.created_at DESC").Limit(limit).Offset(offset).Find(&purchases).Error; err != nil {
 		return nil, errors.New("Purchases not found")
 	}
 
@@ -59,11 +59,13 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 func getPurchasesValidFieldName(input string) (string, error) {
 	switch input {
 	case "id":
-		return "ID", nil
+		return "purchases.ID", nil
 	case "createdAt":
-		return "created_at", nil
+		return "purchases.created_at", nil
 	case "totalPrice":
-		return "total_price", nil
+		return "purchases.total_price", nil
+	case "createdBy.username":
+		return "CreatedBy.username", nil
 	}
 
 	return "", errors.New("Invalid field name")
