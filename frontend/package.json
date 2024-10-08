@@ -55,7 +55,7 @@
     "@testing-library/user-event": "^14.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-n": "^17.10.3",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.4.0",
