@@ -19,7 +19,8 @@ stop:
 	docker ps -q --filter "ancestor=mailhog/mailhog" | xargs docker kill
 
 run-be:
-	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001
+# cd $(BACKEND_DIR) && go run ./cmd/main.go 3001
+	cd $(BACKEND_DIR) && go run ./cmd-test/main.go 3001
 
 run-tool:
 	cd $(BACKEND_DIR) && go run ./tools/main.go --seed --purge

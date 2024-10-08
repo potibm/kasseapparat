@@ -22,7 +22,8 @@ func (h httpHandler) findByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, list)
+	listResponse := newGuestlistReponse(*list)
+	c.JSON(http.StatusOK, listResponse)
 }
 
 func newHTTPHandler(guestlistService service.GuestlistService) *httpHandler {
