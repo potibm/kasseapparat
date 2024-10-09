@@ -5,6 +5,8 @@ const ADMIN_STORAGE_KEY = "admin";
 
 let updateTokenIntervalId = null;
 
+class AuthorizationError extends Error {}
+
 const setAdminData = (data) => {
   localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(data));
 };
@@ -34,7 +36,10 @@ const authProvider = {
 
     try {
       const response = await fetch(request);
-      if (response.status < 200 || response.status >= 300) {
+      if (response.status === 401) {
+        const data = await response.json();
+        throw new AuthorizationError(data.message);
+      } else if (response.status < 200 || response.status >= 300) {
         throw new Error(response.statusText);
       }
       const { id, token, role, username, gravatarUrl } = await response.json();
@@ -43,7 +48,9 @@ const authProvider = {
 
       setAdminData({ ID: id, token, username, role, expire, gravatarUrl });
     } catch (error) {
-      console.error("Login error:", error);
+      if (error instanceof AuthorizationError) {
+        throw new Error("There was an error logging you in. " + error.message);
+      }
       throw new Error("Network error. Please try again.");
     }
   },
