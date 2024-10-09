@@ -1,5 +1,5 @@
 import React from "react";
-import { Card } from "flowbite-react";
+import { Card, DarkThemeToggle } from "flowbite-react";
 import { useConfig } from "../provider/ConfigProvider";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
@@ -15,7 +15,7 @@ const BaseCard = ({
   return (
     <div className="flex justify-center items-center h-screen">
       <Card className="max-w-sm ">
-        <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+        <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-200">
           <Link to="/">
             <img
               src="/android-chrome-192x192.png"
@@ -26,14 +26,14 @@ const BaseCard = ({
           </Link>
         </h5>
 
-        <div className="my-3">
-          {title && <h2 className="text-xl mb-2">{title}</h2>}
+        <div className="my-3 dark:text-gray-200">
+          {title && <h2 className="text-xl mb-2 dark:text-white">{title}</h2>}
 
           {children}
         </div>
 
         <hr />
-        <p className="text-xs">
+        <p className="text-xs dark:text-gray-200">
           {linkLogin && (
             <>
               <Link to="/" className="text-blue-500 hover:underline">
@@ -58,6 +58,7 @@ const BaseCard = ({
           </Link>
           <span className="mx-2">&ndash;</span>
           Version {version}
+          <DarkThemeToggle aria-label="Toggle dark mode" className="mx-2" />
         </p>
       </Card>
     </div>

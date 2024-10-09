@@ -34,7 +34,7 @@ const GuestListResultTable = ({
 
       {guestListEntries.length > 0 && (
         <div className="space-y-4">
-          <Table hoverable>
+          <Table hoverable className="dark:text-white">
             <Table.Head>
               <Table.HeadCell className="w-1/12"></Table.HeadCell>
               <Table.HeadCell className="w-5/12">Name</Table.HeadCell>
