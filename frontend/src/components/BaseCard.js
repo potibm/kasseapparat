@@ -58,7 +58,7 @@ const BaseCard = ({
           </Link>
           <span className="mx-2">&ndash;</span>
           Version {version}
-          <DarkThemeToggle className="mx-2" />
+          <DarkThemeToggle aria-label="Toggle dark mode" className="mx-2" />
         </p>
       </Card>
     </div>

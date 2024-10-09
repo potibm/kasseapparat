@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 const MainMenu = ({ username, ...props }) => {
   return (
     <Button.Group className="mt-10">
-      <Button size="sm">
+      <Button size="sm" aria-label={`Logged in as ${username}`}>
         <Tooltip content={username}>
           <HiOutlineUserCircle className="h-5 w-5" />
         </Tooltip>
@@ -28,7 +28,8 @@ const MainMenu = ({ username, ...props }) => {
       </Button>
       <Button
         as={Link}
-        target="blank"
+        target="_blank"
+        rel="noopener noreferrer"
         to="/admin"
         size="sm"
         className="hover:bg-cyan-800 dark:hover:bg-cyan-700 hover:text-white"
@@ -36,7 +37,10 @@ const MainMenu = ({ username, ...props }) => {
         <HiCog className="h-5 w-5" />
         <span className="ml-2 max-xl:hidden text-sm">Admin</span>
       </Button>
-      <DarkThemeToggle className="hover:bg-cyan-800 dark:hover:bg-cyan-700 bg-cyan-700 dark:bg-cyan-600 text-white dark:text-white rounded-l-none text-sm  px-3 py-1.5" />
+      <DarkThemeToggle
+        aria-label="Toggle dark mode"
+        className="hover:bg-cyan-800 dark:hover:bg-cyan-700 bg-cyan-700 dark:bg-cyan-600 text-white dark:text-white rounded-l-none text-sm  px-3 py-1.5"
+      />
     </Button.Group>
   );
 };

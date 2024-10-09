@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { Spinner } from "flowbite-react";
 import Cart from "./components/Cart";
 import ProductList from "./components/ProductList";
 import PurchaseHistory from "./components/PurchaseHistory";
 import ErrorModal from "./components/ErrorModal";
+import MainMenu from "./components/MainMenu";
 import {
   deletePurchaseById,
   fetchProducts,
@@ -18,10 +20,8 @@ import {
   containsListItemID,
   getCartProductQuantity,
 } from "./hooks/Cart";
-import { Spinner } from "flowbite-react";
 import { useAuth } from "../Auth/provider/AuthProvider";
 import { useConfig } from "../provider/ConfigProvider";
-import MainMenu from "./components/MainMenu";
 
 function Kasseapparat() {
   const [cart, setCart] = useState([]);
