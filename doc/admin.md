@@ -13,7 +13,7 @@ This documentation will give hints how to set up Kasseapparat on a server.
 
 ### Client 
 
-Find a list below with hardware that was tried and tested at demoparties (feel free to extend this list). Other hardware will work as well. This is meant as a 
+Find a list below with hardware that was tried and tested at demoparties (feel free to extend this list). Other hardware will work as well. 
 
 - Apple iPad Air 10.9" Wi-Fi 64GB, 4th generation (add as [shortcut to the home screen](https://support.apple.com/en-gb/guide/shortcuts/apd735880972/ios))
 - Barcode scanner:
