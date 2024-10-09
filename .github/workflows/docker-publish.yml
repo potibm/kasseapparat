@@ -83,6 +83,7 @@ jobs:
             type=raw,value=latest
             type=raw,value=${{ steps.semantic.outputs.new_release_major_version }}
             type=raw,value=${{ steps.semantic.outputs.new_release_major_version }}.${{ steps.semantic.outputs.new_release_minor_version }}
+            type=raw,value=${{ steps.semantic.outputs.new_release_major_version }}.${{ steps.semantic.outputs.new_release_minor_version }}.${{ steps.semantic.outputs.new_release_patch_version }}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
