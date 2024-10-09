@@ -49,7 +49,7 @@ const authProvider = {
       setAdminData({ ID: id, token, username, role, expire, gravatarUrl });
     } catch (error) {
       if (error instanceof AuthorizationError) {
-        throw new Error("There was an error logging you in: " + error.message);
+        throw new Error(`There was an error logging you in: ${error.message}`);
       }
       throw new Error("Network error. Please try again.");
     }
