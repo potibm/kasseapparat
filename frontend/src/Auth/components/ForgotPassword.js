@@ -46,7 +46,7 @@ const RequestToken = () => {
         )}
         {!success && (
           <>
-            <p className="mb-2">
+            <p className="mb-2 dark:text-white">
               Enter your username or email to receive an email that will guide
               you through the process to set a new password.
             </p>

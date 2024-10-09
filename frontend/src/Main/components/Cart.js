@@ -66,7 +66,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
       <Table
         striped
         theme={compactTableTheme}
-        className={`table-fixed ${flash ? "animate__animated animate__pulse" : ""}`}
+        className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
         <Table.Head>
           <Table.HeadCell className="w-[40%]">Product</Table.HeadCell>

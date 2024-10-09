@@ -106,7 +106,7 @@ const GuestlistModal = ({
             </MyButton>
           </div>
           <div
-            className="w-3/4 p-4 overflow-y-auto"
+            className="w-3/4 p-4 overflow-y-auto dark:text-white"
             style={{ maxHeight: "calc(100vh - 10rem)" }}
             id="results"
           >

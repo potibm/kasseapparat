@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import Cart from "./components/Cart";
 import ProductList from "./components/ProductList";
 import PurchaseHistory from "./components/PurchaseHistory";
@@ -19,10 +18,10 @@ import {
   containsListItemID,
   getCartProductQuantity,
 } from "./hooks/Cart";
-import { Button, Spinner } from "flowbite-react";
-import { HiCog, HiOutlineUserCircle } from "react-icons/hi";
+import { Spinner } from "flowbite-react";
 import { useAuth } from "../Auth/provider/AuthProvider";
 import { useConfig } from "../provider/ConfigProvider";
+import MainMenu from "./components/MainMenu";
 
 function Kasseapparat() {
   const [cart, setCart] = useState([]);
@@ -187,27 +186,7 @@ function Kasseapparat() {
             removeFromPurchaseHistory={handleRemoveFromPurchaseHistory}
           />
 
-          <Button.Group className="mt-10">
-            <Button>
-              <HiOutlineUserCircle className="mr-2 h-5 w-5 max-lg:hidden" />{" "}
-              {username}
-            </Button>
-            <Button
-              as={Link}
-              to="/logout"
-              className="hover:bg-cyan-800 hover:text-white"
-            >
-              Logout
-            </Button>
-            <Button
-              as={Link}
-              target="blank"
-              to="/admin"
-              className="hover:bg-cyan-800 hover:text-white"
-            >
-              <HiCog className="mr-2 h-5 w-5 max-xl:hidden" /> Admin
-            </Button>
-          </Button.Group>
+          <MainMenu username={username} />
 
           <p className="text-xs mt-10 dark:text-white">Version {version}</p>
         </div>
