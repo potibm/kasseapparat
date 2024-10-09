@@ -4,10 +4,21 @@ This documentation will give hints how to set up Kasseapparat on a server.
 
 ## Prequisites
 
+### Server
+
 - Server with minimal specs (the staging environment is running smoothly on a VPS with 2 cores and 2 GB ram)
 - Current Ubuntu (as we are using docker a different setup will probably work just as fine.)
 - Docker including docker compose installed
 - A mail account (will be used to send password reset mails)
+
+### Client
+
+Find a list below with hardware that was tried and tested at demoparties (feel free to extend this list). Other hardware will work as well.
+
+- Apple iPad Air 10.9" Wi-Fi 64GB, 4th generation (add as [shortcut to the home screen](https://support.apple.com/en-gb/guide/shortcuts/apd735880972/ios))
+- Barcode scanner:
+  - [Tera 2500C](https://tera-digital.com/products/2500c-ccd-1d-usb-barcode-scanner-wholesale) (preferred to scan mobile displays)
+  - [Tera 5100](https://tera-digital.com/products/5100-laser-1d-wireless-barcode-scanner-wholesale)
 
 ## Set up directories
 
