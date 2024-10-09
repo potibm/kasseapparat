@@ -74,12 +74,12 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
         <Modal.Body>
           <div className="text-center">
             <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
-            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-200">
               Are you sure you want to delete this purchase?
             </h3>
 
             <Table className="mb-5">
-              <Table.Body>
+              <Table.Body className="dark:text-gray-100">
                 {openModal?.purchase?.purchaseItems != null &&
                   openModal.purchase.purchaseItems.length > 0 &&
                   openModal.purchase.purchaseItems.map((purchaseItem) => (
@@ -103,7 +103,11 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
                 Yes, I&apos;m sure
                 {processing && <Spinner color="gray" className="ml-2" />}
               </MyButton>
-              <MyButton color="black" onClick={() => setOpenModal(false)}>
+              <MyButton
+                color="black"
+                className="dark:bg-gray-200"
+                onClick={() => setOpenModal(false)}
+              >
                 No, cancel
               </MyButton>
             </div>
@@ -113,7 +117,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
       <Table
         striped
         theme={compactTableTheme}
-        className={`table-fixed ${flash ? "animate__animated animate__pulse" : ""}`}
+        className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
         <Table.Head>
           <Table.HeadCell className="w-[55%]">Date</Table.HeadCell>

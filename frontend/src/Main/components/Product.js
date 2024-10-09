@@ -62,7 +62,10 @@ function Product({
         )}
         <div className="flex items-center justify-between mt-auto">
           <h5
-            className={`"text-1xl text-left text-balance font-bold tracking-tight ${product.soldOut ? "text-gray-400" : "text-gray-900 dark:text-white"}`}
+            className={`
+              text-1xl text-left text-balance font-bold tracking-tight
+              ${product.soldOut ? "text-gray-400" : "text-gray-900 dark:text-gray-200"}
+            `}
           >
             {product.name}
           </h5>
