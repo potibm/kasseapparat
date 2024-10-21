@@ -1,5 +1,5 @@
 # Build the frontend
-FROM node:22 AS frontend-build
+FROM node:23 AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/yarn.lock ./
 RUN yarn install
