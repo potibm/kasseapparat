@@ -32,7 +32,7 @@ const ProductInterestModal = ({
         <div className="text-2xl font-bold text-center">Register interest</div>
       </Modal.Header>
       <Modal.Body>
-        <div className="text-center">
+        <div className="text-center dark:text-white">
           <p className="mb-2">{product.name} is currently sold out.</p>
 
           <p className="mb-5">
@@ -48,7 +48,11 @@ const ProductInterestModal = ({
               Yes, register interest
               {processing && <Spinner color="gray" className="ml-2" />}
             </MyButton>
-            <MyButton color="black" onClick={() => onClose()}>
+            <MyButton
+              color="black"
+              onClick={() => onClose()}
+              className="bg-gray-200 dark:bg-gray-200 dark:text-gray-800"
+            >
               No, cancel
             </MyButton>
           </div>
