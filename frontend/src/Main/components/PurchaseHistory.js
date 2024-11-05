@@ -105,7 +105,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
               </MyButton>
               <MyButton
                 color="black"
-                className="dark:bg-gray-200"
+                className="bg-gray-200 dark:bg-gray-200"
                 onClick={() => setOpenModal(false)}
               >
                 No, cancel
