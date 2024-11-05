@@ -36,6 +36,9 @@ function Product({
     },
   };
 
+  const availableStock =
+    product.totalStock - product.unitsSold - quantityByProductInCart(product);
+
   const handleCardClick = () => {
     if (product.soldOut) {
       console.log("ioen");
@@ -71,7 +74,11 @@ function Product({
           </h5>
           {!product.soldOut && product.totalStock > 0 && (
             <div className="text-sm dark:text-white">
-              {product.unitsSold + quantityByProductInCart(product)} /{" "}
+              {availableStock >= 0 && (
+                <span>
+                  {availableStock} /{"  "}
+                </span>
+              )}
               {product.totalStock}
             </div>
           )}
