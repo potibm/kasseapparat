@@ -31,8 +31,8 @@ github.com/gabriel-vasile/mimetype v1.4.5 h1:J7wGKdGu33ocBOhGy0z653k/lFKLFDPJMG8
 github.com/gabriel-vasile/mimetype v1.4.5/go.mod h1:ibHel+/kbxn9x2407k1izTA1S81ku1z/DlgOW2QE0M4=
 github.com/gavv/httpexpect/v2 v2.16.0 h1:Ty2favARiTYTOkCRZGX7ojXXjGyNAIohM1lZ3vqaEwI=
 github.com/gavv/httpexpect/v2 v2.16.0/go.mod h1:uJLaO+hQ25ukBJtQi750PsztObHybNllN+t+MbbW8PY=
-github.com/getsentry/sentry-go v0.29.1 h1:DyZuChN8Hz3ARxGVV8ePaNXh1dQ7d76AiB117xcREwA=
-github.com/getsentry/sentry-go v0.29.1/go.mod h1:x3AtIzN01d6SiWkderzaH28Tm0lgkafpJ5Bm3li39O0=
+github.com/getsentry/sentry-go v0.30.0 h1:lWUwDnY7sKHaVIoZ9wYqRHJ5iEmoc0pqcRqFkosKzBo=
+github.com/getsentry/sentry-go v0.30.0/go.mod h1:WU9B9/1/sHDqeV8T+3VwwbjeR5MSXs/6aqG3mqZrezA=
 github.com/gin-contrib/cors v1.7.2 h1:oLDHxdg8W/XDoN/8zamqk/Drgt4oVZDvaV0YmvVICQw=
 github.com/gin-contrib/cors v1.7.2/go.mod h1:SUJVARKgQ40dmrzgXEVxj2m7Ig1v1qIboQkPDTQ9t2E=
 github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO8GZSjAhjMsSuLt29uWRFHdHYUb5lYOV9qE=
