@@ -14,7 +14,7 @@ require (
 	github.com/sethvargo/go-password v0.3.1
 	golang.org/x/crypto v0.28.0
 	golang.org/x/text v0.19.0
-	gorm.io/driver/sqlite v1.5.6
+	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
 )
 
