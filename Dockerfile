@@ -2,7 +2,7 @@
 FROM node:23 AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/yarn.lock ./
-RUN yarn install
+RUN yarn install --ignore-scripts --network-timeout 100000 
 COPY frontend .
 RUN yarn run build
 
