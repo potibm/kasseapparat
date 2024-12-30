@@ -3,7 +3,7 @@ module github.com/potibm/kasseapparat
 go 1.22.1
 
 require (
-	github.com/appleboy/gin-jwt/v2 v2.10.0
+	github.com/appleboy/gin-jwt/v2 v2.10.1
 	github.com/brianvoe/gofakeit/v7 v7.1.2
 	github.com/gavv/httpexpect/v2 v2.16.0
 	github.com/getsentry/sentry-go v0.30.0
@@ -71,7 +71,7 @@ require (
 	golang.org/x/arch v0.12.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
-	google.golang.org/protobuf v1.36.0 // indirect
+	google.golang.org/protobuf v1.36.1 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
