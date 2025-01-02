@@ -6,7 +6,7 @@ import (
 
 	"github.com/potibm/kasseapparat/internal/app/entities/guestlist"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/storage/sqlite"
+	queryOptions "github.com/potibm/kasseapparat/internal/app/storage"
 	"github.com/potibm/kasseapparat/internal/app/storage/sqlite/product"
 	"gorm.io/gorm"
 )
@@ -54,7 +54,7 @@ func (r *GuestlistRepository) FindAll(ctx context.Context) ([]*guestlist.Guestli
 	return nil, nil
 }
 
-func (r *GuestlistRepository) FindAllWithParams(ctx context.Context, queryOptions sqlite.QueryOptions, filters GuestListFilters) ([]*guestlist.Guestlist, error) {
+func (r *GuestlistRepository) FindAllWithParams(ctx context.Context, queryOptions queryOptions.QueryOptions, filters GuestListFilters) ([]*guestlist.Guestlist, error) {
 	order := "DESC"
 	if queryOptions.SortAsc{
 		order = "ASC"
