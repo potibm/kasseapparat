@@ -9,7 +9,7 @@ func RegisterRoutes(rg *gin.RouterGroup,
 	guestlistService service.GuestlistService) {
 
 	handler := newHTTPHandler(guestlistService) // handlers creating
-	//rg.GET("", handler.GetProducts)
+	rg.GET("", handler.find)
 	rg.GET("/:id", handler.findByID)
 	//rg.GET("/:id/listEntries", handler.GetListEntriesByProductID)
 	//rg.PUT("/:id", handler.UpdateProductByID)

@@ -6,7 +6,7 @@ import (
 
 	"github.com/potibm/kasseapparat/internal/app/entities/guestlist"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	queryOptions "github.com/potibm/kasseapparat/internal/app/storage"
+	"github.com/potibm/kasseapparat/internal/app/storage"
 	"github.com/potibm/kasseapparat/internal/app/storage/sqlite/product"
 	"gorm.io/gorm"
 )
@@ -18,13 +18,6 @@ type GuestlistModel struct {
 	ProductID uint            ``
 	Product   product.Product `gorm:"foreignKey:ProductID"`
 }
-
-
-type GuestListFilters struct {
-	Query string
-	IDs []uint     
-}
-
 
 func (m GuestlistModel) CreateEntity() *guestlist.Guestlist {
 	return &guestlist.Guestlist{
@@ -54,9 +47,9 @@ func (r *GuestlistRepository) FindAll(ctx context.Context) ([]*guestlist.Guestli
 	return nil, nil
 }
 
-func (r *GuestlistRepository) FindAllWithParams(ctx context.Context, queryOptions queryOptions.QueryOptions, filters GuestListFilters) ([]*guestlist.Guestlist, error) {
+func (r *GuestlistRepository) FindAllWithParams(ctx context.Context, queryOptions storage.QueryOptions, filters storage.GuestListFilters) ([]*guestlist.Guestlist, error) {
 	order := "DESC"
-	if queryOptions.SortAsc{
+	if queryOptions.SortAsc {
 		order = "ASC"
 	}
 	sort, err := getValidFieldName(queryOptions.SortBy)
@@ -84,8 +77,6 @@ func (r *GuestlistRepository) FindAllWithParams(ctx context.Context, queryOption
 	}
 
 	return resultList, nil
-
-
 }
 
 func (r *GuestlistRepository) FindByID(ctx context.Context, id int) (*guestlist.Guestlist, error) {
@@ -95,6 +86,13 @@ func (r *GuestlistRepository) FindByID(ctx context.Context, id int) (*guestlist.
 	}
 
 	return list.CreateEntity(), nil
+}
+
+func (r *GuestlistRepository) GetTotalCount(ctx context.Context) (int64, error) {
+	var totalRows int64
+	r.db.Model(&GuestlistModel{}).Count(&totalRows)
+
+	return totalRows, nil
 }
 
 func (r *GuestlistRepository) Save(ctx context.Context, guestlist *guestlist.Guestlist) error {
