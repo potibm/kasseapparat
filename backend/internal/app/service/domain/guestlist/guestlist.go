@@ -23,6 +23,20 @@ func (s *GuestlistService) GetTotalCount(ctx context.Context) (int64, error) {
 	return s.guestListRepository.GetTotalCount(ctx)
 }
 
+func (s *GuestlistService) Save(ctx context.Context, guestlist *guestlist.Guestlist) (*guestlist.Guestlist, error) {
+	return s.guestListRepository.Save(ctx, guestlist)
+}
+
+func (s *GuestlistService) Update(ctx context.Context, guestlist *guestlist.Guestlist) (*guestlist.Guestlist, error) {
+	return s.guestListRepository.Update(ctx, guestlist)
+}
+
+func (s *GuestlistService) Delete(ctx context.Context, guestlistID int, deletedByID int) error {
+	// @TODO this should probably also delete all the guests in the guestlist
+	
+	return s.guestListRepository.Delete(ctx, guestlistID, deletedByID)
+}
+
 func NewGuestlistService(
 	guestlistRepository storage.GuestlistRepository,
 ) *GuestlistService {

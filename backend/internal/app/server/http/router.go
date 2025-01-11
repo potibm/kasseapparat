@@ -6,6 +6,6 @@ import (
 
 func (s *Server) registerRoutes() {
 
-	guestlistGroup := s.r.Group("/api/v1/guestlist")
+	guestlistGroup := s.r.Group("/api/v2/guestlist")
 	guestlist.RegisterRoutes(guestlistGroup, s.services.GuestlistService)
 }

@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const ErrGuestlistNotFound = "Guestlist not found"
+
 type GuestlistModel struct {
 	models.GormOwnedModel
 	Name      string          ``
@@ -57,7 +59,7 @@ func (r *GuestlistRepository) FindAllWithParams(ctx context.Context, queryOption
 		return nil, err
 	}
 
-	query := r.db.Preload("Product").Order(sort + " " + order + ", Id ASC").Limit(queryOptions.Limit).Offset(queryOptions.Offset)
+	query := r.db.WithContext(ctx).Preload("Product").Order(sort + " " + order + ", Id ASC").Limit(queryOptions.Limit).Offset(queryOptions.Offset)
 
 	if len(filters.IDs) > 0 {
 		query = query.Where("id IN ?", filters.IDs)
@@ -68,7 +70,7 @@ func (r *GuestlistRepository) FindAllWithParams(ctx context.Context, queryOption
 
 	var lists []GuestlistModel
 	if err := query.Find(&lists).Error; err != nil {
-		return nil, errors.New("Lists not found")
+		return nil, errors.New("Guestlists not found")
 	}
 
 	var resultList []*guestlist.Guestlist
@@ -81,8 +83,8 @@ func (r *GuestlistRepository) FindAllWithParams(ctx context.Context, queryOption
 
 func (r *GuestlistRepository) FindByID(ctx context.Context, id int) (*guestlist.Guestlist, error) {
 	var list GuestlistModel
-	if err := r.db.First(&list, id).Error; err != nil {
-		return nil, errors.New("Guestlist not found")
+	if err := r.db.WithContext(ctx).First(&list, id).Error; err != nil {
+		return nil, errors.New(ErrGuestlistNotFound)
 	}
 
 	return list.CreateEntity(), nil
@@ -90,16 +92,63 @@ func (r *GuestlistRepository) FindByID(ctx context.Context, id int) (*guestlist.
 
 func (r *GuestlistRepository) GetTotalCount(ctx context.Context) (int64, error) {
 	var totalRows int64
-	r.db.Model(&GuestlistModel{}).Count(&totalRows)
+	r.db.WithContext(ctx).Model(&GuestlistModel{}).Count(&totalRows)
 
 	return totalRows, nil
 }
 
-func (r *GuestlistRepository) Save(ctx context.Context, guestlist *guestlist.Guestlist) error {
-	return nil
+func (r *GuestlistRepository) Save(ctx context.Context, guestlist *guestlist.Guestlist) (*guestlist.Guestlist, error) {
+	var guestlistModel GuestlistModel
+
+	guestlistModel.Name = guestlist.Name
+	guestlistModel.TypeCode = guestlist.TypeCode
+	guestlistModel.ProductID = guestlist.Product.ID
+
+	result := r.db.WithContext(ctx).Create(&guestlistModel)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	guestlist.ID = guestlistModel.ID
+
+	return guestlist, nil
 }
 
-func (r *GuestlistRepository) Update(ctx context.Context, guestlist *guestlist.Guestlist) error {
+func (r *GuestlistRepository) Update(ctx context.Context, guestlist *guestlist.Guestlist) (*guestlist.Guestlist, error) {
+	var dbGuestlist GuestlistModel
+	if err := r.db.WithContext(ctx).First(&dbGuestlist, guestlist.ID).Error; err != nil {
+		return nil, errors.New(ErrGuestlistNotFound)
+	}
+
+	dbGuestlist.Name = guestlist.Name
+	dbGuestlist.TypeCode = guestlist.TypeCode
+	dbGuestlist.ProductID = guestlist.Product.ID
+
+	result := r.db.WithContext(ctx).Save(&dbGuestlist)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return dbGuestlist.CreateEntity(), nil
+}
+
+func (r *GuestlistRepository) Delete(ctx context.Context, guestlistID int, deletedByID int) error {
+	var dbGuestlist GuestlistModel
+	if err := r.db.WithContext(ctx).First(&dbGuestlist, guestlistID).Error; err != nil {
+		return errors.New(ErrGuestlistNotFound)
+	}
+
+	if guestlistID != 0 {
+		r.db.WithContext(ctx).Model(GuestlistModel{}).Where("id = ?", guestlistID).Update("DeletedByID", deletedByID)
+	}
+
+	/*
+		This should probably go into a separate repository
+		r.db.Model(&models.ListEntry{}).Where("list_id = ?", list.ID).Update("DeletedByID", deletedBy.ID)
+		r.db.Delete(&models.ListEntry{}, "list_id = ?", list.ID)
+	*/
+
+	r.db.WithContext(ctx).Delete(&dbGuestlist)
+
 	return nil
 }
 

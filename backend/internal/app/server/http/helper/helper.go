@@ -25,9 +25,12 @@ func QueryArrayUint(c *gin.Context, field string) []uint {
 }
 
 func NewQueryOptions(ctx *gin.Context) storage.QueryOptions {
+	start, _ := strconv.Atoi(ctx.DefaultQuery("_start", "0"))
+	end, _ := strconv.Atoi(ctx.DefaultQuery("_end", "10"))
+
 	queryOptions := storage.QueryOptions{}
-	queryOptions.Offset, _ = strconv.Atoi(ctx.DefaultQuery("_start", "0"))
-	queryOptions.Limit, _ = strconv.Atoi(ctx.DefaultQuery("_end", "10"))
+	queryOptions.Offset = start
+	queryOptions.Limit = end - start
 	queryOptions.SortBy = ctx.DefaultQuery("_sort", "id")
 	queryOptions.SortAsc = ctx.DefaultQuery("_order", "ASC") == "ASC"
 
