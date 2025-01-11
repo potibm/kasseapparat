@@ -32,7 +32,6 @@ function Kasseapparat() {
   const version = useConfig().version;
   const apiHost = useConfig().apiHost;
   const envMessage = useConfig().environmentMessage;
-  console.log("envMessage", envMessage);
 
   useEffect(() => {
     const getProducts = async () => {
