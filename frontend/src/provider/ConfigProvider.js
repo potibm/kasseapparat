@@ -44,6 +44,7 @@ const ConfigProvider = ({ children }) => {
           console.error("Error parsing dateOptions:", error);
           data.dateOptions = {};
         }
+        console.log("data", data);
 
         setConfig(data);
         setLoading(false);

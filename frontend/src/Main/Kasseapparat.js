@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Spinner } from "flowbite-react";
+import { Alert, Spinner } from "flowbite-react";
 import Cart from "./components/Cart";
 import ProductList from "./components/ProductList";
 import PurchaseHistory from "./components/PurchaseHistory";
@@ -31,6 +31,8 @@ function Kasseapparat() {
   const { username, token } = useAuth();
   const version = useConfig().version;
   const apiHost = useConfig().apiHost;
+  const envMessage = useConfig().environmentMessage;
+  console.log("envMessage", envMessage);
 
   useEffect(() => {
     const getProducts = async () => {
@@ -155,6 +157,11 @@ function Kasseapparat() {
 
   return (
     <div className="App p-2 dark:bg-black">
+      {envMessage && (
+        <Alert className="mb-5 dark:bg-blue-900 dark:text-blue-100 rounded-none">
+          {envMessage}
+        </Alert>
+      )}
       <div className="w-full overflow-hidden">
         {products.length === 0 && (
           <div className="w-9/12 text-gray-500 text-left p-5">

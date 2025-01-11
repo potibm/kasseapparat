@@ -42,6 +42,7 @@ FRONTEND_URL="https://kasseapparat.example.cp,"
 MAIL_DSN="smtp://username:password@smtp.example.com:587"
 MAIL_FROM="kasseapparat<kasseapparat@example.com>"
 MAIL_SUBJECT_PREFIX="[Kasseapparat] "
+ENV_MESSAGE="This is just a staging system!"
 ```
 
 ### JWT_SECRET
