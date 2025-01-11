@@ -158,7 +158,7 @@ function Kasseapparat() {
   return (
     <div className="App p-2 dark:bg-black">
       {envMessage && (
-        <Alert className="mb-5 dark:bg-blue-900 dark:text-blue-100 rounded-none">
+        <Alert color="info" className="mb-5 rounded-none">
           {envMessage}
         </Alert>
       )}
