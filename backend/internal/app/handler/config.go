@@ -19,6 +19,7 @@ type Config struct {
 	DateOptions                   string  `json:"dateOptions"`
 	FractionDigitsMin             int     `json:"fractionDigitsMin"`
 	FractionDigitsMax             int     `json:"fractionDigitsMax"`
+	EnvironmentMessage            string  `json:"environmentMessage"`
 }
 
 func (handler *Handler) GetConfig(c *gin.Context) {
@@ -35,6 +36,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		DateOptions:                   getEnv("DATE_OPTIONS", "{\"weekday\":\"long\",\"hour\":\"2-digit\",\"minute\":\"2-digit\"}"),
 		FractionDigitsMin:             getEnvAsInt("FRACTION_DIGITS_MIN", 0),
 		FractionDigitsMax:             getEnvAsInt("FRACTION_DIGITS_MAX", 2),
+		EnvironmentMessage:            getEnv("ENV_MESSAGE", ""),
 	}
 
 	c.JSON(200, config)

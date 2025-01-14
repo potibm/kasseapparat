@@ -1,6 +1,6 @@
 // Admin.js
 import React from "react";
-import { Admin, Layout, Menu, Resource } from "react-admin";
+import { Admin, Layout, Menu, Resource, useSidebarState } from "react-admin";
 import dataProvider from "./dataProvider";
 import authProvider from "./authProvider";
 import {
@@ -24,6 +24,7 @@ import {
 } from "./compontent/ProductInterest";
 import PropTypes from "prop-types";
 import Dashboard from "./compontent/Dashboard";
+import { useConfig } from "../provider/ConfigProvider";
 
 const AdminPanel = () => (
   <Admin
@@ -82,23 +83,42 @@ MyMenuDivider.propTypes = {
   name: PropTypes.string.isRequired,
 };
 
-const MyMenu = () => (
-  <Menu>
-    <Menu.DashboardItem />
-
-    <MyMenuDivider name="POS" />
-    <Menu.ResourceItem name="products" />
-    <Menu.ResourceItem name="purchases" />
-    <Menu.ResourceItem name="productInterests" />
-
-    <MyMenuDivider name="Guestlist" />
-    <Menu.ResourceItem name="lists" />
-    <Menu.ResourceItem name="listEntries" primaryText="List Entries" />
-
-    <MyMenuDivider name="Admin" />
-    <Menu.ResourceItem name="users" />
-  </Menu>
+const MyMenuMessage = ({ message }) => (
+  <div className="text-left mt-4 text-xs font-bold tracking-wide border-t-2 border-b-2 border-t-red-700 border-b-red-700 bg-info pl-5 pr-3 uppercase text-ellipsis">
+    {message}
+  </div>
 );
+
+MyMenuMessage.propTypes = {
+  message: PropTypes.string.isRequired,
+};
+
+const MyMenu = () => {
+  const environmentMessage = useConfig().environmentMessage;
+  const [isSidebarOpen] = useSidebarState();
+
+  return (
+    <Menu>
+      <Menu.DashboardItem />
+
+      <MyMenuDivider name="POS" />
+      <Menu.ResourceItem name="products" />
+      <Menu.ResourceItem name="purchases" />
+      <Menu.ResourceItem name="productInterests" />
+
+      <MyMenuDivider name="Guestlist" />
+      <Menu.ResourceItem name="lists" />
+      <Menu.ResourceItem name="listEntries" primaryText="List Entries" />
+
+      <MyMenuDivider name="Admin" />
+      <Menu.ResourceItem name="users" />
+
+      {environmentMessage && isSidebarOpen && (
+        <MyMenuMessage message={environmentMessage} />
+      )}
+    </Menu>
+  );
+};
 
 const MyLayout = ({ children }) => <Layout menu={MyMenu}>{children}</Layout>;
 
