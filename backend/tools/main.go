@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -16,7 +17,10 @@ import (
 var (
 	purgeDB           bool // Flag to indicate whether to purge the database
 	seedData          bool // Flag to indicate whether to seed initial data
+	createUserName    string
+	createUserEmail   string
 	userImportCsvFile string
+	createUserIsAdmin bool // Flag to indicate whether to create a user with admin rights
 )
 
 func init() {
@@ -24,6 +28,9 @@ func init() {
 	flag.BoolVar(&purgeDB, "purge", false, "Purge the database before initializing")
 	flag.BoolVar(&seedData, "seed", false, "Seed initial data to the database")
 	flag.StringVar(&userImportCsvFile, "import-users", "", "CSV file to import users from")
+	flag.StringVar(&createUserName, "create-user", "", "Create a user with the given username")
+	flag.StringVar(&createUserEmail, "create-user-email", "", "Email for the user to create")
+	flag.BoolVar(&createUserIsAdmin, "create-user-admin", false, "Create a user with admin rights")
 	flag.Parse()
 }
 
@@ -36,6 +43,16 @@ func main() {
 	if userImportCsvFile != "" {
 		log.Println("Importing users from CSV file...")
 		importUsers(userImportCsvFile)
+		return
+	}
+
+	if createUserName != "" {
+		if createUserEmail == "" {
+			fmt.Println("Error: --createUserEmail is required when creating a user.")
+			os.Exit(1)
+		}
+		log.Println("Creating user", createUserName)
+		createUser(createUserName, createUserEmail, createUserIsAdmin)
 		return
 	}
 
@@ -56,9 +73,6 @@ func main() {
 }
 
 func importUsers(filename string) {
-	repo := repository.NewRepository()
-	mailer := initializer.InitializeMailer()
-
 	file, err := os.Open(filename) // #nosec G304
 	if err != nil {
 		log.Fatal(err)
@@ -75,25 +89,39 @@ func importUsers(filename string) {
 	for _, record := range records {
 		log.Println("Creating user", record[0])
 
-		user := models.User{
-			Username: record[0],
-			Email:    record[1],
-			Password: "",
-			Admin:    record[2] == "true",
-		}
-		user.GenerateRandomPassword()
-		validity := 24 * time.Hour
-		user.GenerateChangePasswordToken(&validity)
+		createUserAndSendToken(record[0], record[1], record[2] == "true")
+	}
+}
 
-		user, err := repo.CreateUser(user)
-		if err != nil {
-			log.Println("Error creating a user", err)
-			continue
-		}
+func createUser(username string, email string, isAdmin bool) {
+	createUserAndSendToken(username, email, isAdmin)
 
-		err = mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken)
-		if err != nil {
-			log.Println("Error sending email", err)
-		}
+	log.Println("User created")
+}
+
+func createUserAndSendToken(username string, email string, isAdmin bool) {
+	repo := repository.NewRepository()
+	mailer := initializer.InitializeMailer()
+
+	user := models.User{
+		Username: username,
+		Email:    email,
+		Password: "",
+		Admin:    isAdmin,
+	}
+	user.GenerateRandomPassword()
+
+	validity := 24 * time.Hour
+	user.GenerateChangePasswordToken(&validity)
+
+	user, err := repo.CreateUser(user)
+	if err != nil {
+		log.Println("Error creating a user", err)
+		return
+	}
+
+	err = mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken)
+	if err != nil {
+		log.Println("Error sending email", err)
 	}
 }

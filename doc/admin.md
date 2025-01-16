@@ -208,19 +208,33 @@ docker compose exec kasseapparat /app/kasseapparat-tool
 
 ### Create first user
 
+Call
+
+```
+docker compose exec kasseapparat /app/kasseapparat-tool -create-user username -create-user-email email@exmaple.com -create-user-admin
+```
+
+to create a user called "username" with the email "email@example.com" as an admin. You should receive an email to change your password.
+
+Just edit the command accordingly.
+
+### Create multiple users
+
 Create /app/kasseapparat/data/user.txt with the following structure (please, edit accordingly)
 
 ```
 username,email@example.com,true
+username2,email2@example.com,false
+username3,email3@example.com,true
 ```
 
 Call
 
 ```
-docker compose exec kasseapparat /app/kasseapparat-tool --import-users /data/user.txt
+docker compose exec kasseapparat /app/kasseapparat-tool -import-users /data/user.txt
 ```
 
-to create a user called "username" with the email "email@example.com" as an admin. You should receive an email to change your password.
+to create a user called "username" with the email "email@example.com" as an admin. In addition two additional users with the usernames "username2" and "username3" are created. Each user should receive an email to change their password.
 
 ## Startup
 
