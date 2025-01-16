@@ -206,7 +206,13 @@ Make the script executable.
 docker compose exec kasseapparat /app/kasseapparat-tool
 ```
 
-### Create first user
+### Username and Email Requirements
+
+- Username: Must be 3-20 characters, alphanumeric with underscores
+- Email: Must be a valid email format
+- Admin flag: Set to 'true' for admin privileges, 'false' for regular users
+
+### Create single user
 
 Call
 
@@ -223,9 +229,9 @@ Just edit the command accordingly.
 Create /app/kasseapparat/data/user.txt with the following structure (please, edit accordingly)
 
 ```csv
-username,email@example.com,true
-username2,email2@example.com,false
-username3,email3@example.com,true
+john_doe,john.doe@company.com,true
+jane_smith,jane.smith@company.com,false
+tech_lead,tech.lead@company.com,true
 ```
 
 Call
@@ -234,7 +240,7 @@ Call
 docker compose exec kasseapparat /app/kasseapparat-tool -import-users /data/user.txt
 ```
 
-to create a user called "username" with the email "email@example.com" as an admin. In addition two additional users with the usernames "username2" and "username3" are created. Each user should receive an email to change their password.
+to create the three users provided. Each user should receive an email to change their password.
 
 ## Startup
 
