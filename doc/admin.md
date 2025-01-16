@@ -81,7 +81,7 @@ Modify MAIL_FROM accordingly. Editing MAIL_SUBJECT_PREFIX is optional.
 
 ## Create a /app/kasseapparat/docker-compose.yml
 
-```bash
+```yaml
 services:
   traefik:
     image: traefik:v3.0
@@ -222,7 +222,7 @@ Just edit the command accordingly.
 
 Create /app/kasseapparat/data/user.txt with the following structure (please, edit accordingly)
 
-```bash
+```csv
 username,email@example.com,true
 username2,email2@example.com,false
 username3,email3@example.com,true
