@@ -53,6 +53,8 @@ func main() {
 		}
 		log.Println("Creating user", createUserName)
 		createUser(createUserName, createUserEmail, createUserIsAdmin)
+
+		log.Println("User created")
 		return
 	}
 
@@ -89,17 +91,11 @@ func importUsers(filename string) {
 	for _, record := range records {
 		log.Println("Creating user", record[0])
 
-		createUserAndSendToken(record[0], record[1], record[2] == "true")
+		createUser(record[0], record[1], record[2] == "true")
 	}
 }
 
 func createUser(username string, email string, isAdmin bool) {
-	createUserAndSendToken(username, email, isAdmin)
-
-	log.Println("User created")
-}
-
-func createUserAndSendToken(username string, email string, isAdmin bool) {
 	repo := repository.NewRepository()
 	mailer := initializer.InitializeMailer()
 

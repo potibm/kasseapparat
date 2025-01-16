@@ -49,13 +49,13 @@ ENV_MESSAGE="This is just a staging system!"
 
 Generate a random JWT secret e.g. by calling
 
-```
+```bash
 < /dev/urandom tr -dc 'A-Za-z0-9!@#$%^&*()_+=' | head -c 16
 ```
 
 or
 
-```
+```bash
 openssl rand -base64 32
 ```
 
@@ -81,7 +81,7 @@ Modify MAIL_FROM accordingly. Editing MAIL_SUBJECT_PREFIX is optional.
 
 ## Create a /app/kasseapparat/docker-compose.yml
 
-```
+```bash
 services:
   traefik:
     image: traefik:v3.0
@@ -157,13 +157,13 @@ Replace the urls above with the one that you will use.
 
 According to https://doc.traefik.io/traefik/middlewares/http/basicauth/ you may generate a password with
 
-```
+```bash
 echo $(htpasswd -nB user) | sed -e s/\\$/\\$\\$/g
 ```
 
 ## Create update.sh
 
-```
+```bash
 #!/bin/bash
 
 # Backup database
@@ -202,7 +202,7 @@ Make the script executable.
 
 ### Create Database
 
-```
+```bash
 docker compose exec kasseapparat /app/kasseapparat-tool
 ```
 
@@ -210,8 +210,8 @@ docker compose exec kasseapparat /app/kasseapparat-tool
 
 Call
 
-```
-docker compose exec kasseapparat /app/kasseapparat-tool -create-user username -create-user-email email@exmaple.com -create-user-admin
+```bash
+docker compose exec kasseapparat /app/kasseapparat-tool -create-user username -create-user-email email@example.com -create-user-admin
 ```
 
 to create a user called "username" with the email "email@example.com" as an admin. You should receive an email to change your password.
@@ -222,7 +222,7 @@ Just edit the command accordingly.
 
 Create /app/kasseapparat/data/user.txt with the following structure (please, edit accordingly)
 
-```
+```bash
 username,email@example.com,true
 username2,email2@example.com,false
 username3,email3@example.com,true
@@ -230,7 +230,7 @@ username3,email3@example.com,true
 
 Call
 
-```
+```bash
 docker compose exec kasseapparat /app/kasseapparat-tool -import-users /data/user.txt
 ```
 
@@ -238,7 +238,7 @@ to create a user called "username" with the email "email@example.com" as an admi
 
 ## Startup
 
-```
+```bash
 docker compose up -d
 ```
 
