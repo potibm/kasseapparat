@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/mail"
 	"os"
 	"time"
 
@@ -48,11 +49,19 @@ func main() {
 
 	if createUserName != "" {
 		if createUserEmail == "" {
-			fmt.Println("Error: --createUserEmail is required when creating a user.")
+			fmt.Println("Error: -create-user-email is required when creating a user.")
+			os.Exit(1)
+		}
+		if !validEmail(createUserEmail) {
+			fmt.Println("Error: Invalid email format")
 			os.Exit(1)
 		}
 		log.Println("Creating user", createUserName)
-		createUser(createUserName, createUserEmail, createUserIsAdmin)
+		err := createUser(createUserName, createUserEmail, createUserIsAdmin)
+		if err != nil {
+			log.Println("Failed to create user:", err)
+			return
+		}
 
 		log.Println("User created")
 		return
@@ -89,13 +98,34 @@ func importUsers(filename string) {
 	}
 
 	for _, record := range records {
+		if len(record) != 3 {
+			log.Printf("Skipping malformed record: %v", record)
+			continue
+		}
+
 		log.Println("Creating user", record[0])
 
-		createUser(record[0], record[1], record[2] == "true")
+		isAdmin := false
+		if record[2] == "true" || record[2] == "false" {
+			isAdmin = record[2] == "true"
+		} else {
+			log.Printf("Invalid admin value '%s' for user %s, defaulting to false", record[2], record[0])
+		}
+
+		if !validEmail(record[1]) {
+			log.Printf("Invalid email format for user %s, skipping", record[0])
+			continue
+		}
+
+		err := createUser(record[0], record[1], isAdmin)
+		if err != nil {
+			log.Println("Failed to create user:", err)
+			continue
+		}
 	}
 }
 
-func createUser(username string, email string, isAdmin bool) {
+func createUser(username string, email string, isAdmin bool) error {
 	repo := repository.NewRepository()
 	mailer := initializer.InitializeMailer()
 
@@ -112,12 +142,18 @@ func createUser(username string, email string, isAdmin bool) {
 
 	user, err := repo.CreateUser(user)
 	if err != nil {
-		log.Println("Error creating a user", err)
-		return
+		return fmt.Errorf("failed to create user: %w", err)
 	}
 
 	err = mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken)
 	if err != nil {
-		log.Println("Error sending email", err)
+		return fmt.Errorf("failed to send email: %w", err)
 	}
+
+	return nil
+}
+
+func validEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err == nil
 }
