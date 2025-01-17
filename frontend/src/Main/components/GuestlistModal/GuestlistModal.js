@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { FloatingLabel, Modal } from "flowbite-react";
-import { fetchGuestListByProductId } from "../../hooks/Api";
+import { fetchGuestlistByProductId } from "../../hooks/Api";
 import { HiOutlineX } from "react-icons/hi";
 import PropTypes from "prop-types";
 import SidebarKeyboard from "./components/SidebarKeyboard";
 import { useConfig } from "../../../provider/ConfigProvider";
 import { useAuth } from "../../../Auth/provider/AuthProvider";
 import MyButton from "../MyButton";
-import GuestListResultTable from "./components/ResultTable";
+import GuestlistResultTable from "./components/ResultTable";
 
 const GuestlistModal = ({
   isOpen,
@@ -16,7 +16,7 @@ const GuestlistModal = ({
   addToCart,
   hasListItem,
 }) => {
-  const [guestListEntries, setGuestListEntries] = useState([]);
+  const [guestlistEntries, setGuestlistEntries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,7 +40,7 @@ const GuestlistModal = ({
     async (query = "") => {
       setLoading(true);
       try {
-        let response = await fetchGuestListByProductId(
+        let response = await fetchGuestlistByProductId(
           apiHost,
           token,
           product.id,
@@ -49,13 +49,13 @@ const GuestlistModal = ({
         if (response === null) {
           response = [];
         }
-        setGuestListEntries(response);
+        setGuestlistEntries(response);
         setError(null);
         setLoading(false);
         setLoadedSearchQuery(searchQuery);
       } catch (error) {
         setError("Error fetching list entries: " + error.message);
-        setGuestListEntries([]);
+        setGuestlistEntries([]);
         setLoading(false);
         setLoadedSearchQuery("");
       }
@@ -121,11 +121,11 @@ const GuestlistModal = ({
               className="relative"
               style={{ maxHeight: "calc(100vh - 10rem)", minHeight: "200px" }}
             >
-              <GuestListResultTable
+              <GuestlistResultTable
                 error={error}
                 loading={loading}
                 loadedSearchQuery={loadedSearchQuery}
-                guestListEntries={guestListEntries}
+                guestlistEntries={guestlistEntries}
                 hasListItem={hasListItem}
                 onAddToCart={handleAddToCart}
                 onClose={onClose}

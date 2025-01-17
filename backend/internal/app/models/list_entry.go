@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// List represents a guestlist
+// ListEntry represents a guest in a guestlist
 type ListEntry struct {
 	GormOwnedModel
 	GuestlistID          uint       `json:"guestlistId"`

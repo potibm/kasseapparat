@@ -2,12 +2,12 @@ import React from "react";
 import { Table, Alert, Spinner } from "flowbite-react";
 import { HiInformationCircle, HiXCircle } from "react-icons/hi";
 import PropTypes from "prop-types";
-import GuestListResultTableRow from "./ResultTableRow";
+import GuestlistResultTableRow from "./ResultTableRow";
 
-const GuestListResultTable = ({
+const GuestlistResultTable = ({
   loading,
   error,
-  guestListEntries,
+  guestlistEntries,
   onAddToCart,
   hasListItem,
   loadedSearchQuery,
@@ -26,13 +26,13 @@ const GuestListResultTable = ({
         </Alert>
       )}
 
-      {!loading && guestListEntries.length === 0 && (
+      {!loading && guestlistEntries.length === 0 && (
         <Alert className="my-3" color="warning" icon={HiXCircle}>
           No entries found
         </Alert>
       )}
 
-      {guestListEntries.length > 0 && (
+      {guestlistEntries.length > 0 && (
         <div className="space-y-4">
           <Table hoverable className="dark:text-white">
             <Table.Head>
@@ -41,8 +41,8 @@ const GuestListResultTable = ({
               <Table.HeadCell className="w-6/12">Action</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
-              {guestListEntries.map((entry) => (
-                <GuestListResultTableRow
+              {guestlistEntries.map((entry) => (
+                <GuestlistResultTableRow
                   key={entry.id}
                   entry={entry}
                   onAddToCart={onAddToCart}
@@ -58,13 +58,13 @@ const GuestListResultTable = ({
   );
 };
 
-GuestListResultTable.propTypes = {
+GuestlistResultTable.propTypes = {
   loading: PropTypes.bool,
   error: PropTypes.string,
-  guestListEntries: PropTypes.array.isRequired,
+  guestlistEntries: PropTypes.array.isRequired,
   onAddToCart: PropTypes.func.isRequired,
   hasListItem: PropTypes.func.isRequired,
   loadedSearchQuery: PropTypes.string.isRequired,
 };
 
-export default GuestListResultTable;
+export default GuestlistResultTable;

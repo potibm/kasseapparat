@@ -23,7 +23,7 @@ export const fetchProducts = async (apiHost, jwtToken) => {
   });
 };
 
-export const fetchGuestListByProductId = async (
+export const fetchGuestlistByProductId = async (
   apiHost,
   jwtToken,
   productId,

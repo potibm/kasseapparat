@@ -53,6 +53,17 @@ func TestGetGuestlistsWithSort(t *testing.T) {
 	}
 }
 
+func TestGetGuestlistsWithQuery(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
+		WithQuery("q", "Guestlist").
+		Expect().
+		Status(http.StatusOK)
+
+}
+
 func TestGetList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -74,8 +85,8 @@ func TestCreateUpdateAndDelete(t *testing.T) {
 	list := withDemoUserAuthToken(e.POST(guestlistBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"name":      originalName,
-			"TypeCode":  false,
-			"ProductId": 2,
+			"typeCode":  false,
+			"productId": 2,
 		}).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
@@ -96,8 +107,8 @@ func TestCreateUpdateAndDelete(t *testing.T) {
 	withDemoUserAuthToken(e.PUT(listUrl)).
 		WithJSON(map[string]interface{}{
 			"name":      changedName,
-			"TypeCode":  false,
-			"ProductId": 2,
+			"typeCode":  false,
+			"productId": 2,
 		}).
 		Expect().
 		Status(http.StatusOK).JSON().Object()

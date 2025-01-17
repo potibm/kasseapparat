@@ -8,27 +8,27 @@ import {
   ProductEdit,
   ProductIcon,
   ProductCreate,
-} from "./compontent/Product";
-import { PurchaseList, PurchaseShow } from "./compontent/Purchase";
-import { UserCreate, UserEdit, UserIcon, UserList } from "./compontent/User";
+} from "./component/Product";
+import { PurchaseList, PurchaseShow } from "./component/Purchase";
+import { UserCreate, UserEdit, UserIcon, UserList } from "./component/User";
 import {
   GuestlistCreate,
   GuestlistEdit,
   GuestlistIcon,
   GuestlistList,
-} from "./compontent/Guestlist";
+} from "./component/Guestlist";
 import {
   ListEntryCreate,
   ListEntryEdit,
   ListEntryIcon,
   ListEntryList,
-} from "./compontent/ListEntry";
+} from "./component/ListEntry";
 import {
   ProductInterestList,
   ProductInterestIcon,
-} from "./compontent/ProductInterest";
+} from "./component/ProductInterest";
 import PropTypes from "prop-types";
-import Dashboard from "./compontent/Dashboard";
+import Dashboard from "./component/Dashboard";
 import { useConfig } from "../provider/ConfigProvider";
 
 const AdminPanel = () => (

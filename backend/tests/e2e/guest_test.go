@@ -83,7 +83,7 @@ func TestGetListEntriesWithSort(t *testing.T) {
 	defer cleanup()
 
 	// define an array of sort fields
-	sortFields := []string{"id", "name", "list.name", "arrivedAt"}
+	sortFields := []string{"id", "name", "guestlist.name", "arrivedAt"}
 
 	for _, sortField := range sortFields {
 

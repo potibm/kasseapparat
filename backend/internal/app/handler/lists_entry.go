@@ -12,7 +12,7 @@ import (
 )
 
 type ListEntryCreateRequest struct {
-	GuestlistID          uint    `form:"listId"  json:"guestlistId" binding:"required"`
+	GuestlistID          uint    `form:"guestlistId"  json:"guestlistId" binding:"required"`
 	Name                 string  `form:"name"  json:"name" binding:"required"`
 	Code                 string  `form:"code"  json:"code"`
 	AdditionalGuests     uint    `form:"additionalGuests"  json:"additionalGuests"`
@@ -22,7 +22,7 @@ type ListEntryCreateRequest struct {
 }
 
 type ListEntryUpdateRequest struct {
-	GuestlistID          uint       `form:"listId"  json:"guestlistId"`
+	GuestlistID          uint       `form:"guestlistId"  json:"guestlistId"`
 	Name                 string     `form:"name"  json:"name" binding:"required"`
 	Code                 string     `form:"code"  json:"code"`
 	AdditionalGuests     uint       `form:"additionalGuests"  json:"additionalGuests"`

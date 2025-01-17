@@ -86,12 +86,12 @@ func SeedDatabase(db *gorm.DB) {
 	}
 
 	for i := 1; i < 38; i++ {
-		userGuestList := &models.Guestlist{Name: "Guestlist " + gofakeit.FirstName(), ProductID: freeProduct.ID}
-		db.Create(userGuestList)
+		userGuestlist := &models.Guestlist{Name: "Guestlist " + gofakeit.FirstName(), ProductID: freeProduct.ID}
+		db.Create(userGuestlist)
 
 		for j := 0; j < gofakeit.Number(1, 10); j++ {
 
-			db.Create(&models.ListEntry{Name: gofakeit.Name(), GuestlistID: userGuestList.ID, AdditionalGuests: uint(gofakeit.Number(0, 2))})
+			db.Create(&models.ListEntry{Name: gofakeit.Name(), GuestlistID: userGuestlist.ID, AdditionalGuests: uint(gofakeit.Number(0, 2))})
 		}
 	}
 }

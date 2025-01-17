@@ -66,8 +66,6 @@ func getListsEntriesValidFieldName(input string) (string, error) {
 		return "list_entries.ID", nil
 	case "name":
 		return "list_entries.Name", nil
-	case "list.name":
-		return "Guestlist.Name", nil
 	case "guestlist.name":
 		return "Guestlist.Name", nil
 	case "arrivedAt":

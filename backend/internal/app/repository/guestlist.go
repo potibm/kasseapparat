@@ -8,12 +8,12 @@ import (
 
 const ErrGuestlistNotFound = "Guestlist not found"
 
-type ListFilters = struct {
+type GuestlistFilters = struct {
 	Query string
 	IDs   []int
 }
 
-func (repo *Repository) GetGuestlists(limit int, offset int, sort string, order string, filters ListFilters) ([]models.Guestlist, error) {
+func (repo *Repository) GetGuestlists(limit int, offset int, sort string, order string, filters GuestlistFilters) ([]models.Guestlist, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -29,12 +29,12 @@ func (repo *Repository) GetGuestlists(limit int, offset int, sort string, order 
 		query = query.Where("id IN ?", filters.IDs)
 	}
 	if filters.Query != "" {
-		query = query.Where("lists.Name LIKE ?", "%"+filters.Query+"%")
+		query = query.Where("guestlists.Name LIKE ?", "%"+filters.Query+"%")
 	}
 
 	var guestlists []models.Guestlist
 	if err := query.Find(&guestlists).Error; err != nil {
-		return nil, errors.New("Lists not found")
+		return nil, errors.New("Guestlists not found")
 	}
 
 	return guestlists, nil
@@ -75,16 +75,16 @@ func (repo *Repository) GetGuestlistWithTypeCode() (*models.Guestlist, error) {
 	return &guestlist, nil
 }
 
-func (repo *Repository) UpdateListByID(id int, updatedList models.Guestlist) (*models.Guestlist, error) {
+func (repo *Repository) UpdateGuestlistByID(id int, updatedGuestlist models.Guestlist) (*models.Guestlist, error) {
 	var guestlist models.Guestlist
 	if err := repo.db.First(&guestlist, id).Error; err != nil {
 		return nil, errors.New(ErrGuestlistNotFound)
 	}
 
-	guestlist.Name = updatedList.Name
-	guestlist.TypeCode = updatedList.TypeCode
-	guestlist.ProductID = updatedList.ProductID
-	guestlist.UpdatedByID = updatedList.UpdatedByID
+	guestlist.Name = updatedGuestlist.Name
+	guestlist.TypeCode = updatedGuestlist.TypeCode
+	guestlist.ProductID = updatedGuestlist.ProductID
+	guestlist.UpdatedByID = updatedGuestlist.UpdatedByID
 
 	if err := repo.db.Save(&guestlist).Error; err != nil {
 		return nil, errors.New("Failed to update guestlist")
@@ -101,8 +101,8 @@ func (repo *Repository) CreateGuestlist(guestlist models.Guestlist) (models.Gues
 
 func (repo *Repository) DeleteGuestlist(guestlist models.Guestlist, deletedBy models.User) {
 	repo.db.Model(&models.Guestlist{}).Where("id = ?", guestlist.ID).Update("DeletedByID", deletedBy.ID)
-	repo.db.Model(&models.ListEntry{}).Where("list_id = ?", guestlist.ID).Update("DeletedByID", deletedBy.ID)
+	repo.db.Model(&models.ListEntry{}).Where("guestlist_id = ?", guestlist.ID).Update("DeletedByID", deletedBy.ID)
 
-	repo.db.Delete(&models.ListEntry{}, "list_id = ?", guestlist.ID)
+	repo.db.Delete(&models.ListEntry{}, "guestlist_id = ?", guestlist.ID)
 	repo.db.Delete(&guestlist)
 }

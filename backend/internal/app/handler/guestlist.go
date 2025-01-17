@@ -26,7 +26,7 @@ func (handler *Handler) GetGuestlists(c *gin.Context) {
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "ASC")
-	filters := repository.ListFilters{}
+	filters := repository.GuestlistFilters{}
 	filters.Query = c.DefaultQuery("q", "")
 	filters.IDs = queryArrayInt(c, "id")
 
@@ -84,7 +84,7 @@ func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 	}
 	list.UpdatedByID = &executingUserObj.ID
 
-	list, err = handler.repo.UpdateListByID(id, *list)
+	list, err = handler.repo.UpdateGuestlistByID(id, *list)
 	if err != nil {
 		_ = c.Error(InternalServerError)
 		return
