@@ -39,7 +39,7 @@ func (handler *Handler) GetListEntries(c *gin.Context) {
 	order := c.DefaultQuery("_order", "ASC")
 	filters := repository.ListEntryFilters{}
 	filters.Query = c.DefaultQuery("q", "")
-	filters.ListID, _ = strconv.Atoi(c.DefaultQuery("list", "0"))
+	filters.GuestlistID, _ = strconv.Atoi(c.DefaultQuery("list", "0"))
 	filters.Present = c.DefaultQuery("isPresent", "false") == "true"
 	filters.NotPresent = c.DefaultQuery("isNotPresent", "false") == "true"
 	filters.IDs = queryArrayInt(c, "id")

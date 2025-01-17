@@ -40,6 +40,12 @@ func MigrateDatabase(db *gorm.DB) {
 }
 
 func SeedDatabase(db *gorm.DB) {
+
+	const (
+		DefaultGuestlistCount  = 38
+		MaxEntriesPerGuestlist = 10
+	)
+
 	_ = gofakeit.Seed(0)
 
 	db.Create(&models.User{Username: "admin", Email: "admin@example.com", Password: "admin", Admin: true})
@@ -85,11 +91,11 @@ func SeedDatabase(db *gorm.DB) {
 		db.Create(&models.ListEntry{Name: gofakeit.Name(), Code: &code, GuestlistID: deineTicketsGuestlist.ID, AdditionalGuests: 0})
 	}
 
-	for i := 1; i < 38; i++ {
+	for i := 1; i < DefaultGuestlistCount; i++ {
 		userGuestlist := &models.Guestlist{Name: "Guestlist " + gofakeit.FirstName(), ProductID: freeProduct.ID}
 		db.Create(userGuestlist)
 
-		for j := 0; j < gofakeit.Number(1, 10); j++ {
+		for j := 0; j < gofakeit.Number(1, MaxEntriesPerGuestlist); j++ {
 
 			db.Create(&models.ListEntry{Name: gofakeit.Name(), GuestlistID: userGuestlist.ID, AdditionalGuests: uint(gofakeit.Number(0, 2))})
 		}

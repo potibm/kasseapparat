@@ -65,32 +65,32 @@ func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	list, err := handler.repo.GetGuestlistByID(id)
+	guestlist, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
-	var listRequest GuestlistUpdateRequest
-	if err := c.ShouldBind(&listRequest); err != nil {
+	var guestlistRequest GuestlistUpdateRequest
+	if err := c.ShouldBind(&guestlistRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
-	list.Name = listRequest.Name
-	list.TypeCode = listRequest.TypeCode
-	if listRequest.ProductID > 0 {
-		list.ProductID = listRequest.ProductID
+	guestlist.Name = guestlistRequest.Name
+	guestlist.TypeCode = guestlistRequest.TypeCode
+	if guestlistRequest.ProductID > 0 {
+		guestlist.ProductID = guestlistRequest.ProductID
 	}
-	list.UpdatedByID = &executingUserObj.ID
+	guestlist.UpdatedByID = &executingUserObj.ID
 
-	list, err = handler.repo.UpdateGuestlistByID(id, *list)
+	guestlist, err = handler.repo.UpdateGuestlistByID(id, *guestlist)
 	if err != nil {
 		_ = c.Error(InternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, list)
+	c.JSON(http.StatusOK, guestlist)
 }
 
 func (handler *Handler) CreateGuestlist(c *gin.Context) {
@@ -101,15 +101,15 @@ func (handler *Handler) CreateGuestlist(c *gin.Context) {
 	}
 
 	var guestlist models.Guestlist
-	var listRequest GuestlistCreateRequest
-	if err := c.ShouldBind(&listRequest); err != nil {
+	var guestlistRequest GuestlistCreateRequest
+	if err := c.ShouldBind(&guestlistRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
-	guestlist.Name = listRequest.Name
-	guestlist.TypeCode = listRequest.TypeCode
-	guestlist.ProductID = listRequest.ProductID
+	guestlist.Name = guestlistRequest.Name
+	guestlist.TypeCode = guestlistRequest.TypeCode
+	guestlist.ProductID = guestlistRequest.ProductID
 	guestlist.CreatedByID = &executingUserObj.ID
 
 	product, err := handler.repo.CreateGuestlist(guestlist)
@@ -129,18 +129,18 @@ func (handler *Handler) DeleteGuestlistByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	list, err := handler.repo.GetGuestlistByID(id)
+	guestlist, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
-	if !executingUserObj.Admin && *list.CreatedByID != executingUserObj.ID {
+	if !executingUserObj.Admin && *guestlist.CreatedByID != executingUserObj.ID {
 		_ = c.Error(Forbidden)
 		return
 	}
 
-	handler.repo.DeleteGuestlist(*list, *executingUserObj)
+	handler.repo.DeleteGuestlist(*guestlist, *executingUserObj)
 
 	c.JSON(http.StatusOK, gin.H{})
 }

@@ -28,7 +28,7 @@ const GuestlistResultTable = ({
 
       {!loading && guestlistEntries.length === 0 && (
         <Alert className="my-3" color="warning" icon={HiXCircle}>
-          No entries found
+          No matching guests in this guestlist
         </Alert>
       )}
 

@@ -11,7 +11,7 @@ const ErrListEntryNotFound = "List Entry not found"
 
 type ListEntryFilters struct {
 	Query       string
-	ListID      int
+	GuestlistID int
 	ListGroupId int
 	Present     bool
 	NotPresent  bool
@@ -26,8 +26,8 @@ func (filters ListEntryFilters) AddWhere(query *gorm.DB) *gorm.DB {
 	if filters.Query != "" {
 		query = query.Where("list_entries.Name LIKE ? OR list_entries.Code LIKE ?", "%"+filters.Query+"%", filters.Query+"%")
 	}
-	if filters.ListID != 0 {
-		query = query.Where("list_entries.guestlist_id = ?", filters.ListID)
+	if filters.GuestlistID != 0 {
+		query = query.Where("list_entries.guestlist_id = ?", filters.GuestlistID)
 	}
 	if filters.Present {
 		query = query.Where("list_entries.attended_guests > 0")

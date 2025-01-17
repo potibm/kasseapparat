@@ -53,8 +53,9 @@ func getListsValidFieldName(input string) (string, error) {
 
 func (repo *Repository) GetTotalGuestlists() (int64, error) {
 	var totalRows int64
-	repo.db.Model(&models.Guestlist{}).Count(&totalRows)
-
+	if err := repo.db.Model(&models.Guestlist{}).Count(&totalRows).Error; err != nil {
+		return 0, err
+	}
 	return totalRows, nil
 }
 
