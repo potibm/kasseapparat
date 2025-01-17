@@ -116,7 +116,7 @@ func TestCreateUpdateAndDeleteListEntry(t *testing.T) {
 
 	listEntry := withDemoUserAuthToken(e.POST("/api/v1/listEntries")).
 		WithJSON(map[string]interface{}{
-			"listId":               1,
+			"guestlistId":          1,
 			"name":                 originalName,
 			"additionalGuests":     2,
 			"attendedGuests":       0,
@@ -229,8 +229,8 @@ func validateListEntrySummaryObject(listEntry *httpexpect.Object) {
 
 func validateListEntryObject(listEntry *httpexpect.Object) {
 	validateListEntryBasicObject(listEntry)
-	listEntry.Value("listId").Number().Gt(0)
-	listEntry.Value("list").Object()
+	listEntry.Value("guestlistId").Number().Gt(0)
+	listEntry.Value("guestlist").Object()
 	listEntry.Value("attendedGuests").Number().Ge(0)
 
 	notifyOnArrivalEmail := listEntry.Value("notifyOnArrivalEmail")

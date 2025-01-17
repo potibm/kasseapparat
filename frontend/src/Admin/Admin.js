@@ -11,7 +11,12 @@ import {
 } from "./compontent/Product";
 import { PurchaseList, PurchaseShow } from "./compontent/Purchase";
 import { UserCreate, UserEdit, UserIcon, UserList } from "./compontent/User";
-import { ListCreate, ListEdit, ListIcon, ListList } from "./compontent/List";
+import {
+  GuestlistCreate,
+  GuestlistEdit,
+  GuestlistIcon,
+  GuestlistList,
+} from "./compontent/Guestlist";
 import {
   ListEntryCreate,
   ListEntryEdit,
@@ -48,11 +53,11 @@ const AdminPanel = () => (
       options={{ label: "Product Interest" }}
     />
     <Resource
-      name="lists"
-      list={ListList}
-      edit={ListEdit}
-      create={ListCreate}
-      icon={ListIcon}
+      name="guestlists"
+      list={GuestlistList}
+      edit={GuestlistEdit}
+      create={GuestlistCreate}
+      icon={GuestlistIcon}
     />
     <Resource
       name="listEntries"
@@ -107,7 +112,7 @@ const MyMenu = () => {
       <Menu.ResourceItem name="productInterests" />
 
       <MyMenuDivider name="Guestlist" />
-      <Menu.ResourceItem name="lists" />
+      <Menu.ResourceItem name="guestlists" />
       <Menu.ResourceItem name="listEntries" primaryText="List Entries" />
 
       <MyMenuDivider name="Admin" />

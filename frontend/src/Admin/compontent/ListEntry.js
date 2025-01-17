@@ -99,7 +99,7 @@ export const ListEntryList = (props) => {
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
-        <TextField source="list.name" />
+        <TextField source="guestlist.name" label="Guestlist" />
         <NumberField
           source="additionalGuests"
           min={0}
@@ -132,7 +132,7 @@ export const ListEntryEdit = () => {
       >
         <FormTab label="General">
           <NumberInput disabled source="id" />
-          <ReferenceInput source="listId" reference="lists">
+          <ReferenceInput source="guestlistId" reference="guestlists">
             <SelectInput optionText="name" validate={required()} disabled />
           </ReferenceInput>
           <TextInput source="name" validate={required()} />
@@ -187,7 +187,7 @@ const ListEntryCreateToolbar = ({ guestlistId, ...props }) => {
   const onSuccess = (data) => {
     notify(`Entry saved!`);
     reset();
-    redirect(`/admin/listEntries/create?list_id=${data.listId}`);
+    redirect(`/admin/listEntries/create?guestlist_id=${data.guestlistId}`);
   };
 
   return (
@@ -209,16 +209,16 @@ ListEntryCreateToolbar.propTypes = {
 export const ListEntryCreate = (props) => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const guestlistId = parseInt(params.get("list_id"), 10);
+  const guestlistId = parseInt(params.get("guestlist_id"), 10);
 
   return (
     <Create {...props} title="Create new List Entry">
       <SimpleForm
-        defaultValues={{ listId: guestlistId }}
+        defaultValues={{ guestlistId }}
         toolbar={<ListEntryCreateToolbar guestlistId={guestlistId} />}
       >
         <NumberInput disabled source="id" />
-        <ReferenceInput source="listId" reference="lists">
+        <ReferenceInput source="guestlistId" reference="guestlists">
           <AutocompleteInput optionText="name" validate={required()} />
         </ReferenceInput>
         <TextInput source="name" validate={required()} />

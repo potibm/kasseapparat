@@ -12,7 +12,7 @@ import (
 )
 
 type ListEntryCreateRequest struct {
-	ListID               uint    `form:"listId"  json:"listId" binding:"required"`
+	GuestlistID          uint    `form:"listId"  json:"guestlistId" binding:"required"`
 	Name                 string  `form:"name"  json:"name" binding:"required"`
 	Code                 string  `form:"code"  json:"code"`
 	AdditionalGuests     uint    `form:"additionalGuests"  json:"additionalGuests"`
@@ -22,7 +22,7 @@ type ListEntryCreateRequest struct {
 }
 
 type ListEntryUpdateRequest struct {
-	ListID               uint       `form:"listId"  json:"listId"`
+	GuestlistID          uint       `form:"listId"  json:"guestlistId"`
 	Name                 string     `form:"name"  json:"name" binding:"required"`
 	Code                 string     `form:"code"  json:"code"`
 	AdditionalGuests     uint       `form:"additionalGuests"  json:"additionalGuests"`
@@ -97,8 +97,8 @@ func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
 	} else {
 		listEntry.Code = nil
 	}
-	if listEntryRequest.ListID > 0 {
-		listEntry.ListID = listEntryRequest.ListID
+	if listEntryRequest.GuestlistID > 0 {
+		listEntry.GuestlistID = listEntryRequest.GuestlistID
 	}
 	listEntry.AdditionalGuests = listEntryRequest.AdditionalGuests
 	listEntry.AttendedGuests = listEntryRequest.AttendedGuests
@@ -131,7 +131,7 @@ func (handler *Handler) CreateListEntry(c *gin.Context) {
 	}
 
 	listEntry.Name = listEntryRequest.Name
-	listEntry.ListID = listEntryRequest.ListID
+	listEntry.GuestlistID = listEntryRequest.GuestlistID
 	if listEntryRequest.Code != "" {
 		listEntry.Code = &listEntryRequest.Code
 	} else {

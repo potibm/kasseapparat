@@ -24,7 +24,7 @@ const GuestlistModal = ({
   const apiHost = useConfig().apiHost;
   const { token } = useAuth();
 
-  const hasCodes = product.lists.some((list) => list.typeCode);
+  const hasCodes = product.guestlists.some((list) => list.typeCode);
 
   const handleAddToCart = (listEntry, additionalGuests) => {
     addToCart(product, additionalGuests + 1, listEntry);

@@ -20,7 +20,7 @@ import {
   SelectInput,
   useGetIdentity,
   useRecordContext,
-  CreateButton,
+  Button,
 } from "react-admin";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { useNavigate } from "react-router-dom";
@@ -41,18 +41,18 @@ const ConditionalDeleteButton = (props) => {
   return null;
 };
 
-const CreateListEntryButton = (props) => {
+const CreateGuestlistEntryButton = (props) => {
   const record = useRecordContext(props);
   const navigate = useNavigate();
 
   const handleCreateEntry = (guestlistId) => {
-    navigate(`/admin/listEntries/create?list_id=${guestlistId}`);
+    navigate(`/admin/listEntries/create?guestlist_id=${guestlistId}`);
   };
 
   return (
-    <CreateButton
+    <Button
       {...props}
-      label="Create Entry"
+      label="Add Guest"
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -62,22 +62,22 @@ const CreateListEntryButton = (props) => {
   );
 };
 
-export const ListList = (props) => {
+export const GuestlistList = (props) => {
   return (
     <List {...props} sort={{ field: "id", order: "ASC" }}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
-        <BooleanField source="typeCode" sortable={false} />
-        <TextField source="product.name" sortable={false} />
+        <BooleanField source="typeCode" sortable={false} label="Code" />
+        <TextField source="product.name" sortable={false} label="Product" />
         <ConditionalDeleteButton mutationMode="pessimistic" />
-        <CreateListEntryButton />
+        <CreateGuestlistEntryButton />
       </Datagrid>
     </List>
   );
 };
 
-export const ListEdit = () => {
+export const GuestlistEdit = () => {
   return (
     <Edit>
       <SimpleForm
@@ -98,9 +98,9 @@ export const ListEdit = () => {
   );
 };
 
-export const ListCreate = () => {
+export const GuestlistCreate = () => {
   return (
-    <Create title="Create new list">
+    <Create title="Create new guestlist">
       <SimpleForm>
         <NumberInput disabled source="id" />
         <TextInput source="name" validate={required()} />
@@ -113,4 +113,4 @@ export const ListCreate = () => {
   );
 };
 
-export const ListIcon = () => <GroupsIcon />;
+export const GuestlistIcon = () => <GroupsIcon />;

@@ -9,8 +9,8 @@ import (
 // List represents a guestlist
 type ListEntry struct {
 	GormOwnedModel
-	ListID               uint       `json:"listId"`
-	List                 List       `json:"list"`
+	GuestlistID          uint       `json:"guestlistId"`
+	Guestlist            Guestlist  `json:"guestlist"`
 	Name                 string     `json:"name" `
 	Code                 *string    `json:"code" gorm:"unique"`
 	AdditionalGuests     uint       `json:"additionalGuests" gorm:"default:0"`

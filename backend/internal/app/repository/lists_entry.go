@@ -27,7 +27,7 @@ func (filters ListEntryFilters) AddWhere(query *gorm.DB) *gorm.DB {
 		query = query.Where("list_entries.Name LIKE ? OR list_entries.Code LIKE ?", "%"+filters.Query+"%", filters.Query+"%")
 	}
 	if filters.ListID != 0 {
-		query = query.Where("list_entries.list_id = ?", filters.ListID)
+		query = query.Where("list_entries.guestlist_id = ?", filters.ListID)
 	}
 	if filters.Present {
 		query = query.Where("list_entries.attended_guests > 0")
@@ -50,7 +50,7 @@ func (repo *Repository) GetListEntries(limit int, offset int, sort string, order
 	}
 
 	var listEntries []models.ListEntry
-	query := repo.db.Joins("List").Order(sort + " " + order + ", list_entries.ID ASC").Limit(limit).Offset(offset)
+	query := repo.db.Joins("Guestlist").Order(sort + " " + order + ", list_entries.ID ASC").Limit(limit).Offset(offset)
 	query = filters.AddWhere(query)
 
 	if err := query.Find(&listEntries).Error; err != nil {
@@ -67,7 +67,9 @@ func getListsEntriesValidFieldName(input string) (string, error) {
 	case "name":
 		return "list_entries.Name", nil
 	case "list.name":
-		return "List.Name", nil
+		return "Guestlist.Name", nil
+	case "guestlist.name":
+		return "Guestlist.Name", nil
 	case "arrivedAt":
 		return "list_entries.arrived_at", nil
 	}
@@ -78,7 +80,7 @@ func getListsEntriesValidFieldName(input string) (string, error) {
 func (repo *Repository) GetTotalListEntries(filters *ListEntryFilters) (int64, error) {
 	var totalRows int64
 
-	query := repo.db.Model(&models.ListEntry{}).Joins("List")
+	query := repo.db.Model(&models.ListEntry{}).Joins("Guestlist")
 	if filters != nil {
 		query = filters.AddWhere(query)
 	}
@@ -91,9 +93,9 @@ func (repo *Repository) GetTotalListEntries(filters *ListEntryFilters) (int64, e
 func (repo *Repository) GetUnattendedListEntriesByProductID(productId int, q string) (models.ListEntrySummarySlice, error) {
 	var listEntries models.ListEntrySummarySlice
 	query := repo.db.Model(&models.ListEntry{}).
-		Select("list_entries.id, list_entries.name, list_entries.code, lists.name AS list_name, list_entries.additional_guests, list_entries.arrival_note").
-		Joins("JOIN lists ON list_entries.list_id = lists.id").
-		Joins("JOIN products ON lists.product_id = products.id").
+		Select("list_entries.id, list_entries.name, list_entries.code, guestlists.name AS list_name, list_entries.additional_guests, list_entries.arrival_note").
+		Joins("JOIN guestlists ON list_entries.guestlist_id = guestlists.id").
+		Joins("JOIN products ON guestlists.product_id = products.id").
 		Where("products.id = ? AND list_entries.attended_guests = ?", productId, 0).
 		Order("list_entries.name ASC")
 	if q != "" {
@@ -118,7 +120,7 @@ func (repo *Repository) GetListEntryByID(id int) (*models.ListEntry, error) {
 
 func (repo *Repository) GetFullListEntryByID(id int) (*models.ListEntry, error) {
 	var listEntry models.ListEntry
-	if err := repo.db.Preload("List").Preload("List.Product").First(&listEntry, id).Error; err != nil {
+	if err := repo.db.Preload("Guestlist").Preload("Guestlist.Product").First(&listEntry, id).Error; err != nil {
 		return nil, errors.New(ErrListEntryNotFound)
 	}
 

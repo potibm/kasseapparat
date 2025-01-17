@@ -95,7 +95,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 				return
 			}
 
-			if listEntry.List.ProductID != uint(id) {
+			if listEntry.Guestlist.ProductID != uint(id) {
 				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item does not belong to product"))
 				return
 			}

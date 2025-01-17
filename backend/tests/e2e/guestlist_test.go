@@ -9,15 +9,15 @@ import (
 )
 
 var (
-	listBaseUrl   = "/api/v1/lists"
-	listUrlWithId = listBaseUrl + "/1"
+	guestlistBaseUrl   = "/api/v1/guestlists"
+	guestlistUrlWithId = guestlistBaseUrl + "/1"
 )
 
-func TestGetLists(t *testing.T) {
+func TestGetGuestlists(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(listBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
 		Expect()
 
 	res.Status(http.StatusOK)
@@ -37,7 +37,7 @@ func TestGetLists(t *testing.T) {
 	list.Value("product").Object().Value("id").Number().IsEqual(2)
 }
 
-func TestGetListsWithSort(t *testing.T) {
+func TestGetGuestlistsWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
@@ -46,7 +46,7 @@ func TestGetListsWithSort(t *testing.T) {
 
 	for _, sortField := range sortFields {
 
-		withDemoUserAuthToken(e.GET(listBaseUrl)).
+		withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
 			WithQuery("_sort", sortField).
 			Expect().
 			Status(http.StatusOK)
@@ -57,21 +57,21 @@ func TestGetList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	list := withDemoUserAuthToken(e.GET(listUrlWithId)).
+	list := withDemoUserAuthToken(e.GET(guestlistUrlWithId)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	validateListObjectOne(list)
 }
 
-func TestCreateUpdateAndDeleteList(t *testing.T) {
+func TestCreateUpdateAndDelete(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
 	var originalName = "Test List"
 	var changedName = "Test List Updated"
 
-	list := withDemoUserAuthToken(e.POST(listBaseUrl)).
+	list := withDemoUserAuthToken(e.POST(guestlistBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"name":      originalName,
 			"TypeCode":  false,
@@ -84,7 +84,7 @@ func TestCreateUpdateAndDeleteList(t *testing.T) {
 	list.Value("name").String().IsEqual(originalName)
 
 	listId := list.Value("id").Number().Raw()
-	listUrl := listBaseUrl + "/" + strconv.FormatFloat(listId, 'f', -1, 64)
+	listUrl := guestlistBaseUrl + "/" + strconv.FormatFloat(listId, 'f', -1, 64)
 
 	list = withDemoUserAuthToken(e.GET(listUrl)).
 		Expect().
@@ -119,7 +119,7 @@ func TestCreateUpdateAndDeleteList(t *testing.T) {
 }
 
 func TestListAuthentication(t *testing.T) {
-	testAuthenticationForEntityEndpoints(t, listBaseUrl, listUrlWithId)
+	testAuthenticationForEntityEndpoints(t, guestlistBaseUrl, guestlistUrlWithId)
 }
 
 func validateListObject(list *httpexpect.Object) {

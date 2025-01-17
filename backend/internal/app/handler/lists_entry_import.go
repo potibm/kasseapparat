@@ -50,7 +50,7 @@ func (r *deineTicketsRecord) Validate(repo *repository.Repository) (bool, string
 
 func (r *deineTicketsRecord) GetListEntry(listId uint) models.ListEntry {
 	return models.ListEntry{
-		ListID:           listId,
+		GuestlistID:      listId,
 		Name:             r.FirstName + " " + r.LastName + " (" + r.Subject + ")",
 		Code:             &r.Code,
 		AdditionalGuests: 0,
@@ -88,7 +88,7 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 	}
 
 	// find a list with Type Code
-	list, err := handler.repo.GetListWithTypeCode()
+	list, err := handler.repo.GetGuestlistWithTypeCode()
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "List not found"))
 		return

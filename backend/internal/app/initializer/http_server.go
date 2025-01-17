@@ -132,13 +132,13 @@ func registerProductRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 }
 
 func registerListRoutes(rg *gin.RouterGroup, handler handler.Handler) {
-	lists := rg.Group("/lists")
+	lists := rg.Group("/guestlists")
 	{
-		lists.GET("", handler.GetLists)
-		lists.GET("/:id", handler.GetListByID)
-		lists.PUT("/:id", handler.UpdateListByID)
-		lists.DELETE(":id", handler.DeleteListByID)
-		lists.POST("", handler.CreateList)
+		lists.GET("", handler.GetGuestlists)
+		lists.GET("/:id", handler.GetGuestlistByID)
+		lists.PUT("/:id", handler.UpdateGuestlistByID)
+		lists.DELETE(":id", handler.DeleteGuestlistByID)
+		lists.POST("", handler.CreateGuestlist)
 	}
 }
 
