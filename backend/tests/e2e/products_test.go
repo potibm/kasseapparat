@@ -30,16 +30,16 @@ func TestGetProducts(t *testing.T) {
 	for i := 0; i < len(obj.Iter()); i++ {
 		product := obj.Value(i).Object()
 		validateProduct(product)
-		product.Value("lists").Array()
+		product.Value("guestlists").Array()
 	}
 
 	product := obj.Value(0).Object()
 	validateProductOne(product)
-	product.Value("lists").Array().IsEmpty()
+	product.Value("guestlists").Array().IsEmpty()
 
 	productWithList := obj.Value(1).Object()
 	productWithList.Value("name").String().Contains("Reduced")
-	productWithList.Value("lists").Array().Length().IsEqual(2)
+	productWithList.Value("guestlists").Array().Length().IsEqual(2)
 }
 
 func TestGetProductsWithSort(t *testing.T) {

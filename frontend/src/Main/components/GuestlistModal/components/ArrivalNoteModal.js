@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, Button } from "flowbite-react";
 import PropTypes from "prop-types";
 
-const GuestListArrivalNoteModal = ({ isOpen, onClose, arrivalNote, name }) => {
+const GuestlistArrivalNoteModal = ({ isOpen, onClose, arrivalNote, name }) => {
   return (
     <Modal show={isOpen} onClose={onClose}>
       <Modal.Header>Arrival Note concerning {name}</Modal.Header>
@@ -20,11 +20,11 @@ const GuestListArrivalNoteModal = ({ isOpen, onClose, arrivalNote, name }) => {
   );
 };
 
-GuestListArrivalNoteModal.propTypes = {
+GuestlistArrivalNoteModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   arrivalNote: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
 };
 
-export default GuestListArrivalNoteModal;
+export default GuestlistArrivalNoteModal;

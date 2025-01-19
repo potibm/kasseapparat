@@ -11,11 +11,11 @@ QuickFilter.propTypes = {
   label: PropTypes.string,
 };
 
-export const ListEntryFilters = [
+export const GuestFilters = [
   <SearchInput source="q" alwaysOn key="ID" />,
   <ReferenceInput
-    source="list"
-    reference="lists"
+    source="guestlist_id"
+    reference="guestlists"
     key="id"
     sort={{ field: "name", order: "ASC" }}
   >

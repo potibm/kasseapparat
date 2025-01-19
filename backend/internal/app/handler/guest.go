@@ -11,8 +11,8 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/repository"
 )
 
-type ListEntryCreateRequest struct {
-	ListID               uint    `form:"listId"  json:"listId" binding:"required"`
+type GuestCreateRequest struct {
+	GuestlistID          uint    `form:"guestlistId"  json:"guestlistId" binding:"required"`
 	Name                 string  `form:"name"  json:"name" binding:"required"`
 	Code                 string  `form:"code"  json:"code"`
 	AdditionalGuests     uint    `form:"additionalGuests"  json:"additionalGuests"`
@@ -21,8 +21,8 @@ type ListEntryCreateRequest struct {
 	NotifyOnArrivalEmail *string `form:"notifyOnArrivalEmail" json:"notifyOnArrivalEmail"`
 }
 
-type ListEntryUpdateRequest struct {
-	ListID               uint       `form:"listId"  json:"listId"`
+type GuestUpdateRequest struct {
+	GuestlistID          uint       `form:"guestlistId"  json:"guestlistId"`
 	Name                 string     `form:"name"  json:"name" binding:"required"`
 	Code                 string     `form:"code"  json:"code"`
 	AdditionalGuests     uint       `form:"additionalGuests"  json:"additionalGuests"`
@@ -32,118 +32,135 @@ type ListEntryUpdateRequest struct {
 	NotifyOnArrivalEmail *string    `form:"notifyOnArrivalEmail" json:"notifyOnArrivalEmail"`
 }
 
-func (handler *Handler) GetListEntries(c *gin.Context) {
+func (handler *Handler) GetGuests(c *gin.Context) {
 	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "ASC")
-	filters := repository.ListEntryFilters{}
+	filters := repository.GuestFilters{}
 	filters.Query = c.DefaultQuery("q", "")
-	filters.ListID, _ = strconv.Atoi(c.DefaultQuery("list", "0"))
+	filters.GuestlistID, _ = strconv.Atoi(c.DefaultQuery("guestlist_id", "0"))
 	filters.Present = c.DefaultQuery("isPresent", "false") == "true"
 	filters.NotPresent = c.DefaultQuery("isNotPresent", "false") == "true"
 	filters.IDs = queryArrayInt(c, "id")
 
-	lists, err := handler.repo.GetListEntries(end-start, start, sort, order, filters)
+	guests, err := handler.repo.GetGuests(end-start, start, sort, order, filters)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
 	}
 
-	total, err := handler.repo.GetTotalListEntries(&filters)
+	total, err := handler.repo.GetTotalGuests(&filters)
 	if err != nil {
 		_ = c.Error(InternalServerError)
 		return
 	}
 
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
-	c.JSON(http.StatusOK, lists)
+	c.JSON(http.StatusOK, guests)
 }
 
-func (handler *Handler) GetListEntryByID(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
-	list, err := handler.repo.GetListEntryByID(id)
-	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
-		return
-	}
+func (handler *Handler) GetGuestsByProductID(c *gin.Context) {
+	productID, _ := strconv.Atoi(c.Param("id"))
+	query := strings.TrimSpace(c.DefaultQuery("q", ""))
 
-	c.JSON(http.StatusOK, list)
-}
-
-func (handler *Handler) UpdateListEntryByID(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
-		return
-	}
-
-	id, _ := strconv.Atoi(c.Param("id"))
-	listEntry, err := handler.repo.GetListEntryByID(id)
-	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
-		return
-	}
-
-	var listEntryRequest ListEntryUpdateRequest
-	if err := c.ShouldBind(&listEntryRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
-		return
-	}
-
-	listEntry.Name = listEntryRequest.Name
-	if listEntryRequest.Code != "" {
-		listEntry.Code = &listEntryRequest.Code
-	} else {
-		listEntry.Code = nil
-	}
-	if listEntryRequest.ListID > 0 {
-		listEntry.ListID = listEntryRequest.ListID
-	}
-	listEntry.AdditionalGuests = listEntryRequest.AdditionalGuests
-	listEntry.AttendedGuests = listEntryRequest.AttendedGuests
-	listEntry.UpdatedByID = &executingUserObj.ID
-	listEntry.ArrivedAt = listEntryRequest.ArrivedAt
-	listEntry.ArrivalNote = listEntryRequest.ArrivalNote
-	listEntry.NotifyOnArrivalEmail = listEntryRequest.NotifyOnArrivalEmail
-
-	listEntry, err = handler.repo.UpdateListEntryByID(id, *listEntry)
+	guests, err := handler.repo.GetUnattendedGuestsByProductID(productID, query)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, listEntry)
+	if query != "" {
+		guests.SortByQuery(query)
+	}
+
+	c.JSON(http.StatusOK, guests)
 }
 
-func (handler *Handler) CreateListEntry(c *gin.Context) {
+func (handler *Handler) GetGuestByID(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	guest, err := handler.repo.GetGuestByID(id)
+	if err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, guest)
+}
+
+func (handler *Handler) UpdateGuestByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
 		return
 	}
 
-	var listEntry models.ListEntry
-	var listEntryRequest ListEntryCreateRequest
-	if err := c.ShouldBind(&listEntryRequest); err != nil {
+	id, _ := strconv.Atoi(c.Param("id"))
+	guest, err := handler.repo.GetGuestByID(id)
+	if err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		return
+	}
+
+	var guestRequest GuestUpdateRequest
+	if err := c.ShouldBind(&guestRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
-	listEntry.Name = listEntryRequest.Name
-	listEntry.ListID = listEntryRequest.ListID
-	if listEntryRequest.Code != "" {
-		listEntry.Code = &listEntryRequest.Code
+	guest.Name = guestRequest.Name
+	if guestRequest.Code != "" {
+		guest.Code = &guestRequest.Code
 	} else {
-		listEntry.Code = nil
+		guest.Code = nil
 	}
-	listEntry.AdditionalGuests = listEntryRequest.AdditionalGuests
-	listEntry.AttendedGuests = listEntryRequest.AttendedGuests
-	listEntry.CreatedByID = &executingUserObj.ID
-	listEntry.ArrivalNote = listEntryRequest.ArrivalNote
-	listEntry.NotifyOnArrivalEmail = listEntryRequest.NotifyOnArrivalEmail
+	if guestRequest.GuestlistID > 0 {
+		guest.GuestlistID = guestRequest.GuestlistID
+	}
+	guest.AdditionalGuests = guestRequest.AdditionalGuests
+	guest.AttendedGuests = guestRequest.AttendedGuests
+	guest.UpdatedByID = &executingUserObj.ID
+	guest.ArrivedAt = guestRequest.ArrivedAt
+	guest.ArrivalNote = guestRequest.ArrivalNote
+	guest.NotifyOnArrivalEmail = guestRequest.NotifyOnArrivalEmail
 
-	product, err := handler.repo.CreateListEntry(listEntry)
+	guest, err = handler.repo.UpdateGuestByID(id, *guest)
+	if err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, guest)
+}
+
+func (handler *Handler) CreateGuest(c *gin.Context) {
+	executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		_ = c.Error(UnableToRetrieveExecutingUser)
+		return
+	}
+
+	var guest models.Guest
+	var guestRequest GuestCreateRequest
+	if err := c.ShouldBind(&guestRequest); err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		return
+	}
+
+	guest.Name = guestRequest.Name
+	guest.GuestlistID = guestRequest.GuestlistID
+	if guestRequest.Code != "" {
+		guest.Code = &guestRequest.Code
+	} else {
+		guest.Code = nil
+	}
+	guest.AdditionalGuests = guestRequest.AdditionalGuests
+	guest.AttendedGuests = guestRequest.AttendedGuests
+	guest.CreatedByID = &executingUserObj.ID
+	guest.ArrivalNote = guestRequest.ArrivalNote
+	guest.NotifyOnArrivalEmail = guestRequest.NotifyOnArrivalEmail
+
+	product, err := handler.repo.CreateGuest(guest)
 	if err != nil {
 		_ = c.Error(InternalServerError)
 		return
@@ -152,7 +169,7 @@ func (handler *Handler) CreateListEntry(c *gin.Context) {
 	c.JSON(http.StatusCreated, product)
 }
 
-func (handler *Handler) DeleteListEntryByID(c *gin.Context) {
+func (handler *Handler) DeleteGuestByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
@@ -160,35 +177,18 @@ func (handler *Handler) DeleteListEntryByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	listEntry, err := handler.repo.GetListEntryByID(id)
+	guest, err := handler.repo.GetGuestByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
-	if !executingUserObj.Admin && *listEntry.CreatedByID != executingUserObj.ID {
+	if !executingUserObj.Admin && *guest.CreatedByID != executingUserObj.ID {
 		_ = c.Error(Forbidden)
 		return
 	}
 
-	handler.repo.DeleteListEntry(*listEntry, *executingUserObj)
+	handler.repo.DeleteGuest(*guest, *executingUserObj)
 
 	c.JSON(http.StatusOK, gin.H{})
-}
-
-func (handler *Handler) GetListEntriesByProductID(c *gin.Context) {
-	productID, _ := strconv.Atoi(c.Param("id"))
-	query := strings.TrimSpace(c.DefaultQuery("q", ""))
-
-	listEntries, err := handler.repo.GetUnattendedListEntriesByProductID(productID, query)
-	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
-		return
-	}
-
-	if query != "" {
-		listEntries.SortByQuery(query)
-	}
-
-	c.JSON(http.StatusOK, listEntries)
 }

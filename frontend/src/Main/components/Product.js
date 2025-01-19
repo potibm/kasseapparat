@@ -43,7 +43,7 @@ function Product({
     if (product.soldOut) {
       console.log("ioen");
       setIsPIModalOpen(true);
-    } else if (product.lists.length > 0) {
+    } else if (product.guestlists.length > 0) {
       handleShowGuestlist();
     } else {
       handleAddToCart();
@@ -96,12 +96,12 @@ function Product({
                 <HiOutlineThumbUp className="h-5 w-5" />
               </MyButton>
             )}
-            {!product.soldOut && product.lists.length > 0 && (
+            {!product.soldOut && product.guestlists.length > 0 && (
               <MyButton aria-label="Show guestlist">
                 <HiUserAdd className="h-5 w-5" />
               </MyButton>
             )}
-            {!product.soldOut && product.lists.length === 0 && (
+            {!product.soldOut && product.guestlists.length === 0 && (
               <MyButton aria-label="Add to cart">
                 <HiShoppingCart className="h-5 w-5" />
               </MyButton>
@@ -110,7 +110,7 @@ function Product({
         </div>
       </Card>
       {product.wrapAfter && <div className="w-full"></div>}
-      {!product.soldOut && product.lists.length > 0 && (
+      {!product.soldOut && product.guestlists.length > 0 && (
         <GuestlistModal
           isOpen={isGuestListModalOpen}
           onClose={handleHideGuestlist}

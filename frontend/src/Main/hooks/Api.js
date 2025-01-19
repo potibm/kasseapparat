@@ -23,14 +23,14 @@ export const fetchProducts = async (apiHost, jwtToken) => {
   });
 };
 
-export const fetchGuestListByProductId = async (
+export const fetchGuestlistByProductId = async (
   apiHost,
   jwtToken,
   productId,
   query,
 ) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v1/products/${productId}/listEntries?q=${query}`, {
+    fetch(`${apiHost}/api/v1/products/${productId}/guests?q=${query}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

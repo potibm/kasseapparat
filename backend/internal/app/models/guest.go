@@ -6,11 +6,11 @@ import (
 	"time"
 )
 
-// List represents a guestlist
-type ListEntry struct {
+// Guest represents a guest in a guestlist
+type Guest struct {
 	GormOwnedModel
-	ListID               uint       `json:"listId"`
-	List                 List       `json:"list"`
+	GuestlistID          uint       `json:"guestlistId"`
+	Guestlist            Guestlist  `json:"guestlist"`
 	Name                 string     `json:"name" `
 	Code                 *string    `json:"code" gorm:"unique"`
 	AdditionalGuests     uint       `json:"additionalGuests" gorm:"default:0"`
@@ -22,7 +22,7 @@ type ListEntry struct {
 	Purchase             *Purchase  `json:"-"`
 }
 
-type ListEntrySummary struct {
+type GuestSummary struct {
 	ID               uint    `json:"id"`
 	Name             string  `json:"name"`
 	Code             *string `json:"code" gorm:"unique"`
@@ -31,14 +31,14 @@ type ListEntrySummary struct {
 	ArrivalNote      *string `json:"arrivalNote"`
 }
 
-type ListEntrySummarySlice []ListEntrySummary
+type GuestSummarySlice []GuestSummary
 
-func (entry *ListEntry) MarkAsArrived() {
+func (entry *Guest) MarkAsArrived() {
 	now := time.Now()
 	entry.ArrivedAt = &now
 }
 
-func (entries ListEntrySummarySlice) SortByQuery(q string) {
+func (entries GuestSummarySlice) SortByQuery(q string) {
 	query := strings.ToLower(q)
 	sort.Slice(entries, func(i, j int) bool {
 		nameI := strings.ToLower(entries[i].Name)
