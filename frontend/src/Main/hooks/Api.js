@@ -30,7 +30,7 @@ export const fetchGuestlistByProductId = async (
   query,
 ) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v1/products/${productId}/listEntries?q=${query}`, {
+    fetch(`${apiHost}/api/v1/products/${productId}/guests?q=${query}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

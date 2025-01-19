@@ -32,8 +32,8 @@ import {
   number,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
-import ListEntryActions from "./ListEntryAction";
-import { ListEntryFilters } from "./ListEntryFilters";
+import GuestActions from "./GuestAction";
+import { GuestFilters } from "./GuestFilters";
 import { useLocation } from "react-router-dom";
 import { useFormContext } from "react-hook-form";
 import PropTypes from "prop-types";
@@ -87,14 +87,14 @@ const ArrivedAtOrNullField = (props) => {
   return <DateTimeInput source="arrivedAt" disabled={true} />;
 };
 
-export const ListEntryList = (props) => {
+export const GuestList = (props) => {
   const locale = useConfig().Locale;
 
   return (
     <List
       sort={{ field: "id", order: "ASC" }}
-      filters={ListEntryFilters}
-      actions={<ListEntryActions />}
+      filters={GuestFilters}
+      actions={<GuestActions />}
     >
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
@@ -120,7 +120,7 @@ export const ListEntryList = (props) => {
   );
 };
 
-export const ListEntryEdit = () => {
+export const GuestEdit = () => {
   return (
     <Edit>
       <TabbedForm
@@ -179,7 +179,7 @@ export const ListEntryEdit = () => {
   );
 };
 
-const ListEntryCreateToolbar = ({ guestlistId, ...props }) => {
+const GuestCreateToolbar = ({ guestlistId, ...props }) => {
   const redirect = useRedirect();
   const { reset } = useFormContext();
   const notify = useNotify();
@@ -202,11 +202,11 @@ const ListEntryCreateToolbar = ({ guestlistId, ...props }) => {
     </Toolbar>
   );
 };
-ListEntryCreateToolbar.propTypes = {
+GuestCreateToolbar.propTypes = {
   guestlistId: PropTypes.number.isRequired,
 };
 
-export const ListEntryCreate = (props) => {
+export const GuestCreate = (props) => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const guestlistId = parseInt(params.get("guestlist_id"), 10);
@@ -215,7 +215,7 @@ export const ListEntryCreate = (props) => {
     <Create {...props} title="Create new List Entry">
       <SimpleForm
         defaultValues={{ guestlistId }}
-        toolbar={<ListEntryCreateToolbar guestlistId={guestlistId} />}
+        toolbar={<GuestCreateToolbar guestlistId={guestlistId} />}
       >
         <NumberInput disabled source="id" />
         <ReferenceInput source="guestlistId" reference="guestlists">
@@ -247,4 +247,4 @@ export const ListEntryCreate = (props) => {
   );
 };
 
-export const ListEntryIcon = () => <PersonIcon />;
+export const GuestIcon = () => <PersonIcon />;

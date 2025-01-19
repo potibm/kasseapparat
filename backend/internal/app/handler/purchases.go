@@ -46,7 +46,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	}
 
 	var purchase models.Purchase
-	var updatedListEntries []models.ListEntry = make([]models.ListEntry, 0)
+	var updatedListEntries []models.Guest = make([]models.Guest, 0)
 
 	var purchaseRequest PurchaseRequest
 	if err := c.ShouldBind(&purchaseRequest); err != nil {
@@ -78,8 +78,8 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		purchase.CreatedByID = &executingUserObj.ID
 
 		for j := 0; j < len(purchaseRequest.Cart[i].ListItems); j++ {
-			var listEntry *models.ListEntry
-			listEntry, err = handler.repo.GetFullListEntryByID(purchaseRequest.Cart[i].ListItems[j].ID)
+			var listEntry *models.Guest
+			listEntry, err = handler.repo.GetFullGuestByID(purchaseRequest.Cart[i].ListItems[j].ID)
 			if err != nil || listEntry == nil {
 				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item not found"))
 				return
@@ -125,7 +125,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	for i := 0; i < len(updatedListEntries); i++ {
 		updatedListEntry := updatedListEntries[i]
 		updatedListEntry.PurchaseID = &purchase.ID
-		_, err := handler.repo.UpdateListEntryByID(int(updatedListEntry.ID), updatedListEntry)
+		_, err := handler.repo.UpdateGuestByID(int(updatedListEntry.ID), updatedListEntry)
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 			return

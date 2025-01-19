@@ -72,7 +72,7 @@ func TestGetGuestlistsWithQuery(t *testing.T) {
 	}
 }
 
-func TestGetList(t *testing.T) {
+func TestGetGuestlist(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
@@ -83,7 +83,7 @@ func TestGetList(t *testing.T) {
 	validateGuestlistObjectOne(list)
 }
 
-func TestCreateUpdateAndDelete(t *testing.T) {
+func TestCreateUpdateAndDeleteGuestList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
@@ -137,7 +137,7 @@ func TestCreateUpdateAndDelete(t *testing.T) {
 		Status(http.StatusNotFound)
 }
 
-func TestListAuthentication(t *testing.T) {
+func TestGuestlistAuthentication(t *testing.T) {
 	testAuthenticationForEntityEndpoints(t, guestlistBaseUrl, guestlistUrlWithId)
 }
 

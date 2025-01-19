@@ -101,9 +101,9 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 		registerProductInterestRoutes(protectedApiRouter, myhandler)
 		protectedApiRouter.GET("/productStats", myhandler.GetProductStats)
 
-		registerListRoutes(protectedApiRouter, myhandler)
-		registerListEntryRoutes(protectedApiRouter, myhandler)
-		protectedApiRouter.POST("/listEntriesUpload", myhandler.ImportListEntriesFromDeineTicketsCsv)
+		registerGuestlistRoutes(protectedApiRouter, myhandler)
+		registerGuestRoutes(protectedApiRouter, myhandler)
+		protectedApiRouter.POST("/guestsUpload", myhandler.ImportGuestsFromDeineTicketsCsv)
 
 		registerPurchaseRoutes(protectedApiRouter, myhandler)
 		registerUserRoutes(protectedApiRouter, myhandler)
@@ -124,14 +124,14 @@ func registerProductRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	{
 		products.GET("", handler.GetProducts)
 		products.GET("/:id", handler.GetProductByID)
-		products.GET("/:id/listEntries", handler.GetListEntriesByProductID)
+		products.GET("/:id/guests", handler.GetGuestsByProductID)
 		products.PUT("/:id", handler.UpdateProductByID)
 		products.DELETE("/:id", handler.DeleteProductByID)
 		products.POST("", handler.CreateProduct)
 	}
 }
 
-func registerListRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerGuestlistRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	guestlist := rg.Group("/guestlists")
 	{
 		guestlist.GET("", handler.GetGuestlists)
@@ -142,14 +142,14 @@ func registerListRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	}
 }
 
-func registerListEntryRoutes(rg *gin.RouterGroup, handler handler.Handler) {
-	listEntries := rg.Group("/listEntries")
+func registerGuestRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+	guests := rg.Group("/guests")
 	{
-		listEntries.GET("", handler.GetListEntries)
-		listEntries.GET(":id", handler.GetListEntryByID)
-		listEntries.PUT("/:id", handler.UpdateListEntryByID)
-		listEntries.DELETE(":id", handler.DeleteListEntryByID)
-		listEntries.POST("", handler.CreateListEntry)
+		guests.GET("", handler.GetGuests)
+		guests.GET("/:id", handler.GetGuestByID)
+		guests.PUT("/:id", handler.UpdateGuestByID)
+		guests.DELETE("/:id", handler.DeleteGuestByID)
+		guests.POST("", handler.CreateGuest)
 	}
 }
 

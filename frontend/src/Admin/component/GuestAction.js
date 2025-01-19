@@ -29,12 +29,12 @@ const ImportDeineTicketsButton = () => {
     formData.append("file", file);
 
     try {
-      const response = await dataProvider.upload("listEntriesUpload", {
+      const response = await dataProvider.upload("guestsUpload", {
         data: formData,
       });
-      if (response.data.createdEntries) {
+      if (response.data.createdGuests) {
         notify(
-          `Success! ${response.data.createdEntries} entries have been created.`,
+          `Success! ${response.data.createdGuests} entries have been created.`,
           "info",
         );
       } else {
@@ -65,7 +65,7 @@ const ImportDeineTicketsButton = () => {
   );
 };
 
-const ListEntryActions = (props) => (
+const GuestActions = (props) => (
   <TopToolbar>
     <FilterButton />
     <CreateButton />
@@ -74,4 +74,4 @@ const ListEntryActions = (props) => (
   </TopToolbar>
 );
 
-export default ListEntryActions;
+export default GuestActions;

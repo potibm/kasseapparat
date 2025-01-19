@@ -26,14 +26,14 @@ func ConnectToLocalDatabase() *gorm.DB {
 }
 
 func PurgeDatabase(db *gorm.DB) {
-	err := db.Migrator().DropTable(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.Guestlist{}, models.ListEntry{}, models.ProductInterest{})
+	err := db.Migrator().DropTable(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.Guestlist{}, models.Guest{}, models.ProductInterest{})
 	if err != nil {
 		panic(err)
 	}
 }
 
 func MigrateDatabase(db *gorm.DB) {
-	err := db.AutoMigrate(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.Guestlist{}, models.ListEntry{}, models.ProductInterest{})
+	err := db.AutoMigrate(&models.Product{}, &models.Purchase{}, &models.PurchaseItem{}, &models.User{}, models.Guestlist{}, models.Guest{}, models.ProductInterest{})
 	if err != nil {
 		panic(err)
 	}
@@ -42,8 +42,9 @@ func MigrateDatabase(db *gorm.DB) {
 func SeedDatabase(db *gorm.DB) {
 
 	const (
-		DefaultGuestlistCount  = 38
-		MaxEntriesPerGuestlist = 10
+		DefaultGuestlistCount            = 38
+		MaxNotPresentEntriesPerGuestlist = 10
+		MaxPresentEntriesPerGuestlist    = 2
 	)
 
 	_ = gofakeit.Seed(0)
@@ -75,29 +76,35 @@ func SeedDatabase(db *gorm.DB) {
 	reducedDkevGuestlist := &models.Guestlist{Name: "Reduces Digitale Kultur", ProductID: reducedProduct.ID}
 	db.Create(reducedDkevGuestlist)
 	for i := 1; i < 5; i++ {
-		db.Create(&models.ListEntry{Name: gofakeit.Name(), GuestlistID: reducedDkevGuestlist.ID, AdditionalGuests: 0})
+		db.Create(&models.Guest{Name: gofakeit.Name(), GuestlistID: reducedDkevGuestlist.ID, AdditionalGuests: 0})
 	}
 
 	reducedLdGuestlist := &models.Guestlist{Name: "Long Distance", ProductID: reducedProduct.ID}
 	db.Create(reducedLdGuestlist)
 	for i := 1; i < 15; i++ {
-		db.Create(&models.ListEntry{Name: gofakeit.Name(), GuestlistID: reducedLdGuestlist.ID, AdditionalGuests: 0})
+		db.Create(&models.Guest{Name: gofakeit.Name(), GuestlistID: reducedLdGuestlist.ID, AdditionalGuests: 0})
 	}
 
 	deineTicketsGuestlist := &models.Guestlist{Name: "Deine Tickets", TypeCode: true, ProductID: prepaidProduct.ID}
 	db.Create(deineTicketsGuestlist)
 	for i := 1; i < 20; i++ {
 		code := gofakeit.Password(false, true, true, false, false, 9)
-		db.Create(&models.ListEntry{Name: gofakeit.Name(), Code: &code, GuestlistID: deineTicketsGuestlist.ID, AdditionalGuests: 0})
+		db.Create(&models.Guest{Name: gofakeit.Name(), Code: &code, GuestlistID: deineTicketsGuestlist.ID, AdditionalGuests: 0})
 	}
 
 	for i := 1; i < DefaultGuestlistCount; i++ {
 		userGuestlist := &models.Guestlist{Name: "Guestlist " + gofakeit.FirstName(), ProductID: freeProduct.ID}
 		db.Create(userGuestlist)
 
-		for j := 0; j < gofakeit.Number(1, MaxEntriesPerGuestlist); j++ {
+		for j := 0; j < gofakeit.Number(1, MaxNotPresentEntriesPerGuestlist); j++ {
 
-			db.Create(&models.ListEntry{Name: gofakeit.Name(), GuestlistID: userGuestlist.ID, AdditionalGuests: uint(gofakeit.Number(0, 2))})
+			db.Create(&models.Guest{Name: gofakeit.Name(), GuestlistID: userGuestlist.ID, AdditionalGuests: uint(gofakeit.Number(0, 2))})
 		}
+		for j := 0; j < gofakeit.Number(1, MaxPresentEntriesPerGuestlist); j++ {
+
+			arrivedAt := gofakeit.Date()
+			db.Create(&models.Guest{Name: gofakeit.Name(), GuestlistID: userGuestlist.ID, AdditionalGuests: uint(gofakeit.Number(0, 2)), AttendedGuests: 1, ArrivedAt: &arrivedAt})
+		}
+
 	}
 }

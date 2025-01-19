@@ -18,11 +18,11 @@ import {
   GuestlistList,
 } from "./component/Guestlist";
 import {
-  ListEntryCreate,
-  ListEntryEdit,
-  ListEntryIcon,
-  ListEntryList,
-} from "./component/ListEntry";
+  GuestCreate,
+  GuestEdit,
+  GuestIcon,
+  GuestList,
+} from "./component/Guest";
 import {
   ProductInterestList,
   ProductInterestIcon,
@@ -60,12 +60,12 @@ const AdminPanel = () => (
       icon={GuestlistIcon}
     />
     <Resource
-      name="listEntries"
-      list={ListEntryList}
-      edit={ListEntryEdit}
-      create={ListEntryCreate}
-      icon={ListEntryIcon}
-      options={{ label: "List Entries" }}
+      name="guests"
+      list={GuestList}
+      edit={GuestEdit}
+      create={GuestCreate}
+      icon={GuestIcon}
+      options={{ label: "Guests" }}
     />
     <Resource name="purchases" list={PurchaseList} show={PurchaseShow} />
     <Resource
@@ -113,7 +113,7 @@ const MyMenu = () => {
 
       <MyMenuDivider name="Guestlist" />
       <Menu.ResourceItem name="guestlists" />
-      <Menu.ResourceItem name="listEntries" primaryText="List Entries" />
+      <Menu.ResourceItem name="guests" />
 
       <MyMenuDivider name="Admin" />
       <Menu.ResourceItem name="users" />

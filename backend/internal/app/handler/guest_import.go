@@ -40,7 +40,7 @@ func (r *deineTicketsRecord) Validate(repo *repository.Repository) (bool, string
 		return false, "Blocked"
 	}
 
-	_, err := repo.GetListEntryByCode(r.Code)
+	_, err := repo.GetGuestByCode(r.Code)
 	if err == nil {
 		return false, "Already exists"
 	}
@@ -48,8 +48,8 @@ func (r *deineTicketsRecord) Validate(repo *repository.Repository) (bool, string
 	return true, ""
 }
 
-func (r *deineTicketsRecord) GetListEntry(listId uint) models.ListEntry {
-	return models.ListEntry{
+func (r *deineTicketsRecord) GetGuest(listId uint) models.Guest {
+	return models.Guest{
 		GuestlistID:      listId,
 		Name:             r.FirstName + " " + r.LastName + " (" + r.Subject + ")",
 		Code:             &r.Code,
@@ -58,7 +58,7 @@ func (r *deineTicketsRecord) GetListEntry(listId uint) models.ListEntry {
 	}
 }
 
-func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
+func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	// get the file from the request
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -96,7 +96,7 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 
 	warnings := []string{}
 	lineNumber := 0
-	createdEntries := 0
+	createdGuests := 0
 	for {
 		lineNumber++
 		line, err := reader.Read()
@@ -122,13 +122,13 @@ func (handler *Handler) ImportListEntriesFromDeineTicketsCsv(c *gin.Context) {
 			continue
 		}
 
-		_, err = handler.repo.CreateListEntry(record.GetListEntry(list.ID))
+		_, err = handler.repo.CreateGuest(record.GetGuest(list.ID))
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create list entry"))
 			return
 		}
-		createdEntries++
+		createdGuests++
 	}
 
-	c.JSON(http.StatusOK, gin.H{"createdEntries": createdEntries, "warnings": warnings})
+	c.JSON(http.StatusOK, gin.H{"createdGuests": createdGuests, "warnings": warnings})
 }
