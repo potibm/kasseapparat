@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/shopspring/decimal"
 )
 
 type PurchaseListItemRequest struct {
@@ -20,7 +21,7 @@ type PurchaseCartRequest struct {
 }
 
 type PurchaseRequest struct {
-	TotalPrice float64               `form:"totalPrice" binding:"numeric"`
+	TotalPrice decimal.Decimal       `form:"totalPrice" binding:"required"`
 	Cart       []PurchaseCartRequest `form:"cart" binding:"required,dive"`
 }
 
@@ -54,7 +55,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		return
 	}
 
-	calculatedTotalPrice := 0.0
+	calculatedTotalPrice := decimal.NewFromFloat(0)
 	for i := 0; i < len(purchaseRequest.Cart); i++ {
 
 		id := purchaseRequest.Cart[i].ID
@@ -65,8 +66,9 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Product not found"))
 			return
 		}
-		calculatedPurchaseItemPrice := product.Price * float64(quantity)
-		calculatedTotalPrice += calculatedPurchaseItemPrice
+		calculatedPurchaseItemPrice := product.Price.Mul(decimal.NewFromInt(int64(quantity)))
+		println(calculatedPurchaseItemPrice.String())
+		calculatedTotalPrice = calculatedTotalPrice.Add(calculatedPurchaseItemPrice)
 
 		purchaseItem := models.PurchaseItem{
 			Product:    *product,
@@ -107,8 +109,10 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		}
 
 	}
+	println(calculatedTotalPrice.String())
+	println(purchaseRequest.TotalPrice.String())
 	// check that total price is correct
-	if calculatedTotalPrice != purchaseRequest.TotalPrice {
+	if !calculatedTotalPrice.Equal(purchaseRequest.TotalPrice) {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Total price does not match"))
 		return
 	}

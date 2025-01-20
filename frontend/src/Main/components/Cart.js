@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
 import MyButton from "./MyButton";
+import Decimal from "decimal.js";
 
 function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
   const currency = useConfig().currency;
@@ -114,7 +115,10 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
             </Table.Cell>
             <Table.Cell className="font-bold text-right">
               {currency.format(
-                cart.reduce((total, item) => total + item.totalPrice, 0),
+                cart.reduce(
+                  (total, item) => total.add(item.totalPrice),
+                  new Decimal(0),
+                ),
               )}
             </Table.Cell>
             <Table.Cell className="flex justify-end">
@@ -141,7 +145,10 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
         Checkout&nbsp;
         {cart.length > 0 &&
           currency.format(
-            cart.reduce((total, item) => total + item.totalPrice, 0),
+            cart.reduce(
+              (total, item) => total.add(item.totalPrice),
+              new Decimal(0),
+            ),
           )}
         {checkoutProcessing && <Spinner color="gray" className="ml-3" />}
       </MyButton>

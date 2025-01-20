@@ -18,9 +18,11 @@ export const addToCart = (cart, product, count = 1, listItem = null) => {
 
     const updatedCart = [...cart];
     updatedCart[existingProductIndex].quantity += count;
-    updatedCart[existingProductIndex].totalPrice =
-      updatedCart[existingProductIndex].quantity *
-      updatedCart[existingProductIndex].price;
+    updatedCart[existingProductIndex].totalPrice = updatedCart[
+      existingProductIndex
+    ].price.mul(updatedCart[existingProductIndex].quantity);
+
+    console.log(updatedCart);
 
     // add list item to cart
     if (listItem) {

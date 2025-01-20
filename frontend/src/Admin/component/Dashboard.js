@@ -6,6 +6,7 @@ import CardContent from "@mui/material/CardContent";
 import { Title, useDataProvider } from "react-admin";
 import { Table } from "flowbite-react";
 import { useConfig } from "../../provider/ConfigProvider";
+import Decimal from "decimal.js";
 
 const Dashboard = () => {
   return (
@@ -75,7 +76,10 @@ const ProductStatsCard = () => {
               <Table.Cell className="font-bold text-right">-</Table.Cell>
               <Table.Cell className="font-bold text-right">
                 {currency.format(
-                  stats.reduce((acc, stat) => acc + stat.totalPrice, 0),
+                  stats.reduce(
+                    (acc, stat) => acc.add(stat.totalPrice),
+                    new Decimal(0),
+                  ),
                 )}
               </Table.Cell>
             </Table.Row>

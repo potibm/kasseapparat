@@ -1,3 +1,5 @@
+import Decimal from "decimal.js";
+
 export const fetchProducts = async (apiHost, jwtToken) => {
   return new Promise((resolve, reject) => {
     fetch(
@@ -43,6 +45,7 @@ export const fetchGuestlistByProductId = async (
             throw new Error(errorBody.error || "Network response was not ok");
           });
         }
+
         return response.json();
       })
       .then((data) => resolve(data))
@@ -66,7 +69,10 @@ export const storePurchase = async (apiHost, jwtToken, cart) => {
       },
       body: JSON.stringify({
         cart: cartPayload,
-        totalPrice: cart.reduce((total, item) => total + item.totalPrice, 0),
+        totalPrice: cart.reduce(
+          (total, item) => total.add(item.totalPrice),
+          new Decimal(0),
+        ),
       }), // : )
     })
       .then((response) => {

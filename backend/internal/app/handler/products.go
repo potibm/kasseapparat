@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/shopspring/decimal"
 )
 
 type ProductRequestCreate struct {
@@ -108,7 +109,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	}
 
 	product.Name = productRequest.Name
-	product.Price = productRequest.Price
+	product.Price = decimal.NewFromFloat(productRequest.Price)
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
@@ -141,7 +142,7 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	}
 
 	product.Name = productRequest.Name
-	product.Price = productRequest.Price
+	product.Price = decimal.NewFromFloat(productRequest.Price)
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.Hidden = productRequest.Hidden
