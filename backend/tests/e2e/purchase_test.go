@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	purchaseBaseUrl = "/api/v1/purchases"
+	purchaseBaseUrl = "/api/v2/purchases"
 )
 
 func TestGetPurchasesWithSort(t *testing.T) {
@@ -33,7 +33,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	// Create a purchase
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": 20.0,
+			"totalPrice": "20",
 			"cart": []map[string]interface{}{
 				{
 					"ID":       2,
@@ -55,7 +55,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	purchaseResponse.Value("purchase").Object()
 	purchase := purchaseResponse.Value("purchase").Object()
 	purchase.Value("id").Number().Gt(0)
-	purchase.Value("totalPrice").Number().IsEqual(20.0)
+	purchase.Value("totalPrice").String().IsEqual("20")
 
 	purchaseId := purchase.Value("id").Number().Raw()
 	purchaseUrl := purchaseBaseUrl + "/" + strconv.FormatFloat(purchaseId, 'f', -1, 64)
@@ -66,7 +66,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 		Status(http.StatusOK).JSON().Object()
 
 	purchase.Value("id").Number().IsEqual(purchaseId)
-	purchase.Value("totalPrice").Number().IsEqual(20.0)
+	purchase.Value("totalPrice").String().IsEqual("20")
 
 	// Get the purchase list
 	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
@@ -98,7 +98,7 @@ func TestCreatePurchaseWithWrongTotalPrice(t *testing.T) {
 	// Create a purchase, but with a wrong total price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": 21.0,
+			"totalPrice": "21",
 			"cart": []map[string]interface{}{
 				{
 					"ID":        2,
@@ -120,7 +120,7 @@ func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
 	// Create a purchase, but with a wrong total price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": 21.0,
+			"totalPrice": "21",
 			"cart": []map[string]interface{}{
 				{
 					"ID":        123,
@@ -142,7 +142,7 @@ func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
 	// Create a purchase
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": 0.0,
+			"totalPrice": "0",
 			"cart": []map[string]interface{}{
 				{
 					"ID":       3,
@@ -169,7 +169,7 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 	// Create a purchase
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": 0.0,
+			"totalPrice": "0",
 			"cart": []map[string]interface{}{
 				{
 					"ID":       3,
@@ -192,7 +192,7 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 func createPurchase() string {
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": 40.0,
+			"totalPrice": "40",
 			"cart": []map[string]interface{}{
 				{
 					"ID":        1,

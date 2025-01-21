@@ -9,15 +9,15 @@ import (
 )
 
 var (
-	listBaseUrl   = "/api/v1/lists"
-	listUrlWithId = listBaseUrl + "/1"
+	guestlistBaseUrl   = "/api/v2/guestlists"
+	guestlistUrlWithId = guestlistBaseUrl + "/1"
 )
 
-func TestGetLists(t *testing.T) {
+func TestGetGuestlists(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(listBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
 		Expect()
 
 	res.Status(http.StatusOK)
@@ -29,15 +29,15 @@ func TestGetLists(t *testing.T) {
 
 	for i := 0; i < len(obj.Iter()); i++ {
 		list := obj.Value(i).Object()
-		validateListObject(list)
+		validateGuestlistObject(list)
 	}
 
 	list := obj.Value(0).Object()
-	validateListObjectOne(list)
+	validateGuestlistObjectOne(list)
 	list.Value("product").Object().Value("id").Number().IsEqual(2)
 }
 
-func TestGetListsWithSort(t *testing.T) {
+func TestGetGuestlistsWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
@@ -46,36 +46,55 @@ func TestGetListsWithSort(t *testing.T) {
 
 	for _, sortField := range sortFields {
 
-		withDemoUserAuthToken(e.GET(listBaseUrl)).
+		withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
 			WithQuery("_sort", sortField).
 			Expect().
 			Status(http.StatusOK)
 	}
 }
 
-func TestGetList(t *testing.T) {
+func TestGetGuestlistsWithQuery(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	list := withDemoUserAuthToken(e.GET(listUrlWithId)).
+	res := withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
+		WithQuery("q", "Guestlist").
+		Expect()
+
+	res.Status(http.StatusOK)
+
+	obj := res.JSON().Array()
+	obj.NotEmpty()
+
+	for _, item := range obj.Iter() {
+		validateGuestlistObject(item.Object())
+		item.Object().Value("name").String().Contains("Guestlist")
+	}
+}
+
+func TestGetGuestlist(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	list := withDemoUserAuthToken(e.GET(guestlistUrlWithId)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	validateListObjectOne(list)
+	validateGuestlistObjectOne(list)
 }
 
-func TestCreateUpdateAndDeleteList(t *testing.T) {
+func TestCreateUpdateAndDeleteGuestList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
 	var originalName = "Test List"
 	var changedName = "Test List Updated"
 
-	list := withDemoUserAuthToken(e.POST(listBaseUrl)).
+	list := withDemoUserAuthToken(e.POST(guestlistBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"name":      originalName,
-			"TypeCode":  false,
-			"ProductId": 2,
+			"typeCode":  false,
+			"productId": 2,
 		}).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
@@ -84,7 +103,7 @@ func TestCreateUpdateAndDeleteList(t *testing.T) {
 	list.Value("name").String().IsEqual(originalName)
 
 	listId := list.Value("id").Number().Raw()
-	listUrl := listBaseUrl + "/" + strconv.FormatFloat(listId, 'f', -1, 64)
+	listUrl := guestlistBaseUrl + "/" + strconv.FormatFloat(listId, 'f', -1, 64)
 
 	list = withDemoUserAuthToken(e.GET(listUrl)).
 		Expect().
@@ -96,8 +115,8 @@ func TestCreateUpdateAndDeleteList(t *testing.T) {
 	withDemoUserAuthToken(e.PUT(listUrl)).
 		WithJSON(map[string]interface{}{
 			"name":      changedName,
-			"TypeCode":  false,
-			"ProductId": 2,
+			"typeCode":  false,
+			"productId": 2,
 		}).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
@@ -118,21 +137,21 @@ func TestCreateUpdateAndDeleteList(t *testing.T) {
 		Status(http.StatusNotFound)
 }
 
-func TestListAuthentication(t *testing.T) {
-	testAuthenticationForEntityEndpoints(t, listBaseUrl, listUrlWithId)
+func TestGuestlistAuthentication(t *testing.T) {
+	testAuthenticationForEntityEndpoints(t, guestlistBaseUrl, guestlistUrlWithId)
 }
 
-func validateListObject(list *httpexpect.Object) {
-	list.Value("id").Number().Gt(0)
-	list.Value("name").String().NotEmpty()
-	list.Value("typeCode").Boolean()
-	list.Value("productId").Number().Ge(0)
-	list.Value("product").Object()
+func validateGuestlistObject(guestlist *httpexpect.Object) {
+	guestlist.Value("id").Number().Gt(0)
+	guestlist.Value("name").String().NotEmpty()
+	guestlist.Value("typeCode").Boolean()
+	guestlist.Value("productId").Number().Ge(0)
+	guestlist.Value("product").Object()
 }
 
-func validateListObjectOne(list *httpexpect.Object) {
-	list.Value("id").Number().IsEqual(1)
-	list.Value("name").String().Contains("Reduces")
-	list.Value("typeCode").Boolean().IsFalse()
-	list.Value("productId").Number().IsEqual(2)
+func validateGuestlistObjectOne(guestlist *httpexpect.Object) {
+	guestlist.Value("id").Number().IsEqual(1)
+	guestlist.Value("name").String().Contains("Reduces")
+	guestlist.Value("typeCode").Boolean().IsFalse()
+	guestlist.Value("productId").Number().IsEqual(2)
 }

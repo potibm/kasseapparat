@@ -29,7 +29,7 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 	r.Use(sentrygin.New(sentrygin.Options{}))
 	r.Use(middleware.ErrorHandlingMiddleware())
 
-	r.GET("/api/v1/purchases/stats", myhandler.GetPurchaseStats)
+	r.GET("/api/v2/purchases/stats", myhandler.GetPurchaseStats)
 
 	r.Use(createCorsMiddleware())
 
@@ -94,23 +94,23 @@ func SentryMiddleware() gin.HandlerFunc {
 
 func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMiddleware) {
 
-	protectedApiRouter := r.Group("/api/v1")
+	protectedApiRouter := r.Group("/api/v2")
 	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
 	{
 		registerProductRoutes(protectedApiRouter, myhandler)
 		registerProductInterestRoutes(protectedApiRouter, myhandler)
 		protectedApiRouter.GET("/productStats", myhandler.GetProductStats)
 
-		registerListRoutes(protectedApiRouter, myhandler)
-		registerListEntryRoutes(protectedApiRouter, myhandler)
-		protectedApiRouter.POST("/listEntriesUpload", myhandler.ImportListEntriesFromDeineTicketsCsv)
+		registerGuestlistRoutes(protectedApiRouter, myhandler)
+		registerGuestRoutes(protectedApiRouter, myhandler)
+		protectedApiRouter.POST("/guestsUpload", myhandler.ImportGuestsFromDeineTicketsCsv)
 
 		registerPurchaseRoutes(protectedApiRouter, myhandler)
 		registerUserRoutes(protectedApiRouter, myhandler)
 	}
 
 	// unprotected routes
-	unprotectedApiRouter := r.Group("/api/v1")
+	unprotectedApiRouter := r.Group("/api/v2")
 	{
 		unprotectedApiRouter.GET("/config", myhandler.GetConfig)
 
@@ -124,32 +124,32 @@ func registerProductRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	{
 		products.GET("", handler.GetProducts)
 		products.GET("/:id", handler.GetProductByID)
-		products.GET("/:id/listEntries", handler.GetListEntriesByProductID)
+		products.GET("/:id/guests", handler.GetGuestsByProductID)
 		products.PUT("/:id", handler.UpdateProductByID)
 		products.DELETE("/:id", handler.DeleteProductByID)
 		products.POST("", handler.CreateProduct)
 	}
 }
 
-func registerListRoutes(rg *gin.RouterGroup, handler handler.Handler) {
-	lists := rg.Group("/lists")
+func registerGuestlistRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+	guestlist := rg.Group("/guestlists")
 	{
-		lists.GET("", handler.GetLists)
-		lists.GET("/:id", handler.GetListByID)
-		lists.PUT("/:id", handler.UpdateListByID)
-		lists.DELETE(":id", handler.DeleteListByID)
-		lists.POST("", handler.CreateList)
+		guestlist.GET("", handler.GetGuestlists)
+		guestlist.GET("/:id", handler.GetGuestlistByID)
+		guestlist.PUT("/:id", handler.UpdateGuestlistByID)
+		guestlist.DELETE("/:id", handler.DeleteGuestlistByID)
+		guestlist.POST("", handler.CreateGuestlist)
 	}
 }
 
-func registerListEntryRoutes(rg *gin.RouterGroup, handler handler.Handler) {
-	listEntries := rg.Group("/listEntries")
+func registerGuestRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+	guests := rg.Group("/guests")
 	{
-		listEntries.GET("", handler.GetListEntries)
-		listEntries.GET(":id", handler.GetListEntryByID)
-		listEntries.PUT("/:id", handler.UpdateListEntryByID)
-		listEntries.DELETE(":id", handler.DeleteListEntryByID)
-		listEntries.POST("", handler.CreateListEntry)
+		guests.GET("", handler.GetGuests)
+		guests.GET("/:id", handler.GetGuestByID)
+		guests.PUT("/:id", handler.UpdateGuestByID)
+		guests.DELETE("/:id", handler.DeleteGuestByID)
+		guests.POST("", handler.CreateGuest)
 	}
 }
 

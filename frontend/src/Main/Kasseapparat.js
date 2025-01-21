@@ -22,6 +22,7 @@ import {
 } from "./hooks/Cart";
 import { useAuth } from "../Auth/provider/AuthProvider";
 import { useConfig } from "../provider/ConfigProvider";
+import Decimal from "decimal.js";
 
 function Kasseapparat() {
   const [cart, setCart] = useState([]);
@@ -33,10 +34,19 @@ function Kasseapparat() {
   const apiHost = useConfig().apiHost;
   const envMessage = useConfig().environmentMessage;
 
+  const convertProductsWithDecimals = (products) => {
+    return products.map((product) => {
+      return {
+        ...product,
+        price: new Decimal(product.price),
+      };
+    });
+  };
+
   useEffect(() => {
     const getProducts = async () => {
       return fetchProducts(apiHost, token)
-        .then((products) => setProducts(products))
+        .then((products) => setProducts(convertProductsWithDecimals(products)))
         .catch((error) =>
           showError(
             "There was an error fetching the products: " + error.message,
@@ -74,7 +84,7 @@ function Kasseapparat() {
   const handleRemoveAllFromCart = () => {
     setCart(removeAllFromCart());
     fetchProducts(apiHost, token)
-      .then((products) => setProducts(products))
+      .then((products) => setProducts(convertProductsWithDecimals(products)))
       .catch((error) =>
         showError("There was an error fetching the products: " + error.message),
       );
@@ -99,7 +109,9 @@ function Kasseapparat() {
             ),
           );
         fetchProducts(apiHost, token)
-          .then((products) => setProducts(products))
+          .then((products) =>
+            setProducts(convertProductsWithDecimals(products)),
+          )
           .catch((error) =>
             showError(
               "There was an error fetching the products: " + error.message,
@@ -121,7 +133,9 @@ function Kasseapparat() {
         setCart(checkoutCart());
         handleAddToPurchaseHistory(createdPurchase.purchase);
         fetchProducts(apiHost, token)
-          .then((products) => setProducts(products))
+          .then((products) =>
+            setProducts(convertProductsWithDecimals(products)),
+          )
           .catch((error) =>
             showError(
               "There was an error fetching the products: " + error.message,

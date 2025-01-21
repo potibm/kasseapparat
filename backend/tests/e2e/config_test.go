@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	configUrl = "/api/v1/config"
+	configUrl = "/api/v2/config"
 )
 
 func TestGetConfig(t *testing.T) {

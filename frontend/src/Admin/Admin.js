@@ -8,22 +8,27 @@ import {
   ProductEdit,
   ProductIcon,
   ProductCreate,
-} from "./compontent/Product";
-import { PurchaseList, PurchaseShow } from "./compontent/Purchase";
-import { UserCreate, UserEdit, UserIcon, UserList } from "./compontent/User";
-import { ListCreate, ListEdit, ListIcon, ListList } from "./compontent/List";
+} from "./component/Product";
+import { PurchaseList, PurchaseShow } from "./component/Purchase";
+import { UserCreate, UserEdit, UserIcon, UserList } from "./component/User";
 import {
-  ListEntryCreate,
-  ListEntryEdit,
-  ListEntryIcon,
-  ListEntryList,
-} from "./compontent/ListEntry";
+  GuestlistCreate,
+  GuestlistEdit,
+  GuestlistIcon,
+  GuestlistList,
+} from "./component/Guestlist";
+import {
+  GuestCreate,
+  GuestEdit,
+  GuestIcon,
+  GuestList,
+} from "./component/Guest";
 import {
   ProductInterestList,
   ProductInterestIcon,
-} from "./compontent/ProductInterest";
+} from "./component/ProductInterest";
 import PropTypes from "prop-types";
-import Dashboard from "./compontent/Dashboard";
+import Dashboard from "./component/Dashboard";
 import { useConfig } from "../provider/ConfigProvider";
 
 const AdminPanel = () => (
@@ -48,19 +53,19 @@ const AdminPanel = () => (
       options={{ label: "Product Interest" }}
     />
     <Resource
-      name="lists"
-      list={ListList}
-      edit={ListEdit}
-      create={ListCreate}
-      icon={ListIcon}
+      name="guestlists"
+      list={GuestlistList}
+      edit={GuestlistEdit}
+      create={GuestlistCreate}
+      icon={GuestlistIcon}
     />
     <Resource
-      name="listEntries"
-      list={ListEntryList}
-      edit={ListEntryEdit}
-      create={ListEntryCreate}
-      icon={ListEntryIcon}
-      options={{ label: "List Entries" }}
+      name="guests"
+      list={GuestList}
+      edit={GuestEdit}
+      create={GuestCreate}
+      icon={GuestIcon}
+      options={{ label: "Guests" }}
     />
     <Resource name="purchases" list={PurchaseList} show={PurchaseShow} />
     <Resource
@@ -107,8 +112,8 @@ const MyMenu = () => {
       <Menu.ResourceItem name="productInterests" />
 
       <MyMenuDivider name="Guestlist" />
-      <Menu.ResourceItem name="lists" />
-      <Menu.ResourceItem name="listEntries" primaryText="List Entries" />
+      <Menu.ResourceItem name="guestlists" />
+      <Menu.ResourceItem name="guests" />
 
       <MyMenuDivider name="Admin" />
       <Menu.ResourceItem name="users" />

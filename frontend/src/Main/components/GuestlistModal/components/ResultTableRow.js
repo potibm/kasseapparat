@@ -3,9 +3,9 @@ import { Table, Avatar } from "flowbite-react";
 import { HiShoppingCart } from "react-icons/hi";
 import PropTypes from "prop-types";
 import MyButton from "../../MyButton";
-import GuestListArrivalNoteModal from "./ArrivalNoteModal";
+import GuestlistArrivalNoteModal from "./ArrivalNoteModal";
 
-const GuestListResultTableRow = ({
+const GuestlistResultTableRow = ({
   entry,
   onAddToCart,
   hasListItem,
@@ -19,7 +19,7 @@ const GuestListResultTableRow = ({
       };
 
       setArrivalModalContent(
-        <GuestListArrivalNoteModal
+        <GuestlistArrivalNoteModal
           isOpen={true}
           onClose={handleClose}
           arrivalNote={arrivalNote}
@@ -144,11 +144,11 @@ const getInitials = (name) => {
   return firstInitial + lastInitial;
 };
 
-GuestListResultTableRow.propTypes = {
+GuestlistResultTableRow.propTypes = {
   entry: PropTypes.object.isRequired,
   onAddToCart: PropTypes.func.isRequired,
   hasListItem: PropTypes.func.isRequired,
   loadedSearchQuery: PropTypes.string,
 };
 
-export default GuestListResultTableRow;
+export default GuestlistResultTableRow;

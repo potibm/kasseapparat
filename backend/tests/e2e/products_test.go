@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	productBaseUrl   = "/api/v1/products"
+	productBaseUrl   = "/api/v2/products"
 	productUrlWithId = productBaseUrl + "/1"
 )
 
@@ -30,16 +30,16 @@ func TestGetProducts(t *testing.T) {
 	for i := 0; i < len(obj.Iter()); i++ {
 		product := obj.Value(i).Object()
 		validateProduct(product)
-		product.Value("lists").Array()
+		product.Value("guestlists").Array()
 	}
 
 	product := obj.Value(0).Object()
 	validateProductOne(product)
-	product.Value("lists").Array().IsEmpty()
+	product.Value("guestlists").Array().IsEmpty()
 
 	productWithList := obj.Value(1).Object()
 	productWithList.Value("name").String().Contains("Reduced")
-	productWithList.Value("lists").Array().Length().IsEqual(2)
+	productWithList.Value("guestlists").Array().Length().IsEqual(2)
 }
 
 func TestGetProductsWithSort(t *testing.T) {
@@ -144,7 +144,7 @@ func TestProductAuthentication(t *testing.T) {
 func validateProduct(product *httpexpect.Object) {
 	product.Value("id").Number().Gt(0)
 	product.Value("name").String().NotEmpty()
-	product.Value("price").Number().Ge(0)
+	product.Value("price").String().NotEmpty()
 	product.Value("wrapAfter").Boolean()
 	product.Value("pos").Number().Ge(0)
 	product.Value("apiExport").Boolean()
@@ -157,7 +157,7 @@ func validateProduct(product *httpexpect.Object) {
 func validateProductOne(product *httpexpect.Object) {
 	product.Value("id").Number().IsEqual(1)
 	product.Value("name").String().Contains("Regular")
-	product.Value("price").Number().IsEqual(40)
+	product.Value("price").String().IsEqual("40")
 	product.Value("wrapAfter").Boolean().IsFalse()
 	product.Value("hidden").Boolean().IsFalse()
 	product.Value("pos").Number().IsEqual(1)

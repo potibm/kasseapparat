@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	purchaseStatsUrl = "/api/v1/purchases/stats"
+	purchaseStatsUrl = "/api/v2/purchases/stats"
 )
 
 func TestPurchaseStats(t *testing.T) {

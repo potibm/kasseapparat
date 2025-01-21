@@ -32,8 +32,8 @@ import {
   number,
 } from "react-admin";
 import PersonIcon from "@mui/icons-material/Person";
-import ListEntryActions from "./ListEntryAction";
-import { ListEntryFilters } from "./ListEntryFilters";
+import GuestActions from "./GuestAction";
+import { GuestFilters } from "./GuestFilters";
 import { useLocation } from "react-router-dom";
 import { useFormContext } from "react-hook-form";
 import PropTypes from "prop-types";
@@ -87,19 +87,19 @@ const ArrivedAtOrNullField = (props) => {
   return <DateTimeInput source="arrivedAt" disabled={true} />;
 };
 
-export const ListEntryList = (props) => {
+export const GuestList = (props) => {
   const locale = useConfig().Locale;
 
   return (
     <List
       sort={{ field: "id", order: "ASC" }}
-      filters={ListEntryFilters}
-      actions={<ListEntryActions />}
+      filters={GuestFilters}
+      actions={<GuestActions />}
     >
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
-        <TextField source="list.name" />
+        <TextField source="guestlist.name" label="Guestlist" />
         <NumberField
           source="additionalGuests"
           min={0}
@@ -120,7 +120,7 @@ export const ListEntryList = (props) => {
   );
 };
 
-export const ListEntryEdit = () => {
+export const GuestEdit = () => {
   return (
     <Edit>
       <TabbedForm
@@ -132,7 +132,7 @@ export const ListEntryEdit = () => {
       >
         <FormTab label="General">
           <NumberInput disabled source="id" />
-          <ReferenceInput source="listId" reference="lists">
+          <ReferenceInput source="guestlistId" reference="guestlists">
             <SelectInput optionText="name" validate={required()} disabled />
           </ReferenceInput>
           <TextInput source="name" validate={required()} />
@@ -179,7 +179,7 @@ export const ListEntryEdit = () => {
   );
 };
 
-const ListEntryCreateToolbar = ({ guestlistId, ...props }) => {
+const GuestCreateToolbar = ({ guestlistId, ...props }) => {
   const redirect = useRedirect();
   const { reset } = useFormContext();
   const notify = useNotify();
@@ -187,7 +187,7 @@ const ListEntryCreateToolbar = ({ guestlistId, ...props }) => {
   const onSuccess = (data) => {
     notify(`Entry saved!`);
     reset();
-    redirect(`/admin/listEntries/create?list_id=${data.listId}`);
+    redirect(`/admin/guests/create?guestlist_id=${data.guestlistId}`);
   };
 
   return (
@@ -202,23 +202,23 @@ const ListEntryCreateToolbar = ({ guestlistId, ...props }) => {
     </Toolbar>
   );
 };
-ListEntryCreateToolbar.propTypes = {
+GuestCreateToolbar.propTypes = {
   guestlistId: PropTypes.number.isRequired,
 };
 
-export const ListEntryCreate = (props) => {
+export const GuestCreate = (props) => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const guestlistId = parseInt(params.get("list_id"), 10);
+  const guestlistId = parseInt(params.get("guestlist_id"), 10);
 
   return (
     <Create {...props} title="Create new List Entry">
       <SimpleForm
-        defaultValues={{ listId: guestlistId }}
-        toolbar={<ListEntryCreateToolbar guestlistId={guestlistId} />}
+        defaultValues={{ guestlistId }}
+        toolbar={<GuestCreateToolbar guestlistId={guestlistId} />}
       >
         <NumberInput disabled source="id" />
-        <ReferenceInput source="listId" reference="lists">
+        <ReferenceInput source="guestlistId" reference="guestlists">
           <AutocompleteInput optionText="name" validate={required()} />
         </ReferenceInput>
         <TextInput source="name" validate={required()} />
@@ -247,4 +247,4 @@ export const ListEntryCreate = (props) => {
   );
 };
 
-export const ListEntryIcon = () => <PersonIcon />;
+export const GuestIcon = () => <PersonIcon />;
