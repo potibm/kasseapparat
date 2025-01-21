@@ -45,7 +45,7 @@ export const refreshJwtToken = async (apiHost, refreshToken) => {
 
 export const changePassword = async (apiHost, userId, token, newPassword) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v1/auth/changePassword`, {
+    fetch(`${apiHost}/api/v2/auth/changePassword`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -71,7 +71,7 @@ export const changePassword = async (apiHost, userId, token, newPassword) => {
 
 export const requestChangePasswordToken = async (apiHost, login) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v1/auth/changePasswordToken`, {
+    fetch(`${apiHost}/api/v2/auth/changePasswordToken`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

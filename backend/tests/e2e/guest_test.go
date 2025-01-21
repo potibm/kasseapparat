@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	guestBaseUrl   = "/api/v1/guests"
+	guestBaseUrl   = "/api/v2/guests"
 	guestUrlWithId = guestBaseUrl + "/1"
 )
 

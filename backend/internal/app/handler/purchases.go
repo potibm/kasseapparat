@@ -67,7 +67,6 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			return
 		}
 		calculatedPurchaseItemPrice := product.Price.Mul(decimal.NewFromInt(int64(quantity)))
-		println(calculatedPurchaseItemPrice.String())
 		calculatedTotalPrice = calculatedTotalPrice.Add(calculatedPurchaseItemPrice)
 
 		purchaseItem := models.PurchaseItem{
@@ -109,8 +108,6 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		}
 
 	}
-	println(calculatedTotalPrice.String())
-	println(purchaseRequest.TotalPrice.String())
 	// check that total price is correct
 	if !calculatedTotalPrice.Equal(purchaseRequest.TotalPrice) {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Total price does not match"))

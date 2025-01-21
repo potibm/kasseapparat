@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	productInterestBaseUrl   = "/api/v1/productInterests"
+	productInterestBaseUrl   = "/api/v2/productInterests"
 	productInterestUrlWithId = productInterestBaseUrl + "/1"
 )
 

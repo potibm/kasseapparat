@@ -14,7 +14,7 @@ const ConfigProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_HOST}/api/v1/config`)
+    fetch(`${API_HOST}/api/v2/config`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

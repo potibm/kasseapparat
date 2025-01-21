@@ -3,7 +3,7 @@ import Decimal from "decimal.js";
 export const fetchProducts = async (apiHost, jwtToken) => {
   return new Promise((resolve, reject) => {
     fetch(
-      `${apiHost}/api/v1/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true`,
+      `${apiHost}/api/v2/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true`,
       {
         method: "GET",
         headers: {
@@ -32,7 +32,7 @@ export const fetchGuestlistByProductId = async (
   query,
 ) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v1/products/${productId}/guests?q=${query}`, {
+    fetch(`${apiHost}/api/v2/products/${productId}/guests?q=${query}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -61,7 +61,7 @@ export const storePurchase = async (apiHost, jwtToken, cart) => {
       item.lists = null;
     });
 
-    fetch(`${apiHost}/api/v1/purchases`, {
+    fetch(`${apiHost}/api/v2/purchases`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -90,7 +90,7 @@ export const storePurchase = async (apiHost, jwtToken, cart) => {
 
 export const fetchPurchases = async (apiHost, jwtToken) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v1/purchases`, {
+    fetch(`${apiHost}/api/v2/purchases`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -112,7 +112,7 @@ export const fetchPurchases = async (apiHost, jwtToken) => {
 
 export const deletePurchaseById = async (apiHost, jwtToken, purchaseId) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v1/purchases/${purchaseId}`, {
+    fetch(`${apiHost}/api/v2/purchases/${purchaseId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -134,7 +134,7 @@ export const deletePurchaseById = async (apiHost, jwtToken, purchaseId) => {
 
 export const addProductInterest = async (apiHost, jwtToken, productId) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v1/productInterests`, {
+    fetch(`${apiHost}/api/v2/productInterests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

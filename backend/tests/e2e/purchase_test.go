@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	purchaseBaseUrl = "/api/v1/purchases"
+	purchaseBaseUrl = "/api/v2/purchases"
 )
 
 func TestGetPurchasesWithSort(t *testing.T) {

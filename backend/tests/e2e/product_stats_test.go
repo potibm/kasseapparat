@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	productStatsUrl = "/api/v1/productStats"
+	productStatsUrl = "/api/v2/productStats"
 )
 
 func TestProductStats(t *testing.T) {

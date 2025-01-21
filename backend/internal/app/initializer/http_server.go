@@ -94,7 +94,7 @@ func SentryMiddleware() gin.HandlerFunc {
 
 func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMiddleware) {
 
-	protectedApiRouter := r.Group("/api/v1")
+	protectedApiRouter := r.Group("/api/v2")
 	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
 	{
 		registerProductRoutes(protectedApiRouter, myhandler)
@@ -110,7 +110,7 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 	}
 
 	// unprotected routes
-	unprotectedApiRouter := r.Group("/api/v1")
+	unprotectedApiRouter := r.Group("/api/v2")
 	{
 		unprotectedApiRouter.GET("/config", myhandler.GetConfig)
 

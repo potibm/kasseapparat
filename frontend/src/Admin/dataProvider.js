@@ -23,12 +23,12 @@ const httpClient = (url, options = {}) => {
   return fetchUtils.fetchJson(url, options);
 };
 
-const dataProvider = jsonServerProvider(`${API_HOST}/api/v1`, httpClient);
+const dataProvider = jsonServerProvider(`${API_HOST}/api/v`, httpClient);
 
 const myDataProvider = {
   ...dataProvider,
   upload: (resource, params) => {
-    const url = `${API_HOST}/api/v1/${resource}`;
+    const url = `${API_HOST}/api/v2/${resource}`;
     const options = {
       method: "POST",
       body: params.data,
