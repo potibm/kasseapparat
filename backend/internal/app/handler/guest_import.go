@@ -90,7 +90,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	// find a list with Type Code
 	list, err := handler.repo.GetGuestlistWithTypeCode()
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "List not found"))
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Guestlist not found"))
 		return
 	}
 
@@ -124,7 +124,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 
 		_, err = handler.repo.CreateGuest(record.GetGuest(list.ID))
 		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create list entry"))
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create guest"))
 			return
 		}
 		createdGuests++

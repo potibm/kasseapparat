@@ -23,7 +23,7 @@ const httpClient = (url, options = {}) => {
   return fetchUtils.fetchJson(url, options);
 };
 
-const dataProvider = jsonServerProvider(`${API_HOST}/api/v`, httpClient);
+const dataProvider = jsonServerProvider(`${API_HOST}/api/v2`, httpClient);
 
 const myDataProvider = {
   ...dataProvider,

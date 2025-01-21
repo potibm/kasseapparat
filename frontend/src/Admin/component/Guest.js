@@ -187,7 +187,7 @@ const GuestCreateToolbar = ({ guestlistId, ...props }) => {
   const onSuccess = (data) => {
     notify(`Entry saved!`);
     reset();
-    redirect(`/admin/listEntries/create?guestlist_id=${data.guestlistId}`);
+    redirect(`/admin/guests/create?guestlist_id=${data.guestlistId}`);
   };
 
   return (

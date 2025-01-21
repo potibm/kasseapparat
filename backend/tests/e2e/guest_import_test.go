@@ -104,7 +104,7 @@ func deleteGuestsByNameQuery(query string) {
 	for i := 0; i < len(guests.Iter()); i++ {
 		guest := guests.Value(i).Object()
 		guestId := guest.Value("id").Number().Raw()
-		log.Println("Deleting list entry with id", guestId)
+		log.Println("Deleting guest with id", guestId)
 
 		withDemoUserAuthToken(e.DELETE(guestBaseUrl + "/" + strconv.Itoa(int(guestId)))).
 			Expect().

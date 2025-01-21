@@ -46,7 +46,7 @@ const CreateGuestlistEntryButton = (props) => {
   const navigate = useNavigate();
 
   const handleCreateEntry = (guestlistId) => {
-    navigate(`/admin/listEntries/create?guestlist_id=${guestlistId}`);
+    navigate(`/admin/guests/create?guestlist_id=${guestlistId}`);
   };
 
   return (
