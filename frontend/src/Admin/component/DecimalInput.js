@@ -25,7 +25,11 @@ const DecimalInput = (props) => {
   const parse = (value) => {
     if (!value) return null;
 
-    const normalizedValue = value.replace(",", ".");
+    const normalizedValue = value
+      .trim()
+      .replace(/,/g, ".") // Replace all commas
+      .replace(/\.(?=.*\.)/g, ""); // Keep only last decimal point
+
     return normalizedValue;
   };
 
