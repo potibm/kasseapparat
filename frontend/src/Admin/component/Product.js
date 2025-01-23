@@ -21,6 +21,7 @@ import {
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
+import DecimalInput from "./DecimalInput";
 
 export const ProductList = () => {
   const currency = useConfig().currencyOptions;
@@ -58,7 +59,7 @@ export const ProductEdit = () => {
         <FormTab label="General">
           <NumberInput disabled source="id" />
           <TextInput source="name" validate={required()} />
-          <NumberInput source="price" min={0} />
+          <DecimalInput source="price" />
         </FormTab>
         <FormTab label="Layout">
           <NumberInput
@@ -111,7 +112,7 @@ export const ProductCreate = () => {
       <SimpleForm>
         <NumberInput disabled source="id" />
         <TextInput source="name" validate={required()} />
-        <NumberInput source="price" min={0} />
+        <DecimalInput source="price" min={0} />
         <NumberInput
           source="pos"
           helperText="The products will shown in this order"
