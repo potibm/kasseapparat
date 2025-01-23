@@ -59,6 +59,9 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, products)
 }
 
+// filterHiddenProducts removes hidden products from the list while preserving
+// wrap-after formatting by transferring the wrap-after property to the previous
+// visible product when a hidden product with wrap-after is encountered.
 func filterHiddenProducts(products []models.ProductWithSalesAndInterrest) []models.ProductWithSalesAndInterrest {
 	var filteredProducts []models.ProductWithSalesAndInterrest
 	for _, product := range products {
