@@ -6,26 +6,27 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/repository"
 	"github.com/shopspring/decimal"
 )
 
 type ProductRequestCreate struct {
-	Name      string  `form:"name"  json:"name" binding:"required"`
-	Price     float64 `form:"price" json:"price" binding:"numeric"`
-	WrapAfter bool    `form:"wrapAfter" json:"wrapAfter"`
-	Pos       int     `form:"pos" json:"pos" binding:"numeric,required"`
-	Hidden    bool    `form:"hidden" json:"hidden" binding:"boolean"`
+	Name      string `form:"name"  json:"name" binding:"required"`
+	Price     string `form:"price" json:"price" binding:"required"`
+	WrapAfter bool   `form:"wrapAfter" json:"wrapAfter"`
+	Pos       int    `form:"pos" json:"pos" binding:"numeric,required"`
+	Hidden    bool   `form:"hidden" json:"hidden" binding:"boolean"`
 }
 
 type ProductRequestUpdate struct {
-	Name       string  `form:"name"  json:"name" binding:"required"`
-	Price      float64 `form:"price" json:"price" binding:"numeric"`
-	WrapAfter  bool    `form:"wrapAfter" json:"wrapAfter"`
-	Pos        int     `form:"pos" json:"pos" binding:"numeric,required"`
-	ApiExport  bool    `form:"apiExport" json:"apiExport" binding:"boolean"`
-	Hidden     bool    `form:"hidden" json:"hidden" binding:"boolean"`
-	SoldOut    bool    `form:"soldOut" json:"soldOut" binding:"boolean"`
-	TotalStock int     `form:"totalStock" json:"totalStock" binding:"numeric"`
+	Name       string `form:"name"  json:"name" binding:"required"`
+	Price      string `form:"price" json:"price" binding:"required"`
+	WrapAfter  bool   `form:"wrapAfter" json:"wrapAfter"`
+	Pos        int    `form:"pos" json:"pos" binding:"numeric,required"`
+	ApiExport  bool   `form:"apiExport" json:"apiExport" binding:"boolean"`
+	Hidden     bool   `form:"hidden" json:"hidden" binding:"boolean"`
+	SoldOut    bool   `form:"soldOut" json:"soldOut" binding:"boolean"`
+	TotalStock int    `form:"totalStock" json:"totalStock" binding:"numeric"`
 }
 
 func (handler *Handler) GetProducts(c *gin.Context) {
@@ -43,19 +44,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	}
 
 	if filterHidden == "true" {
-		var filteredProducts []models.ProductWithSalesAndInterrest
-		for _, product := range products {
-			if product.Hidden && product.WrapAfter {
-				// find last product in filteredProducts and set wrapAfter to true
-				if len(filteredProducts) > 0 {
-					filteredProducts[len(filteredProducts)-1].WrapAfter = true
-				}
-			}
-			if !product.Hidden {
-				filteredProducts = append(filteredProducts, product)
-			}
-		}
-		products = filteredProducts
+		products = filterHiddenProducts(products)
 	}
 
 	total, err := handler.repo.GetTotalProducts()
@@ -64,14 +53,32 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 		return
 	}
 
-	// iterate over all products and set the SoldOutRequestCount and UnitsSold
-	for i := range products {
-		products[i].UnitsSold, _ = handler.repo.GetPurchasedQuantitiesByProductID(products[i].ID)
-		products[i].SoldOutRequestCount, _ = handler.repo.GetProductInterestCountByProductID(products[i].ID)
-	}
+	enrichProductData(handler.repo, products)
 
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
 	c.JSON(http.StatusOK, products)
+}
+
+func filterHiddenProducts(products []models.ProductWithSalesAndInterrest) []models.ProductWithSalesAndInterrest {
+	var filteredProducts []models.ProductWithSalesAndInterrest
+	for _, product := range products {
+		if product.Hidden && product.WrapAfter {
+			if len(filteredProducts) > 0 {
+				filteredProducts[len(filteredProducts)-1].WrapAfter = true
+			}
+		}
+		if !product.Hidden {
+			filteredProducts = append(filteredProducts, product)
+		}
+	}
+	return filteredProducts
+}
+
+func enrichProductData(repo *repository.Repository, products []models.ProductWithSalesAndInterrest) {
+	for i := range products {
+		products[i].UnitsSold, _ = repo.GetPurchasedQuantitiesByProductID(products[i].ID)
+		products[i].SoldOutRequestCount, _ = repo.GetProductInterestCountByProductID(products[i].ID)
+	}
 }
 
 func (handler *Handler) GetProductByID(c *gin.Context) {
@@ -109,7 +116,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	}
 
 	product.Name = productRequest.Name
-	product.Price = decimal.NewFromFloat(productRequest.Price)
+	product.Price, _ = decimal.NewFromString(productRequest.Price)
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
@@ -142,7 +149,7 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	}
 
 	product.Name = productRequest.Name
-	product.Price = decimal.NewFromFloat(productRequest.Price)
+	product.Price, _ = decimal.NewFromString(productRequest.Price)
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.Hidden = productRequest.Hidden

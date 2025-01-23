@@ -79,7 +79,7 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 	product := withDemoUserAuthToken(e.POST(productBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"name":      originalName,
-			"price":     10,
+			"price":     "10",
 			"wrapAfter": false,
 			"pos":       123,
 			"hidden":    false,
@@ -103,7 +103,7 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 	withDemoUserAuthToken(e.PUT(productUrl)).
 		WithJSON(map[string]interface{}{
 			"name":      changedName,
-			"price":     10,
+			"price":     "20",
 			"wrapAfter": false,
 			"pos":       123,
 			"hidden":    false,
