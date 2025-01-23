@@ -11,22 +11,22 @@ import (
 )
 
 type ProductRequestCreate struct {
-	Name      string `form:"name"  json:"name" binding:"required"`
-	Price     string `form:"price" json:"price" binding:"required"`
-	WrapAfter bool   `form:"wrapAfter" json:"wrapAfter"`
-	Pos       int    `form:"pos" json:"pos" binding:"numeric,required"`
-	Hidden    bool   `form:"hidden" json:"hidden" binding:"boolean"`
+	Name      string          `form:"name"  json:"name" binding:"required"`
+	Price     decimal.Decimal `form:"price" json:"price" binding:"required"`
+	WrapAfter bool            `form:"wrapAfter" json:"wrapAfter"`
+	Pos       int             `form:"pos" json:"pos" binding:"numeric,required"`
+	Hidden    bool            `form:"hidden" json:"hidden" binding:"boolean"`
 }
 
 type ProductRequestUpdate struct {
-	Name       string `form:"name"  json:"name" binding:"required"`
-	Price      string `form:"price" json:"price" binding:"required"`
-	WrapAfter  bool   `form:"wrapAfter" json:"wrapAfter"`
-	Pos        int    `form:"pos" json:"pos" binding:"numeric,required"`
-	ApiExport  bool   `form:"apiExport" json:"apiExport" binding:"boolean"`
-	Hidden     bool   `form:"hidden" json:"hidden" binding:"boolean"`
-	SoldOut    bool   `form:"soldOut" json:"soldOut" binding:"boolean"`
-	TotalStock int    `form:"totalStock" json:"totalStock" binding:"numeric"`
+	Name       string          `form:"name"  json:"name" binding:"required"`
+	Price      decimal.Decimal `form:"price" json:"price" binding:"required"`
+	WrapAfter  bool            `form:"wrapAfter" json:"wrapAfter"`
+	Pos        int             `form:"pos" json:"pos" binding:"numeric,required"`
+	ApiExport  bool            `form:"apiExport" json:"apiExport" binding:"boolean"`
+	Hidden     bool            `form:"hidden" json:"hidden" binding:"boolean"`
+	SoldOut    bool            `form:"soldOut" json:"soldOut" binding:"boolean"`
+	TotalStock int             `form:"totalStock" json:"totalStock" binding:"numeric"`
 }
 
 func (handler *Handler) GetProducts(c *gin.Context) {
@@ -116,7 +116,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	}
 
 	product.Name = productRequest.Name
-	product.Price, _ = decimal.NewFromString(productRequest.Price)
+	product.Price = productRequest.Price
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
@@ -149,7 +149,7 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	}
 
 	product.Name = productRequest.Name
-	product.Price, _ = decimal.NewFromString(productRequest.Price)
+	product.Price = productRequest.Price
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.Hidden = productRequest.Hidden
