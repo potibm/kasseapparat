@@ -2,7 +2,7 @@ import React from "react";
 import { Card, DarkThemeToggle } from "flowbite-react";
 import { useConfig } from "../provider/ConfigProvider";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 const BaseCard = ({
   children,
