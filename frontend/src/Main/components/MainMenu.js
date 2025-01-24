@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, DarkThemeToggle, Tooltip } from "flowbite-react";
 import { HiCog, HiLogout, HiOutlineUserCircle } from "react-icons/hi";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import PropTypes from "prop-types";
 
 const MainMenu = ({ username, ...props }) => {

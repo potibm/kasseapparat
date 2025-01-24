@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useAuth } from "../provider/AuthProvider";
 import BaseCard from "../../components/BaseCard";
 import { Spinner } from "flowbite-react";
@@ -18,7 +18,6 @@ const Logout = () => {
       handleLogout();
     }, 3 * 1000);
 
-    // Bereinigungsfunktion, um den Timer zu löschen, falls die Komponente vor Ablauf des Timers demontiert wird
     return () => clearTimeout(timer);
   }, [setToken, navigate]);
 

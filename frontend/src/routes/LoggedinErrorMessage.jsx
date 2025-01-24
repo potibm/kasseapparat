@@ -1,7 +1,7 @@
 import React from "react";
 import MinimalBaseCard from "../components/MinimalBaseCard";
 import { Button } from "flowbite-react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 export const LoggedinErrorMessage = () => {
   return (
