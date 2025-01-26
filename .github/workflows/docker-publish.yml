@@ -25,6 +25,8 @@ jobs:
       issues: write
       pull-requests: write
     strategy:
+      fail-fast: false
+      max-parallel: 2
       matrix:
         platform: [linux/amd64, linux/arm64]
 
