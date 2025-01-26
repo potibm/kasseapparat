@@ -19,11 +19,17 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: false
     permissions:
       contents: write
       packages: write
       issues: write
       pull-requests: write
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        platform: [linux/amd64, linux/arm64]
 
     steps:
       - name: Checkout repository
@@ -92,7 +98,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform }}
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PR
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
