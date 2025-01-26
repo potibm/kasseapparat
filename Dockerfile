@@ -7,9 +7,14 @@ COPY frontend .
 RUN yarn run build
 
 # Build the backend
-FROM golang:1.23-alpine AS backend-build
+FROM golang:1.23-bookworm AS backend-build
 WORKDIR /app/backend
-RUN apk update && apk add --no-cache gcc g++
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        g++ \
+        gcc \
+        make && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 COPY backend .
 RUN go mod download
 COPY --from=frontend-build /app/frontend/build ./cmd/assets
