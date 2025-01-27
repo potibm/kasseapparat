@@ -48,6 +48,11 @@ jobs:
         if: github.event_name != 'pull_request' && matrix.platform == 'linux/amd64'
         run: echo "VERSION=${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_ENV
 
+     # Extract the version from the release output
+      - name: Extract version
+        if: github.event_name == 'pull_request'
+        run: echo "$(date +%y%m%d%H%M)" > VERSION
+
       # Use saved version (for all platforms)
       - name: Set version for all platforms
         if: github.event_name != 'pull_request'
