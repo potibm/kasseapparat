@@ -35,25 +35,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Run semantic-release
+      # Run semantic-release only once
       - name: Run semantic-release
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && matrix.platform == 'linux/amd64'
         id: semantic
         uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract the version from the release output
-      - name: Extract version
-        run: echo "$(date +%y%m%d%H%M)" > VERSION
+      # Save version to environment variable (only on the first platform)
+      - name: Save version output
+        if: github.event_name != 'pull_request' && matrix.platform == 'linux/amd64'
+        run: echo "VERSION=${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_ENV
 
-      # Extract the version from the release output
-      - name: Extract version (from semantic release)
+      # Use saved version (for all platforms)
+      - name: Set version for all platforms
         if: github.event_name != 'pull_request'
-        run: echo "${{ steps.semantic.outputs.new_release_version }}" > VERSION
+        run: echo "${{ env.VERSION }}" > VERSION
 
       # Install the cosign tool except on PR
-      # https://github.com/sigstore/cosign-installer
       - name: Install cosign
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@v3
@@ -87,9 +87,7 @@ jobs:
             type=ref,event=tag
             type=ref,event=pr
             type=raw,value=latest
-            type=raw,value=${{ steps.semantic.outputs.new_release_major_version }}
-            type=raw,value=${{ steps.semantic.outputs.new_release_major_version }}.${{ steps.semantic.outputs.new_release_minor_version }}
-            type=raw,value=${{ steps.semantic.outputs.new_release_major_version }}.${{ steps.semantic.outputs.new_release_minor_version }}.${{ steps.semantic.outputs.new_release_patch_version }}
+            type=raw,value=${{ env.VERSION }}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
@@ -99,7 +97,7 @@ jobs:
         with:
           context: .
           platforms: ${{ matrix.platform }}
-          push: ${{ github.event_name != 'pull_request' }} # Don't push on PR
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
