@@ -2,7 +2,7 @@
 FROM node:23 AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/yarn.lock ./
-RUN yarn install --ignore-scripts --network-timeout 100000 
+RUN yarn install --frozen-lockfile --ignore-scripts --network-timeout 100000 
 COPY frontend .
 RUN yarn run build
 
@@ -11,9 +11,7 @@ FROM golang:1.23-bookworm AS backend-build
 WORKDIR /app/backend
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        g++ \
-        gcc \
-        make && \
+    g++ gcc make ca-certificates && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 COPY backend .
 RUN go mod download
@@ -22,7 +20,7 @@ RUN CGO_ENABLED=1 go build -o kasseapparat ./cmd/main.go && \
     CGO_ENABLED=1 go build -o kasseapparat-tool ./tools/main.go
 
 # Create the final image
-FROM alpine:3
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 VOLUME [ "/app/data" ]
 
