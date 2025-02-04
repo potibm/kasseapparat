@@ -1,0 +1,23 @@
+name: Docker Image PR Build
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set version to current date
+        run: echo "$(date +%Y-%m-%d)" > VERSION
+
+      - name: Build Docker image (without pushing)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          platforms: linux/amd64
+          tags: my-temp-image:latest
