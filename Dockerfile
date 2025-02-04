@@ -11,7 +11,7 @@ FROM golang:1.23-bookworm AS backend-build
 WORKDIR /app/backend
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    g++ gcc make ca-certificates && \
+    ca-certificates g++ gcc make && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 COPY backend .
 RUN go mod download
