@@ -23,6 +23,7 @@ RUN CGO_ENABLED=1 go build -o kasseapparat ./cmd/main.go && \
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 VOLUME [ "/app/data" ]
+RUN useradd -m -s /bin/bash appuser
 
 # Copy frontend build
 COPY --from=backend-build /app/backend/kasseapparat ./kasseapparat
@@ -30,7 +31,11 @@ COPY --from=backend-build /app/backend/kasseapparat-tool ./kasseapparat-tool
 COPY VERSION .
 
 # Copy backend build
-RUN chmod +x /app/kasseapparat && chmod +x /app/kasseapparat-tool 
+RUN chown -R appuser:appuser /app && \
+    chmod +x /app/kasseapparat && \
+    chmod +x /app/kasseapparat-tool 
+
+USER appuser
 
 # Expose port (adjust based on your application)
 EXPOSE 8080
