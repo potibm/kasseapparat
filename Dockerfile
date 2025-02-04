@@ -31,7 +31,9 @@ COPY --from=backend-build /app/backend/kasseapparat-tool ./kasseapparat-tool
 COPY VERSION .
 
 # Copy backend build
-RUN chown -R appuser:appuser /app && \
+RUN mkdir -p /app/data && \
+    chown -R appuser:appuser /app/data && \
+    chown -R appuser:appuser /app && \
     chmod +x /app/kasseapparat && \
     chmod +x /app/kasseapparat-tool 
 
