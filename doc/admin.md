@@ -200,6 +200,20 @@ Make the script executable.
 
 ## First start
 
+### Correct UID/GUID for data directory
+
+The data directory at /app/kassepparat/data needs the correct UID/GID. That is probably 1000:1000, so
+
+```bash
+sudo chown 1000:1000 /app/kassepparat/data
+```
+
+You can check those values by running
+
+```bash
+docker run --rm ghcr.io/potibm/kasseapparat:latest id appuser
+```
+
 ### Create Database
 
 ```bash
