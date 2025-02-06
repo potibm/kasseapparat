@@ -27,8 +27,8 @@ jobs:
         with:
           image-names: kasseapparat
           account: user
-          cut-off: 30d
-          keep-n-most-recent: 10
+          cut-off: 60d
+          keep-n-most-recent: 20
           token: ${{ secrets.GITHUB_TOKEN }}
           skip-shas: ${{ env.multi-arch-digests }}
-          dry-run: true 
+          dry-run: false
