@@ -1,4 +1,4 @@
-name: GHCR Cleanup (Dry-Run)
+name: GHCR Cleanup
 
 on:
   schedule:
@@ -22,13 +22,13 @@ jobs:
           DIGESTS=$(docker manifest inspect ghcr.io/potibm/kasseapparat | jq -r '.manifests[].digest' | paste -s -d ' ' -)
           echo "multi-arch-digests=$DIGESTS" >> $GITHUB_ENV
 
-      - name: Run container-retention-policy (Dry-Run)
-        uses: snok/container-retention-policy@v3
+      - name: Run container-retention-policy
+        uses: snok/container-retention-policy@v3.0.0
         with:
           image-names: kasseapparat
-          cut-off: 30d
-          keep-at-least: 10
-          package-type: container
+          account: user
+          cut-off: 60d
+          keep-n-most-recent: 20
           token: ${{ secrets.GITHUB_TOKEN }}
           skip-shas: ${{ env.multi-arch-digests }}
-          dry-run: true # Zeigt nur an, was gelöscht werden würde
+          dry-run: false
