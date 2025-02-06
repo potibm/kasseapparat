@@ -27,8 +27,7 @@ jobs:
         with:
           image-names: kasseapparat
           cut-off: 30d
-          keep-at-least: 10
-          package-type: container
+          keep-n-most-recent: 10
           token: ${{ secrets.GITHUB_TOKEN }}
           skip-shas: ${{ env.multi-arch-digests }}
-          dry-run: true # Zeigt nur an, was gelöscht werden würde
+          dry-run: true 
