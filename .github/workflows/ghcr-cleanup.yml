@@ -1,0 +1,34 @@
+name: GHCR Cleanup (Dry-Run)
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' 
+  workflow_dispatch: 
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch multi-platform package version SHAs
+        id: multi-arch-digests
+        run: |
+          DIGESTS=$(docker manifest inspect ghcr.io/potibm/kasseapparat | jq -r '.manifests[].digest' | paste -s -d ' ' -)
+          echo "multi-arch-digests=$DIGESTS" >> $GITHUB_ENV
+
+      - name: Run container-retention-policy (Dry-Run)
+        uses: snok/container-retention-policy@v3
+        with:
+          image-names: kasseapparat
+          cut-off: 30d
+          keep-at-least: 10
+          package-type: container
+          token: ${{ secrets.GITHUB_TOKEN }}
+          skip-shas: ${{ env.multi-arch-digests }}
+          dry-run: true # Zeigt nur an, was gelöscht werden würde
