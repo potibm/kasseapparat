@@ -26,6 +26,7 @@ jobs:
         uses: snok/container-retention-policy@v3.0.0
         with:
           image-names: kasseapparat
+          account: user
           cut-off: 30d
           keep-n-most-recent: 10
           token: ${{ secrets.GITHUB_TOKEN }}
