@@ -1,4 +1,4 @@
-name: GHCR Cleanup (Dry-Run)
+name: GHCR Cleanup
 
 on:
   schedule:
@@ -22,7 +22,7 @@ jobs:
           DIGESTS=$(docker manifest inspect ghcr.io/potibm/kasseapparat | jq -r '.manifests[].digest' | paste -s -d ' ' -)
           echo "multi-arch-digests=$DIGESTS" >> $GITHUB_ENV
 
-      - name: Run container-retention-policy (Dry-Run)
+      - name: Run container-retention-policy
         uses: snok/container-retention-policy@v3.0.0
         with:
           image-names: kasseapparat
