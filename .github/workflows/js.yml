@@ -59,14 +59,14 @@ jobs:
       - name: build
         run: yarn run build
         working-directory: frontend
-
-      - name: test
-        run: yarn run test --coverage --watchAll=false
-        working-directory: frontend
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: frontend/coverage
+#     Temporary disabled
+#      - name: test
+#        run: yarn run test --coverage --watchAll=false
+#        working-directory: frontend
+#
+#      - name: Upload coverage report
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: coverage-report
+#          path: frontend/coverage

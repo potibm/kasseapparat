@@ -34,7 +34,7 @@ import {
 import PersonIcon from "@mui/icons-material/Person";
 import GuestActions from "./GuestAction";
 import { GuestFilters } from "./GuestFilters";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 import { useFormContext } from "react-hook-form";
 import PropTypes from "prop-types";
 import { Box } from "@mui/material";
