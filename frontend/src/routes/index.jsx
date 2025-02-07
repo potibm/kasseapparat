@@ -1,4 +1,5 @@
-import { Navigate, RouterProvider, createBrowserRouter } from "react-router";
+import { Navigate, createBrowserRouter } from "react-router";
+import { RouterProvider } from "react-router-dom";
 import { useAuth } from "../Auth/provider/AuthProvider";
 import { ProtectedRoute } from "./ProtectedRoute";
 import React from "react";

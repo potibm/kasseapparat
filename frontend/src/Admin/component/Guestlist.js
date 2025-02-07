@@ -23,7 +23,7 @@ import {
   Button,
 } from "react-admin";
 import GroupsIcon from "@mui/icons-material/Groups";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 const ConditionalDeleteButton = (props) => {
   const record = useRecordContext(props);
