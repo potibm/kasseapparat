@@ -87,7 +87,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
                       <TableCell>{purchaseItem.quantity} x</TableCell>
                       <TableCell>{purchaseItem.product.name}</TableCell>
                       <TableCell className="text-right">
-                        {currency.format(purchaseItem.totalPrice)}
+                        {currency.format(purchaseItem.totalGrossPrice)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -148,7 +148,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
                   {formatDate(purchase.createdAt)}
                 </Table.Cell>
                 <Table.Cell className="text-right">
-                  {currency.format(purchase.totalPrice)}
+                  {currency.format(purchase.totalGrossPrice)}
                 </Table.Cell>
                 <Table.Cell className="flex justify-end">
                   <MyButton

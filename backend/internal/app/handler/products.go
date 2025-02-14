@@ -6,13 +6,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	response "github.com/potibm/kasseapparat/internal/app/reponse"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 	"github.com/shopspring/decimal"
 )
 
 type ProductRequestCreate struct {
 	Name      string          `form:"name"  json:"name" binding:"required"`
-	Price     decimal.Decimal `form:"price" json:"price" binding:"required"`
+	NetPrice  decimal.Decimal `form:"netPrice" json:"netPrice" binding:"required"`
+	VATRate   decimal.Decimal `form:"vatRate" json:"vatRate" binding:"required"`
 	WrapAfter bool            `form:"wrapAfter" json:"wrapAfter"`
 	Pos       int             `form:"pos" json:"pos" binding:"numeric,required"`
 	Hidden    bool            `form:"hidden" json:"hidden" binding:"boolean"`
@@ -20,7 +22,8 @@ type ProductRequestCreate struct {
 
 type ProductRequestUpdate struct {
 	Name       string          `form:"name"  json:"name" binding:"required"`
-	Price      decimal.Decimal `form:"price" json:"price" binding:"required"`
+	NetPrice   decimal.Decimal `form:"netPrice" json:"netPrice" binding:"required"`
+	VATRate    decimal.Decimal `form:"vatRate" json:"vatRate" binding:"required"`
 	WrapAfter  bool            `form:"wrapAfter" json:"wrapAfter"`
 	Pos        int             `form:"pos" json:"pos" binding:"numeric,required"`
 	ApiExport  bool            `form:"apiExport" json:"apiExport" binding:"boolean"`
@@ -53,17 +56,18 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 		return
 	}
 
-	enrichProductData(handler.repo, products)
+	//	enrichProductData(handler.repo, products)
+	productsResponse := createExtendedProductResponse(handler.repo, products)
 
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
-	c.JSON(http.StatusOK, products)
+	c.JSON(http.StatusOK, productsResponse)
 }
 
 // filterHiddenProducts removes hidden products from the list while preserving
 // wrap-after formatting by transferring the wrap-after property to the previous
 // visible product when a hidden product with wrap-after is encountered.
-func filterHiddenProducts(products []models.ProductWithSalesAndInterrest) []models.ProductWithSalesAndInterrest {
-	var filteredProducts []models.ProductWithSalesAndInterrest
+func filterHiddenProducts(products []models.Product) []models.Product {
+	var filteredProducts []models.Product
 	for _, product := range products {
 		if product.Hidden && product.WrapAfter {
 			if len(filteredProducts) > 0 {
@@ -77,25 +81,41 @@ func filterHiddenProducts(products []models.ProductWithSalesAndInterrest) []mode
 	return filteredProducts
 }
 
-func enrichProductData(repo *repository.Repository, products []models.ProductWithSalesAndInterrest) {
-	for i := range products {
-		products[i].UnitsSold, _ = repo.GetPurchasedQuantitiesByProductID(products[i].ID)
-		products[i].SoldOutRequestCount, _ = repo.GetProductInterestCountByProductID(products[i].ID)
+func createExtendedProductResponse(repo *repository.Repository, products []models.Product) []response.ExtendedProductResponse {
+	var productsResponse []response.ExtendedProductResponse
+	for _, product := range products {
+		unitsSold, _ := repo.GetPurchasedQuantitiesByProductID(product.ID)
+		soldOutRequestCount, _ := repo.GetProductInterestCountByProductID(product.ID)
+
+		productResponse := response.ToExtendedProductResponse(
+			product,
+			unitsSold,
+			soldOutRequestCount,
+		)
+
+		productsResponse = append(productsResponse, productResponse)
 	}
+	return productsResponse
 }
 
 func (handler *Handler) GetProductByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	product, err := handler.repo.GetProductByIDWithSalesAndInterrest(id)
+	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 		return
 	}
 
-	product.UnitsSold, _ = handler.repo.GetPurchasedQuantitiesByProductID(product.ID)
-	product.SoldOutRequestCount, _ = handler.repo.GetProductInterestCountByProductID(product.ID)
+	unitsSold, _ := handler.repo.GetPurchasedQuantitiesByProductID(product.ID)
+	soldOutRequestCount, _ := handler.repo.GetProductInterestCountByProductID(product.ID)
 
-	c.JSON(http.StatusOK, product)
+	productResponse := response.ToExtendedProductResponse(
+		*product,
+		unitsSold,
+		soldOutRequestCount,
+	)
+
+	c.JSON(http.StatusOK, productResponse)
 }
 
 func (handler *Handler) UpdateProductByID(c *gin.Context) {
@@ -119,7 +139,8 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	}
 
 	product.Name = productRequest.Name
-	product.Price = productRequest.Price
+	product.NetPrice = productRequest.NetPrice
+	product.VATRate = productRequest.VATRate
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.ApiExport = productRequest.ApiExport
@@ -152,7 +173,8 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	}
 
 	product.Name = productRequest.Name
-	product.Price = productRequest.Price
+	product.NetPrice = productRequest.NetPrice
+	product.VATRate = productRequest.VATRate
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.Hidden = productRequest.Hidden

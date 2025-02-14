@@ -97,7 +97,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
                 {cartElement.quantity}
               </Table.Cell>
               <Table.Cell className="text-right">
-                {currency.format(cartElement.totalPrice)}
+                {currency.format(cartElement.totalGrossPrice)}
               </Table.Cell>
               <Table.Cell className="flex justify-end">
                 <MyButton
@@ -116,7 +116,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
             <Table.Cell className="font-bold text-right">
               {currency.format(
                 cart.reduce(
-                  (total, item) => total.add(item.totalPrice),
+                  (total, item) => total.add(item.totalGrossPrice),
                   new Decimal(0),
                 ),
               )}
@@ -146,7 +146,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
         {cart.length > 0 &&
           currency.format(
             cart.reduce(
-              (total, item) => total.add(item.totalPrice),
+              (total, item) => total.add(item.totalGrossPrice),
               new Decimal(0),
             ),
           )}
