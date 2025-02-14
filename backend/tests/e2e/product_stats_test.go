@@ -35,7 +35,8 @@ func TestProductStats(t *testing.T) {
 
 	item := obj.Value(0).Object()
 	item.Value("soldItems").Number().IsEqual(1)
-	item.Value("totalPrice").String().IsEqual("40")
+	item.Value("totalGrossPrice").String().IsEqual("40")
+	item.Value("totalNetPrice").String().IsEqual("37.38")
 
 	deletePurchase(purchaseUrl)
 }
@@ -53,7 +54,8 @@ func validateProductStatsObject(productStats *httpexpect.Object) {
 	productStats.Value("id").Number().Gt(0)
 	productStats.Value("name").String().NotEmpty()
 	productStats.Value("soldItems").Number().Ge(0)
-	productStats.Value("totalPrice").String().NotEmpty()
+	productStats.Value("totalGrossPrice").String().NotEmpty()
+	productStats.Value("totalNetPrice").String().NotEmpty()
 }
 
 func TestProductStatsAuthentication(t *testing.T) {

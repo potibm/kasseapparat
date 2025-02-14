@@ -8,7 +8,7 @@ import (
 
 const ErrProductNotFound = "Product not found"
 
-func (repo *Repository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.ProductWithSalesAndInterrest, error) {
+func (repo *Repository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -18,7 +18,7 @@ func (repo *Repository) GetProducts(limit int, offset int, sort string, order st
 		return nil, err
 	}
 
-	var products []models.ProductWithSalesAndInterrest
+	var products []models.Product
 
 	query := repo.db.Table("Products").Preload("Guestlists").Order(sort + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset)
 
@@ -40,7 +40,9 @@ func getProductsValidFieldName(input string) (string, error) {
 	case "name":
 		return "Name", nil
 	case "price":
-		return "Price", nil
+		return "Net_Price", nil
+	case "grossPrice":
+		return "Net_Price * (1+ (Vat_Rate / 100))", nil
 	case "pos":
 		return "Pos", nil
 	}
@@ -64,6 +66,7 @@ func (repo *Repository) GetProductByID(id int) (*models.Product, error) {
 	return &product, nil
 }
 
+/*
 func (repo *Repository) GetProductByIDWithSalesAndInterrest(id int) (*models.ProductWithSalesAndInterrest, error) {
 	var product models.ProductWithSalesAndInterrest
 	if err := repo.db.Table("Products").First(&product, id).Error; err != nil {
@@ -72,6 +75,7 @@ func (repo *Repository) GetProductByIDWithSalesAndInterrest(id int) (*models.Pro
 
 	return &product, nil
 }
+*/
 
 func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error) {
 	var product models.Product
@@ -82,7 +86,8 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	// Update the product with the new values
 	product.Name = updatedProduct.Name
 	product.Pos = updatedProduct.Pos
-	product.Price = updatedProduct.Price
+	product.NetPrice = updatedProduct.NetPrice
+	product.VATRate = updatedProduct.VATRate
 	product.WrapAfter = updatedProduct.WrapAfter
 	product.ApiExport = updatedProduct.ApiExport
 	product.UpdatedByID = updatedProduct.UpdatedByID

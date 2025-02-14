@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	response "github.com/potibm/kasseapparat/internal/app/reponse"
 	"github.com/shopspring/decimal"
 )
 
@@ -21,8 +22,9 @@ type PurchaseCartRequest struct {
 }
 
 type PurchaseRequest struct {
-	TotalPrice decimal.Decimal       `form:"totalPrice" binding:"required"`
-	Cart       []PurchaseCartRequest `form:"cart" binding:"required,dive"`
+	TotalNetPrice   decimal.Decimal       `form:"totalNetPrice" binding:"required"`
+	TotalGrossPrice decimal.Decimal       `form:"totalGrossPrice" binding:"required"`
+	Cart            []PurchaseCartRequest `form:"cart" binding:"required,dive"`
 }
 
 func (handler *Handler) DeletePurchase(c *gin.Context) {
@@ -55,7 +57,8 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		return
 	}
 
-	calculatedTotalPrice := decimal.NewFromFloat(0)
+	calculatedTotalNetPrice := decimal.NewFromFloat(0)
+	calculatedTotalGrossPrice := decimal.NewFromFloat(0)
 	for i := 0; i < len(purchaseRequest.Cart); i++ {
 
 		id := purchaseRequest.Cart[i].ID
@@ -66,14 +69,18 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Product not found"))
 			return
 		}
-		calculatedPurchaseItemPrice := product.Price.Mul(decimal.NewFromInt(int64(quantity)))
-		calculatedTotalPrice = calculatedTotalPrice.Add(calculatedPurchaseItemPrice)
+		calculatedPurchaseItemNetPrice := product.NetPrice.Mul(decimal.NewFromInt(int64(quantity)))
+		calculatedTotalNetPrice = calculatedTotalNetPrice.Add(calculatedPurchaseItemNetPrice)
+
+		calculatedPurchaseItemGrossPrice := product.GrossPrice().Mul(decimal.NewFromInt(int64(quantity)))
+		calculatedTotalGrossPrice = calculatedTotalGrossPrice.Add(calculatedPurchaseItemGrossPrice)
 
 		purchaseItem := models.PurchaseItem{
-			Product:    *product,
-			Quantity:   purchaseRequest.Cart[i].Quantity,
-			Price:      product.Price,
-			TotalPrice: calculatedPurchaseItemPrice,
+			Product:  *product,
+			Quantity: purchaseRequest.Cart[i].Quantity,
+			NetPrice: product.NetPrice,
+			//TotalNetPrice: calculatedPurchaseItemNetPrice,
+			VATRate: product.VATRate,
 		}
 		purchase.PurchaseItems = append(purchase.PurchaseItems, purchaseItem)
 		purchase.CreatedByID = &executingUserObj.ID
@@ -109,12 +116,17 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 	}
 	// check that total price is correct
-	if !calculatedTotalPrice.Equal(purchaseRequest.TotalPrice) {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Total price does not match"))
+	if !calculatedTotalNetPrice.Equal(purchaseRequest.TotalNetPrice) {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Total net price does not match"))
+		return
+	}
+	if !calculatedTotalGrossPrice.Equal(purchaseRequest.TotalGrossPrice) {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Total gross price does not match"))
 		return
 	}
 
-	purchase.TotalPrice = calculatedTotalPrice
+	purchase.TotalNetPrice = calculatedTotalNetPrice
+	purchase.TotalGrossPrice = calculatedTotalGrossPrice
 
 	purchase, err = handler.repo.StorePurchases(purchase)
 	if err != nil {
@@ -140,7 +152,9 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Purchase successful", "purchase": purchase})
+	purchaseResponse := response.ToPurchaseResponse(purchase)
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Purchase successful", "purchase": purchaseResponse})
 }
 
 func (handler *Handler) GetPurchases(c *gin.Context) {
@@ -149,7 +163,7 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "DESC")
 
-	products, err := handler.repo.GetPurchases(end-start, start, sort, order)
+	purchases, err := handler.repo.GetPurchases(end-start, start, sort, order)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return
@@ -161,8 +175,10 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 		return
 	}
 
+	purchasesRespone := response.ToPurchasesResponse(purchases)
+
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
-	c.JSON(http.StatusOK, products)
+	c.JSON(http.StatusOK, purchasesRespone)
 }
 
 func (handler *Handler) GetPurchaseByID(c *gin.Context) {
@@ -173,7 +189,9 @@ func (handler *Handler) GetPurchaseByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, purchase)
+	purchaseResponse := response.ToPurchaseResponse(*purchase)
+
+	c.JSON(http.StatusOK, purchaseResponse)
 }
 
 func (handler *Handler) GetPurchaseStats(c *gin.Context) {

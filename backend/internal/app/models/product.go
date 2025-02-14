@@ -6,7 +6,8 @@ import "github.com/shopspring/decimal"
 type Product struct {
 	GormOwnedModel
 	Name                string          `json:"name"`
-	Price               decimal.Decimal `gorm:"type:TEXT" json:"price"`
+	NetPrice            decimal.Decimal `gorm:"type:TEXT" json:"netPrice"`
+	VATRate             decimal.Decimal `gorm:"type:TEXT;default:'0.0'" json:"vatRate"`
 	WrapAfter           bool            `gorm:"default:false" json:"wrapAfter"`
 	Hidden              bool            `gorm:"default:false" json:"hidden"`
 	SoldOut             bool            `gorm:"default:false" json:"soldOut"`
@@ -18,15 +19,10 @@ type Product struct {
 	Guestlists          []Guestlist     `json:"guestlists"`
 }
 
-type ProductWithSalesAndInterrest struct {
-	Product
-	UnitsSold           int `json:"unitsSold"`
-	SoldOutRequestCount int `json:"soldOutRequestCount"`
+func (p Product) GrossPrice() decimal.Decimal {
+	return p.NetPrice.Add(p.VATAmount()).Round(2)
 }
 
-type ProductStats struct {
-	ID         uint            `json:"id"`
-	Name       string          `json:"name"`
-	SoldItems  int             `json:"soldItems"`
-	TotalPrice decimal.Decimal `json:"totalPrice"`
+func (p Product) VATAmount() decimal.Decimal {
+	return p.NetPrice.Mul(p.VATRate.Div(decimal.NewFromInt(100))).Round(2)
 }

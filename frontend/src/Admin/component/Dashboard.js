@@ -59,7 +59,10 @@ const ProductStatsCard = () => {
           <Table.Head>
             <Table.HeadCell>Product</Table.HeadCell>
             <Table.HeadCell className="text-right">Units sold</Table.HeadCell>
-            <Table.HeadCell className="text-right">Revenue</Table.HeadCell>
+            <Table.HeadCell className="text-right">Revenue Net</Table.HeadCell>
+            <Table.HeadCell className="text-right">
+              Revenue Gross
+            </Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
             {stats.map((stat) => (
@@ -67,7 +70,10 @@ const ProductStatsCard = () => {
                 <Table.Cell>{stat.name}</Table.Cell>
                 <Table.Cell className="text-right">{stat.soldItems}</Table.Cell>
                 <Table.Cell className="text-right">
-                  {currency.format(stat.totalPrice)}
+                  {currency.format(stat.totalNetPrice)}
+                </Table.Cell>
+                <Table.Cell className="text-right">
+                  {currency.format(stat.totalGrossPrice)}
                 </Table.Cell>
               </Table.Row>
             ))}
@@ -77,7 +83,15 @@ const ProductStatsCard = () => {
               <Table.Cell className="font-bold text-right">
                 {currency.format(
                   stats.reduce(
-                    (acc, stat) => acc.add(stat.totalPrice),
+                    (acc, stat) => acc.add(stat.totalNetPrice),
+                    new Decimal(0),
+                  ),
+                )}
+              </Table.Cell>
+              <Table.Cell className="font-bold text-right">
+                {currency.format(
+                  stats.reduce(
+                    (acc, stat) => acc.add(stat.totalGrossPrice),
                     new Decimal(0),
                   ),
                 )}
