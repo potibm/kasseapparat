@@ -39,8 +39,8 @@ func getProductsValidFieldName(input string) (string, error) {
 		return "ID", nil
 	case "name":
 		return "Name", nil
-	case "price":
-		return "Net_Price", nil
+	case "vatRate":
+		return "Vat_Rate", nil
 	case "grossPrice":
 		return "Net_Price * (1+ (Vat_Rate / 100))", nil
 	case "pos":
@@ -65,17 +65,6 @@ func (repo *Repository) GetProductByID(id int) (*models.Product, error) {
 
 	return &product, nil
 }
-
-/*
-func (repo *Repository) GetProductByIDWithSalesAndInterrest(id int) (*models.ProductWithSalesAndInterrest, error) {
-	var product models.ProductWithSalesAndInterrest
-	if err := repo.db.Table("Products").First(&product, id).Error; err != nil {
-		return nil, errors.New(ErrProductNotFound)
-	}
-
-	return &product, nil
-}
-*/
 
 func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error) {
 	var product models.Product

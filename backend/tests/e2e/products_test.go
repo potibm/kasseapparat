@@ -47,7 +47,7 @@ func TestGetProductsWithSort(t *testing.T) {
 	defer cleanup()
 
 	// define an array of sort fields
-	sortFields := []string{"id", "name", "price", "grossPrice", "pos"}
+	sortFields := []string{"id", "name", "vatRate", "grossPrice", "pos"}
 
 	for _, sortField := range sortFields {
 

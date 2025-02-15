@@ -62,7 +62,7 @@ func getPurchasesValidFieldName(input string) (string, error) {
 		return "purchases.ID", nil
 	case "createdAt":
 		return "purchases.created_at", nil
-	case "totalPrice":
+	case "totalGrossPrice":
 		return "purchases.total_gross_price", nil
 	case "createdBy.username":
 		return "CreatedBy.username", nil

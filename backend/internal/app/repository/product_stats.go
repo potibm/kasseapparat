@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
-	response "github.com/potibm/kasseapparat/internal/app/reponse"
+	response "github.com/potibm/kasseapparat/internal/app/response"
 	"github.com/shopspring/decimal"
 )
 

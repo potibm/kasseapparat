@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	response "github.com/potibm/kasseapparat/internal/app/reponse"
+	response "github.com/potibm/kasseapparat/internal/app/response"
 	"github.com/shopspring/decimal"
 )
 
@@ -57,8 +57,8 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		return
 	}
 
-	calculatedTotalNetPrice := decimal.NewFromFloat(0)
-	calculatedTotalGrossPrice := decimal.NewFromFloat(0)
+	calculatedTotalNetPrice := decimal.NewFromInt(0)
+	calculatedTotalGrossPrice := decimal.NewFromInt(0)
 	for i := 0; i < len(purchaseRequest.Cart); i++ {
 
 		id := purchaseRequest.Cart[i].ID
@@ -79,8 +79,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			Product:  *product,
 			Quantity: purchaseRequest.Cart[i].Quantity,
 			NetPrice: product.NetPrice,
-			//TotalNetPrice: calculatedPurchaseItemNetPrice,
-			VATRate: product.VATRate,
+			VATRate:  product.VATRate,
 		}
 		purchase.PurchaseItems = append(purchase.PurchaseItems, purchaseItem)
 		purchase.CreatedByID = &executingUserObj.ID
@@ -152,9 +151,9 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		}
 	}
 
-	purchaseResponse := response.ToPurchaseResponse(purchase)
+	purchasesResponse := response.ToPurchaseResponse(purchase)
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Purchase successful", "purchase": purchaseResponse})
+	c.JSON(http.StatusCreated, gin.H{"message": "Purchase successful", "purchase": purchasesResponse})
 }
 
 func (handler *Handler) GetPurchases(c *gin.Context) {

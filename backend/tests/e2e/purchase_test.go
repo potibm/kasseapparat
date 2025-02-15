@@ -15,7 +15,7 @@ func TestGetPurchasesWithSort(t *testing.T) {
 	defer cleanup()
 
 	// define an array of sort fields
-	sortFields := []string{"id", "createdAt", "totalPrice", "createdBy.username"}
+	sortFields := []string{"id", "createdAt", "totalGrossPrice", "createdBy.username"}
 
 	for _, sortField := range sortFields {
 
@@ -170,7 +170,8 @@ func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
 	// Create a purchase
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": "0",
+			"totalNetPrice": "11.11",
+			"totalGrossPrice": "12.12",
 			"cart": []map[string]interface{}{
 				{
 					"ID":       3,
@@ -197,7 +198,8 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 	// Create a purchase
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": "0",
+			"totalNetPrice": "11.11",
+			"totalGrossPrice": "12.12",
 			"cart": []map[string]interface{}{
 				{
 					"ID":       3,

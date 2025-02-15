@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	response "github.com/potibm/kasseapparat/internal/app/reponse"
 	"github.com/potibm/kasseapparat/internal/app/repository"
+	response "github.com/potibm/kasseapparat/internal/app/response"
 	"github.com/shopspring/decimal"
 )
 
@@ -56,7 +56,6 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 		return
 	}
 
-	//	enrichProductData(handler.repo, products)
 	productsResponse := createExtendedProductResponse(handler.repo, products)
 
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
