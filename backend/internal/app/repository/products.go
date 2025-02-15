@@ -8,19 +8,27 @@ import (
 
 const ErrProductNotFound = "Product not found"
 
+var productSortFieldMappings = map[string]string{
+	"id":         "ID",
+	"name":       "Name",
+	"vatRate":    "Vat_Rate",
+	"grossPrice": "Net_Price * (1+ (Vat_Rate / 100))",
+	"pos":        "Pos",
+}
+
 func (repo *Repository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
 
-	sort, err := getProductsValidFieldName(sort)
+	sortField, err := getProductsValidSortFieldName(sort)
 	if err != nil {
 		return nil, err
 	}
 
 	var products []models.Product
 
-	query := repo.db.Table("Products").Preload("Guestlists").Order(sort + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset)
+	query := repo.db.Table("Products").Preload("Guestlists").Order(sortField + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset)
 
 	if len(ids) > 0 {
 		query = query.Where("Id IN ?", ids)
@@ -33,21 +41,12 @@ func (repo *Repository) GetProducts(limit int, offset int, sort string, order st
 	return products, nil
 }
 
-func getProductsValidFieldName(input string) (string, error) {
-	switch input {
-	case "id":
-		return "ID", nil
-	case "name":
-		return "Name", nil
-	case "vatRate":
-		return "Vat_Rate", nil
-	case "grossPrice":
-		return "Net_Price * (1+ (Vat_Rate / 100))", nil
-	case "pos":
-		return "Pos", nil
+func getProductsValidSortFieldName(input string) (string, error) {
+	if field, exists := productSortFieldMappings[input]; exists {
+		return field, nil
 	}
 
-	return "", errors.New("Invalid field name")
+	return "", errors.New("Invalid sort field name")
 }
 
 func (repo *Repository) GetTotalProducts() (int64, error) {

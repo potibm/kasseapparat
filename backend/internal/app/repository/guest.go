@@ -19,6 +19,13 @@ type GuestFilters struct {
 	IDs         []int
 }
 
+var guestSortFieldMappings = map[string]string{
+	"id":             "Guests.ID",
+	"name":           "Guests.Name",
+	"guestlist.name": "Guestlist.Name",
+	"arrivedAt":      "Guests.arrived_at",
+}
+
 func (filters GuestFilters) AddWhere(query *gorm.DB) *gorm.DB {
 	if len(filters.IDs) > 0 {
 		query = query.Where("Guests.ID IN ?", filters.IDs)
@@ -45,7 +52,7 @@ func (repo *Repository) GetGuests(limit int, offset int, sort string, order stri
 		order = "ASC"
 	}
 
-	sort, err := getGuestsValidFieldName(sort)
+	sort, err := getGuestsValidSortFieldName(sort)
 	if err != nil {
 		return nil, err
 	}
@@ -61,19 +68,11 @@ func (repo *Repository) GetGuests(limit int, offset int, sort string, order stri
 	return guests, nil
 }
 
-func getGuestsValidFieldName(input string) (string, error) {
-	switch input {
-	case "id":
-		return "Guests.ID", nil
-	case "name":
-		return "Guests.Name", nil
-	case "guestlist.name":
-		return "Guestlist.Name", nil
-	case "arrivedAt":
-		return "Guests.arrived_at", nil
+func getGuestsValidSortFieldName(input string) (string, error) {
+	if field, exists := guestSortFieldMappings[input]; exists {
+		return field, nil
 	}
-
-	return "", errors.New("Invalid field name")
+	return "", errors.New("Invalid sort field name")
 }
 
 func (repo *Repository) GetTotalGuests(filters *GuestFilters) (int64, error) {

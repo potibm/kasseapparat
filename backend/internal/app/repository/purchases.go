@@ -13,6 +13,14 @@ type ProductPurchaseStats struct {
 	Name      string
 }
 
+var purchaseSortFieldMappings = map[string]string{
+	"id":                 "purchases.ID",
+	"createdAt":          "purchases.created_at",
+	"totalGrossPrice":    "purchases.total_gross_price",
+	"createdBy.username": "CreatedBy.username",
+	"pos":                "Pos",
+}
+
 func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchase, error) {
 	result := repo.db.Create(&purchase)
 
@@ -57,18 +65,11 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 }
 
 func getPurchasesValidFieldName(input string) (string, error) {
-	switch input {
-	case "id":
-		return "purchases.ID", nil
-	case "createdAt":
-		return "purchases.created_at", nil
-	case "totalGrossPrice":
-		return "purchases.total_gross_price", nil
-	case "createdBy.username":
-		return "CreatedBy.username", nil
+	if field, exists := purchaseSortFieldMappings[input]; exists {
+		return field, nil
 	}
 
-	return "", errors.New("Invalid field name")
+	return "", errors.New("Invalid sort field name")
 }
 
 func (repo *Repository) GetTotalPurchases() (int64, error) {
