@@ -4,7 +4,7 @@ go 1.22.1
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.10.1
-	github.com/brianvoe/gofakeit/v7 v7.1.2
+	github.com/brianvoe/gofakeit/v7 v7.2.1
 	github.com/gavv/httpexpect/v2 v2.16.0
 	github.com/getsentry/sentry-go v0.31.1
 	github.com/getsentry/sentry-go/gin v0.31.1
