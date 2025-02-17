@@ -26,7 +26,7 @@ var userSortFieldMappings = map[string]string{
 
 func (filters UserFilters) AddWhere(query *gorm.DB) *gorm.DB {
 	if len(filters.IDs) > 0 {
-		query = query.Where("list_entries.ID IN ?", filters.IDs)
+		query = query.Where("ID IN ?", filters.IDs)
 	}
 
 	if filters.Query != "" {
