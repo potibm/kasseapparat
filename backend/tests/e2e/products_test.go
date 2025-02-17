@@ -27,7 +27,7 @@ func TestGetProducts(t *testing.T) {
 	obj := res.JSON().Array()
 	obj.Length().IsEqual(10)
 
-	for i := 0; i < len(obj.Iter()); i++ {
+	for i := range len(obj.Iter()) {
 		product := obj.Value(i).Object()
 		validateProduct(product)
 		product.Value("guestlists").Array()
@@ -50,7 +50,6 @@ func TestGetProductsWithSort(t *testing.T) {
 	sortFields := []string{"id", "name", "vatRate", "grossPrice", "pos"}
 
 	for _, sortField := range sortFields {
-
 		withDemoUserAuthToken(e.GET(productBaseUrl)).
 			WithQuery("_sort", sortField).
 			Expect().
@@ -73,8 +72,9 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	var originalName = "Test Product"
-	var changedName = "Test Product Updated"
+	originalName := "Test Product"
+
+	changedName := "Test Product Updated"
 
 	product := withDemoUserAuthToken(e.POST(productBaseUrl)).
 		WithJSON(map[string]interface{}{
@@ -125,7 +125,6 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 	withDemoUserAuthToken(e.GET(productUrl)).
 		Expect().
 		Status(http.StatusNotFound)
-
 }
 
 func TestDemoUserIsNotAllowedToDeleteAProduct(t *testing.T) {
@@ -154,7 +153,6 @@ func validateProduct(product *httpexpect.Object) {
 	product.Value("totalStock").Number().Ge(0)
 	product.Value("unitsSold").Number().Ge(0)
 	product.Value("soldOutRequestCount").Number().Ge(0)
-
 }
 
 func validateProductOne(product *httpexpect.Object) {

@@ -68,7 +68,6 @@ func (m *Mailer) address() string {
 }
 
 func (m *Mailer) SendMail(to string, subject string, body string) error {
-
 	header := "From: " + m.from + "\r\n" +
 		"Subject: " + m.subjectPrefix + subject + "\r\n" +
 		"To: " + to + "\r\n" +
@@ -80,9 +79,11 @@ func (m *Mailer) SendMail(to string, subject string, body string) error {
 	if m.user != "" && m.password != "" {
 		auth = smtp.PlainAuth("", m.user, m.password, m.host)
 	}
+
 	err := smtp.SendMail(m.address(), auth, m.from, []string{to}, message)
 	if err != nil {
 		log.Println("Error sending mail:", err)
 	}
+
 	return err
 }

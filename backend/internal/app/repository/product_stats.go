@@ -23,6 +23,7 @@ func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
 
 	for i := range products {
 		var purchaseItems []models.PurchaseItem
+
 		purchaseQuery := repo.db.Table("purchase_items").
 			Select("quantity, net_price, vat_rate").
 			Where("product_id = ?", products[i].ID).
@@ -34,6 +35,7 @@ func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
 
 		products[i].TotalNetPrice = decimal.NewFromFloat(0)
 		products[i].TotalGrossPrice = decimal.NewFromFloat(0)
+
 		for j := range purchaseItems {
 			products[i].SoldItems += purchaseItems[j].Quantity
 			products[i].TotalNetPrice = products[i].TotalNetPrice.Add(purchaseItems[j].TotalNetPrice())

@@ -8,8 +8,8 @@ type PurchaseItem struct {
 	ProductID  uint            `json:"productID"`  // Foreign key to Product
 	Product    Product         `json:"product"`
 	Quantity   int             `json:"quantity"`
-	NetPrice   decimal.Decimal `gorm:"type:TEXT" json:"netPrice"`
-	VATRate    decimal.Decimal `gorm:"type:TEXT" json:"vatRate"`
+	NetPrice   decimal.Decimal `gorm:"type:TEXT"  json:"netPrice"`
+	VATRate    decimal.Decimal `gorm:"type:TEXT"  json:"vatRate"`
 }
 
 func (pi PurchaseItem) GrossPrice() decimal.Decimal {

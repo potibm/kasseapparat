@@ -88,6 +88,7 @@ func getJwtForDemoUser() string {
 	if demoJwt == "" {
 		demoJwt = getJwtForUser("demo", "demo")
 	}
+
 	return demoJwt
 }
 
@@ -95,6 +96,7 @@ func getJwtForAdminUser() string {
 	if adminJwt == "" {
 		adminJwt = getJwtForUser("admin", "admin")
 	}
+
 	return adminJwt
 }
 

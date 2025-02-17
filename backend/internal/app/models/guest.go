@@ -6,15 +6,15 @@ import (
 	"time"
 )
 
-// Guest represents a guest in a guestlist
+// Guest represents a guest in a guestlist.
 type Guest struct {
 	GormOwnedModel
 	GuestlistID          uint       `json:"guestlistId"`
 	Guestlist            Guestlist  `json:"guestlist"`
-	Name                 string     `json:"name" `
-	Code                 *string    `json:"code" gorm:"unique"`
-	AdditionalGuests     uint       `json:"additionalGuests" gorm:"default:0"`
-	AttendedGuests       uint       `json:"attendedGuests" gorm:"default:0"`
+	Name                 string     `json:"name"`
+	Code                 *string    `gorm:"unique"               json:"code"`
+	AdditionalGuests     uint       `gorm:"default:0"            json:"additionalGuests"`
+	AttendedGuests       uint       `gorm:"default:0"            json:"attendedGuests"`
 	ArrivedAt            *time.Time `json:"arrivedAt"`
 	ArrivalNote          *string    `json:"arrivalNote"`
 	NotifyOnArrivalEmail *string    `json:"notifyOnArrivalEmail"`
@@ -25,9 +25,9 @@ type Guest struct {
 type GuestSummary struct {
 	ID               uint    `json:"id"`
 	Name             string  `json:"name"`
-	Code             *string `json:"code" gorm:"unique"`
+	Code             *string `gorm:"unique"      json:"code"`
 	ListName         *string `json:"listName"`
-	AdditionalGuests uint    `json:"additionalGuests" gorm:"default:0"`
+	AdditionalGuests uint    `gorm:"default:0"   json:"additionalGuests"`
 	ArrivalNote      *string `json:"arrivalNote"`
 }
 
@@ -40,6 +40,7 @@ func (entry *Guest) MarkAsArrived() {
 
 func (entries GuestSummarySlice) SortByQuery(q string) {
 	query := strings.ToLower(q)
+
 	sort.Slice(entries, func(i, j int) bool {
 		nameI := strings.ToLower(entries[i].Name)
 		nameJ := strings.ToLower(entries[j].Name)
@@ -51,6 +52,7 @@ func (entries GuestSummarySlice) SortByQuery(q string) {
 		if weightI != weightJ {
 			return weightI > weightJ
 		}
+
 		return nameI < nameJ
 	})
 }

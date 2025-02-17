@@ -33,6 +33,7 @@ func (repo *Repository) GetGuestlists(limit int, offset int, sort string, order 
 	if len(filters.IDs) > 0 {
 		query = query.Where("id IN ?", filters.IDs)
 	}
+
 	if filters.Query != "" {
 		query = query.Where("guestlists.Name LIKE ?", "%"+filters.Query+"%")
 	}
@@ -58,6 +59,7 @@ func (repo *Repository) GetTotalGuestlists() (int64, error) {
 	if err := repo.db.Model(&models.Guestlist{}).Count(&totalRows).Error; err != nil {
 		return 0, err
 	}
+
 	return totalRows, nil
 }
 
@@ -75,6 +77,7 @@ func (repo *Repository) GetGuestlistWithTypeCode() (*models.Guestlist, error) {
 	if err := repo.db.Where("type_code = ?", "1").First(&guestlist).Error; err != nil {
 		return nil, errors.New(ErrGuestlistNotFound)
 	}
+
 	return &guestlist, nil
 }
 

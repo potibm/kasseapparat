@@ -22,12 +22,10 @@ func (mailer *Mailer) SendChangePasswordTokenMail(to string, userId uint, userna
 }
 
 func (mailer *Mailer) SendNewUserTokenMail(to string, userId uint, username string, token string) error {
-
 	return mailer.sendTokenMail(to, userId, username, token, "mail/token_new_user.txt", accountCreatedSubject)
 }
 
 func (mailer *Mailer) sendTokenMail(to string, userId uint, username string, token string, templateFilename string, subject string) error {
-
 	template, err := template.ParseFS(
 		templates.MailTemplateFiles,
 		templateFilename,

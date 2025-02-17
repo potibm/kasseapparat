@@ -91,7 +91,6 @@ func TestGuestImportWithWarningMessages(t *testing.T) {
 	guestImportWarnings.Value(2).String().IsEqual("Blocked: ABCABCABC (3)")
 
 	deleteGuestsByNameQuery("XYZTEST")
-
 }
 
 func deleteGuestsByNameQuery(query string) {
@@ -101,7 +100,7 @@ func deleteGuestsByNameQuery(query string) {
 		Expect().
 		Status(http.StatusOK).JSON().Array()
 
-	for i := 0; i < len(guests.Iter()); i++ {
+	for i := range len(guests.Iter()) {
 		guest := guests.Value(i).Object()
 		guestId := guest.Value("id").Number().Raw()
 		log.Println("Deleting guest with id", guestId)

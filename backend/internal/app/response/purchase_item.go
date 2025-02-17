@@ -12,11 +12,11 @@ type PurchaseItemResponse struct {
 	Product         ProductResponse `json:"product"`
 	Quantity        int             `json:"quantity"`
 	NetPrice        decimal.Decimal `json:"netPrice"`
-	GrossPrice      decimal.Decimal ` json:"grossPrice"`
+	GrossPrice      decimal.Decimal `json:"grossPrice"`
 	VATRate         decimal.Decimal `json:"vatRate"`
 	VATAmount       decimal.Decimal `json:"vatAmount"`
-	TotalNetPrice   decimal.Decimal ` json:"totalNetPrice"`
-	TotalGrossPrice decimal.Decimal ` json:"totalGrossPrice"`
+	TotalNetPrice   decimal.Decimal `json:"totalNetPrice"`
+	TotalGrossPrice decimal.Decimal `json:"totalGrossPrice"`
 	TotalVATAmount  decimal.Decimal `json:"totalVatAmount"`
 }
 

@@ -12,24 +12,24 @@ import (
 )
 
 type ProductRequestCreate struct {
-	Name      string          `form:"name"  json:"name" binding:"required"`
-	NetPrice  decimal.Decimal `form:"netPrice" json:"netPrice" binding:"required"`
-	VATRate   decimal.Decimal `form:"vatRate" json:"vatRate" binding:"required"`
-	WrapAfter bool            `form:"wrapAfter" json:"wrapAfter"`
-	Pos       int             `form:"pos" json:"pos" binding:"numeric,required"`
-	Hidden    bool            `form:"hidden" json:"hidden" binding:"boolean"`
+	Name      string          `binding:"required"         form:"name"      json:"name"`
+	NetPrice  decimal.Decimal `binding:"required"         form:"netPrice"  json:"netPrice"`
+	VATRate   decimal.Decimal `binding:"required"         form:"vatRate"   json:"vatRate"`
+	WrapAfter bool            `form:"wrapAfter"           json:"wrapAfter"`
+	Pos       int             `binding:"numeric,required" form:"pos"       json:"pos"`
+	Hidden    bool            `binding:"boolean"          form:"hidden"    json:"hidden"`
 }
 
 type ProductRequestUpdate struct {
-	Name       string          `form:"name"  json:"name" binding:"required"`
-	NetPrice   decimal.Decimal `form:"netPrice" json:"netPrice" binding:"required"`
-	VATRate    decimal.Decimal `form:"vatRate" json:"vatRate" binding:"required"`
-	WrapAfter  bool            `form:"wrapAfter" json:"wrapAfter"`
-	Pos        int             `form:"pos" json:"pos" binding:"numeric,required"`
-	ApiExport  bool            `form:"apiExport" json:"apiExport" binding:"boolean"`
-	Hidden     bool            `form:"hidden" json:"hidden" binding:"boolean"`
-	SoldOut    bool            `form:"soldOut" json:"soldOut" binding:"boolean"`
-	TotalStock int             `form:"totalStock" json:"totalStock" binding:"numeric"`
+	Name       string          `binding:"required"         form:"name"       json:"name"`
+	NetPrice   decimal.Decimal `binding:"required"         form:"netPrice"   json:"netPrice"`
+	VATRate    decimal.Decimal `binding:"required"         form:"vatRate"    json:"vatRate"`
+	WrapAfter  bool            `form:"wrapAfter"           json:"wrapAfter"`
+	Pos        int             `binding:"numeric,required" form:"pos"        json:"pos"`
+	ApiExport  bool            `binding:"boolean"          form:"apiExport"  json:"apiExport"`
+	Hidden     bool            `binding:"boolean"          form:"hidden"     json:"hidden"`
+	SoldOut    bool            `binding:"boolean"          form:"soldOut"    json:"soldOut"`
+	TotalStock int             `binding:"numeric"          form:"totalStock" json:"totalStock"`
 }
 
 func (handler *Handler) GetProducts(c *gin.Context) {
@@ -43,6 +43,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	products, err := handler.repo.GetProducts(end-start, start, sort, order, ids)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+
 		return
 	}
 
@@ -53,6 +54,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	total, err := handler.repo.GetTotalProducts()
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
@@ -67,21 +69,25 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 // visible product when a hidden product with wrap-after is encountered.
 func filterHiddenProducts(products []models.Product) []models.Product {
 	var filteredProducts []models.Product
+
 	for _, product := range products {
 		if product.Hidden && product.WrapAfter {
 			if len(filteredProducts) > 0 {
 				filteredProducts[len(filteredProducts)-1].WrapAfter = true
 			}
 		}
+
 		if !product.Hidden {
 			filteredProducts = append(filteredProducts, product)
 		}
 	}
+
 	return filteredProducts
 }
 
 func createExtendedProductResponse(repo *repository.Repository, products []models.Product) []response.ExtendedProductResponse {
 	var productsResponse []response.ExtendedProductResponse
+
 	for _, product := range products {
 		unitsSold, _ := repo.GetPurchasedQuantitiesByProductID(product.ID)
 		soldOutRequestCount, _ := repo.GetProductInterestCountByProductID(product.ID)
@@ -94,14 +100,17 @@ func createExtendedProductResponse(repo *repository.Repository, products []model
 
 		productsResponse = append(productsResponse, productResponse)
 	}
+
 	return productsResponse
 }
 
 func (handler *Handler) GetProductByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByID(id)
+
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+
 		return
 	}
 
@@ -121,19 +130,23 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
+
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByID(id)
+
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+
 		return
 	}
 
 	var productRequest ProductRequestUpdate
 	if err := c.ShouldBind(&productRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
@@ -151,6 +164,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product, err = handler.repo.UpdateProductByID(id, *product)
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
@@ -161,13 +175,16 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
+
 		return
 	}
 
 	var product models.Product
+
 	var productRequest ProductRequestCreate
 	if err := c.ShouldBind(&productRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
@@ -182,6 +199,7 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product, err = handler.repo.CreateProduct(product)
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
@@ -192,17 +210,22 @@ func (handler *Handler) DeleteProductByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
+
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetProductByID(id)
+
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+
 		return
 	}
+
 	if !executingUserObj.Admin {
 		_ = c.Error(Forbidden)
+
 		return
 	}
 

@@ -7,9 +7,7 @@ import (
 	"github.com/gavv/httpexpect/v2"
 )
 
-var (
-	productStatsUrl = "/api/v2/productStats"
-)
+var productStatsUrl = "/api/v2/productStats"
 
 func TestProductStats(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
@@ -44,7 +42,7 @@ func TestProductStats(t *testing.T) {
 func validateProductStatsArray(productStatsArray *httpexpect.Array) {
 	productStatsArray.Length().Gt(0)
 
-	for i := 0; i < len(productStatsArray.Iter()); i++ {
+	for i := range len(productStatsArray.Iter()) {
 		productStats := productStatsArray.Value(i).Object()
 		validateProductStatsObject(productStats)
 	}
@@ -63,5 +61,4 @@ func TestProductStatsAuthentication(t *testing.T) {
 	defer cleanup()
 
 	e.Request("GET", productStatsUrl).Expect().Status(http.StatusUnauthorized)
-
 }

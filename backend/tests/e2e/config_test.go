@@ -5,9 +5,7 @@ import (
 	"testing"
 )
 
-var (
-	configUrl = "/api/v2/config"
-)
+var configUrl = "/api/v2/config"
 
 func TestGetConfig(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)

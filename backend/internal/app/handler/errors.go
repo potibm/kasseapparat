@@ -30,6 +30,7 @@ func (e *BasicError) SetDetails(details string) *BasicError {
 		Message: e.Message,
 		Detail:  details,
 	}
+
 	return newError
 }
 

@@ -20,8 +20,10 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/repository"
 )
 
-var r *gin.Engine
-var authMiddleware *jwt.GinJWTMiddleware
+var (
+	r              *gin.Engine
+	authMiddleware *jwt.GinJWTMiddleware
+)
 
 func InitializeHttpServer(myhandler handler.Handler, repository repository.Repository, staticFiles embed.FS) *gin.Engine {
 	gin.SetMode(os.Getenv("GIN_MODE"))
@@ -54,10 +56,12 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 
 func createCorsMiddleware() gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
+
 	corsAllowOrigins := os.Getenv("CORS_ALLOW_ORIGINS")
 	if corsAllowOrigins == "" {
 		log.Fatalf("CORS_ALLOW_ORIGINS is not set in env")
 	}
+
 	corsConfig.AllowOrigins = strings.Split(corsAllowOrigins, ",")
 	corsConfig.AllowAllOrigins = false
 	corsConfig.AllowCredentials = true
@@ -88,12 +92,12 @@ func SentryMiddleware() gin.HandlerFunc {
 				})
 			}
 		}
+
 		c.Next()
 	}
 }
 
 func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMiddleware) {
-
 	protectedApiRouter := r.Group("/api/v2")
 	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
 	{

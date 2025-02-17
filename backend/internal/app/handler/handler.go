@@ -20,8 +20,8 @@ func NewHandler(repo *repository.Repository, mailer mailer.Mailer, version strin
 }
 
 func queryArrayInt(c *gin.Context, field string) []int {
-
 	idStrings := c.QueryArray(field)
+
 	var ids []int
 
 	for _, s := range idStrings {
@@ -29,6 +29,7 @@ func queryArrayInt(c *gin.Context, field string) []int {
 		if err != nil {
 			log.Printf("Error converting %s to int: %v", s, err)
 		}
+
 		ids = append(ids, id)
 	}
 

@@ -29,7 +29,9 @@ func main() {
 	myhandler := handler.NewHandler(repository, mailer, initializer.GetVersion())
 
 	router := initializer.InitializeHttpServer(*myhandler, *repository, staticFiles)
+
 	log.Println("Listening on " + port + "...")
+
 	err := router.Run(port)
 	if err != nil {
 		panic("[Error] failed to start Gin server due to: " + err.Error())

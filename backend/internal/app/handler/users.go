@@ -25,12 +25,14 @@ func (handler *Handler) GetUsers(c *gin.Context) {
 	products, err := handler.repo.GetUsers(end-start, start, sort, order, filters)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+
 		return
 	}
 
 	total, err := handler.repo.GetTotalUsers(&filters)
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
@@ -41,8 +43,10 @@ func (handler *Handler) GetUsers(c *gin.Context) {
 func (handler *Handler) GetUserByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	product, err := handler.repo.GetUserByID(id)
+
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+
 		return
 	}
 
@@ -50,35 +54,39 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 }
 
 type UserCreateRequest struct {
-	Username string `form:"username"  json:"username" binding:"required"`
-	Email    string `form:"email"    json:"email" binding:"required"`
-	Admin    bool   `form:"admin" json:"admin" binding:""`
+	Username string `binding:"required" form:"username" json:"username"`
+	Email    string `binding:"required" form:"email"    json:"email"`
+	Admin    bool   `binding:""         form:"admin"    json:"admin"`
 }
 
 type UserUpdateRequest struct {
-	Username string `form:"username"  json:"username" binding:"required"`
-	Password string `form:"password" json:"password" binding:""`
-	Email    string `form:"email"    json:"email" binding:"required"`
-	Admin    bool   `form:"admin" json:"admin" binding:""`
+	Username string `binding:"required" form:"username" json:"username"`
+	Password string `binding:""         form:"password" json:"password"`
+	Email    string `binding:"required" form:"email"    json:"email"`
+	Admin    bool   `binding:""         form:"admin"    json:"admin"`
 }
 
 func (handler *Handler) UpdateUserByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
+
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := handler.repo.GetUserByID(id)
+
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+
 		return
 	}
 
 	var userRequest UserUpdateRequest
 	if err := c.ShouldBind(&userRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
@@ -102,6 +110,7 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 	user, err = handler.repo.UpdateUserByID(id, *user)
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
@@ -112,19 +121,23 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
+
 		return
 	}
 
 	var user models.User
+
 	var userRequest UserCreateRequest
 	if err := c.ShouldBind(&userRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
 	user.Username = userRequest.Username
 	user.Email = userRequest.Email
 	user.GenerateRandomPassword()
+
 	validity := 3 * time.Hour
 	user.GenerateChangePasswordToken(&validity)
 
@@ -138,6 +151,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 	user, err = handler.repo.CreateUser(user)
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
@@ -153,18 +167,22 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
+
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := handler.repo.GetUserByID(id)
+
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+
 		return
 	}
 	// only admins are allowed to delete users, and not themselves
 	if !executingUserObj.Admin || executingUserObj.ID == user.ID {
 		_ = c.Error(Forbidden)
+
 		return
 	}
 

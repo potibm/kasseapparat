@@ -20,14 +20,15 @@ type UserFilters struct {
 var userSortFieldMappings = map[string]string{
 	"id":       "ID",
 	"username": "Username",
-	"email":    "email",
-	"admin":    "admin",
+	"email":    "Email",
+	"admin":    "Admin",
 }
 
 func (filters UserFilters) AddWhere(query *gorm.DB) *gorm.DB {
 	if len(filters.IDs) > 0 {
 		query = query.Where("list_entries.ID IN ?", filters.IDs)
 	}
+
 	if filters.Query != "" {
 		query = query.Where("Username LIKE ? OR Email LIKE ?", "%"+filters.Query+"%", "%"+filters.Query+"%")
 	}
@@ -94,6 +95,7 @@ func (repo *Repository) GetUsers(limit int, offset int, sort string, order strin
 	if err != nil {
 		return nil, err
 	}
+
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -119,10 +121,12 @@ func getUsersValidSortFieldName(input string) (string, error) {
 
 func (repo *Repository) GetTotalUsers(filters *UserFilters) (int64, error) {
 	var totalRows int64
+
 	query := repo.db.Model(&models.User{})
 	if filters != nil {
 		query = filters.AddWhere(query)
 	}
+
 	query.Count(&totalRows)
 
 	return totalRows, nil
@@ -158,6 +162,7 @@ func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models
 	user.Email = updatedUser.Email
 	user.ChangePasswordToken = updatedUser.ChangePasswordToken
 	user.ChangePasswordTokenExpiry = updatedUser.ChangePasswordTokenExpiry
+
 	if updatedUser.Password != "" {
 		user.Password = updatedUser.Password
 	}

@@ -7,8 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
-const ErrGuestNotFound = "Guest not found"
-const ErrGuestsNotFound = "Guests not found"
+const (
+	ErrGuestNotFound  = "Guest not found"
+	ErrGuestsNotFound = "Guests not found"
+)
 
 type GuestFilters struct {
 	Query       string
@@ -34,12 +36,15 @@ func (filters GuestFilters) AddWhere(query *gorm.DB) *gorm.DB {
 	if filters.Query != "" {
 		query = query.Where("Guests.Name LIKE ? OR Guests.Code LIKE ?", "%"+filters.Query+"%", filters.Query+"%")
 	}
+
 	if filters.GuestlistID != 0 {
 		query = query.Where("Guests.guestlist_id = ?", filters.GuestlistID)
 	}
+
 	if filters.Present {
 		query = query.Where("Guests.attended_guests > 0")
 	}
+
 	if filters.NotPresent {
 		query = query.Where("Guests.attended_guests = 0")
 	}
@@ -58,6 +63,7 @@ func (repo *Repository) GetGuests(limit int, offset int, sort string, order stri
 	}
 
 	var guests []models.Guest
+
 	query := repo.db.Joins("Guestlist").Order(sort + " " + order + ", Guests.ID ASC").Limit(limit).Offset(offset)
 	query = filters.AddWhere(query)
 
@@ -72,6 +78,7 @@ func getGuestsValidSortFieldName(input string) (string, error) {
 	if field, exists := guestSortFieldMappings[input]; exists {
 		return field, nil
 	}
+
 	return "", errors.New("Invalid sort field name")
 }
 
@@ -90,6 +97,7 @@ func (repo *Repository) GetTotalGuests(filters *GuestFilters) (int64, error) {
 
 func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) (models.GuestSummarySlice, error) {
 	var guests models.GuestSummarySlice
+
 	query := repo.db.Model(&models.Guest{}).
 		Select("Guests.id, Guests.name, Guests.code, Guestlists.name AS list_name, Guests.additional_guests, Guests.arrival_note").
 		Joins("JOIN guestlists ON Guests.guestlist_id = Guestlists.id").

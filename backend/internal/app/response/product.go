@@ -12,9 +12,9 @@ type ProductResponse struct {
 	GrossPrice          decimal.Decimal    `json:"grossPrice"`
 	VATRate             decimal.Decimal    `json:"vatRate"`
 	VATAmount           decimal.Decimal    `json:"vatAmount"`
-	WrapAfter           bool               ` json:"wrapAfter"`
-	Hidden              bool               ` json:"hidden"`
-	SoldOut             bool               ` json:"soldOut"`
+	WrapAfter           bool               `json:"wrapAfter"`
+	Hidden              bool               `json:"hidden"`
+	SoldOut             bool               `json:"soldOut"`
 	ApiExport           bool               `json:"apiExport"`
 	Pos                 int                `json:"pos"`
 	TotalStock          int                `json:"totalStock"`
@@ -66,5 +66,6 @@ func ToProductResponses(products []models.Product) []ProductResponse {
 	for i, product := range products {
 		productResponses[i] = ToProductResponse(product)
 	}
+
 	return productResponses
 }

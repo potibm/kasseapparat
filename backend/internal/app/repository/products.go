@@ -51,6 +51,7 @@ func getProductsValidSortFieldName(input string) (string, error) {
 
 func (repo *Repository) GetTotalProducts() (int64, error) {
 	var totalRows int64
+
 	repo.db.Model(&models.Product{}).Count(&totalRows)
 
 	return totalRows, nil

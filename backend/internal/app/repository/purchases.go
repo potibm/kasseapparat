@@ -74,6 +74,7 @@ func getPurchasesValidFieldName(input string) (string, error) {
 
 func (repo *Repository) GetTotalPurchases() (int64, error) {
 	var totalRows int64
+
 	repo.db.Model(&models.Purchase{}).Count(&totalRows)
 
 	return totalRows, nil
@@ -91,11 +92,13 @@ func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
 	defer rows.Close()
 
 	var purchases []ProductPurchaseStats
+
 	for rows.Next() {
 		var purchase ProductPurchaseStats
 		if err := rows.Scan(&purchase.ProductID, &purchase.Quantity, &purchase.Name); err != nil {
 			return nil, err
 		}
+
 		purchases = append(purchases, purchase)
 	}
 
@@ -110,7 +113,6 @@ func (repo *Repository) GetPurchasedQuantitiesByProductID(productID uint) (int, 
 		Joins("JOIN purchases ON purchase_items.purchase_id = purchases.id").
 		Where("purchase_items.product_id = ? AND purchase_items.deleted_at IS NULL AND purchases.deleted_at IS NULL", productID).
 		Scan(&sum).Error
-
 	if err != nil {
 		return 0, err
 	}

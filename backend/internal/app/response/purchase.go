@@ -15,7 +15,7 @@ type PurchaseResponse struct {
 	TotalNetPrice   decimal.Decimal        `json:"totalNetPrice"`
 	TotalGrossPrice decimal.Decimal        `json:"totalGrossPrice"`
 	TotalVatAmount  decimal.Decimal        `json:"totalVatAmount"`
-	PurchaseItems   []PurchaseItemResponse ` json:"purchaseItems"`
+	PurchaseItems   []PurchaseItemResponse `json:"purchaseItems"`
 }
 
 func ToPurchaseResponse(purchase models.Purchase) PurchaseResponse {

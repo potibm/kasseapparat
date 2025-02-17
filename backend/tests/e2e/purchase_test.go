@@ -6,9 +6,7 @@ import (
 	"testing"
 )
 
-var (
-	purchaseBaseUrl = "/api/v2/purchases"
-)
+var purchaseBaseUrl = "/api/v2/purchases"
 
 func TestGetPurchasesWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
@@ -18,7 +16,6 @@ func TestGetPurchasesWithSort(t *testing.T) {
 	sortFields := []string{"id", "createdAt", "totalGrossPrice", "createdBy.username"}
 
 	for _, sortField := range sortFields {
-
 		withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
 			WithQuery("_sort", sortField).
 			Expect().
@@ -237,6 +234,7 @@ func createPurchase() string {
 
 	purchase := purchaseResponse.Value("purchase").Object()
 	purchaseId := purchase.Value("id").Number().Raw()
+
 	return purchaseBaseUrl + "/" + strconv.FormatFloat(purchaseId, 'f', -1, 64)
 }
 

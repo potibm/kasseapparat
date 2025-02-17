@@ -27,7 +27,7 @@ func TestGetGuestlists(t *testing.T) {
 	obj := res.JSON().Array()
 	obj.Length().IsEqual(10)
 
-	for i := 0; i < len(obj.Iter()); i++ {
+	for i := range len(obj.Iter()) {
 		list := obj.Value(i).Object()
 		validateGuestlistObject(list)
 	}
@@ -45,7 +45,6 @@ func TestGetGuestlistsWithSort(t *testing.T) {
 	sortFields := []string{"id", "name"}
 
 	for _, sortField := range sortFields {
-
 		withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
 			WithQuery("_sort", sortField).
 			Expect().
@@ -87,8 +86,9 @@ func TestCreateUpdateAndDeleteGuestList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	var originalName = "Test List"
-	var changedName = "Test List Updated"
+	originalName := "Test List"
+
+	changedName := "Test List Updated"
 
 	list := withDemoUserAuthToken(e.POST(guestlistBaseUrl)).
 		WithJSON(map[string]interface{}{
