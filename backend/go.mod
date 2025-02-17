@@ -15,7 +15,7 @@ require (
 	github.com/sethvargo/go-password v0.3.1
 	github.com/shopspring/decimal v1.4.0
 	golang.org/x/crypto v0.32.0
-	golang.org/x/text v0.21.0
+	golang.org/x/text v0.22.0
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
 )
