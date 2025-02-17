@@ -24,6 +24,7 @@ type deineTicketsRecord struct {
 
 func (r *deineTicketsRecord) validateCode() bool {
 	matched, _ := regexp.MatchString(`^[0-9A-Z]{9}$`, r.Code)
+
 	return matched
 }
 
@@ -63,6 +64,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
 		_ = c.Error(BadRequest)
+
 		return
 	}
 
@@ -70,6 +72,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	fileContent, err := file.Open()
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Error opening file"))
+
 		return
 	}
 	defer fileContent.Close()
@@ -84,6 +87,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	// Skip the header line
 	if _, err := reader.Read(); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(BadRequest, "Failed to read header"))
+
 		return
 	}
 
@@ -91,20 +95,25 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	list, err := handler.repo.GetGuestlistWithTypeCode()
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Guestlist not found"))
+
 		return
 	}
 
 	warnings := []string{}
 	lineNumber := 0
 	createdGuests := 0
+
 	for {
 		lineNumber++
+
 		line, err := reader.Read()
 		if err == io.EOF {
 			break
 		}
+
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Error reading CSV file"))
+
 			return
 		}
 
@@ -119,14 +128,17 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 		valid, warningMessage := record.Validate(handler.repo)
 		if !valid {
 			warnings = append(warnings, warningMessage+": "+record.Code+" ("+strconv.Itoa(lineNumber)+")")
+
 			continue
 		}
 
 		_, err = handler.repo.CreateGuest(record.GetGuest(list.ID))
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create guest"))
+
 			return
 		}
+
 		createdGuests++
 	}
 

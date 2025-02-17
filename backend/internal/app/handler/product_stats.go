@@ -11,6 +11,7 @@ func (handler *Handler) GetProductStats(c *gin.Context) {
 	products, err := handler.repo.GetProductStats()
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 

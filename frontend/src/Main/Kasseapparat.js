@@ -38,7 +38,9 @@ function Kasseapparat() {
     return products.map((product) => {
       return {
         ...product,
-        price: new Decimal(product.price),
+        netPrice: new Decimal(product.netPrice),
+        grossPrice: new Decimal(product.grossPrice),
+        vatAmount: new Decimal(product.vatAmount),
       };
     });
   };

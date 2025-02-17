@@ -29,7 +29,7 @@ func TestGetGuests(t *testing.T) {
 	obj := res.JSON().Array()
 	obj.Length().IsEqual(10)
 
-	for i := 0; i < len(obj.Iter()); i++ {
+	for i := range len(obj.Iter()) {
 		guest := obj.Value(i).Object()
 		validateGuestObject(guest)
 	}
@@ -72,7 +72,7 @@ func TestGetGuestWithQuery(t *testing.T) {
 	obj = res.JSON().Array()
 	obj.Length().Ge(1)
 
-	for i := 0; i < len(obj.Iter()); i++ {
+	for i := range len(obj.Iter()) {
 		guest := obj.Value(i).Object()
 		guest.Value("name").String().ContainsFold(name)
 	}
@@ -86,7 +86,6 @@ func TestGetGuestWithSort(t *testing.T) {
 	sortFields := []string{"id", "name", "guestlist.name", "arrivedAt"}
 
 	for _, sortField := range sortFields {
-
 		withDemoUserAuthToken(e.GET(guestBaseUrl)).
 			WithQuery("_sort", sortField).
 			Expect().
@@ -233,7 +232,6 @@ func TestCreateUpdateAndDeleteGuest(t *testing.T) {
 	withDemoUserAuthToken(e.GET(guestUrl)).
 		Expect().
 		Status(http.StatusNotFound)
-
 }
 
 func TestGuestAuthentication(t *testing.T) {
@@ -254,7 +252,7 @@ func TestGuestsByProduct(t *testing.T) {
 	obj := res.JSON().Array()
 	obj.Length().Ge(1)
 
-	for i := 0; i < len(obj.Iter()); i++ {
+	for i := range len(obj.Iter()) {
 		guest := obj.Value(i).Object()
 		validateGuestSummaryObject(guest)
 
@@ -268,13 +266,16 @@ func TestGuestsByProduct(t *testing.T) {
 func validateGuestBasicObject(guest *httpexpect.Object) {
 	guest.Value("id").Number().Gt(0)
 	guest.Value("name").String().NotEmpty()
+
 	code := guest.Value("code")
 	if code.Raw() != nil {
 		code.String().NotEmpty()
 	} else {
 		code.IsNull()
 	}
+
 	guest.Value("additionalGuests").Number().Ge(0)
+
 	arrivalNote := guest.Value("arrivalNote")
 	if arrivalNote.Raw() != nil {
 		arrivalNote.String()
@@ -300,6 +301,7 @@ func validateGuestObject(guest *httpexpect.Object) {
 	} else {
 		notifyOnArrivalEmail.IsNull()
 	}
+
 	purchaseId := guest.Value("purchaseId")
 	if purchaseId.Raw() != nil {
 		purchaseId.Number().Ge(0)

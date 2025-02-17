@@ -11,10 +11,12 @@ type Repository struct {
 
 func NewRepository() *Repository {
 	db := utils.ConnectToDatabase()
+
 	return &Repository{db: db}
 }
 
 func NewLocalRepository() *Repository {
 	db := utils.ConnectToLocalDatabase()
+
 	return &Repository{db: db}
 }

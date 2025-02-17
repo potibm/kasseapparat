@@ -27,7 +27,7 @@ func TestGetUsers(t *testing.T) {
 	obj := res.JSON().Array()
 	obj.Length().Ge(2)
 
-	for i := 0; i < len(obj.Iter()); i++ {
+	for i := range len(obj.Iter()) {
 		user := obj.Value(i).Object()
 		validateUserObject(user)
 	}
@@ -44,7 +44,6 @@ func TestGetUsersWithSort(t *testing.T) {
 	sortFields := []string{"id", "username", "email", "admin"}
 
 	for _, sortField := range sortFields {
-
 		withDemoUserAuthToken(e.GET(userBaseUrl)).
 			WithQuery("_sort", sortField).
 			Expect().
@@ -110,10 +109,13 @@ func TestCreateUpdateAndDeleteUser(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	var originalUsername = "test user"
-	var originalEmail = "test@example.com"
-	var changedUsername = "test user changed"
-	var changedEmail = "changed@example.com"
+	originalUsername := "test user"
+
+	originalEmail := "test@example.com"
+
+	changedUsername := "test user changed"
+
+	changedEmail := "changed@example.com"
 
 	user := withDemoUserAuthToken(e.POST(userBaseUrl)).
 		WithJSON(map[string]interface{}{

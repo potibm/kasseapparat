@@ -29,6 +29,7 @@ func ErrorHandlingMiddleware() gin.HandlerFunc {
 				}
 
 				c.JSON(httpErr.StatusCode(), response)
+
 				return
 			}
 

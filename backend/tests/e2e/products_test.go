@@ -27,7 +27,7 @@ func TestGetProducts(t *testing.T) {
 	obj := res.JSON().Array()
 	obj.Length().IsEqual(10)
 
-	for i := 0; i < len(obj.Iter()); i++ {
+	for i := range len(obj.Iter()) {
 		product := obj.Value(i).Object()
 		validateProduct(product)
 		product.Value("guestlists").Array()
@@ -47,10 +47,9 @@ func TestGetProductsWithSort(t *testing.T) {
 	defer cleanup()
 
 	// define an array of sort fields
-	sortFields := []string{"id", "name", "price", "pos"}
+	sortFields := []string{"id", "name", "vatRate", "grossPrice", "pos"}
 
 	for _, sortField := range sortFields {
-
 		withDemoUserAuthToken(e.GET(productBaseUrl)).
 			WithQuery("_sort", sortField).
 			Expect().
@@ -73,8 +72,9 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	var originalName = "Test Product"
-	var changedName = "Test Product Updated"
+	originalName := "Test Product"
+
+	changedName := "Test Product Updated"
 
 	product := withDemoUserAuthToken(e.POST(productBaseUrl)).
 		WithJSON(map[string]interface{}{
@@ -125,7 +125,6 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 	withDemoUserAuthToken(e.GET(productUrl)).
 		Expect().
 		Status(http.StatusNotFound)
-
 }
 
 func TestDemoUserIsNotAllowedToDeleteAProduct(t *testing.T) {
@@ -144,20 +143,25 @@ func TestProductAuthentication(t *testing.T) {
 func validateProduct(product *httpexpect.Object) {
 	product.Value("id").Number().Gt(0)
 	product.Value("name").String().NotEmpty()
-	product.Value("price").String().NotEmpty()
+	product.Value("netPrice").String().NotEmpty()
+	product.Value("grossPrice").String().NotEmpty()
+	product.Value("vatAmount").String().NotEmpty()
+	product.Value("vatRate").String().NotEmpty()
 	product.Value("wrapAfter").Boolean()
 	product.Value("pos").Number().Ge(0)
 	product.Value("apiExport").Boolean()
 	product.Value("totalStock").Number().Ge(0)
 	product.Value("unitsSold").Number().Ge(0)
 	product.Value("soldOutRequestCount").Number().Ge(0)
-
 }
 
 func validateProductOne(product *httpexpect.Object) {
 	product.Value("id").Number().IsEqual(1)
 	product.Value("name").String().Contains("Regular")
-	product.Value("price").String().IsEqual("40")
+	product.Value("netPrice").String().IsEqual("37.38")
+	product.Value("grossPrice").String().IsEqual("40")
+	product.Value("vatRate").String().IsEqual("7")
+	product.Value("vatAmount").String().IsEqual("2.62")
 	product.Value("wrapAfter").Boolean().IsFalse()
 	product.Value("hidden").Boolean().IsFalse()
 	product.Value("pos").Number().IsEqual(1)

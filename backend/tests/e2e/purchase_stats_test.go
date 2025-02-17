@@ -5,9 +5,7 @@ import (
 	"testing"
 )
 
-var (
-	purchaseStatsUrl = "/api/v2/purchases/stats"
-)
+var purchaseStatsUrl = "/api/v2/purchases/stats"
 
 func TestPurchaseStats(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)

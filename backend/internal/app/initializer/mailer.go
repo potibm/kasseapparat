@@ -11,6 +11,7 @@ func InitializeMailer() mailer.Mailer {
 	if mailDsn == "" {
 		mailDsn = "smtp://user:password@localhost:1025"
 	}
+
 	mailFrom := os.Getenv("MAIL_FROM")
 	mailSubjectPrefix := os.Getenv("MAIL_SUBJECT_PREFIX")
 	frontendBaseUrl := os.Getenv("FRONTEND_URL")
@@ -20,9 +21,11 @@ func InitializeMailer() mailer.Mailer {
 	if mailFrom != "" {
 		mailer.SetFrom(mailFrom)
 	}
+
 	if mailSubjectPrefix != "" {
 		mailer.SetSubjectPrefix(mailSubjectPrefix)
 	}
+
 	if frontendBaseUrl != "" {
 		mailer.SetFrontendBaseUrl(frontendBaseUrl)
 	}

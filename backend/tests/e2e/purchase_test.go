@@ -6,19 +6,16 @@ import (
 	"testing"
 )
 
-var (
-	purchaseBaseUrl = "/api/v2/purchases"
-)
+var purchaseBaseUrl = "/api/v2/purchases"
 
 func TestGetPurchasesWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
 	// define an array of sort fields
-	sortFields := []string{"id", "createdAt", "totalPrice", "createdBy.username"}
+	sortFields := []string{"id", "createdAt", "totalGrossPrice", "createdBy.username"}
 
 	for _, sortField := range sortFields {
-
 		withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
 			WithQuery("_sort", sortField).
 			Expect().
@@ -33,7 +30,8 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	// Create a purchase
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": "20",
+			"totalNetPrice":   "18.69",
+			"totalGrossPrice": "20",
 			"cart": []map[string]interface{}{
 				{
 					"ID":       2,
@@ -55,7 +53,8 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	purchaseResponse.Value("purchase").Object()
 	purchase := purchaseResponse.Value("purchase").Object()
 	purchase.Value("id").Number().Gt(0)
-	purchase.Value("totalPrice").String().IsEqual("20")
+	purchase.Value("totalGrossPrice").String().IsEqual("20")
+	purchase.Value("totalNetPrice").String().IsEqual("18.69")
 
 	purchaseId := purchase.Value("id").Number().Raw()
 	purchaseUrl := purchaseBaseUrl + "/" + strconv.FormatFloat(purchaseId, 'f', -1, 64)
@@ -66,7 +65,8 @@ func TestCreatePurchaseWithList(t *testing.T) {
 		Status(http.StatusOK).JSON().Object()
 
 	purchase.Value("id").Number().IsEqual(purchaseId)
-	purchase.Value("totalPrice").String().IsEqual("20")
+	purchase.Value("totalGrossPrice").String().IsEqual("20")
+	purchase.Value("totalNetPrice").String().IsEqual("18.69")
 
 	// Get the purchase list
 	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
@@ -91,14 +91,15 @@ func TestCreatePurchaseWithList(t *testing.T) {
 		Status(http.StatusNotFound)
 }
 
-func TestCreatePurchaseWithWrongTotalPrice(t *testing.T) {
+func TestCreatePurchaseWithWrongTotalGrossPrice(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
 	// Create a purchase, but with a wrong total price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": "21",
+			"totalGrossPrice": "21",
+			"totalNetPrice":   "18.69",
 			"cart": []map[string]interface{}{
 				{
 					"ID":        2,
@@ -110,7 +111,30 @@ func TestCreatePurchaseWithWrongTotalPrice(t *testing.T) {
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object()
 
-	validateErrorDetailMessage(errorResponse, "Total price does not match")
+	validateErrorDetailMessage(errorResponse, "Total gross price does not match")
+}
+
+func TestCreatePurchaseWithWrongTotalNetPrice(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// Create a purchase, but with a wrong total price
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+		WithJSON(map[string]interface{}{
+			"totalGrossPrice": "20",
+			"totalNetPrice":   "1.69",
+			"cart": []map[string]interface{}{
+				{
+					"ID":        2,
+					"quantity":  1,
+					"listItems": []map[string]interface{}{},
+				},
+			},
+		}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	validateErrorDetailMessage(errorResponse, "Total net price does not match")
 }
 
 func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
@@ -120,7 +144,8 @@ func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
 	// Create a purchase, but with a wrong total price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": "21",
+			"totalGrossPrice": "21",
+			"totalNetPrice":   "21",
 			"cart": []map[string]interface{}{
 				{
 					"ID":        123,
@@ -142,7 +167,8 @@ func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
 	// Create a purchase
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": "0",
+			"totalNetPrice":   "11.11",
+			"totalGrossPrice": "12.12",
 			"cart": []map[string]interface{}{
 				{
 					"ID":       3,
@@ -169,7 +195,8 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 	// Create a purchase
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": "0",
+			"totalNetPrice":   "11.11",
+			"totalGrossPrice": "12.12",
 			"cart": []map[string]interface{}{
 				{
 					"ID":       3,
@@ -192,7 +219,8 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 func createPurchase() string {
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"totalPrice": "40",
+			"totalNetPrice":   "37.38",
+			"totalGrossPrice": "40",
 			"cart": []map[string]interface{}{
 				{
 					"ID":        1,
@@ -206,6 +234,7 @@ func createPurchase() string {
 
 	purchase := purchaseResponse.Value("purchase").Object()
 	purchaseId := purchase.Value("id").Number().Raw()
+
 	return purchaseBaseUrl + "/" + strconv.FormatFloat(purchaseId, 'f', -1, 64)
 }
 

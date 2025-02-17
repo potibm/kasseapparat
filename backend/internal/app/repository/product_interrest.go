@@ -7,7 +7,6 @@ import (
 )
 
 func (repo *Repository) GetProductInterests(limit int, offset int, ids []int) ([]models.ProductInterest, error) {
-
 	query := repo.db.Preload("Product").Order("created_at DESC").Limit(limit).Offset(offset)
 
 	if len(ids) > 0 {
@@ -24,6 +23,7 @@ func (repo *Repository) GetProductInterests(limit int, offset int, ids []int) ([
 
 func (repo *Repository) GetTotalProductInterests() (int64, error) {
 	var totalRows int64
+
 	repo.db.Model(&models.ProductInterest{}).Count(&totalRows)
 
 	return totalRows, nil
@@ -59,7 +59,6 @@ func (repo *Repository) GetProductInterestCountByProductID(productID uint) (int,
 		Select("COUNT(*)").
 		Where("product_interests.product_id = ? AND product_interests.deleted_at IS NULL", productID).
 		Scan(&count).Error
-
 	if err != nil {
 		return 0, err
 	}

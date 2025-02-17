@@ -23,7 +23,6 @@ type Config struct {
 }
 
 func (handler *Handler) GetConfig(c *gin.Context) {
-
 	config := Config{
 		Version:                       handler.version,
 		SentryDSN:                     getEnv("SENTRY_DSN", ""),
@@ -47,6 +46,7 @@ func getEnv(key, defaultValue string) string {
 	if value == "" {
 		return defaultValue
 	}
+
 	return value
 }
 
@@ -55,10 +55,12 @@ func getEnvAsInt(key string, defaultValue int) int {
 	if value == "" {
 		return defaultValue
 	}
+
 	intValue, err := strconv.Atoi(value)
 	if err != nil {
 		return defaultValue
 	}
+
 	return intValue
 }
 
@@ -67,9 +69,11 @@ func getEnvAsFloat(key string, defaultValue float64) float64 {
 	if value == "" {
 		return defaultValue
 	}
+
 	floatValue, err := strconv.ParseFloat(value, 32)
 	if err != nil {
 		return defaultValue
 	}
+
 	return floatValue
 }

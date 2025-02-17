@@ -8,26 +8,29 @@ import (
 )
 
 type UserUpdatePasswordRequest struct {
-	UserId   int    `form:"userId" json:"userId" binding:"required"`
-	Token    string `form:"token" json:"token" binding:"required,len=32"`
-	Password string `form:"password" json:"password" binding:"required,min=8"`
+	UserId   int    `binding:"required"        form:"userId"   json:"userId"`
+	Token    string `binding:"required,len=32" form:"token"    json:"token"`
+	Password string `binding:"required,min=8"  form:"password" json:"password"`
 }
 
 func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 	var userPasswordChangeRequest UserUpdatePasswordRequest
 	if err := c.ShouldBind(&userPasswordChangeRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
 	user, err := handler.repo.GetUserByID(userPasswordChangeRequest.UserId)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(BadRequest, "User not found"))
+
 		return
 	}
 
 	if !user.ChangePasswordTokenIsValid(userPasswordChangeRequest.Token) {
 		_ = c.Error(ExtendHttpErrorWithDetails(BadRequest, "Token is invalid or has expired"))
+
 		return
 	}
 
@@ -38,6 +41,7 @@ func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 	user, err = handler.repo.UpdateUserByID(int(user.ID), *user)
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
@@ -45,24 +49,27 @@ func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 }
 
 type RequestChangePasswordTokenRequest struct {
-	Login string `form:"login" json:"login" binding:"required"`
+	Login string `binding:"required" form:"login" json:"login"`
 }
 
 func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 	var request RequestChangePasswordTokenRequest
 	if err := c.ShouldBind(&request); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
 	user, err := handler.repo.GetUserByUserameOrEmail(request.Login)
 	if err != nil {
 		c.JSON(http.StatusOK, "OK")
+
 		return
 	}
 
 	if user.ChangePasswordTokenExpiry != nil && !user.ChangePasswordTokenIsExpired() {
 		c.JSON(http.StatusOK, "OK")
+
 		return
 	}
 
@@ -71,12 +78,12 @@ func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 	user, err = handler.repo.UpdateUserByID(int(user.ID), *user)
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
 	err = handler.mailer.SendChangePasswordTokenMail(
 		user.Email, user.ID, user.Username, *user.ChangePasswordToken)
-
 	if err != nil {
 		log.Println("Error sending email", err)
 	}

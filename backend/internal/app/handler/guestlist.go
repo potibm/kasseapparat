@@ -10,15 +10,15 @@ import (
 )
 
 type GuestlistCreateRequest struct {
-	Name      string `form:"name"  json:"name" binding:"required"`
-	TypeCode  bool   `form:"typeCode" json:"typeCode" binding:"boolean"`
-	ProductID uint   `form:"productId" json:"productId" binding:"required"`
+	Name      string `binding:"required" form:"name"      json:"name"`
+	TypeCode  bool   `binding:"boolean"  form:"typeCode"  json:"typeCode"`
+	ProductID uint   `binding:"required" form:"productId" json:"productId"`
 }
 
 type GuestlistUpdateRequest struct {
-	Name      string `form:"name"  json:"name" binding:"required"`
-	TypeCode  bool   `form:"typeCode" json:"typeCode" binding:"boolean"`
-	ProductID uint   `form:"productId" json:"productId" binding:"required"`
+	Name      string `binding:"required" form:"name"      json:"name"`
+	TypeCode  bool   `binding:"boolean"  form:"typeCode"  json:"typeCode"`
+	ProductID uint   `binding:"required" form:"productId" json:"productId"`
 }
 
 func (handler *Handler) GetGuestlists(c *gin.Context) {
@@ -33,12 +33,14 @@ func (handler *Handler) GetGuestlists(c *gin.Context) {
 	lists, err := handler.repo.GetGuestlists(end-start, start, sort, order, filters)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+
 		return
 	}
 
 	total, err := handler.repo.GetTotalGuestlists()
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
@@ -49,8 +51,10 @@ func (handler *Handler) GetGuestlists(c *gin.Context) {
 func (handler *Handler) GetGuestlistByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	list, err := handler.repo.GetGuestlistByID(id)
+
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+
 		return
 	}
 
@@ -61,32 +65,39 @@ func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
+
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	guestlist, err := handler.repo.GetGuestlistByID(id)
+
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+
 		return
 	}
 
 	var guestlistRequest GuestlistUpdateRequest
 	if err := c.ShouldBind(&guestlistRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
 	guestlist.Name = guestlistRequest.Name
 	guestlist.TypeCode = guestlistRequest.TypeCode
+
 	if guestlistRequest.ProductID > 0 {
 		guestlist.ProductID = guestlistRequest.ProductID
 	}
+
 	guestlist.UpdatedByID = &executingUserObj.ID
 
 	guestlist, err = handler.repo.UpdateGuestlistByID(id, *guestlist)
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
@@ -97,13 +108,16 @@ func (handler *Handler) CreateGuestlist(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
+
 		return
 	}
 
 	var guestlist models.Guestlist
+
 	var guestlistRequest GuestlistCreateRequest
 	if err := c.ShouldBind(&guestlistRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
@@ -115,6 +129,7 @@ func (handler *Handler) CreateGuestlist(c *gin.Context) {
 	product, err := handler.repo.CreateGuestlist(guestlist)
 	if err != nil {
 		_ = c.Error(InternalServerError)
+
 		return
 	}
 
@@ -125,18 +140,22 @@ func (handler *Handler) DeleteGuestlistByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
+
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
 	guestlist, err := handler.repo.GetGuestlistByID(id)
+
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+
 		return
 	}
 
 	if !executingUserObj.Admin && *guestlist.CreatedByID != executingUserObj.ID {
 		_ = c.Error(Forbidden)
+
 		return
 	}
 

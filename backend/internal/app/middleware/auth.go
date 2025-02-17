@@ -12,13 +12,11 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/repository"
 )
 
-var (
-	IdentityKey = "ID"
-)
+var IdentityKey = "ID"
 
 type login struct {
-	Login    string `form:"login" json:"login" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
+	Login    string `binding:"required" form:"login"    json:"login"`
+	Password string `binding:"required" form:"password" json:"password"`
 }
 
 type loginResponse struct {
@@ -47,9 +45,9 @@ func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 }
 
 func InitParams(repo repository.Repository, realm string, secret string, timeout int) *jwt.GinJWTMiddleware {
-
 	if secret == "" {
 		log.Println("JWT_SECRET is not set, using default value")
+
 		secret = "secret"
 	}
 
@@ -88,12 +86,14 @@ func authenticator(repo *repository.Repository) func(c *gin.Context) (interface{
 		if err := c.ShouldBind(&loginVals); err != nil {
 			return "", jwt.ErrMissingLoginValues
 		}
+
 		login := strings.TrimSpace(loginVals.Login)
 		password := strings.TrimSpace(loginVals.Password)
 
 		user, err := repo.GetUserByLoginAndPassword(login, password)
 		if err == nil {
 			c.Set(IdentityKey, user) // Set the user in the context
+
 			return user, nil
 		}
 
@@ -108,6 +108,7 @@ func payloadFunc() func(data interface{}) jwt.MapClaims {
 				IdentityKey: v.ID,
 			}
 		}
+
 		return jwt.MapClaims{}
 	}
 }
@@ -127,6 +128,7 @@ func authorizator() func(data interface{}, c *gin.Context) bool {
 		if _, ok := data.(*models.User); ok {
 			return true
 		}
+
 		return false
 	}
 }
@@ -162,5 +164,4 @@ func loginReponse(c *gin.Context, code int, token string, expire time.Time, user
 	}
 
 	c.JSON(code, loginResponse)
-
 }

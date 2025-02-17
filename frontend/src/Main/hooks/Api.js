@@ -69,8 +69,12 @@ export const storePurchase = async (apiHost, jwtToken, cart) => {
       },
       body: JSON.stringify({
         cart: cartPayload,
-        totalPrice: cart.reduce(
-          (total, item) => total.add(item.totalPrice),
+        totalGrossPrice: cart.reduce(
+          (total, item) => total.add(item.totalGrossPrice),
+          new Decimal(0),
+        ),
+        totalNetPrice: cart.reduce(
+          (total, item) => total.add(item.totalNetPrice),
           new Decimal(0),
         ),
       }), // : )

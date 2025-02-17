@@ -18,11 +18,15 @@ export const addToCart = (cart, product, count = 1, listItem = null) => {
 
     const updatedCart = [...cart];
     updatedCart[existingProductIndex].quantity += count;
-    updatedCart[existingProductIndex].totalPrice = updatedCart[
+    updatedCart[existingProductIndex].totalNetPrice = updatedCart[
       existingProductIndex
-    ].price.mul(updatedCart[existingProductIndex].quantity);
-
-    console.log(updatedCart);
+    ].netPrice.mul(updatedCart[existingProductIndex].quantity);
+    updatedCart[existingProductIndex].totalGrossPrice = updatedCart[
+      existingProductIndex
+    ].grossPrice.mul(updatedCart[existingProductIndex].quantity);
+    updatedCart[existingProductIndex].totalVatAmount = updatedCart[
+      existingProductIndex
+    ].vatAmount.mul(updatedCart[existingProductIndex].quantity);
 
     // add list item to cart
     if (listItem) {
@@ -34,7 +38,9 @@ export const addToCart = (cart, product, count = 1, listItem = null) => {
     const updatedProduct = {
       ...product,
       quantity: count,
-      totalPrice: product.price,
+      totalNetPrice: product.netPrice,
+      totalGrossPrice: product.grossPrice,
+      totalVatAmount: product.vatAmount,
       listItems: [],
     };
     updatedProduct.unitsSold += count;

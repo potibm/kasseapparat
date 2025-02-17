@@ -13,7 +13,6 @@ const (
 )
 
 func (mailer *Mailer) SendNotificationOnArrival(to string, username string) error {
-
 	template, err := template.ParseFS(
 		templates.MailTemplateFiles,
 		"mail/notification_on_arrival.txt",
@@ -24,6 +23,7 @@ func (mailer *Mailer) SendNotificationOnArrival(to string, username string) erro
 	}
 
 	var body bytes.Buffer
+
 	err = template.Execute(&body, map[string]string{
 		"Username": username,
 	})
