@@ -13,23 +13,23 @@ type PurchaseItem struct {
 }
 
 func (pi PurchaseItem) GrossPrice() decimal.Decimal {
-	return pi.NetPrice.Add(pi.VATAmount()).Round(2)
+	return pi.NetPrice.Add(pi.VATAmount()).Round(getFractionDigitsMax())
 }
 
 func (pi PurchaseItem) VATAmount() decimal.Decimal {
-	return pi.NetPrice.Mul(pi.vatRateAsPercentage()).Round(2)
+	return pi.NetPrice.Mul(pi.vatRateAsPercentage()).Round(getFractionDigitsMax())
 }
 
 func (pi PurchaseItem) TotalNetPrice() decimal.Decimal {
-	return pi.NetPrice.Mul(decimal.NewFromInt(int64(pi.Quantity))).Round(2)
+	return pi.NetPrice.Mul(decimal.NewFromInt(int64(pi.Quantity))).Round(getFractionDigitsMax())
 }
 
 func (pi PurchaseItem) TotalGrossPrice() decimal.Decimal {
-	return pi.GrossPrice().Mul(decimal.NewFromInt(int64(pi.Quantity))).Round(2)
+	return pi.GrossPrice().Mul(decimal.NewFromInt(int64(pi.Quantity))).Round(getFractionDigitsMax())
 }
 
 func (pi PurchaseItem) TotalVATAmount() decimal.Decimal {
-	return pi.VATAmount().Mul(decimal.NewFromInt(int64(pi.Quantity))).Round(2)
+	return pi.VATAmount().Mul(decimal.NewFromInt(int64(pi.Quantity))).Round(getFractionDigitsMax())
 }
 
 func (pi PurchaseItem) vatRateAsPercentage() decimal.Decimal {

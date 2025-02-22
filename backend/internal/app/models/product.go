@@ -1,6 +1,8 @@
 package models
 
-import "github.com/shopspring/decimal"
+import (
+	"github.com/shopspring/decimal"
+)
 
 // Product represents a product model.
 type Product struct {
@@ -20,9 +22,9 @@ type Product struct {
 }
 
 func (p Product) GrossPrice() decimal.Decimal {
-	return p.NetPrice.Add(p.VATAmount()).Round(2)
+	return p.NetPrice.Add(p.VATAmount()).Round(getFractionDigitsMax())
 }
 
 func (p Product) VATAmount() decimal.Decimal {
-	return p.NetPrice.Mul(p.VATRate.Div(decimal.NewFromInt(100))).Round(2)
+	return p.NetPrice.Mul(p.VATRate.Div(decimal.NewFromInt(100))).Round(getFractionDigitsMax())
 }

@@ -100,8 +100,8 @@ func importUsers(filename string) {
 
 	records, err := reader.ReadAll()
 	if err != nil {
-        log.Printf("Failed to read CSV file: %v", err)
-        return
+		log.Printf("Failed to read CSV file: %v", err)
+		return
 	}
 
 	for _, record := range records {

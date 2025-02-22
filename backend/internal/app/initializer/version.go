@@ -13,7 +13,7 @@ func InitializeVersion() {
 
 	content, err := os.ReadFile(versionFilePath)
 	if err != nil {
-		log.Printf("Fehler beim Lesen der Versionsdatei: %v", err)
+		log.Printf("Error reeading the version file: %v", err)
 
 		return
 	}
