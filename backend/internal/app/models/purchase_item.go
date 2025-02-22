@@ -20,16 +20,20 @@ func (pi PurchaseItem) VATAmount() decimal.Decimal {
 	return pi.NetPrice.Mul(pi.vatRateAsPercentage()).Round(getFractionDigitsMax())
 }
 
+func (pi PurchaseItem) getQuantityAsDecimal() decimal.Decimal {
+	return decimal.NewFromInt(int64(pi.Quantity))
+}
+
 func (pi PurchaseItem) TotalNetPrice() decimal.Decimal {
-	return pi.NetPrice.Mul(decimal.NewFromInt(int64(pi.Quantity))).Round(getFractionDigitsMax())
+	return pi.NetPrice.Mul(pi.getQuantityAsDecimal()).Round(getFractionDigitsMax())
 }
 
 func (pi PurchaseItem) TotalGrossPrice() decimal.Decimal {
-	return pi.GrossPrice().Mul(decimal.NewFromInt(int64(pi.Quantity))).Round(getFractionDigitsMax())
+	return pi.GrossPrice().Mul(pi.getQuantityAsDecimal()).Round(getFractionDigitsMax())
 }
 
 func (pi PurchaseItem) TotalVATAmount() decimal.Decimal {
-	return pi.VATAmount().Mul(decimal.NewFromInt(int64(pi.Quantity))).Round(getFractionDigitsMax())
+	return pi.VATAmount().Mul(pi.getQuantityAsDecimal()).Round(getFractionDigitsMax())
 }
 
 func (pi PurchaseItem) vatRateAsPercentage() decimal.Decimal {
