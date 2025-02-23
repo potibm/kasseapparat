@@ -18,6 +18,7 @@ import {
   required,
   TabbedForm,
   FormTab,
+  RadioButtonGroupInput,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
@@ -48,6 +49,22 @@ export const ProductList = () => {
   );
 };
 
+const VatRateInput = () => {
+  const vatRates = useConfig().vatRates;
+  const vatOptionRenderer = (choice) => `${choice.name} (${choice.rate}%)`;
+
+  return (
+    <RadioButtonGroupInput
+      source="vatRate"
+      row={false}
+      choices={vatRates}
+      showEmptyOption={false}
+      optionValue="rate"
+      optionText={vatOptionRenderer}
+    />
+  );
+};
+
 export const ProductEdit = () => {
   const currency = useConfig().currencyOptions;
   const locale = useConfig().Locale;
@@ -67,7 +84,7 @@ export const ProductEdit = () => {
         </FormTab>
         <FormTab label="Pricing">
           <DecimalInput source="netPrice" locales={locale} options={currency} />
-          <DecimalInput source="vatRate" />
+          <VatRateInput />
           <GrossPriceInput
             netSource="netPrice"
             vatSource="vatRate"
@@ -130,7 +147,7 @@ export const ProductCreate = () => {
         <TextInput source="name" validate={required()} />
         <h6>Pricing</h6>
         <DecimalInput source="netPrice" locales={locale} options={currency} />
-        <DecimalInput source="vatRate" />
+        <VatRateInput />
         <GrossPriceInput
           netSource="netPrice"
           vatSource="vatRate"

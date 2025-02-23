@@ -15,6 +15,7 @@ type Config struct {
 	SentryReplayErrorSampleRate   float64 `json:"sentryReplayErrorSampleRate"`
 	CurrencyLocale                string  `json:"currencyLocale"`
 	CurrencyCode                  string  `json:"currencyCode"`
+	VATRates                      string  `json:"vatRates"`
 	DateLocale                    string  `json:"dateLocale"`
 	DateOptions                   string  `json:"dateOptions"`
 	FractionDigitsMin             int     `json:"fractionDigitsMin"`
@@ -31,6 +32,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		SentryReplayErrorSampleRate:   getEnvAsFloat("SENTRY_REPLAY_ERROR_SAMPLE_RATE", 0.1),
 		CurrencyLocale:                getEnv("CURRENCY_LOCALE", "dk-DK"),
 		CurrencyCode:                  getEnv("CURRENCY_CODE", "DKK"),
+		VATRates:                      getEnv("VAT_RATES", "[{\"rate\":25,\"name\":\"Standard\"},{\"rate\":0,\"name\":\"Zero rate\"}]"),
 		DateLocale:                    getEnv("DATE_LOCALE", "dk-DK"),
 		DateOptions:                   getEnv("DATE_OPTIONS", "{\"weekday\":\"long\",\"hour\":\"2-digit\",\"minute\":\"2-digit\"}"),
 		FractionDigitsMin:             getEnvAsInt("FRACTION_DIGITS_MIN", 0),

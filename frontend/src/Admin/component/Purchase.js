@@ -66,7 +66,6 @@ export const PurchaseShow = (props) => {
         <ArrayField source="purchaseItems">
           <Datagrid bulkActionButtons={false}>
             <NumberField source="quantity" />
-            <NumberField source="price" locales={locale} options={currency} />
             <TextField source="product.name" />
             <NumberField
               source="totalNetPrice"

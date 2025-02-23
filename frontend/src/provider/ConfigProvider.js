@@ -44,6 +44,13 @@ const ConfigProvider = ({ children }) => {
           console.error("Error parsing dateOptions:", error);
           data.dateOptions = {};
         }
+        try {
+          data.vatRates = JSON.parse(data.vatRates ?? "{}");
+        } catch (error) {
+          console.error("Error parsing vatRates:", error);
+          data.vatRates = {};
+        }
+        console.log("Config loaded:", data);
 
         setConfig(data);
         setLoading(false);
