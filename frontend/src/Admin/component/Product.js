@@ -59,6 +59,7 @@ const VatRateInput = () => {
       row={false}
       choices={vatRates}
       showEmptyOption={false}
+      validate={[required()]}
       optionValue="rate"
       optionText={vatOptionRenderer}
     />
@@ -158,6 +159,7 @@ export const ProductCreate = () => {
         <NumberInput
           source="pos"
           helperText="The products will shown in this order"
+          validate={[required()]}
         />
         <BooleanInput
           source="wrapAfter"
