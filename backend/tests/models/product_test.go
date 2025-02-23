@@ -17,7 +17,7 @@ func TestProduct_VATAmount(t *testing.T) {
 	}
 
 	expectedVATAmount := decimal.NewFromFloat(20.0)
-	actualVATAmount := product.VATAmount()
+	actualVATAmount := product.VATAmount(2)
 
 	assert.True(t, expectedVATAmount.Equal(actualVATAmount), "Expected VAT amount to be %s, but got %s", expectedVATAmount, actualVATAmount)
 }
@@ -31,7 +31,7 @@ func TestProduct_GrossPrice(t *testing.T) {
 	}
 
 	expectedGrossPrice := decimal.NewFromFloat(120.0)
-	actualGrossPrice := product.GrossPrice()
+	actualGrossPrice := product.GrossPrice(2)
 
 	assert.True(t, expectedGrossPrice.Equal(actualGrossPrice), "Expected gross price to be %s, but got %s", expectedGrossPrice, actualGrossPrice)
 }

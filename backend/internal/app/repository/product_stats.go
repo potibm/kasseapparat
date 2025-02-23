@@ -38,8 +38,8 @@ func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
 
 		for j := range purchaseItems {
 			products[i].SoldItems += purchaseItems[j].Quantity
-			products[i].TotalNetPrice = products[i].TotalNetPrice.Add(purchaseItems[j].TotalNetPrice())
-			products[i].TotalGrossPrice = products[i].TotalGrossPrice.Add(purchaseItems[j].TotalGrossPrice())
+			products[i].TotalNetPrice = products[i].TotalNetPrice.Add(purchaseItems[j].TotalNetPrice(repo.decimalPlaces))
+			products[i].TotalGrossPrice = products[i].TotalGrossPrice.Add(purchaseItems[j].TotalGrossPrice(repo.decimalPlaces))
 		}
 	}
 

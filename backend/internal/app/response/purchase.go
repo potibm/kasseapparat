@@ -18,7 +18,7 @@ type PurchaseResponse struct {
 	PurchaseItems   []PurchaseItemResponse `json:"purchaseItems"`
 }
 
-func ToPurchaseResponse(purchase models.Purchase) PurchaseResponse {
+func ToPurchaseResponse(purchase models.Purchase, decimalPlaces int32) PurchaseResponse {
 	response := PurchaseResponse{
 		ID:              purchase.ID,
 		CreatedAt:       purchase.CreatedAt,
@@ -27,16 +27,16 @@ func ToPurchaseResponse(purchase models.Purchase) PurchaseResponse {
 		TotalNetPrice:   purchase.TotalNetPrice,
 		TotalGrossPrice: purchase.TotalGrossPrice,
 		TotalVatAmount:  purchase.TotalGrossPrice.Sub(purchase.TotalNetPrice),
-		PurchaseItems:   ToPurchaseItemsResponse(purchase.PurchaseItems),
+		PurchaseItems:   ToPurchaseItemsResponse(purchase.PurchaseItems, decimalPlaces),
 	}
 
 	return response
 }
 
-func ToPurchasesResponse(purchases []models.Purchase) []PurchaseResponse {
+func ToPurchasesResponse(purchases []models.Purchase, decimalPlaces int32) []PurchaseResponse {
 	var responses []PurchaseResponse
 	for _, purchase := range purchases {
-		responses = append(responses, ToPurchaseResponse(purchase))
+		responses = append(responses, ToPurchaseResponse(purchase, decimalPlaces))
 	}
 
 	return responses

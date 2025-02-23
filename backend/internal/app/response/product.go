@@ -29,14 +29,14 @@ type ExtendedProductResponse struct {
 	SoldOutRequestCount int `json:"soldOutRequestCount"`
 }
 
-func ToProductResponse(product models.Product) ProductResponse {
+func ToProductResponse(product models.Product, decimalPlaces int32) ProductResponse {
 	response := ProductResponse{
 		ID:                  product.ID,
 		Name:                product.Name,
 		NetPrice:            product.NetPrice,
-		GrossPrice:          product.GrossPrice(),
+		GrossPrice:          product.GrossPrice(decimalPlaces),
 		VATRate:             product.VATRate,
-		VATAmount:           product.VATAmount(),
+		VATAmount:           product.VATAmount(decimalPlaces),
 		WrapAfter:           product.WrapAfter,
 		Hidden:              product.Hidden,
 		SoldOut:             product.SoldOut,
@@ -51,9 +51,9 @@ func ToProductResponse(product models.Product) ProductResponse {
 	return response
 }
 
-func ToExtendedProductResponse(product models.Product, unitsSold int, soldOutRequestCount int) ExtendedProductResponse {
+func ToExtendedProductResponse(product models.Product, unitsSold int, soldOutRequestCount int, decimalPlaces int32) ExtendedProductResponse {
 	response := ExtendedProductResponse{
-		ProductResponse:     ToProductResponse(product),
+		ProductResponse:     ToProductResponse(product, decimalPlaces),
 		UnitsSold:           unitsSold,
 		SoldOutRequestCount: soldOutRequestCount,
 	}
@@ -61,10 +61,10 @@ func ToExtendedProductResponse(product models.Product, unitsSold int, soldOutReq
 	return response
 }
 
-func ToProductResponses(products []models.Product) []ProductResponse {
+func ToProductResponses(products []models.Product, decimalPlaces int32) []ProductResponse {
 	productResponses := make([]ProductResponse, len(products))
 	for i, product := range products {
-		productResponses[i] = ToProductResponse(product)
+		productResponses[i] = ToProductResponse(product, decimalPlaces)
 	}
 
 	return productResponses

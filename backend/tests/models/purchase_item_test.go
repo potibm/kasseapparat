@@ -17,8 +17,8 @@ func TestPurchaseItem_VATAmount(t *testing.T) {
 		Quantity: 5,
 	}
 
-	assert.True(t, decimal.NewFromFloat(1.31).Equal(purchaseItem.VATAmount()))
-	assert.True(t, decimal.NewFromFloat(20).Equal(purchaseItem.GrossPrice()))
-	assert.True(t, decimal.NewFromFloat(6.55).Equal(purchaseItem.TotalVATAmount()))
-	assert.True(t, decimal.NewFromFloat(100).Equal(purchaseItem.TotalGrossPrice()))
+	assert.True(t, decimal.NewFromFloat(1.31).Equal(purchaseItem.VATAmount(2)))
+	assert.True(t, decimal.NewFromFloat(20).Equal(purchaseItem.GrossPrice(2)))
+	assert.True(t, decimal.NewFromFloat(6.55).Equal(purchaseItem.TotalVATAmount(2)))
+	assert.True(t, decimal.NewFromFloat(100).Equal(purchaseItem.TotalGrossPrice(2)))
 }

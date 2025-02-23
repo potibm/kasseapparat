@@ -134,7 +134,7 @@ func importUsers(filename string) {
 }
 
 func createUser(username string, email string, isAdmin bool) error {
-	repo := repository.NewRepository()
+	repo := repository.NewRepository(2)
 	mailer := initializer.InitializeMailer()
 
 	user := models.User{

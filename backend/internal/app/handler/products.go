@@ -58,7 +58,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 		return
 	}
 
-	productsResponse := createExtendedProductResponse(handler.repo, products)
+	productsResponse := createExtendedProductResponse(handler.repo, products, handler.decimalPlaces)
 
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
 	c.JSON(http.StatusOK, productsResponse)
@@ -85,7 +85,7 @@ func filterHiddenProducts(products []models.Product) []models.Product {
 	return filteredProducts
 }
 
-func createExtendedProductResponse(repo *repository.Repository, products []models.Product) []response.ExtendedProductResponse {
+func createExtendedProductResponse(repo *repository.Repository, products []models.Product, decimalPlaces int32) []response.ExtendedProductResponse {
 	var productsResponse []response.ExtendedProductResponse
 
 	for _, product := range products {
@@ -96,6 +96,7 @@ func createExtendedProductResponse(repo *repository.Repository, products []model
 			product,
 			unitsSold,
 			soldOutRequestCount,
+			decimalPlaces,
 		)
 
 		productsResponse = append(productsResponse, productResponse)
@@ -121,6 +122,7 @@ func (handler *Handler) GetProductByID(c *gin.Context) {
 		*product,
 		unitsSold,
 		soldOutRequestCount,
+		handler.decimalPlaces,
 	)
 
 	c.JSON(http.StatusOK, productResponse)

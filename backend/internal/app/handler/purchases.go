@@ -78,7 +78,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		calculatedPurchaseItemNetPrice := product.NetPrice.Mul(decimal.NewFromInt(int64(quantity)))
 		calculatedTotalNetPrice = calculatedTotalNetPrice.Add(calculatedPurchaseItemNetPrice)
 
-		calculatedPurchaseItemGrossPrice := product.GrossPrice().Mul(decimal.NewFromInt(int64(quantity)))
+		calculatedPurchaseItemGrossPrice := product.GrossPrice(handler.decimalPlaces).Mul(decimal.NewFromInt(int64(quantity)))
 		calculatedTotalGrossPrice = calculatedTotalGrossPrice.Add(calculatedPurchaseItemGrossPrice)
 
 		purchaseItem := models.PurchaseItem{
@@ -167,7 +167,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		}
 	}
 
-	purchasesResponse := response.ToPurchaseResponse(purchase)
+	purchasesResponse := response.ToPurchaseResponse(purchase, handler.decimalPlaces)
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Purchase successful", "purchase": purchasesResponse})
 }
@@ -192,7 +192,7 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 		return
 	}
 
-	purchasesRespone := response.ToPurchasesResponse(purchases)
+	purchasesRespone := response.ToPurchasesResponse(purchases, handler.decimalPlaces)
 
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
 	c.JSON(http.StatusOK, purchasesRespone)
@@ -208,7 +208,7 @@ func (handler *Handler) GetPurchaseByID(c *gin.Context) {
 		return
 	}
 
-	purchaseResponse := response.ToPurchaseResponse(*purchase)
+	purchaseResponse := response.ToPurchaseResponse(*purchase, handler.decimalPlaces)
 
 	c.JSON(http.StatusOK, purchaseResponse)
 }

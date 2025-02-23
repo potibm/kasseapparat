@@ -12,28 +12,28 @@ type PurchaseItem struct {
 	VATRate    decimal.Decimal `gorm:"type:TEXT"  json:"vatRate"`
 }
 
-func (pi PurchaseItem) GrossPrice() decimal.Decimal {
-	return pi.NetPrice.Add(pi.VATAmount()).Round(getFractionDigitsMax())
+func (pi PurchaseItem) GrossPrice(decimalPlaces int32) decimal.Decimal {
+	return pi.NetPrice.Add(pi.VATAmount(decimalPlaces)).Round(decimalPlaces)
 }
 
-func (pi PurchaseItem) VATAmount() decimal.Decimal {
-	return pi.NetPrice.Mul(pi.vatRateAsPercentage()).Round(getFractionDigitsMax())
+func (pi PurchaseItem) VATAmount(decimalPlaces int32) decimal.Decimal {
+	return pi.NetPrice.Mul(pi.vatRateAsPercentage()).Round(decimalPlaces)
 }
 
 func (pi PurchaseItem) getQuantityAsDecimal() decimal.Decimal {
 	return decimal.NewFromInt(int64(pi.Quantity))
 }
 
-func (pi PurchaseItem) TotalNetPrice() decimal.Decimal {
-	return pi.NetPrice.Mul(pi.getQuantityAsDecimal()).Round(getFractionDigitsMax())
+func (pi PurchaseItem) TotalNetPrice(decimalPlaces int32) decimal.Decimal {
+	return pi.NetPrice.Mul(pi.getQuantityAsDecimal()).Round(decimalPlaces)
 }
 
-func (pi PurchaseItem) TotalGrossPrice() decimal.Decimal {
-	return pi.GrossPrice().Mul(pi.getQuantityAsDecimal()).Round(getFractionDigitsMax())
+func (pi PurchaseItem) TotalGrossPrice(decimalPlaces int32) decimal.Decimal {
+	return pi.GrossPrice(decimalPlaces).Mul(pi.getQuantityAsDecimal()).Round(decimalPlaces)
 }
 
-func (pi PurchaseItem) TotalVATAmount() decimal.Decimal {
-	return pi.VATAmount().Mul(pi.getQuantityAsDecimal()).Round(getFractionDigitsMax())
+func (pi PurchaseItem) TotalVATAmount(decimalPlaces int32) decimal.Decimal {
+	return pi.VATAmount(decimalPlaces).Mul(pi.getQuantityAsDecimal()).Round(decimalPlaces)
 }
 
 func (pi PurchaseItem) vatRateAsPercentage() decimal.Decimal {
