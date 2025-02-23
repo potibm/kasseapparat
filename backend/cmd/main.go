@@ -24,12 +24,14 @@ func main() {
 		port = ":" + os.Args[1] // Use the provided port number if available
 	}
 
-	repository := repository.NewRepository()
+	repository := repository.NewRepository(initializer.GetCurrencyDecimalPlaces())
 	mailer := initializer.InitializeMailer()
-	myhandler := handler.NewHandler(repository, mailer, initializer.GetVersion())
+	myhandler := handler.NewHandler(repository, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces())
 
 	router := initializer.InitializeHttpServer(*myhandler, *repository, staticFiles)
+
 	log.Println("Listening on " + port + "...")
+
 	err := router.Run(port)
 	if err != nil {
 		panic("[Error] failed to start Gin server due to: " + err.Error())

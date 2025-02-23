@@ -13,12 +13,17 @@ type GuestlistFilters = struct {
 	IDs   []int
 }
 
+var guestlistSortFieldMappings = map[string]string{
+	"id":   "ID",
+	"name": "LOWER(Name)",
+}
+
 func (repo *Repository) GetGuestlists(limit int, offset int, sort string, order string, filters GuestlistFilters) ([]models.Guestlist, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
 
-	sort, err := getListsValidFieldName(sort)
+	sort, err := getListsValidSortFieldName(sort)
 	if err != nil {
 		return nil, err
 	}
@@ -28,6 +33,7 @@ func (repo *Repository) GetGuestlists(limit int, offset int, sort string, order 
 	if len(filters.IDs) > 0 {
 		query = query.Where("id IN ?", filters.IDs)
 	}
+
 	if filters.Query != "" {
 		query = query.Where("guestlists.Name LIKE ?", "%"+filters.Query+"%")
 	}
@@ -40,15 +46,12 @@ func (repo *Repository) GetGuestlists(limit int, offset int, sort string, order 
 	return guestlists, nil
 }
 
-func getListsValidFieldName(input string) (string, error) {
-	switch input {
-	case "id":
-		return "ID", nil
-	case "name":
-		return "LOWER(Name)", nil
+func getListsValidSortFieldName(input string) (string, error) {
+	if field, exists := guestlistSortFieldMappings[input]; exists {
+		return field, nil
 	}
 
-	return "", errors.New("Invalid field name")
+	return "", errors.New("Invalid sort field name")
 }
 
 func (repo *Repository) GetTotalGuestlists() (int64, error) {
@@ -56,6 +59,7 @@ func (repo *Repository) GetTotalGuestlists() (int64, error) {
 	if err := repo.db.Model(&models.Guestlist{}).Count(&totalRows).Error; err != nil {
 		return 0, err
 	}
+
 	return totalRows, nil
 }
 
@@ -73,6 +77,7 @@ func (repo *Repository) GetGuestlistWithTypeCode() (*models.Guestlist, error) {
 	if err := repo.db.Where("type_code = ?", "1").First(&guestlist).Error; err != nil {
 		return nil, errors.New(ErrGuestlistNotFound)
 	}
+
 	return &guestlist, nil
 }
 

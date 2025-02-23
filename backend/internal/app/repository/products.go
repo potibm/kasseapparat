@@ -8,19 +8,27 @@ import (
 
 const ErrProductNotFound = "Product not found"
 
-func (repo *Repository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.ProductWithSalesAndInterrest, error) {
+var productSortFieldMappings = map[string]string{
+	"id":         "ID",
+	"name":       "Name",
+	"vatRate":    "Vat_Rate",
+	"grossPrice": "Net_Price * (1+ (Vat_Rate / 100))",
+	"pos":        "Pos",
+}
+
+func (repo *Repository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
 
-	sort, err := getProductsValidFieldName(sort)
+	sortField, err := getProductsValidSortFieldName(sort)
 	if err != nil {
 		return nil, err
 	}
 
-	var products []models.ProductWithSalesAndInterrest
+	var products []models.Product
 
-	query := repo.db.Table("Products").Preload("Guestlists").Order(sort + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset)
+	query := repo.db.Table("Products").Preload("Guestlists").Order(sortField + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset)
 
 	if len(ids) > 0 {
 		query = query.Where("Id IN ?", ids)
@@ -33,23 +41,17 @@ func (repo *Repository) GetProducts(limit int, offset int, sort string, order st
 	return products, nil
 }
 
-func getProductsValidFieldName(input string) (string, error) {
-	switch input {
-	case "id":
-		return "ID", nil
-	case "name":
-		return "Name", nil
-	case "price":
-		return "Price", nil
-	case "pos":
-		return "Pos", nil
+func getProductsValidSortFieldName(input string) (string, error) {
+	if field, exists := productSortFieldMappings[input]; exists {
+		return field, nil
 	}
 
-	return "", errors.New("Invalid field name")
+	return "", errors.New("Invalid sort field name")
 }
 
 func (repo *Repository) GetTotalProducts() (int64, error) {
 	var totalRows int64
+
 	repo.db.Model(&models.Product{}).Count(&totalRows)
 
 	return totalRows, nil
@@ -57,15 +59,6 @@ func (repo *Repository) GetTotalProducts() (int64, error) {
 
 func (repo *Repository) GetProductByID(id int) (*models.Product, error) {
 	var product models.Product
-	if err := repo.db.Table("Products").First(&product, id).Error; err != nil {
-		return nil, errors.New(ErrProductNotFound)
-	}
-
-	return &product, nil
-}
-
-func (repo *Repository) GetProductByIDWithSalesAndInterrest(id int) (*models.ProductWithSalesAndInterrest, error) {
-	var product models.ProductWithSalesAndInterrest
 	if err := repo.db.Table("Products").First(&product, id).Error; err != nil {
 		return nil, errors.New(ErrProductNotFound)
 	}
@@ -82,7 +75,8 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	// Update the product with the new values
 	product.Name = updatedProduct.Name
 	product.Pos = updatedProduct.Pos
-	product.Price = updatedProduct.Price
+	product.NetPrice = updatedProduct.NetPrice
+	product.VATRate = updatedProduct.VATRate
 	product.WrapAfter = updatedProduct.WrapAfter
 	product.ApiExport = updatedProduct.ApiExport
 	product.UpdatedByID = updatedProduct.UpdatedByID

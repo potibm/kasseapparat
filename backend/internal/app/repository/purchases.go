@@ -13,6 +13,14 @@ type ProductPurchaseStats struct {
 	Name      string
 }
 
+var purchaseSortFieldMappings = map[string]string{
+	"id":                 "purchases.ID",
+	"createdAt":          "purchases.created_at",
+	"totalGrossPrice":    "purchases.total_gross_price",
+	"createdBy.username": "CreatedBy.username",
+	"pos":                "Pos",
+}
+
 func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchase, error) {
 	result := repo.db.Create(&purchase)
 
@@ -57,22 +65,16 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 }
 
 func getPurchasesValidFieldName(input string) (string, error) {
-	switch input {
-	case "id":
-		return "purchases.ID", nil
-	case "createdAt":
-		return "purchases.created_at", nil
-	case "totalPrice":
-		return "purchases.total_price", nil
-	case "createdBy.username":
-		return "CreatedBy.username", nil
+	if field, exists := purchaseSortFieldMappings[input]; exists {
+		return field, nil
 	}
 
-	return "", errors.New("Invalid field name")
+	return "", errors.New("Invalid sort field name")
 }
 
 func (repo *Repository) GetTotalPurchases() (int64, error) {
 	var totalRows int64
+
 	repo.db.Model(&models.Purchase{}).Count(&totalRows)
 
 	return totalRows, nil
@@ -90,11 +92,13 @@ func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
 	defer rows.Close()
 
 	var purchases []ProductPurchaseStats
+
 	for rows.Next() {
 		var purchase ProductPurchaseStats
 		if err := rows.Scan(&purchase.ProductID, &purchase.Quantity, &purchase.Name); err != nil {
 			return nil, err
 		}
+
 		purchases = append(purchases, purchase)
 	}
 
@@ -109,7 +113,6 @@ func (repo *Repository) GetPurchasedQuantitiesByProductID(productID uint) (int, 
 		Joins("JOIN purchases ON purchase_items.purchase_id = purchases.id").
 		Where("purchase_items.product_id = ? AND purchase_items.deleted_at IS NULL AND purchases.deleted_at IS NULL", productID).
 		Scan(&sum).Error
-
 	if err != nil {
 		return 0, err
 	}

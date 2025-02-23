@@ -8,4 +8,4 @@ type GormOwnedModel struct {
 	UpdatedBy   *User `json:"updatedBy"`
 	DeletedByID *uint `json:"deletedById"`
 	DeletedBy   *User `json:"deletedBy"`
-} //@name models.gormOwnedModel
+} // @name models.gormOwnedModel

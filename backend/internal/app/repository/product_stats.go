@@ -4,14 +4,15 @@ import (
 	"errors"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
+	response "github.com/potibm/kasseapparat/internal/app/response"
 	"github.com/shopspring/decimal"
 )
 
-func (repo *Repository) GetProductStats() ([]models.ProductStats, error) {
-	var products []models.ProductStats
+func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
+	var products []response.ProductStats
 
 	query := repo.db.Table("products").
-		Select("products.id, products.name, 0 as sold_items, 0 as total_price").
+		Select("products.id, products.name, 0 as sold_items, 0 as total_net_price, 0 as total_gross_price").
 		Where("products.deleted_at IS NULL").
 		Group("products.id").
 		Order("products.pos ASC")
@@ -22,8 +23,9 @@ func (repo *Repository) GetProductStats() ([]models.ProductStats, error) {
 
 	for i := range products {
 		var purchaseItems []models.PurchaseItem
+
 		purchaseQuery := repo.db.Table("purchase_items").
-			Select("quantity, total_price").
+			Select("quantity, net_price, vat_rate").
 			Where("product_id = ?", products[i].ID).
 			Where("deleted_at IS NULL")
 
@@ -31,10 +33,13 @@ func (repo *Repository) GetProductStats() ([]models.ProductStats, error) {
 			return nil, errors.New("Unable to retrieve the purchases for this product")
 		}
 
-		products[i].TotalPrice = decimal.NewFromFloat(0)
+		products[i].TotalNetPrice = decimal.NewFromFloat(0)
+		products[i].TotalGrossPrice = decimal.NewFromFloat(0)
+
 		for j := range purchaseItems {
 			products[i].SoldItems += purchaseItems[j].Quantity
-			products[i].TotalPrice = products[i].TotalPrice.Add(purchaseItems[j].TotalPrice)
+			products[i].TotalNetPrice = products[i].TotalNetPrice.Add(purchaseItems[j].TotalNetPrice(repo.decimalPlaces))
+			products[i].TotalGrossPrice = products[i].TotalGrossPrice.Add(purchaseItems[j].TotalGrossPrice(repo.decimalPlaces))
 		}
 	}
 

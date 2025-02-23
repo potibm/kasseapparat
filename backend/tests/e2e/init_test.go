@@ -41,9 +41,11 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 	t.Setenv("CORS_ALLOW_ORIGINS", "http://localhost:3000")
 	t.Setenv("JWT_SECRET", "test")
 
-	repo := repository.NewLocalRepository()
+	currencyDecimalPlaces := int32(2)
+
+	repo := repository.NewLocalRepository(currencyDecimalPlaces)
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
-	handler := handler.NewHandler(repo, *mailer, "v1")
+	handler := handler.NewHandler(repo, *mailer, "v1", currencyDecimalPlaces)
 
 	router := initializer.InitializeHttpServer(*handler, *repo, embed.FS{})
 
@@ -88,6 +90,7 @@ func getJwtForDemoUser() string {
 	if demoJwt == "" {
 		demoJwt = getJwtForUser("demo", "demo")
 	}
+
 	return demoJwt
 }
 
@@ -95,6 +98,7 @@ func getJwtForAdminUser() string {
 	if adminJwt == "" {
 		adminJwt = getJwtForUser("admin", "admin")
 	}
+
 	return adminJwt
 }
 

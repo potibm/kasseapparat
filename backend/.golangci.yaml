@@ -1,17 +1,17 @@
-version: v1alpha4
-disable_all_checkers: false
-enable_all_rules: true
+linters:
+  disable:
+    - "dupl"
+    - "funlen"
+  enable:
+    - "gocritic"
+    - "govet"
+    - "wsl"
+    - "whitespace"
 
-# Disable certain rules by name
-disable_rules:
-  - "golangci-lint.run/lint/go/stylist/duplicated-context"
-  - "golangci-lint.run/lint/go/naming/duplicate-variable-names"
+run:
+  timeout: 5m
+  concurrency: 4
 
-# Enable certain rules by name
-enable_rules:
-  - "golangci-lint.run/lint/go/style/structure"
-
-# Configure the formatter to use colors
-formatter:
-  color: true
-  output_file: ./lint-output.txt
+output:
+  print-issued-lines: true
+  print-linter-name: true

@@ -12,25 +12,24 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	bcryptCost = 14
-)
+var bcryptCost = 14
 
 type User struct {
 	ID uint `gorm:"primarykey" json:"id"`
 	GormModel
-	Username                  string  `json:"username" gorm:"unique"`
-	Email                     string  `json:"email" gorm:"unique"`
+	Username                  string  `gorm:"unique"       json:"username"`
+	Email                     string  `gorm:"unique"       json:"email"`
 	Password                  string  `json:"-"`
 	Admin                     bool    `json:"admin"`
-	ChangePasswordToken       *string `json:"-" gorm:"default:null"`
-	ChangePasswordTokenExpiry *int64  `json:"-" gorm:"default:null"`
+	ChangePasswordToken       *string `gorm:"default:null" json:"-"`
+	ChangePasswordTokenExpiry *int64  `gorm:"default:null" json:"-"`
 }
 
 func (u *User) Role() string {
 	if u.Admin {
 		return "admin"
 	}
+
 	return "user"
 }
 
@@ -54,6 +53,7 @@ func (u *User) hashAndSetPassword() (err error) {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -62,6 +62,7 @@ func hashPassword(password string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return string(bytes), nil
 }
 
@@ -76,6 +77,7 @@ func (u *User) ChangePasswordTokenIsValid(token string) bool {
 
 func (u *User) ChangePasswordTokenIsExpired() bool {
 	currentTimestamp := time.Now().Unix()
+
 	return u.ChangePasswordTokenExpiry != nil && *u.ChangePasswordTokenExpiry < currentTimestamp
 }
 
@@ -101,5 +103,6 @@ func randomString(length int) string {
 	if err != nil {
 		panic(err)
 	}
+
 	return result
 }

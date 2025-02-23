@@ -18,10 +18,12 @@ import {
   required,
   TabbedForm,
   FormTab,
+  RadioButtonGroupInput,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
 import DecimalInput from "./DecimalInput";
+import GrossPriceInput from "./GrossPriceInput";
 
 export const ProductList = () => {
   const currency = useConfig().currencyOptions;
@@ -35,7 +37,8 @@ export const ProductList = () => {
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
-        <NumberField source="price" locales={locale} options={currency} />
+        <NumberField source="vatRate" />
+        <NumberField source="grossPrice" locales={locale} options={currency} />
         <NumberField source="pos" />
         <BooleanField source="wrapAfter" sortable={false} />
         <BooleanField source="soldOut" sortable={false} />
@@ -46,9 +49,29 @@ export const ProductList = () => {
   );
 };
 
-export const ProductEdit = () => {
+const VatRateInput = () => {
+  const vatRates = useConfig().vatRates;
+  const vatOptionRenderer = (choice) => `${choice.name} (${choice.rate}%)`;
+
   return (
-    <Edit>
+    <RadioButtonGroupInput
+      source="vatRate"
+      row={false}
+      choices={vatRates}
+      showEmptyOption={false}
+      validate={[required()]}
+      optionValue="rate"
+      optionText={vatOptionRenderer}
+    />
+  );
+};
+
+export const ProductEdit = () => {
+  const currency = useConfig().currencyOptions;
+  const locale = useConfig().Locale;
+
+  return (
+    <Edit mutationMode="pessimistic" title="Edit product">
       <TabbedForm
         toolbar={
           <Toolbar>
@@ -59,7 +82,16 @@ export const ProductEdit = () => {
         <FormTab label="General">
           <NumberInput disabled source="id" />
           <TextInput source="name" validate={required()} />
-          <DecimalInput source="price" />
+        </FormTab>
+        <FormTab label="Pricing">
+          <DecimalInput source="netPrice" locales={locale} options={currency} />
+          <VatRateInput />
+          <GrossPriceInput
+            netSource="netPrice"
+            vatSource="vatRate"
+            source="grossPrice"
+            options={currency}
+          />
         </FormTab>
         <FormTab label="Layout">
           <NumberInput
@@ -107,21 +139,32 @@ export const ProductEdit = () => {
 };
 
 export const ProductCreate = () => {
+  const currency = useConfig().currencyOptions;
+  const locale = useConfig().Locale;
+
   return (
     <Create title="Create new product">
       <SimpleForm>
-        <NumberInput disabled source="id" />
         <TextInput source="name" validate={required()} />
-        <DecimalInput source="price" min={0} />
+        <h6>Pricing</h6>
+        <DecimalInput source="netPrice" locales={locale} options={currency} />
+        <VatRateInput />
+        <GrossPriceInput
+          netSource="netPrice"
+          vatSource="vatRate"
+          source="grossPrice"
+          options={currency}
+        />
+        <h6>Layout</h6>
         <NumberInput
           source="pos"
           helperText="The products will shown in this order"
+          validate={[required()]}
         />
         <BooleanInput
           source="wrapAfter"
           helperText="Create a line break afther this product"
         />
-        <BooleanInput source="hidden" />
       </SimpleForm>
     </Create>
   );

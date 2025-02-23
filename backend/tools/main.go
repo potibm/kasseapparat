@@ -44,6 +44,7 @@ func main() {
 	if userImportCsvFile != "" {
 		log.Println("Importing users from CSV file...")
 		importUsers(userImportCsvFile)
+
 		return
 	}
 
@@ -52,18 +53,23 @@ func main() {
 			fmt.Println("Error: -create-user-email is required when creating a user.")
 			os.Exit(1)
 		}
+
 		if !validEmail(createUserEmail) {
 			fmt.Println("Error: Invalid email format")
 			os.Exit(1)
 		}
+
 		log.Println("Creating user", createUserName)
+
 		err := createUser(createUserName, createUserEmail, createUserIsAdmin)
 		if err != nil {
 			log.Println("Failed to create user:", err)
+
 			return
 		}
 
 		log.Println("User created")
+
 		return
 	}
 
@@ -94,12 +100,14 @@ func importUsers(filename string) {
 
 	records, err := reader.ReadAll()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Failed to read CSV file: %v", err)
+		return
 	}
 
 	for _, record := range records {
 		if len(record) != 3 {
 			log.Printf("Skipping malformed record: %v", record)
+
 			continue
 		}
 
@@ -126,7 +134,7 @@ func importUsers(filename string) {
 }
 
 func createUser(username string, email string, isAdmin bool) error {
-	repo := repository.NewRepository()
+	repo := repository.NewRepository(2)
 	mailer := initializer.InitializeMailer()
 
 	user := models.User{
@@ -155,5 +163,6 @@ func createUser(username string, email string, isAdmin bool) error {
 
 func validEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
+
 	return err == nil
 }

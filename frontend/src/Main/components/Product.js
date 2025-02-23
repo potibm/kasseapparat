@@ -88,7 +88,7 @@ function Product({
           <p
             className={`text-2xl font-bold ${product.soldOut ? "text-gray-400" : "text-gray-900 dark:text-white"}`}
           >
-            {currency.format(product.price)}
+            {currency.format(product.grossPrice)}
           </p>
           <div className="flex">
             {product.soldOut && (

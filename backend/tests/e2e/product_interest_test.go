@@ -35,7 +35,6 @@ func TestGetProductInterestsWithSort(t *testing.T) {
 	sortFields := []string{"id", "pos", "createdAt", "product.id", "product.name"}
 
 	for _, sortField := range sortFields {
-
 		withDemoUserAuthToken(e.GET(productInterestBaseUrl)).
 			WithQuery("_sort", sortField).
 			Expect().
@@ -66,7 +65,6 @@ func TestCreateAndDeleteProductInterest(t *testing.T) {
 		Status(http.StatusOK)
 
 	getTotalCountOfProductInterests().IsEqual(0)
-
 }
 
 func getTotalCountOfProductInterests() *httpexpect.Number {

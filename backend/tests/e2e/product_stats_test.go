@@ -7,9 +7,7 @@ import (
 	"github.com/gavv/httpexpect/v2"
 )
 
-var (
-	productStatsUrl = "/api/v2/productStats"
-)
+var productStatsUrl = "/api/v2/productStats"
 
 func TestProductStats(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
@@ -35,7 +33,8 @@ func TestProductStats(t *testing.T) {
 
 	item := obj.Value(0).Object()
 	item.Value("soldItems").Number().IsEqual(1)
-	item.Value("totalPrice").String().IsEqual("40")
+	item.Value("totalGrossPrice").String().IsEqual("40")
+	item.Value("totalNetPrice").String().IsEqual("37.38")
 
 	deletePurchase(purchaseUrl)
 }
@@ -43,7 +42,7 @@ func TestProductStats(t *testing.T) {
 func validateProductStatsArray(productStatsArray *httpexpect.Array) {
 	productStatsArray.Length().Gt(0)
 
-	for i := 0; i < len(productStatsArray.Iter()); i++ {
+	for i := range len(productStatsArray.Iter()) {
 		productStats := productStatsArray.Value(i).Object()
 		validateProductStatsObject(productStats)
 	}
@@ -53,7 +52,8 @@ func validateProductStatsObject(productStats *httpexpect.Object) {
 	productStats.Value("id").Number().Gt(0)
 	productStats.Value("name").String().NotEmpty()
 	productStats.Value("soldItems").Number().Ge(0)
-	productStats.Value("totalPrice").String().NotEmpty()
+	productStats.Value("totalGrossPrice").String().NotEmpty()
+	productStats.Value("totalNetPrice").String().NotEmpty()
 }
 
 func TestProductStatsAuthentication(t *testing.T) {
@@ -61,5 +61,4 @@ func TestProductStatsAuthentication(t *testing.T) {
 	defer cleanup()
 
 	e.Request("GET", productStatsUrl).Expect().Status(http.StatusUnauthorized)
-
 }

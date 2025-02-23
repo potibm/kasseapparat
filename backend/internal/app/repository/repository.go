@@ -6,15 +6,18 @@ import (
 )
 
 type Repository struct {
-	db *gorm.DB
+	db            *gorm.DB
+	decimalPlaces int32
 }
 
-func NewRepository() *Repository {
+func NewRepository(decimalPlaces int32) *Repository {
 	db := utils.ConnectToDatabase()
-	return &Repository{db: db}
+
+	return &Repository{db: db, decimalPlaces: decimalPlaces}
 }
 
-func NewLocalRepository() *Repository {
+func NewLocalRepository(decimalPlaces int32) *Repository {
 	db := utils.ConnectToLocalDatabase()
-	return &Repository{db: db}
+
+	return &Repository{db: db, decimalPlaces: decimalPlaces}
 }

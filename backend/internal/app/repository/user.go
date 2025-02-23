@@ -17,10 +17,18 @@ type UserFilters struct {
 	IDs     []int
 }
 
+var userSortFieldMappings = map[string]string{
+	"id":       "ID",
+	"username": "Username",
+	"email":    "Email",
+	"admin":    "Admin",
+}
+
 func (filters UserFilters) AddWhere(query *gorm.DB) *gorm.DB {
 	if len(filters.IDs) > 0 {
-		query = query.Where("list_entries.ID IN ?", filters.IDs)
+		query = query.Where("ID IN ?", filters.IDs)
 	}
+
 	if filters.Query != "" {
 		query = query.Where("Username LIKE ? OR Email LIKE ?", "%"+filters.Query+"%", "%"+filters.Query+"%")
 	}
@@ -83,10 +91,11 @@ func (repo *Repository) GetUserByLoginAndPassword(login string, password string)
 }
 
 func (repo *Repository) GetUsers(limit int, offset int, sort string, order string, filters UserFilters) ([]models.User, error) {
-	sort, err := getUsersValidFieldName(sort)
+	sort, err := getUsersValidSortFieldName(sort)
 	if err != nil {
 		return nil, err
 	}
+
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -102,27 +111,22 @@ func (repo *Repository) GetUsers(limit int, offset int, sort string, order strin
 	return users, nil
 }
 
-func getUsersValidFieldName(input string) (string, error) {
-	switch input {
-	case "id":
-		return "ID", nil
-	case "username":
-		return "Username", nil
-	case "email":
-		return "email", nil
-	case "admin":
-		return "admin", nil
+func getUsersValidSortFieldName(input string) (string, error) {
+	if field, exists := userSortFieldMappings[input]; exists {
+		return field, nil
 	}
 
-	return "", errors.New("Invalid field name")
+	return "", errors.New("Invalid sort field name")
 }
 
 func (repo *Repository) GetTotalUsers(filters *UserFilters) (int64, error) {
 	var totalRows int64
+
 	query := repo.db.Model(&models.User{})
 	if filters != nil {
 		query = filters.AddWhere(query)
 	}
+
 	query.Count(&totalRows)
 
 	return totalRows, nil
@@ -158,6 +162,7 @@ func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models
 	user.Email = updatedUser.Email
 	user.ChangePasswordToken = updatedUser.ChangePasswordToken
 	user.ChangePasswordTokenExpiry = updatedUser.ChangePasswordTokenExpiry
+
 	if updatedUser.Password != "" {
 		user.Password = updatedUser.Password
 	}
