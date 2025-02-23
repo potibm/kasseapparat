@@ -1,6 +1,7 @@
 module github.com/potibm/kasseapparat
 
 go 1.22.1
+toolchain go1.23.6
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.10.1
@@ -15,7 +16,7 @@ require (
 	github.com/sethvargo/go-password v0.3.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.34.0
 	golang.org/x/text v0.22.0
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
