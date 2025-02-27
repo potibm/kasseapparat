@@ -28,7 +28,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.63
+          version: v1.64
           working-directory: ./backend
           args: --timeout=30m --config=.golangci.yaml
 
