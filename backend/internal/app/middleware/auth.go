@@ -6,8 +6,9 @@ import (
 	"strings"
 	"time"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
+	ginjwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 )
@@ -29,7 +30,7 @@ type loginResponse struct {
 	Id          *uint   `json:"id"`
 }
 
-func HandlerMiddleWare(authMiddleware *jwt.GinJWTMiddleware) gin.HandlerFunc {
+func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		errInit := authMiddleware.MiddlewareInit()
 		if errInit != nil {
@@ -38,20 +39,20 @@ func HandlerMiddleWare(authMiddleware *jwt.GinJWTMiddleware) gin.HandlerFunc {
 	}
 }
 
-func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
+func RegisterRoute(r *gin.Engine, handle *ginjwt.GinJWTMiddleware) {
 	r.POST("/login", handle.LoginHandler)
 	auth := r.Group("/auth", handle.MiddlewareFunc())
 	auth.GET("/refresh_token", handle.RefreshHandler)
 }
 
-func InitParams(repo repository.Repository, realm string, secret string, timeout int) *jwt.GinJWTMiddleware {
+func InitParams(repo repository.Repository, realm string, secret string, timeout int) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		log.Println("JWT_SECRET is not set, using default value")
 
 		secret = "secret"
 	}
 
-	return &jwt.GinJWTMiddleware{
+	return &ginjwt.GinJWTMiddleware{
 		Realm:       realm,
 		Key:         []byte(secret),
 		Timeout:     time.Duration(timeout) * time.Minute,
@@ -84,7 +85,7 @@ func authenticator(repo *repository.Repository) func(c *gin.Context) (interface{
 	return func(c *gin.Context) (interface{}, error) {
 		var loginVals login
 		if err := c.ShouldBind(&loginVals); err != nil {
-			return "", jwt.ErrMissingLoginValues
+			return "", ginjwt.ErrMissingLoginValues
 		}
 
 		login := strings.TrimSpace(loginVals.Login)
@@ -97,7 +98,7 @@ func authenticator(repo *repository.Repository) func(c *gin.Context) (interface{
 			return user, nil
 		}
 
-		return nil, jwt.ErrFailedAuthentication
+		return nil, ginjwt.ErrFailedAuthentication
 	}
 }
 
@@ -115,7 +116,7 @@ func payloadFunc() func(data interface{}) jwt.MapClaims {
 
 func identityHandler() func(c *gin.Context) interface{} {
 	return func(c *gin.Context) interface{} {
-		claims := jwt.ExtractClaims(c)
+		claims := ginjwt.ExtractClaims(c)
 
 		return &models.User{
 			ID: uint(claims[IdentityKey].(float64)),
