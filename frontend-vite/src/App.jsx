@@ -2,7 +2,7 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { Button } from 'flowbite-react'
+import { Avatar } from "flowbite-react";
 
 function App() {
   const [count, setCount] = useState(0)
@@ -29,7 +29,7 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-      <Button className='bg-slate-900'>Click me</Button>
+      <Avatar img="https://avatar.iran.liara.run/public"/>
     </>
   )
 }
