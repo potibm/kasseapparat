@@ -8,5 +8,11 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), flowbiteReact()],
   server: {
     port: 3000
+  },
+  test: {
+    // 👋 add the line below to add jsdom to vite
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './tests/setup.js',
   }
 })
