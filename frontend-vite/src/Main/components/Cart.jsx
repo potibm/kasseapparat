@@ -64,20 +64,23 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
 
   return (
     <div>
+      
       <Table
         striped
         theme={compactTableTheme}
         className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
         <TableHead>
-          <TableHeadCell className="w-[40%]">Product</TableHeadCell>
-          <TableHeadCell className="w-[15%] text-right">
-            <Tooltip content="Quantity">Qnt</Tooltip>
-          </TableHeadCell>
-          <TableHeadCell className="w-[15%] text-right">
-            Total Price
-          </TableHeadCell>
-          <TableHeadCell className="w-[30%] text-right">Remove</TableHeadCell>
+          <TableRow>
+            <TableHeadCell className="w-[40%]">Product</TableHeadCell>
+            <TableHeadCell className="w-[15%] text-right">
+              <Tooltip content="Quantity">Qnt</Tooltip>
+            </TableHeadCell>
+            <TableHeadCell className="w-[15%] text-right">
+              Total Price
+            </TableHeadCell>
+            <TableHeadCell className="w-[30%] text-right">Remove</TableHeadCell>
+          </TableRow>
         </TableHead>
         <TableBody>
           {cart.map((cartElement) => (

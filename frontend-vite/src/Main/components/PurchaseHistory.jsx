@@ -119,11 +119,13 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
         className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
         <TableHead>
-          <TableHeadCell className="w-[55%]">Date</TableHeadCell>
-          <TableHeadCell className="w-[15%] text-right">
-            Total Price
-          </TableHeadCell>
-          <TableHeadCell className="w-[30%] text-right">Remove</TableHeadCell>
+          <TableRow>
+            <TableHeadCell className="w-[55%]">Date</TableHeadCell>
+            <TableHeadCell className="w-[15%] text-right">
+              Total Price
+            </TableHeadCell>
+            <TableHeadCell className="w-[30%] text-right">Remove</TableHeadCell>
+          </TableRow>
         </TableHead>
         <TableBody>
           {history === null && (

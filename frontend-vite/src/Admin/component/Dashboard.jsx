@@ -57,12 +57,14 @@ const ProductStatsCard = () => {
       <CardContent>
         <Table className="mt-5" theme={customCompactTheme}>
           <TableHead>
-            <TableHeadCell>Product</TableHeadCell>
-            <TableHeadCell className="text-right">Units sold</TableHeadCell>
-            <TableHeadCell className="text-right">Revenue Net</TableHeadCell>
-            <TableHeadCell className="text-right">
-              Revenue Gross
-            </TableHeadCell>
+            <TableRow>
+              <TableHeadCell>Product</TableHeadCell>
+              <TableHeadCell className="text-right">Units sold</TableHeadCell>
+              <TableHeadCell className="text-right">Revenue Net</TableHeadCell>
+              <TableHeadCell className="text-right">
+                Revenue Gross
+              </TableHeadCell>
+            </TableRow>
           </TableHead>
           <TableBody className="divide-y">
             {stats.map((stat) => (
