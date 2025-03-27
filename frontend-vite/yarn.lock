@@ -2563,6 +2563,77 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sentry-internal/browser-utils@npm:9.9.0":
+  version: 9.9.0
+  resolution: "@sentry-internal/browser-utils@npm:9.9.0"
+  dependencies:
+    "@sentry/core": 9.9.0
+  checksum: 2d2e9db2964d0071fd3f96645d5f8ef5351dada4ef99de7b39ab4e75fefc47cbf8c61af74b7a5b854241a0cc1f6ae87a38e2235f3aed53f26673fdfa7edd6404
+  languageName: node
+  linkType: hard
+
+"@sentry-internal/feedback@npm:9.9.0":
+  version: 9.9.0
+  resolution: "@sentry-internal/feedback@npm:9.9.0"
+  dependencies:
+    "@sentry/core": 9.9.0
+  checksum: 4a99fec070599039d38d6cbe56529e84aec0d32193b343cde2469b145c47c926b466af650f555d084d5a5bcffef38e2a644007dfc7e19fb317d7cb71f9ac2f87
+  languageName: node
+  linkType: hard
+
+"@sentry-internal/replay-canvas@npm:9.9.0":
+  version: 9.9.0
+  resolution: "@sentry-internal/replay-canvas@npm:9.9.0"
+  dependencies:
+    "@sentry-internal/replay": 9.9.0
+    "@sentry/core": 9.9.0
+  checksum: 986b802c6d07673d88b6b5081b6f81b3c8d3b778b93c6ad3bdaff2fe5cfa95f55ef580e1025519a50dcad51c5feb28a3cc571e2f522f2bf251dc273344b5f127
+  languageName: node
+  linkType: hard
+
+"@sentry-internal/replay@npm:9.9.0":
+  version: 9.9.0
+  resolution: "@sentry-internal/replay@npm:9.9.0"
+  dependencies:
+    "@sentry-internal/browser-utils": 9.9.0
+    "@sentry/core": 9.9.0
+  checksum: fb0e5010b7b08d71f255f4eaac406507f965643196d530f1356b1563c4efef2d9aa9d4d5be2ec53074f3509e6fc3f2f5833af8d2d9b8e112a9c509318179a2f6
+  languageName: node
+  linkType: hard
+
+"@sentry/browser@npm:9.9.0":
+  version: 9.9.0
+  resolution: "@sentry/browser@npm:9.9.0"
+  dependencies:
+    "@sentry-internal/browser-utils": 9.9.0
+    "@sentry-internal/feedback": 9.9.0
+    "@sentry-internal/replay": 9.9.0
+    "@sentry-internal/replay-canvas": 9.9.0
+    "@sentry/core": 9.9.0
+  checksum: ed23d02c0740fffa06503fccf3796e6cecb1e76f80c0f5c915264c40912fb4e49e99bed89761c7ba9180c403a1f245698267e1fe91e7ebf918ba207918559bbb
+  languageName: node
+  linkType: hard
+
+"@sentry/core@npm:9.9.0":
+  version: 9.9.0
+  resolution: "@sentry/core@npm:9.9.0"
+  checksum: b919f0ec052ce9cf2b7a6aed7ccf2070f69fc9f94188c5aa08c0a67b3f8b8d066581999c5cf2bc531ef498e80360ecc6ec1ee8be1595d0b8f0c068d398931d1c
+  languageName: node
+  linkType: hard
+
+"@sentry/react@npm:^9.9.0":
+  version: 9.9.0
+  resolution: "@sentry/react@npm:9.9.0"
+  dependencies:
+    "@sentry/browser": 9.9.0
+    "@sentry/core": 9.9.0
+    hoist-non-react-statics: ^3.3.2
+  peerDependencies:
+    react: ^16.14.0 || 17.x || 18.x || 19.x
+  checksum: 4e41b9cf5d0fa144a201751f85ee66ad43f8938e9a004549a5316e6a91fc8636dff3227f4c1225518d394e70c0ed31c6b06371e7e9ccf8db5d5c16725e4fbc9c
+  languageName: node
+  linkType: hard
+
 "@sinclair/typebox@npm:^0.27.8":
   version: 0.27.8
   resolution: "@sinclair/typebox@npm:0.27.8"
@@ -3067,6 +3138,13 @@ __metadata:
     json-schema-traverse: ^0.4.1
     uri-js: ^4.2.2
   checksum: 874972efe5c4202ab0a68379481fbd3d1b5d0a7bd6d3cc21d40d3536ebff3352a2a1fabb632d4fd2cc7fe4cbdcd5ed6782084c9bbf7f32a1536d18f9da5007d4
+  languageName: node
+  linkType: hard
+
+"animate.css@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "animate.css@npm:4.1.1"
+  checksum: c7eb91540423532c549725a6dedea993735a05eadaa49ed4d1965ce166a6db36459adcc9667c1dfe13657fab92a2875bbee34ad0d942444a731badab69f762c8
   languageName: node
   linkType: hard
 
@@ -3691,6 +3769,13 @@ __metadata:
     supports-color:
       optional: true
   checksum: fb42df878dd0e22816fc56e1fdca9da73caa85212fbe40c868b1295a6878f9101ae684f4eeef516c13acfc700f5ea07f1136954f43d4cd2d477a811144136479
+  languageName: node
+  linkType: hard
+
+"decimal.js@npm:^10.5.0":
+  version: 10.5.0
+  resolution: "decimal.js@npm:10.5.0"
+  checksum: 91c6b53b5dd2f39a05535349ced6840f591d1f914e3c025c6dcec6ffada6e3cfc8dc3f560d304b716be9a9aece3567a7f80f6aff8f38d11ab6f78541c3a91a01
   languageName: node
   linkType: hard
 
@@ -4647,7 +4732,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hoist-non-react-statics@npm:^3.3.1":
+"hoist-non-react-statics@npm:^3.3.1, hoist-non-react-statics@npm:^3.3.2":
   version: 3.3.2
   resolution: "hoist-non-react-statics@npm:3.3.2"
   dependencies:
@@ -5484,6 +5569,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jwt-decode@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "jwt-decode@npm:4.0.0"
+  checksum: 390e2edcb31a92e86c8cbdd1edeea4c0d62acd371f8a8f0a8878e499390c0ecf4c658b365c4e941e4ef37d0170e4ca650aaa49f99a45c0b9695a235b210154b0
+  languageName: node
+  linkType: hard
+
 "kasseapparat@workspace:.":
   version: 0.0.0-use.local
   resolution: "kasseapparat@workspace:."
@@ -5491,13 +5583,16 @@ __metadata:
     "@babel/preset-env": ^7.26.9
     "@babel/preset-react": ^7.26.3
     "@eslint/js": ^9.21.0
+    "@sentry/react": ^9.9.0
     "@tailwindcss/vite": ^4.0.17
     "@testing-library/dom": ^10.4.0
     "@testing-library/react": ^16.2.0
     "@types/react": ^19.0.10
     "@types/react-dom": ^19.0.4
     "@vitejs/plugin-react": ^4.3.4
+    animate.css: ^4.1.1
     babel-jest: ^29.7.0
+    decimal.js: ^10.5.0
     eslint: ^9.21.0
     eslint-plugin-react-compiler: ^19.0.0-beta-aeaed83-20250323
     eslint-plugin-react-hooks: ^5.1.0
@@ -5506,10 +5601,12 @@ __metadata:
     globals: ^15.15.0
     install: ^0.13.0
     jest: ^29.7.0
+    jwt-decode: ^4.0.0
     ra-data-json-server: ^5.6.4
     react: ^19.0.0
     react-admin: ^5.6.4
     react-dom: ^19.0.0
+    react-icons: ^5.5.0
     react-test-renderer: ^19.0.0
     tailwindcss: ^4.0.17
     vite: ^6.2.0
@@ -6506,6 +6603,15 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17 || ^18 || ^19
   checksum: 49a867ece9894dca82f6552e5eefd012b7db962c56a7543f9275ae0b6ec202d549973c3694e7f97436afc2396549cb8fc8777241dd660b71793547aa9c8e5686
+  languageName: node
+  linkType: hard
+
+"react-icons@npm:^5.5.0":
+  version: 5.5.0
+  resolution: "react-icons@npm:5.5.0"
+  peerDependencies:
+    react: "*"
+  checksum: cbd74f4b7982e6e18d59798a6b578268c8eb0909d78d87bcf9b25f99b3e544fd189a76551cb5e770d17f154a60b668551aee108aaf8471309b23f7af3b2c5b07
   languageName: node
   linkType: hard
 
