@@ -25,7 +25,7 @@ run-tool:
 	cd $(BACKEND_DIR) && go run ./tools/main.go --seed --purge
 
 run-fe:
-	cd $(FRONTEND_DIR) && yarn start
+	cd $(FRONTEND_DIR) && yarn dev
 
 run-mailhog:
 	docker run -d -p 8025:8025 -p 1025:1025 --platform "linux/amd64" mailhog/mailhog
@@ -35,8 +35,8 @@ deps-be:
 	cd $(BACKEND_DIR) && go mod tidy
 
 deps-fe:
-	cd $(FRONTEND_DIR) && yarn upgrade
-	cd $(FRONTEND_DIR) && yarn outdated -d
+	cd $(FRONTEND_DIR) && yarn up
+	cd $(FRONTEND_DIR) && yarn upgrade-interactive
 
 deps-install:
 	cd $(FRONTEND_DIR) && yarn install
@@ -47,7 +47,7 @@ linter:
 	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(FRONTEND_DIR) && yarn run prettier .. --check
 	cd $(BACKEND_DIR) && golangci-lint run
-	cd $(FRONTEND_DIR) && yarn run eslint 
+	cd $(FRONTEND_DIR) && yarn run eslint cd 
 
 linter-fix:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
@@ -62,7 +62,7 @@ test:
 	$(MAKE) test-be
 
 test-fe:
-	cd $(FRONTEND_DIR) && yarn test --coverage --watchAll=false
+	cd $(FRONTEND_DIR) && yarn vitest run --coverage
 
 test-be:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
@@ -77,7 +77,7 @@ build:
 	rm -rf $(BACKEND_DIR)/cmd/assets
 	mkdir -p $(BACKEND_DIR)/cmd/assets
 	echo "$(shell date +%y%m%d%H%M)" > $(DIST_DIR)/VERSION
-	cd $(FRONTEND_DIR) && BUILD_PATH=../$(BACKEND_DIR)/cmd/assets yarn build
+	cd $(FRONTEND_DIR) && yarn build --outDir ../$(BACKEND_DIR)/cmd/assets -m production
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat ./cmd/main.go
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat-tool ./tools/main.go
 	[ -f $(DIST_DIR)/.env ] || cp $(BACKEND_DIR)/.env.example $(DIST_DIR)/.env
