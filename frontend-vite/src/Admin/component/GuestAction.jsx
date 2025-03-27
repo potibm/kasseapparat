@@ -44,6 +44,7 @@ const ImportDeineTicketsButton = () => {
         );
       }
     } catch (error) {
+      console.error(error);
       notify("Error while uploading the file. Try again (later).", "warning");
     }
 

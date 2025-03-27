@@ -141,7 +141,6 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
 
       <MyButton
         {...((cart.length === 0 || checkoutProcessing) && { disabled: true })}
-        color="success"
         className="w-full mt-2 uppercase"
         onClick={handleCheckoutCart}
       >

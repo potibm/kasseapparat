@@ -84,7 +84,7 @@ const ArrivedAtOrNullField = (props) => {
     return <Box>The person has not arrived, yet</Box>;
   }
 
-  return <DateTimeInput source="arrivedAt" disabled={true} />;
+  return <DateTimeInput source="arrivedAt" disabled={true} {...props} />;
 };
 
 export const GuestList = (props) => {
@@ -95,6 +95,7 @@ export const GuestList = (props) => {
       sort={{ field: "id", order: "ASC" }}
       filters={GuestFilters}
       actions={<GuestActions />}
+      {...props}
     >
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
@@ -179,7 +180,7 @@ export const GuestEdit = () => {
   );
 };
 
-const GuestCreateToolbar = ({ guestlistId, ...props }) => {
+const GuestCreateToolbar = ({...props }) => {
   const redirect = useRedirect();
   const { reset } = useFormContext();
   const notify = useNotify();
@@ -201,9 +202,6 @@ const GuestCreateToolbar = ({ guestlistId, ...props }) => {
       />
     </Toolbar>
   );
-};
-GuestCreateToolbar.propTypes = {
-  guestlistId: PropTypes.number.isRequired,
 };
 
 export const GuestCreate = (props) => {
