@@ -40,7 +40,7 @@ const ConditionalDeleteButton = (props) => {
 
 export const UserList = (props) => {
   return (
-    <List sort={{ field: "id", order: "ASC" }} filters={UserFilters}>
+    <List sort={{ field: "id", order: "ASC" }} filters={UserFilters} {...props}>
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="username" />

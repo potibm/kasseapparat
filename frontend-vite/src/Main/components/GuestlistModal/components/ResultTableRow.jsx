@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Avatar, TableCell, TableRow} from "flowbite-react";
+import { Table, Avatar, TableCell, TableRow } from "flowbite-react";
 import { HiShoppingCart } from "react-icons/hi";
 import PropTypes from "prop-types";
 import MyButton from "../../MyButton";
@@ -111,7 +111,7 @@ const highlightText = (text, highlight) => {
 
   return (
     <>
-      {parts.map((part, i) => {
+      {parts.map((part) => {
         const key = generateUniqueId();
         return regex.test(part) ? (
           <span key={key} className="font-bold underline">

@@ -6,8 +6,12 @@ import PropTypes from "prop-types";
 
 const MainMenu = ({ username, ...props }) => {
   return (
-    <ButtonGroup className="mt-10">
-      <Button size="sm" aria-label={`Logged in as ${username}`} className="dark:hover:bg-cyan-700 border-none">
+    <ButtonGroup className="mt-10" {...props}>
+      <Button
+        size="sm"
+        aria-label={`Logged in as ${username}`}
+        className="dark:hover:bg-cyan-700 border-none"
+      >
         <Tooltip content={username}>
           <HiOutlineUserCircle className="h-5 w-5" />
         </Tooltip>

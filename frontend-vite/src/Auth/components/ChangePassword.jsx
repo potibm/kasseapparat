@@ -71,7 +71,7 @@ const ChangePassword = () => {
     }
 
     changePassword(apiHost, userId, token, password)
-      .then((auth) => {
+      .then(() => {
         setShowSuccessModal(true);
       })
       .catch((error) => {

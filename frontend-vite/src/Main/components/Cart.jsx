@@ -1,6 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
 import { HiXCircle } from "react-icons/hi";
-import { Spinner, Table, Tooltip, TableHeadCell, TableHead, TableBody, TableRow, TableCell } from "flowbite-react";
+import {
+  Spinner,
+  Table,
+  Tooltip,
+  TableHeadCell,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
@@ -64,7 +73,6 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
 
   return (
     <div>
-      
       <Table
         striped
         theme={compactTableTheme}

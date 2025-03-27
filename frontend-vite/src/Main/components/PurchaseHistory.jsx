@@ -1,6 +1,17 @@
 import { HiXCircle, HiOutlineExclamationCircle } from "react-icons/hi";
 import React, { useState, useEffect, useRef } from "react";
-import { Modal, ModalBody, ModalHeader, Spinner, Table, TableCell, TableRow, TableHeadCell, TableHead, TableBody } from "flowbite-react";
+import {
+  Modal,
+  ModalBody,
+  ModalHeader,
+  Spinner,
+  Table,
+  TableCell,
+  TableRow,
+  TableHeadCell,
+  TableHead,
+  TableBody,
+} from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";

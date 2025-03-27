@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { Title, useDataProvider } from "react-admin";
-import { Table, TableCell, TableHead, TableHeadCell, TableBody, TableRow } from "flowbite-react";
+import {
+  Table,
+  TableCell,
+  TableHead,
+  TableHeadCell,
+  TableBody,
+  TableRow,
+} from "flowbite-react";
 import { useConfig } from "../../provider/ConfigProvider";
 import Decimal from "decimal.js";
 

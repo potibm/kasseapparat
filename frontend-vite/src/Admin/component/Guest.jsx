@@ -180,7 +180,7 @@ export const GuestEdit = () => {
   );
 };
 
-const GuestCreateToolbar = ({...props }) => {
+const GuestCreateToolbar = ({ ...props }) => {
   const redirect = useRedirect();
   const { reset } = useFormContext();
   const notify = useNotify();

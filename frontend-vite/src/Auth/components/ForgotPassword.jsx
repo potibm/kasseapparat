@@ -21,7 +21,7 @@ const RequestToken = () => {
     event.preventDefault();
 
     requestChangePasswordToken(apiHost, login)
-      .then((auth) => {
+      .then(() => {
         setSuccess(true);
       })
       .catch((error) => {

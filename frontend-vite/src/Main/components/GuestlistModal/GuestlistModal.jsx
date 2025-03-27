@@ -37,7 +37,7 @@ const GuestlistModal = ({
   };
 
   const fetchGuestEntries = useCallback(
-    async (query = "") => {
+    async () => {
       setLoading(true);
       try {
         let response = await fetchGuestlistByProductId(
