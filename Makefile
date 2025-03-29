@@ -47,7 +47,7 @@ linter:
 	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(FRONTEND_DIR) && yarn run prettier .. --check
 	cd $(BACKEND_DIR) && golangci-lint run
-	cd $(FRONTEND_DIR) && yarn run eslint cd 
+	cd $(FRONTEND_DIR) && yarn run eslint
 
 linter-fix:
 	mkdir -p $(BACKEND_DIR)/cmd/assets

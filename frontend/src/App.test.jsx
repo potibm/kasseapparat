@@ -5,7 +5,7 @@ import AuthProvider from "./Auth/provider/AuthProvider";
 import { ConfigContext } from "./provider/ConfigProvider";
 import Login from "./Auth/components/Login";
 import { createRoutesStub } from "react-router";
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from "vitest";
 
 import React from "react";
 

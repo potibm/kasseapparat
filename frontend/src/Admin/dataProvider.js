@@ -1,7 +1,7 @@
 import jsonServerProvider from "ra-data-json-server";
 import { fetchUtils } from "react-admin";
 
-const API_HOST = import.meta.env.VITE_APP_API_HOST ?? "http://localhost:3001";
+const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 
 const httpClient = (url, options = {}) => {
   if (!options.headers) {
