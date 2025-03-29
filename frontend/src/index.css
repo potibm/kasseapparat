@@ -1,7 +1,9 @@
 @import "tailwindcss";
+/* sonar-ignore-start */
 @plugin "flowbite-react/plugin/tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 @source "../.flowbite-react/class-list.json";
+/* sonar-ignore-end */
 
 @tailwind base;
 @tailwind components;

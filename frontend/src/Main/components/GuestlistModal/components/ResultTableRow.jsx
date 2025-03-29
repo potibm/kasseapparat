@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Avatar, TableCell, TableRow } from "flowbite-react";
+import { Avatar, TableCell, TableRow } from "flowbite-react";
 import { HiShoppingCart } from "react-icons/hi";
 import PropTypes from "prop-types";
 import MyButton from "../../MyButton";

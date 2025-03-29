@@ -2,7 +2,7 @@
 FROM --platform=$BUILDPLATFORM node:23 AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/yarn.lock ./
-RUN corepack yarn install --frozen-lockfile --network-timeout 100000 
+RUN corepack yarn install --frozen-lockfile --network-timeout 100000 --ignore-scripts
 COPY frontend .
 RUN corepack yarn vite build
 
