@@ -2,9 +2,9 @@
 FROM --platform=$BUILDPLATFORM node:23 AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/yarn.lock ./
-RUN corepack yarn install --frozen-lockfile --network-timeout 100000 --ignore-scripts
+RUN corepack yarn install --mode=skip-build
 COPY frontend .
-RUN corepack yarn vite build
+RUN corepack yarn vite build --outDir ./build
 
 # Build the backend
 FROM --platform=$BUILDPLATFORM golang:1.23-bookworm AS backend-build

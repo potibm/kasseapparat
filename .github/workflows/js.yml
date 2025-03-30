@@ -53,20 +53,19 @@ jobs:
           cache-dependency-path: frontend/yarn.lock
 
       - name: install
-        run: yarn install
+        run: corepack yarn install
         working-directory: frontend
 
       - name: build
-        run: yarn run build
+        run: corepack yarn run build
         working-directory: frontend
-#     Temporary disabled
-#      - name: test
-#        run: yarn run test --coverage --watchAll=false
-#        working-directory: frontend
-#
-#      - name: Upload coverage report
-#        if: always()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: coverage-report
-#          path: frontend/coverage
+      - name: test
+        run: cd
+        working-directory: frontend
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: frontend/coverage

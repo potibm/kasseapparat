@@ -14,5 +14,6 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: "./tests/setup.js",
+    teardownTimeout: 1000,
   },
 });

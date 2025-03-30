@@ -20,7 +20,7 @@ export default [
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
-      "react": react,
+      react: react,
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -30,8 +30,8 @@ export default [
         "warn",
         { allowConstantExport: true },
       ],
-      'react/jsx-uses-react': 'error',
-      'react/jsx-uses-vars': 'error',
+      "react/jsx-uses-react": "error",
+      "react/jsx-uses-vars": "error",
     },
   },
 ];

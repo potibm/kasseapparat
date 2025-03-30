@@ -35,19 +35,19 @@ deps-be:
 	cd $(BACKEND_DIR) && go mod tidy
 
 deps-fe:
-	cd $(FRONTEND_DIR) && yarn up
-	cd $(FRONTEND_DIR) && yarn upgrade-interactive
+	cd $(FRONTEND_DIR) && corepack yarn up
+	cd $(FRONTEND_DIR) && corepack yarn upgrade-interactive
 
 deps-install:
-	cd $(FRONTEND_DIR) && yarn install
+	cd $(FRONTEND_DIR) && corepack yarn install
 	cd $(BACKEND_DIR) && go mod download
 
 linter:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
 	touch $(BACKEND_DIR)/cmd/assets/index.html
-	cd $(FRONTEND_DIR) && yarn run prettier .. --check
+	cd $(FRONTEND_DIR) && corepack yarn run prettier .. --check
 	cd $(BACKEND_DIR) && golangci-lint run
-	cd $(FRONTEND_DIR) && yarn run eslint
+	cd $(FRONTEND_DIR) && corepack yarn run eslint
 
 linter-fix:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
@@ -62,7 +62,7 @@ test:
 	$(MAKE) test-be
 
 test-fe:
-	cd $(FRONTEND_DIR) && yarn vitest run --coverage
+	cd $(FRONTEND_DIR) && corepack yarn vitest run --coverage
 
 test-be:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
@@ -77,7 +77,7 @@ build:
 	rm -rf $(BACKEND_DIR)/cmd/assets
 	mkdir -p $(BACKEND_DIR)/cmd/assets
 	echo "$(shell date +%y%m%d%H%M)" > $(DIST_DIR)/VERSION
-	cd $(FRONTEND_DIR) && yarn build --outDir ../$(BACKEND_DIR)/cmd/assets -m production
+	cd $(FRONTEND_DIR) && corepack yarn build --outDir ../$(BACKEND_DIR)/cmd/assets -m production
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat ./cmd/main.go
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat-tool ./tools/main.go
 	[ -f $(DIST_DIR)/.env ] || cp $(BACKEND_DIR)/.env.example $(DIST_DIR)/.env
