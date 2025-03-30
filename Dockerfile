@@ -2,7 +2,8 @@
 FROM --platform=$BUILDPLATFORM node:23 AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/yarn.lock ./
-RUN corepack yarn install --mode=skip-build
+RUN corepack enable && \
+    corepack yarn install --mode=skip-build
 COPY frontend .
 RUN corepack yarn vite build --outDir ./build
 

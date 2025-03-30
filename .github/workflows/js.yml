@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
       - name: Node.js
         uses: actions/setup-node@v4
         with:
@@ -29,13 +31,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node_modules-
       - name: install
-        run: yarn install
+        run: corepack yarn install
         working-directory: frontend
       - name: prettier
-        run: yarn run prettier .. --check
+        run: corepack yarn run prettier .. --check
         working-directory: frontend
       - name: eslint
-        run: yarn run eslint
+        run: corepack yarn run eslint
         working-directory: frontend
 
   test:
