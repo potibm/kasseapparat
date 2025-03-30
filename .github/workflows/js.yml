@@ -44,11 +44,14 @@ jobs:
     needs: linter
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "23"
           cache: "yarn"
           cache-dependency-path: frontend/yarn.lock
 
