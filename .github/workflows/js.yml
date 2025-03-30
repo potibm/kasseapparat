@@ -66,7 +66,7 @@ jobs:
         run: yarn run build
         working-directory: frontend
       - name: test
-        run: cd
+        run: corepack yarn vitest run --coverage
         working-directory: frontend
 
       - name: Upload coverage report
