@@ -15,9 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Enable Corepack
-        run: corepack enable && corepack install
-        working-directory: frontend
       - name: Node.js
         uses: actions/setup-node@v4
         with:
@@ -32,13 +29,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node_modules-
       - name: install
-        run: corepack yarn install
+        run: yarn install
         working-directory: frontend
       - name: prettier
-        run: corepack yarn run prettier .. --check
+        run: yarn run prettier .. --check
         working-directory: frontend
       - name: eslint
-        run: corepack yarn run eslint
+        run: yarn run eslint
         working-directory: frontend
 
   test:
@@ -47,10 +44,6 @@ jobs:
     needs: linter
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Enable Corepack
-        run: corepack enable && corepack install
-        working-directory: frontend
 
       - name: Node.js
         uses: actions/setup-node@v4
@@ -60,11 +53,11 @@ jobs:
           cache-dependency-path: frontend/yarn.lock
 
       - name: install
-        run: corepack yarn install
+        run: yarn install
         working-directory: frontend
 
       - name: build
-        run: corepack yarn run build
+        run: yarn run build
         working-directory: frontend
       - name: test
         run: cd
