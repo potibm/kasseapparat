@@ -15,12 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          yarn set version stable
+        working-directory: frontend
       - name: Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "yarn"
-          cache-dependency-path: frontend/yarn.lock
+          node-version: "23"
       - name: Cache node_modules
         uses: actions/cache@v4
         with:
@@ -45,12 +48,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          yarn set version stable
+        working-directory: frontend
       - name: Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "yarn"
-          cache-dependency-path: frontend/yarn.lock
+          node-version: "23"
 
       - name: install
         run: yarn install
@@ -59,14 +65,13 @@ jobs:
       - name: build
         run: yarn run build
         working-directory: frontend
-#     Temporary disabled
-#      - name: test
-#        run: yarn run test --coverage --watchAll=false
-#        working-directory: frontend
-#
-#      - name: Upload coverage report
-#        if: always()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: coverage-report
-#          path: frontend/coverage
+      - name: test
+        run: corepack yarn vitest run --coverage
+        working-directory: frontend
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: frontend/coverage

@@ -1,6 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
 import { HiXCircle } from "react-icons/hi";
-import { Spinner, Table, Tooltip } from "flowbite-react";
+import {
+  Spinner,
+  Table,
+  Tooltip,
+  TableHeadCell,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
@@ -69,20 +78,22 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
         theme={compactTableTheme}
         className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
-        <Table.Head>
-          <Table.HeadCell className="w-[40%]">Product</Table.HeadCell>
-          <Table.HeadCell className="w-[15%] text-right">
-            <Tooltip content="Quantity">Qnt</Tooltip>
-          </Table.HeadCell>
-          <Table.HeadCell className="w-[15%] text-right">
-            Total Price
-          </Table.HeadCell>
-          <Table.HeadCell className="w-[30%] text-right">Remove</Table.HeadCell>
-        </Table.Head>
-        <Table.Body>
+        <TableHead>
+          <TableRow>
+            <TableHeadCell className="w-[40%]">Product</TableHeadCell>
+            <TableHeadCell className="w-[15%] text-right">
+              <Tooltip content="Quantity">Qnt</Tooltip>
+            </TableHeadCell>
+            <TableHeadCell className="w-[15%] text-right">
+              Total Price
+            </TableHeadCell>
+            <TableHeadCell className="w-[30%] text-right">Remove</TableHeadCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {cart.map((cartElement) => (
-            <Table.Row key={cartElement.id}>
-              <Table.Cell className="whitespace-normal px-4 py-2">
+            <TableRow key={cartElement.id}>
+              <TableCell className="whitespace-normal px-4 py-2">
                 {cartElement.name}
                 {
                   // iterate over cartElement.listItems and display them
@@ -92,36 +103,36 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
                     </div>
                   ))
                 }
-              </Table.Cell>
-              <Table.Cell className="text-right">
+              </TableCell>
+              <TableCell className="text-right">
                 {cartElement.quantity}
-              </Table.Cell>
-              <Table.Cell className="text-right">
+              </TableCell>
+              <TableCell className="text-right">
                 {currency.format(cartElement.totalGrossPrice)}
-              </Table.Cell>
-              <Table.Cell className="flex justify-end">
+              </TableCell>
+              <TableCell className="flex justify-end">
                 <MyButton
                   color="failure"
                   onClick={() => removeFromCart(cartElement)}
                 >
                   <HiXCircle />
                 </MyButton>
-              </Table.Cell>
-            </Table.Row>
+              </TableCell>
+            </TableRow>
           ))}
-          <Table.Row>
-            <Table.Cell colSpan={2} className="uppercase font-bold">
+          <TableRow>
+            <TableCell colSpan={2} className="uppercase font-bold">
               Total
-            </Table.Cell>
-            <Table.Cell className="font-bold text-right">
+            </TableCell>
+            <TableCell className="font-bold text-right">
               {currency.format(
                 cart.reduce(
                   (total, item) => total.add(item.totalGrossPrice),
                   new Decimal(0),
                 ),
               )}
-            </Table.Cell>
-            <Table.Cell className="flex justify-end">
+            </TableCell>
+            <TableCell className="flex justify-end">
               {cart.length ? (
                 <MyButton color="failure" onClick={() => removeAllFromCart()}>
                   <HiXCircle />
@@ -131,14 +142,13 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
                   <HiXCircle />
                 </MyButton>
               )}
-            </Table.Cell>
-          </Table.Row>
-        </Table.Body>
+            </TableCell>
+          </TableRow>
+        </TableBody>
       </Table>
 
       <MyButton
         {...((cart.length === 0 || checkoutProcessing) && { disabled: true })}
-        color="success"
         className="w-full mt-2 uppercase"
         onClick={handleCheckoutCart}
       >

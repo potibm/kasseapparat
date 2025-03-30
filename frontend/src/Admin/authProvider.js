@@ -1,6 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 
-const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
+const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 const ADMIN_STORAGE_KEY = "admin";
 
 let updateTokenIntervalId = null;

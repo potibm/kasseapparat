@@ -1,6 +1,16 @@
 import { HiXCircle, HiOutlineExclamationCircle } from "react-icons/hi";
 import React, { useState, useEffect, useRef } from "react";
-import { Modal, Spinner, Table, TableCell, TableRow } from "flowbite-react";
+import {
+  Modal,
+  ModalBody,
+  Spinner,
+  Table,
+  TableCell,
+  TableRow,
+  TableHeadCell,
+  TableHead,
+  TableBody,
+} from "flowbite-react";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
@@ -70,8 +80,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
         popup
         dismissible
       >
-        <Modal.Header />
-        <Modal.Body>
+        <ModalBody>
           <div className="text-center">
             <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
             <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-200">
@@ -79,7 +88,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
             </h3>
 
             <Table className="mb-5">
-              <Table.Body className="dark:text-gray-100">
+              <TableBody className="dark:text-gray-100">
                 {openModal?.purchase?.purchaseItems != null &&
                   openModal.purchase.purchaseItems.length > 0 &&
                   openModal.purchase.purchaseItems.map((purchaseItem) => (
@@ -91,7 +100,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
                       </TableCell>
                     </TableRow>
                   ))}
-              </Table.Body>
+              </TableBody>
             </Table>
 
             <div className="flex justify-center gap-4">
@@ -112,21 +121,23 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
               </MyButton>
             </div>
           </div>
-        </Modal.Body>
+        </ModalBody>
       </Modal>
       <Table
         striped
         theme={compactTableTheme}
         className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
-        <Table.Head>
-          <Table.HeadCell className="w-[55%]">Date</Table.HeadCell>
-          <Table.HeadCell className="w-[15%] text-right">
-            Total Price
-          </Table.HeadCell>
-          <Table.HeadCell className="w-[30%] text-right">Remove</Table.HeadCell>
-        </Table.Head>
-        <Table.Body>
+        <TableHead>
+          <TableRow>
+            <TableHeadCell className="w-[55%]">Date</TableHeadCell>
+            <TableHeadCell className="w-[15%] text-right">
+              Total Price
+            </TableHeadCell>
+            <TableHeadCell className="w-[30%] text-right">Remove</TableHeadCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {history === null && (
             <TableRow>
               <TableCell colSpan={3} className="text-left">
@@ -143,24 +154,24 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
           )}
           {history !== null &&
             history.slice(0, 3).map((purchase) => (
-              <Table.Row key={purchase.id}>
-                <Table.Cell className="whitespace-nowrap">
+              <TableRow key={purchase.id}>
+                <TableCell className="whitespace-nowrap">
                   {formatDate(purchase.createdAt)}
-                </Table.Cell>
-                <Table.Cell className="text-right">
+                </TableCell>
+                <TableCell className="text-right">
                   {currency.format(purchase.totalGrossPrice)}
-                </Table.Cell>
-                <Table.Cell className="flex justify-end">
+                </TableCell>
+                <TableCell className="flex justify-end">
                   <MyButton
                     color="failure"
                     onClick={() => setOpenModal({ show: true, purchase })}
                   >
                     <HiXCircle />
                   </MyButton>
-                </Table.Cell>
-              </Table.Row>
+                </TableCell>
+              </TableRow>
             ))}
-        </Table.Body>
+        </TableBody>
       </Table>
     </div>
   );

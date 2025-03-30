@@ -1,21 +1,27 @@
 import React from "react";
-import { Modal, Button } from "flowbite-react";
+import {
+  Modal,
+  Button,
+  ModalFooter,
+  ModalBody,
+  ModalHeader,
+} from "flowbite-react";
 import PropTypes from "prop-types";
 
 const GuestlistArrivalNoteModal = ({ isOpen, onClose, arrivalNote, name }) => {
   return (
     <Modal show={isOpen} onClose={onClose}>
-      <Modal.Header>Arrival Note concerning {name}</Modal.Header>
-      <Modal.Body>
+      <ModalHeader>Arrival Note concerning {name}</ModalHeader>
+      <ModalBody>
         <div className="space-y-6">
           <p className="text-xl italic font-serif leading-relaxed text-gray-500 dark:text-gray-400">
             &raquo;{arrivalNote}&laquo;
           </p>
         </div>
-      </Modal.Body>
-      <Modal.Footer>
+      </ModalBody>
+      <ModalFooter>
         <Button onClick={onClose}>OK</Button>
-      </Modal.Footer>
+      </ModalFooter>
     </Modal>
   );
 };

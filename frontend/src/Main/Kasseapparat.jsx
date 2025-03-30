@@ -101,7 +101,7 @@ function Kasseapparat() {
 
   const handleRemoveFromPurchaseHistory = async (purchase) => {
     return deletePurchaseById(apiHost, token, purchase.id)
-      .then((data) => {
+      .then(() => {
         fetchPurchases(apiHost, token)
           .then((history) => setPurchaseHistory(history))
           .catch((error) =>

@@ -1,4 +1,4 @@
-import { Modal, Spinner } from "flowbite-react";
+import { Modal, Spinner, ModalBody, ModalHeader } from "flowbite-react";
 import MyButton from "./MyButton";
 import React, { useState } from "react";
 import PropTypes from "prop-types";
@@ -28,10 +28,10 @@ const ProductInterestModal = ({
 
   return (
     <Modal show={show} onClose={onClose} dismissible>
-      <Modal.Header>
+      <ModalHeader>
         <div className="text-2xl font-bold text-center">Register interest</div>
-      </Modal.Header>
-      <Modal.Body>
+      </ModalHeader>
+      <ModalBody>
         <div className="text-center dark:text-white">
           <p className="mb-2">{product.name} is currently sold out.</p>
 
@@ -57,7 +57,7 @@ const ProductInterestModal = ({
             </MyButton>
           </div>
         </div>
-      </Modal.Body>
+      </ModalBody>
     </Modal>
   );
 };

@@ -1,1 +1,6 @@
-../backend/coverage.*
+../.git/** 
+.flowbite-react/class-list.json
+../backend/coverage.html
+../backend/cmd/assets/index.html
+../backend/cmd/assets/assets/*.js
+../backend/cmd/assets/assets/*.css

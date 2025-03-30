@@ -1,14 +1,14 @@
 import React from "react";
-import { Modal } from "flowbite-react";
+import { Modal, ModalHeader, ModalBody } from "flowbite-react";
 import PropTypes from "prop-types";
 
 function ErrorModal({ message, onClose }) {
   return (
     <Modal show={message !== ""} onClose={onClose}>
-      <Modal.Header>Error</Modal.Header>
-      <Modal.Body>
+      <ModalHeader>Error</ModalHeader>
+      <ModalBody>
         <p>{message}</p>
-      </Modal.Body>
+      </ModalBody>
     </Modal>
   );
 }

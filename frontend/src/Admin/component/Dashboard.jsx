@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { Title, useDataProvider } from "react-admin";
-import { Table } from "flowbite-react";
+import {
+  Table,
+  TableCell,
+  TableHead,
+  TableHeadCell,
+  TableBody,
+  TableRow,
+} from "flowbite-react";
 import { useConfig } from "../../provider/ConfigProvider";
 import Decimal from "decimal.js";
 
@@ -56,48 +63,50 @@ const ProductStatsCard = () => {
     <Card>
       <CardContent>
         <Table className="mt-5" theme={customCompactTheme}>
-          <Table.Head>
-            <Table.HeadCell>Product</Table.HeadCell>
-            <Table.HeadCell className="text-right">Units sold</Table.HeadCell>
-            <Table.HeadCell className="text-right">Revenue Net</Table.HeadCell>
-            <Table.HeadCell className="text-right">
-              Revenue Gross
-            </Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y">
+          <TableHead>
+            <TableRow>
+              <TableHeadCell>Product</TableHeadCell>
+              <TableHeadCell className="text-right">Units sold</TableHeadCell>
+              <TableHeadCell className="text-right">Revenue Net</TableHeadCell>
+              <TableHeadCell className="text-right">
+                Revenue Gross
+              </TableHeadCell>
+            </TableRow>
+          </TableHead>
+          <TableBody className="divide-y">
             {stats.map((stat) => (
-              <Table.Row key={stat.id}>
-                <Table.Cell>{stat.name}</Table.Cell>
-                <Table.Cell className="text-right">{stat.soldItems}</Table.Cell>
-                <Table.Cell className="text-right">
+              <TableRow key={stat.id}>
+                <TableCell>{stat.name}</TableCell>
+                <TableCell className="text-right">{stat.soldItems}</TableCell>
+                <TableCell className="text-right">
                   {currency.format(stat.totalNetPrice)}
-                </Table.Cell>
-                <Table.Cell className="text-right">
+                </TableCell>
+                <TableCell className="text-right">
                   {currency.format(stat.totalGrossPrice)}
-                </Table.Cell>
-              </Table.Row>
+                </TableCell>
+              </TableRow>
             ))}
-            <Table.Row>
-              <Table.Cell className="font-bold">Total</Table.Cell>
-              <Table.Cell className="font-bold text-right">-</Table.Cell>
-              <Table.Cell className="font-bold text-right">
+            <TableRow>
+              <TableCell className="font-bold">Total</TableCell>
+              <TableCell className="font-bold text-right">-</TableCell>
+              <TableCell className="font-bold text-right">
                 {currency.format(
                   stats.reduce(
                     (acc, stat) => acc.add(stat.totalNetPrice),
                     new Decimal(0),
                   ),
                 )}
-              </Table.Cell>
-              <Table.Cell className="font-bold text-right">
+              </TableCell>
+              <TableCell className="font-bold text-right">
                 {currency.format(
                   stats.reduce(
                     (acc, stat) => acc.add(stat.totalGrossPrice),
                     new Decimal(0),
                   ),
                 )}
-              </Table.Cell>
-            </Table.Row>
-          </Table.Body>
+              </TableCell>
+            </TableRow>
+          </TableBody>
         </Table>
       </CardContent>
     </Card>

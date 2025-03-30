@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Avatar } from "flowbite-react";
+import { Avatar, TableCell, TableRow } from "flowbite-react";
 import { HiShoppingCart } from "react-icons/hi";
 import PropTypes from "prop-types";
 import MyButton from "../../MyButton";
@@ -41,8 +41,8 @@ const GuestlistResultTableRow = ({
   return (
     <>
       {arrivalModalContent}
-      <Table.Row key={entry.id}>
-        <Table.Cell>
+      <TableRow key={entry.id}>
+        <TableCell>
           {!entry.code && (
             <Avatar
               placeholderInitials={getInitials(entry.name)}
@@ -50,8 +50,8 @@ const GuestlistResultTableRow = ({
               rounded
             />
           )}
-        </Table.Cell>
-        <Table.Cell className="">
+        </TableCell>
+        <TableCell className="">
           {!entry.code && (
             <>
               <div className="text-xl">
@@ -65,8 +65,8 @@ const GuestlistResultTableRow = ({
               {highlightText(entry.code, loadedSearchQuery)}
             </div>
           )}
-        </Table.Cell>
-        <Table.Cell className="flex gap-5">
+        </TableCell>
+        <TableCell className="flex gap-5">
           <MyButton
             className="float"
             key={0}
@@ -85,8 +85,8 @@ const GuestlistResultTableRow = ({
               <div className="text-xs">+{i + 1}</div>
             </MyButton>
           ))}
-        </Table.Cell>
-      </Table.Row>
+        </TableCell>
+      </TableRow>
     </>
   );
 };
@@ -111,7 +111,7 @@ const highlightText = (text, highlight) => {
 
   return (
     <>
-      {parts.map((part, i) => {
+      {parts.map((part) => {
         const key = generateUniqueId();
         return regex.test(part) ? (
           <span key={key} className="font-bold underline">

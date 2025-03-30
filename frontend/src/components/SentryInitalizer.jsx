@@ -12,7 +12,7 @@ const SentryInitializer = ({ children }) => {
       try {
         Sentry.init({
           dsn: config.sentryDSN,
-          environment: process.env.NODE_ENV,
+          environment: import.meta.env.MODE,
           release: `kasseapparat@${config?.version ?? "unknown"}`,
           integrations: [
             Sentry.browserTracingIntegration(),

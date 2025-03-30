@@ -6,6 +6,9 @@ import {
   TextInput,
   Alert,
   Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
   Spinner,
 } from "flowbite-react";
 import { changePassword } from "../hooks/Api";
@@ -68,7 +71,7 @@ const ChangePassword = () => {
     }
 
     changePassword(apiHost, userId, token, password)
-      .then((auth) => {
+      .then(() => {
         setShowSuccessModal(true);
       })
       .catch((error) => {
@@ -157,16 +160,16 @@ const ChangePassword = () => {
         </Button>
       </form>
       <Modal show={showSuccessModal} onClose={handleModalClose}>
-        <Modal.Header>Password Changed</Modal.Header>
-        <Modal.Body>
+        <ModalHeader>Password Changed</ModalHeader>
+        <ModalBody>
           <p>
             Your password has been successfully changed. You will be redirected
             to the login page.
           </p>
-        </Modal.Body>
-        <Modal.Footer>
+        </ModalBody>
+        <ModalFooter>
           <Button onClick={() => handleModalClose()}>Perfect</Button>
-        </Modal.Footer>
+        </ModalFooter>
       </Modal>
     </BaseCard>
   );

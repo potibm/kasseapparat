@@ -4,7 +4,7 @@ import MinimalBaseCard from "../components/MinimalBaseCard";
 import { Alert, Spinner } from "flowbite-react";
 import { HiInformationCircle } from "react-icons/hi";
 
-const API_HOST = process.env.REACT_APP_API_HOST ?? "http://localhost:3001";
+const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 
 export const ConfigContext = createContext({});
 

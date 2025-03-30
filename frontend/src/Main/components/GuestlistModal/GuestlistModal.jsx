@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FloatingLabel, Modal } from "flowbite-react";
+import { FloatingLabel, Modal, ModalBody } from "flowbite-react";
 import { fetchGuestlistByProductId } from "../../hooks/Api";
 import { HiOutlineX } from "react-icons/hi";
 import PropTypes from "prop-types";
@@ -37,7 +37,7 @@ const GuestlistModal = ({
   };
 
   const fetchGuestEntries = useCallback(
-    async (query = "") => {
+    async (searchQuery = "") => {
       setLoading(true);
       try {
         let response = await fetchGuestlistByProductId(
@@ -83,7 +83,7 @@ const GuestlistModal = ({
       size="7xl"
       dismissible
     >
-      <Modal.Body className="overflow-hidden">
+      <ModalBody className="overflow-hidden">
         <div className="flex h-full">
           {/* Sidebar */}
           <div className="w-4/12 bg-gray-100 dark:bg-gray-900 p-4">
@@ -133,7 +133,7 @@ const GuestlistModal = ({
             </div>
           </div>
         </div>
-      </Modal.Body>
+      </ModalBody>
     </Modal>
   );
 };

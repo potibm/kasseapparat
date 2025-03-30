@@ -8,3 +8,4 @@ backend/cmd/assets/
 backend/.env
 backend/VERSION
 backend/coverage.*
+VERSION

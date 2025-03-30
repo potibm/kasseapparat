@@ -23,6 +23,7 @@ const GrossPriceInput = ({
         .mul(new Decimal(1).plus(new Decimal(vatRate).div(100)))
         .toFixed(maximumFractionDigits);
     } catch (error) {
+      console.error("Error while determing the grossPrice: " + error);
       return new Decimal(0).toFixed(maximumFractionDigits);
     }
   }, [netPrice, vatRate, maximumFractionDigits]);

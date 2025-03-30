@@ -1,5 +1,13 @@
 import React from "react";
-import { Table, Alert, Spinner } from "flowbite-react";
+import {
+  Table,
+  Alert,
+  Spinner,
+  TableHead,
+  TableHeadCell,
+  TableBody,
+  TableRow,
+} from "flowbite-react";
 import { HiInformationCircle, HiXCircle } from "react-icons/hi";
 import PropTypes from "prop-types";
 import GuestlistResultTableRow from "./ResultTableRow";
@@ -35,12 +43,14 @@ const GuestlistResultTable = ({
       {guestlistEntries.length > 0 && (
         <div className="space-y-4">
           <Table hoverable className="dark:text-white">
-            <Table.Head>
-              <Table.HeadCell className="w-1/12"></Table.HeadCell>
-              <Table.HeadCell className="w-5/12">Name</Table.HeadCell>
-              <Table.HeadCell className="w-6/12">Action</Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
+            <TableHead>
+              <TableRow>
+                <TableHeadCell className="w-1/12"></TableHeadCell>
+                <TableHeadCell className="w-5/12">Name</TableHeadCell>
+                <TableHeadCell className="w-6/12">Action</TableHeadCell>
+              </TableRow>
+            </TableHead>
+            <TableBody className="divide-y">
               {guestlistEntries.map((entry) => (
                 <GuestlistResultTableRow
                   key={entry.id}
@@ -50,7 +60,7 @@ const GuestlistResultTable = ({
                   loadedSearchQuery={loadedSearchQuery}
                 />
               ))}
-            </Table.Body>
+            </TableBody>
           </Table>
         </div>
       )}
