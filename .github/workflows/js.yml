@@ -16,7 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Enable Corepack 
-        run: corepack enable
+        run: |
+          corepack enable
+          yarn set versiob stable
       - name: Node.js
         uses: actions/setup-node@v4
         with:
@@ -46,7 +48,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Enable Corepack 
-        run: corepack enable
+        run: |
+          corepack enable
+          yarn set versiob stable
       - name: Node.js
         uses: actions/setup-node@v4
         with:
