@@ -19,6 +19,7 @@ jobs:
         run: |
           corepack enable
           yarn set versiob stable
+        working-directory: frontend
       - name: Node.js
         uses: actions/setup-node@v4
         with:
@@ -51,6 +52,7 @@ jobs:
         run: |
           corepack enable
           yarn set versiob stable
+        working-directory: frontend
       - name: Node.js
         uses: actions/setup-node@v4
         with:
