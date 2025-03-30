@@ -40,7 +40,7 @@ func (repo *Repository) DeletePurchaseByID(id int, deletedBy models.User) {
 func (repo *Repository) GetPurchaseByID(id int) (*models.Purchase, error) {
 	var purchase models.Purchase
 	if err := repo.db.Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").First(&purchase, id).Error; err != nil {
-		return nil, errors.New("Purchase not found")
+		return nil, errors.New("purchase not found")
 	}
 
 	return &purchase, nil
@@ -58,7 +58,7 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 
 	var purchases []models.Purchase
 	if err := repo.db.Joins("CreatedBy").Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").Order(sort + " " + order + ", purchases.created_at DESC").Limit(limit).Offset(offset).Find(&purchases).Error; err != nil {
-		return nil, errors.New("Purchases not found")
+		return nil, errors.New("purchases not found")
 	}
 
 	return purchases, nil
@@ -69,7 +69,7 @@ func getPurchasesValidFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("Invalid sort field name")
+	return "", errors.New("invalid sort field name")
 }
 
 func (repo *Repository) GetTotalPurchases() (int64, error) {

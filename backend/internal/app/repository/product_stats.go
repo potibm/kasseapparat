@@ -18,7 +18,7 @@ func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
 		Order("products.pos ASC")
 
 	if err := query.Scan(&products).Error; err != nil {
-		return nil, errors.New("Unable to retrieve the products")
+		return nil, errors.New("unable to retrieve the products")
 	}
 
 	for i := range products {
@@ -30,7 +30,7 @@ func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
 			Where("deleted_at IS NULL")
 
 		if err := purchaseQuery.Scan(&purchaseItems).Error; err != nil {
-			return nil, errors.New("Unable to retrieve the purchases for this product")
+			return nil, errors.New("unable to retrieve the purchases for this product")
 		}
 
 		products[i].TotalNetPrice = decimal.NewFromFloat(0)

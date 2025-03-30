@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const ErrUserNotFound = "User not found"
+const ErrUserNotFound = "user not found"
 
 type UserFilters struct {
 	Query   string
@@ -84,7 +84,7 @@ func (repo *Repository) GetUserByLoginAndPassword(login string, password string)
 
 	err = user.ComparePassword(password)
 	if err != nil {
-		return nil, errors.New("Invalid password")
+		return nil, errors.New("invalid password")
 	}
 
 	return user, nil
@@ -105,7 +105,7 @@ func (repo *Repository) GetUsers(limit int, offset int, sort string, order strin
 
 	var users []models.User
 	if err := query.Find(&users).Error; err != nil {
-		return nil, errors.New("Users not found")
+		return nil, errors.New("users not found")
 	}
 
 	return users, nil
@@ -116,7 +116,7 @@ func getUsersValidSortFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("Invalid sort field name")
+	return "", errors.New("invalid sort field name")
 }
 
 func (repo *Repository) GetTotalUsers(filters *UserFilters) (int64, error) {
@@ -169,7 +169,7 @@ func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models
 
 	// Save the updated product to the database
 	if err := repo.db.Save(&user).Error; err != nil {
-		return nil, errors.New("Failed to update user")
+		return nil, errors.New("failed to update user")
 	}
 
 	return &user, nil

@@ -15,7 +15,7 @@ func (repo *Repository) GetProductInterests(limit int, offset int, ids []int) ([
 
 	var productInterests []models.ProductInterest
 	if err := query.Find(&productInterests).Error; err != nil {
-		return nil, errors.New("ProductInterests not found")
+		return nil, errors.New("productInterests not found")
 	}
 
 	return productInterests, nil
@@ -32,7 +32,7 @@ func (repo *Repository) GetTotalProductInterests() (int64, error) {
 func (repo *Repository) GetProductInterestByID(id int) (*models.ProductInterest, error) {
 	var productInterest models.ProductInterest
 	if err := repo.db.Preload("Product").First(&productInterest, id).Error; err != nil {
-		return nil, errors.New("ProductInterest not found")
+		return nil, errors.New("productInterest not found")
 	}
 
 	return &productInterest, nil

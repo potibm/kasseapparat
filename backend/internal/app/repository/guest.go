@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	ErrGuestNotFound  = "Guest not found"
-	ErrGuestsNotFound = "Guests not found"
+	ErrGuestNotFound  = "guest not found"
+	ErrGuestsNotFound = "guests not found"
 )
 
 type GuestFilters struct {
@@ -79,7 +79,7 @@ func getGuestsValidSortFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("Invalid sort field name")
+	return "", errors.New("invalid sort field name")
 }
 
 func (repo *Repository) GetTotalGuests(filters *GuestFilters) (int64, error) {
@@ -151,7 +151,7 @@ func (repo *Repository) UpdateGuestByID(id int, updatedGuest models.Guest) (*mod
 	updatedGuest.ID = guest.ID
 
 	if err := repo.db.Save(&updatedGuest).Error; err != nil {
-		return nil, errors.New("Failed to update guest")
+		return nil, errors.New("failed to update guest")
 	}
 
 	return &updatedGuest, nil

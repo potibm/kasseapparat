@@ -1,17 +1,29 @@
-linters:
-  disable:
-    - "dupl"
-    - "funlen"
-  enable:
-    - "gocritic"
-    - "govet"
-    - "wsl"
-    - "whitespace"
-
+version: "2"
 run:
-  timeout: 5m
   concurrency: 4
-
-output:
-  print-issued-lines: true
-  print-linter-name: true
+linters:
+  enable:
+    - gocritic
+    - whitespace
+    - wsl
+  disable:
+    - dupl
+    - funlen
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

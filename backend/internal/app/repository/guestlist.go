@@ -6,7 +6,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-const ErrGuestlistNotFound = "Guestlist not found"
+const ErrGuestlistNotFound = "guestlist not found"
 
 type GuestlistFilters = struct {
 	Query string
@@ -40,7 +40,7 @@ func (repo *Repository) GetGuestlists(limit int, offset int, sort string, order 
 
 	var guestlists []models.Guestlist
 	if err := query.Find(&guestlists).Error; err != nil {
-		return nil, errors.New("Guestlists not found")
+		return nil, errors.New("guestlists not found")
 	}
 
 	return guestlists, nil
@@ -51,7 +51,7 @@ func getListsValidSortFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("Invalid sort field name")
+	return "", errors.New("invalid sort field name")
 }
 
 func (repo *Repository) GetTotalGuestlists() (int64, error) {
@@ -93,7 +93,7 @@ func (repo *Repository) UpdateGuestlistByID(id int, updatedGuestlist models.Gues
 	guestlist.UpdatedByID = updatedGuestlist.UpdatedByID
 
 	if err := repo.db.Save(&guestlist).Error; err != nil {
-		return nil, errors.New("Failed to update guestlist")
+		return nil, errors.New("failed to update guestlist")
 	}
 
 	return &guestlist, nil
