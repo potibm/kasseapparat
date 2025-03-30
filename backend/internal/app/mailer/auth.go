@@ -32,7 +32,7 @@ func (mailer *Mailer) sendTokenMail(to string, userId uint, username string, tok
 		footerTemplate,
 	)
 	if err != nil {
-		return fmt.Errorf("Failed to parse email template: %w", err)
+		return fmt.Errorf("failed to parse email template: %w", err)
 	}
 
 	data := map[string]interface{}{
@@ -42,7 +42,7 @@ func (mailer *Mailer) sendTokenMail(to string, userId uint, username string, tok
 
 	var body bytes.Buffer
 	if err := template.Execute(&body, data); err != nil {
-		return fmt.Errorf("Failed to execute email template: %w", err)
+		return fmt.Errorf("failed to execute email template: %w", err)
 	}
 
 	return mailer.SendMail(to, subject, body.String())

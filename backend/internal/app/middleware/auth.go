@@ -8,7 +8,6 @@ import (
 
 	ginjwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 )
@@ -102,15 +101,15 @@ func authenticator(repo *repository.Repository) func(c *gin.Context) (interface{
 	}
 }
 
-func payloadFunc() func(data interface{}) jwt.MapClaims {
-	return func(data interface{}) jwt.MapClaims {
+func payloadFunc() func(data interface{}) ginjwt.MapClaims {
+	return func(data interface{}) ginjwt.MapClaims {
 		if v, ok := data.(*models.User); ok {
-			return jwt.MapClaims{
+			return ginjwt.MapClaims{
 				IdentityKey: v.ID,
 			}
 		}
 
-		return jwt.MapClaims{}
+		return ginjwt.MapClaims{}
 	}
 }
 

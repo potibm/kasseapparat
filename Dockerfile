@@ -8,7 +8,7 @@ COPY frontend .
 RUN corepack yarn vite build --outDir ./build
 
 # Build the backend
-FROM --platform=$BUILDPLATFORM golang:1.23-bookworm AS backend-build
+FROM --platform=$BUILDPLATFORM golang:1.24-bookworm AS backend-build
 WORKDIR /app/backend
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

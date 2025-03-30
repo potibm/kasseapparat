@@ -197,7 +197,7 @@ func (handler *Handler) getUserFromContext(c *gin.Context) (*models.User, error)
 
 	userObj, err := handler.repo.GetUserByID(int(sparseUserObjFromJwt.ID))
 	if err != nil {
-		return nil, errors.New("User not found")
+		return nil, errors.New("user not found")
 	}
 
 	return userObj, nil

@@ -6,7 +6,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-const ErrProductNotFound = "Product not found"
+const ErrProductNotFound = "product not found"
 
 var productSortFieldMappings = map[string]string{
 	"id":         "ID",
@@ -35,7 +35,7 @@ func (repo *Repository) GetProducts(limit int, offset int, sort string, order st
 	}
 
 	if err := query.Find(&products).Error; err != nil {
-		return nil, errors.New("Products not found")
+		return nil, errors.New("products not found")
 	}
 
 	return products, nil
@@ -46,7 +46,7 @@ func getProductsValidSortFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("Invalid sort field name")
+	return "", errors.New("invalid sort field name")
 }
 
 func (repo *Repository) GetTotalProducts() (int64, error) {
@@ -86,7 +86,7 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 
 	// Save the updated product to the database
 	if err := repo.db.Save(&product).Error; err != nil {
-		return nil, errors.New("Failed to update product")
+		return nil, errors.New("failed to update product")
 	}
 
 	return &product, nil

@@ -1,0 +1,17 @@
+linters:
+  disable:
+    - "dupl"
+    - "funlen"
+  enable:
+    - "gocritic"
+    - "govet"
+    - "wsl"
+    - "whitespace"
+
+run:
+  timeout: 5m
+  concurrency: 4
+
+output:
+  print-issued-lines: true
+  print-linter-name: true
