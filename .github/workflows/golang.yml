@@ -26,9 +26,9 @@ jobs:
           go-version-file: backend/go.mod
           cache: true
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.64
+          version: v2.02
           working-directory: ./backend
           args: --timeout=30m --config=.golangci.yaml
 
