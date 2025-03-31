@@ -3200,7 +3200,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react-compiler@npm:^19.0.0-beta-e552027-20250112":
+"eslint-plugin-react-compiler@npm:^19.0.0-beta-714736e-20250131":
   version: 19.0.0-beta-e552027-20250112
   resolution: "eslint-plugin-react-compiler@npm:19.0.0-beta-e552027-20250112"
   dependencies:
@@ -4645,7 +4645,7 @@ __metadata:
     esbuild: "npm:^0.25.1"
     eslint: "npm:^9.23.0"
     eslint-plugin-react: "npm:^7.37.4"
-    eslint-plugin-react-compiler: "npm:^19.0.0-beta-e552027-20250112"
+    eslint-plugin-react-compiler: "npm:^19.0.0-beta-714736e-20250131"
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.19"
     flowbite-react: "npm:^0.11.5"
