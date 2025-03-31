@@ -192,10 +192,10 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 		return
 	}
 
-	purchasesRespone := response.ToPurchasesResponse(purchases, handler.decimalPlaces)
+	purchasesResponse := response.ToPurchasesResponse(purchases, handler.decimalPlaces)
 
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
-	c.JSON(http.StatusOK, purchasesRespone)
+	c.JSON(http.StatusOK, purchasesResponse)
 }
 
 func (handler *Handler) GetPurchaseByID(c *gin.Context) {

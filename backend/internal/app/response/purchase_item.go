@@ -40,7 +40,8 @@ func ToPurchaseItemResponse(purchaseItem models.PurchaseItem, decimalPlaces int3
 }
 
 func ToPurchaseItemsResponse(purchaseItems []models.PurchaseItem, decimalPlaces int32) []PurchaseItemResponse {
-	var responses []PurchaseItemResponse
+	responses := make([]PurchaseItemResponse, 0, len(purchaseItems))
+
 	for _, purchaseItem := range purchaseItems {
 		responses = append(responses, ToPurchaseItemResponse(purchaseItem, decimalPlaces))
 	}

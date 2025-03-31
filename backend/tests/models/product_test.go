@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestProduct_VATAmount(t *testing.T) {
+func TestProductVATAmount(t *testing.T) {
 	netPrice := decimal.NewFromFloat(100.0)
 	vatRate := decimal.NewFromFloat(20) // 20% VAT
 	product := models.Product{
@@ -22,7 +22,7 @@ func TestProduct_VATAmount(t *testing.T) {
 	assert.True(t, expectedVATAmount.Equal(actualVATAmount), "Expected VAT amount to be %s, but got %s", expectedVATAmount, actualVATAmount)
 }
 
-func TestProduct_GrossPrice(t *testing.T) {
+func TestProductGrossPrice(t *testing.T) {
 	netPrice := decimal.NewFromFloat(100.0)
 	vatRate := decimal.NewFromFloat(20) // 20% VAT
 	product := models.Product{

@@ -34,7 +34,8 @@ func ToPurchaseResponse(purchase models.Purchase, decimalPlaces int32) PurchaseR
 }
 
 func ToPurchasesResponse(purchases []models.Purchase, decimalPlaces int32) []PurchaseResponse {
-	var responses []PurchaseResponse
+	responses := make([]PurchaseResponse, 0, len(purchases))
+
 	for _, purchase := range purchases {
 		responses = append(responses, ToPurchaseResponse(purchase, decimalPlaces))
 	}
