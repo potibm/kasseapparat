@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPurchaseItem_VATAmount(t *testing.T) {
+func TestPurchaseItemVATAmount(t *testing.T) {
 	netPrice := decimal.NewFromFloat(18.69)
 	vatRate := decimal.NewFromFloat(7)
 	purchaseItem := models.PurchaseItem{
