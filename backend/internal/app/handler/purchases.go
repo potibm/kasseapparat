@@ -50,10 +50,6 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		return
 	}
 
-	var purchase models.Purchase
-
-	updatedListEntries := make([]models.Guest, 0)
-
 	var purchaseRequest PurchaseRequest
 	if err := c.ShouldBind(&purchaseRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
@@ -61,84 +57,11 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		return
 	}
 
-	calculatedTotalNetPrice := decimal.NewFromInt(0)
-	calculatedTotalGrossPrice := decimal.NewFromInt(0)
-
-	for i := range len(purchaseRequest.Cart) {
-		id := purchaseRequest.Cart[i].ID
-		quantity := purchaseRequest.Cart[i].Quantity
-
-		product, err := handler.repo.GetProductByID(id)
-		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Product not found"))
-
-			return
-		}
-
-		calculatedPurchaseItemNetPrice := product.NetPrice.Mul(decimal.NewFromInt(int64(quantity)))
-		calculatedTotalNetPrice = calculatedTotalNetPrice.Add(calculatedPurchaseItemNetPrice)
-
-		calculatedPurchaseItemGrossPrice := product.GrossPrice(handler.decimalPlaces).Mul(decimal.NewFromInt(int64(quantity)))
-		calculatedTotalGrossPrice = calculatedTotalGrossPrice.Add(calculatedPurchaseItemGrossPrice)
-
-		purchaseItem := models.PurchaseItem{
-			Product:  *product,
-			Quantity: purchaseRequest.Cart[i].Quantity,
-			NetPrice: product.NetPrice,
-			VATRate:  product.VATRate,
-		}
-		purchase.PurchaseItems = append(purchase.PurchaseItems, purchaseItem)
-		purchase.CreatedByID = &executingUserObj.ID
-
-		for j := range len(purchaseRequest.Cart[i].ListItems) {
-			var listEntry *models.Guest
-
-			listEntry, err = handler.repo.GetFullGuestByID(purchaseRequest.Cart[i].ListItems[j].ID)
-			if err != nil || listEntry == nil {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item not found"))
-
-				return
-			}
-
-			if listEntry.AttendedGuests != 0 {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item has already been attended"))
-
-				return
-			}
-
-			if listEntry.AdditionalGuests+1 < purchaseRequest.Cart[i].ListItems[j].AttendedGuests {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Additional guests exceed available guests"))
-
-				return
-			}
-
-			if listEntry.Guestlist.ProductID != uint(id) {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item does not belong to product"))
-
-				return
-			}
-
-			listEntry.AttendedGuests = purchaseRequest.Cart[i].ListItems[j].AttendedGuests
-			listEntry.MarkAsArrived()
-
-			updatedListEntries = append(updatedListEntries, *listEntry)
-		}
-	}
-	// check that total price is correct
-	if !calculatedTotalNetPrice.Equal(purchaseRequest.TotalNetPrice) {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Total net price does not match"))
-
+	purchase, updatedListEntries, err := handler.createPurchase(purchaseRequest, *executingUserObj)
+	if err != nil {
+		_ = c.Error(err)
 		return
 	}
-
-	if !calculatedTotalGrossPrice.Equal(purchaseRequest.TotalGrossPrice) {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Total gross price does not match"))
-
-		return
-	}
-
-	purchase.TotalNetPrice = calculatedTotalNetPrice
-	purchase.TotalGrossPrice = calculatedTotalGrossPrice
 
 	purchase, err = handler.repo.StorePurchases(purchase)
 	if err != nil {
@@ -148,28 +71,107 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	}
 
 	// update the list of listEntries
-	for i := range updatedListEntries {
-		updatedListEntry := updatedListEntries[i]
-		updatedListEntry.PurchaseID = &purchase.ID
-
-		_, err := handler.repo.UpdateGuestByID(int(updatedListEntry.ID), updatedListEntry)
-		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
-
-			return
-		}
-	}
-
-	for i := range updatedListEntries {
-		updatedListEntry := updatedListEntries[i]
-		if updatedListEntry.NotifyOnArrivalEmail != nil {
-			_ = handler.mailer.SendNotificationOnArrival(*updatedListEntry.NotifyOnArrivalEmail, updatedListEntry.Name)
-		}
-	}
+	handler.updateGuestEntries(c, updatedListEntries, purchase.ID)
+	handler.sendNotifications(updatedListEntries)
 
 	purchasesResponse := response.ToPurchaseResponse(purchase, handler.decimalPlaces)
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Purchase successful", "purchase": purchasesResponse})
+}
+
+func (handler *Handler) createPurchase(purchaseRequest PurchaseRequest, executingUserObj models.User) (models.Purchase, []models.Guest, error) {
+	var purchase models.Purchase
+
+	updatedListEntries := make([]models.Guest, 0)
+
+	calculatedTotalNetPrice := decimal.NewFromInt(0)
+	calculatedTotalGrossPrice := decimal.NewFromInt(0)
+
+	for _, cartItem := range purchaseRequest.Cart {
+		product, err := handler.repo.GetProductByID(cartItem.ID)
+		if err != nil {
+			return purchase, nil, ExtendHttpErrorWithDetails(InvalidRequest, "Product not found")
+		}
+
+		calculatedTotalNetPrice = calculatedTotalNetPrice.Add(product.NetPrice.Mul(decimal.NewFromInt(int64(cartItem.Quantity))))
+		calculatedTotalGrossPrice = calculatedTotalGrossPrice.Add(product.GrossPrice(handler.decimalPlaces).Mul(decimal.NewFromInt(int64(cartItem.Quantity))))
+
+		purchase.PurchaseItems = append(purchase.PurchaseItems, models.PurchaseItem{
+			Product:  *product,
+			Quantity: cartItem.Quantity,
+			NetPrice: product.NetPrice,
+			VATRate:  product.VATRate,
+		})
+
+		listEntries, err := handler.validateAndProcessListEntries(cartItem, product.ID)
+		if err != nil {
+			return purchase, nil, err
+		}
+
+		updatedListEntries = append(updatedListEntries, listEntries...)
+	}
+
+	if !calculatedTotalNetPrice.Equal(purchaseRequest.TotalNetPrice) {
+		return purchase, nil, ExtendHttpErrorWithDetails(InvalidRequest, "Total net price does not match")
+	}
+
+	if !calculatedTotalGrossPrice.Equal(purchaseRequest.TotalGrossPrice) {
+		return purchase, nil, ExtendHttpErrorWithDetails(InvalidRequest, "Total gross price does not match")
+	}
+
+	purchase.TotalNetPrice = calculatedTotalNetPrice
+	purchase.TotalGrossPrice = calculatedTotalGrossPrice
+	purchase.CreatedByID = &executingUserObj.ID
+
+	return purchase, updatedListEntries, nil
+}
+
+func (handler *Handler) validateAndProcessListEntries(cartItem PurchaseCartRequest, productID uint) ([]models.Guest, error) {
+	var updatedListEntries []models.Guest
+
+	for _, listItem := range cartItem.ListItems {
+		listEntry, err := handler.repo.GetFullGuestByID(listItem.ID)
+		if err != nil || listEntry == nil {
+			return nil, ExtendHttpErrorWithDetails(InvalidRequest, "List item not found")
+		}
+
+		if listEntry.AttendedGuests != 0 {
+			return nil, ExtendHttpErrorWithDetails(InvalidRequest, "List item has already been attended")
+		}
+
+		if listEntry.AdditionalGuests+1 < listItem.AttendedGuests {
+			return nil, ExtendHttpErrorWithDetails(InvalidRequest, "Additional guests exceed available guests")
+		}
+
+		if listEntry.Guestlist.ProductID != productID {
+			return nil, ExtendHttpErrorWithDetails(InvalidRequest, "List item does not belong to product")
+		}
+
+		listEntry.AttendedGuests = listItem.AttendedGuests
+		listEntry.MarkAsArrived()
+		updatedListEntries = append(updatedListEntries, *listEntry)
+	}
+
+	return updatedListEntries, nil
+}
+
+func (handler *Handler) updateGuestEntries(c *gin.Context, updatedListEntries []models.Guest, purchaseID uint) {
+	for i := range updatedListEntries {
+		updatedListEntries[i].PurchaseID = &purchaseID
+
+		_, err := handler.repo.UpdateGuestByID(int(updatedListEntries[i].ID), updatedListEntries[i])
+		if err != nil {
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		}
+	}
+}
+
+func (handler *Handler) sendNotifications(updatedListEntries []models.Guest) {
+	for _, entry := range updatedListEntries {
+		if entry.NotifyOnArrivalEmail != nil {
+			_ = handler.mailer.SendNotificationOnArrival(*entry.NotifyOnArrivalEmail, entry.Name)
+		}
+	}
 }
 
 func (handler *Handler) GetPurchases(c *gin.Context) {
