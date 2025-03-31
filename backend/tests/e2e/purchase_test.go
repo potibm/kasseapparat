@@ -8,6 +8,22 @@ import (
 
 var purchaseBaseUrl = "/api/v2/purchases"
 
+func TestGetPurchasesListIsEmpty(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// Get the purchase list
+	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+		Expect().
+		Status(http.StatusOK)
+
+	purchaseListResponse.Header(totalCountHeader).AsNumber().IsEqual(0)
+
+	purchaseList := purchaseListResponse.JSON().Array()
+
+	purchaseList.Length().IsEqual(0)
+}
+
 func TestGetPurchasesWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
