@@ -29,6 +29,6 @@ jobs:
           account: user
           cut-off: 60d
           keep-n-most-recent: 20
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GHCR_PAT }}
           skip-shas: ${{ env.multi-arch-digests }}
           dry-run: false
