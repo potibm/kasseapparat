@@ -64,65 +64,29 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	calculatedTotalNetPrice := decimal.NewFromInt(0)
 	calculatedTotalGrossPrice := decimal.NewFromInt(0)
 
-	for i := range len(purchaseRequest.Cart) {
-		id := purchaseRequest.Cart[i].ID
-		quantity := purchaseRequest.Cart[i].Quantity
+	for _, cartProduct := range purchaseRequest.Cart {
 
-		product, err := handler.repo.GetProductByID(id)
+		product, err := handler.repo.GetProductByID(cartProduct.ID)
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Product not found"))
 
 			return
 		}
 
-		calculatedPurchaseItemNetPrice := product.NetPrice.Mul(decimal.NewFromInt(int64(quantity)))
+		calculatedPurchaseItemNetPrice := product.NetPrice.Mul(decimal.NewFromInt(int64(cartProduct.Quantity)))
 		calculatedTotalNetPrice = calculatedTotalNetPrice.Add(calculatedPurchaseItemNetPrice)
 
-		calculatedPurchaseItemGrossPrice := product.GrossPrice(handler.decimalPlaces).Mul(decimal.NewFromInt(int64(quantity)))
+		calculatedPurchaseItemGrossPrice := product.GrossPrice(handler.decimalPlaces).Mul(decimal.NewFromInt(int64(cartProduct.Quantity)))
 		calculatedTotalGrossPrice = calculatedTotalGrossPrice.Add(calculatedPurchaseItemGrossPrice)
 
 		purchaseItem := models.PurchaseItem{
 			Product:  *product,
-			Quantity: purchaseRequest.Cart[i].Quantity,
+			Quantity: cartProduct.Quantity,
 			NetPrice: product.NetPrice,
 			VATRate:  product.VATRate,
 		}
 		purchase.PurchaseItems = append(purchase.PurchaseItems, purchaseItem)
 		purchase.CreatedByID = &executingUserObj.ID
-
-		for j := range len(purchaseRequest.Cart[i].ListItems) {
-			var listEntry *models.Guest
-
-			listEntry, err = handler.repo.GetFullGuestByID(purchaseRequest.Cart[i].ListItems[j].ID)
-			if err != nil || listEntry == nil {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item not found"))
-
-				return
-			}
-
-			if listEntry.AttendedGuests != 0 {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item has already been attended"))
-
-				return
-			}
-
-			if listEntry.AdditionalGuests+1 < purchaseRequest.Cart[i].ListItems[j].AttendedGuests {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Additional guests exceed available guests"))
-
-				return
-			}
-
-			if listEntry.Guestlist.ProductID != uint(id) {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item does not belong to product"))
-
-				return
-			}
-
-			listEntry.AttendedGuests = purchaseRequest.Cart[i].ListItems[j].AttendedGuests
-			listEntry.MarkAsArrived()
-
-			updatedListEntries = append(updatedListEntries, *listEntry)
-		}
 	}
 	// check that total price is correct
 	if !calculatedTotalNetPrice.Equal(purchaseRequest.TotalNetPrice) {
@@ -147,9 +111,52 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		return
 	}
 
+	for _, cartProduct := range purchaseRequest.Cart {
+
+		product, err := handler.repo.GetProductByID(cartProduct.ID)
+		if err != nil {
+			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Product not found"))
+
+			return
+		}
+
+		for _, cartProductListItem := range cartProduct.ListItems {
+			var listEntry *models.Guest
+
+			listEntry, err = handler.repo.GetFullGuestByID(cartProductListItem.ID)
+			if err != nil || listEntry == nil {
+				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item not found"))
+
+				return
+			}
+
+			if listEntry.AttendedGuests != 0 {
+				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item has already been attended"))
+
+				return
+			}
+
+			if listEntry.AdditionalGuests+1 < cartProductListItem.AttendedGuests {
+				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Additional guests exceed available guests"))
+
+				return
+			}
+
+			if listEntry.Guestlist.ProductID != uint(product.ID) {
+				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item does not belong to product"))
+
+				return
+			}
+
+			listEntry.AttendedGuests = cartProductListItem.AttendedGuests
+			listEntry.MarkAsArrived()
+
+			updatedListEntries = append(updatedListEntries, *listEntry)
+		}
+	}
+
 	// update the list of listEntries
-	for i := range updatedListEntries {
-		updatedListEntry := updatedListEntries[i]
+	for _, updatedListEntry  := range updatedListEntries {
 		updatedListEntry.PurchaseID = &purchase.ID
 
 		_, err := handler.repo.UpdateGuestByID(int(updatedListEntry.ID), updatedListEntry)
@@ -160,8 +167,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		}
 	}
 
-	for i := range updatedListEntries {
-		updatedListEntry := updatedListEntries[i]
+	for _, updatedListEntry := range updatedListEntries {
 		if updatedListEntry.NotifyOnArrivalEmail != nil {
 			_ = handler.mailer.SendNotificationOnArrival(*updatedListEntry.NotifyOnArrivalEmail, updatedListEntry.Name)
 		}
