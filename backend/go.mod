@@ -13,13 +13,12 @@ require (
 	github.com/gin-contrib/cors v1.7.4
 	github.com/gin-contrib/static v1.1.3
 	github.com/gin-gonic/gin v1.10.0
-	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/joho/godotenv v1.5.1
 	github.com/sethvargo/go-password v0.3.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.36.0
-	golang.org/x/text v0.23.0
+	golang.org/x/text v0.24.0
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
 )
@@ -41,6 +40,7 @@ require (
 	github.com/go-playground/validator/v10 v10.26.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/hpcloud/tail v1.0.0 // indirect
