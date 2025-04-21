@@ -4655,7 +4655,7 @@ __metadata:
     jwt-decode: "npm:^4.0.0"
     prettier: "npm:3.5.3"
     prettier-eslint: "npm:^16.3.0"
-    ra-data-json-server: "npm:^5.7.0"
+    ra-data-json-server: "npm:^5.7.3"
     react: "npm:^19.1.0"
     react-admin: "npm:^5.7.0"
     react-dom: "npm:^19.1.0"
@@ -5595,13 +5595,37 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ra-data-json-server@npm:^5.7.0":
-  version: 5.7.0
-  resolution: "ra-data-json-server@npm:5.7.0"
+"ra-core@npm:^5.7.3":
+  version: 5.7.3
+  resolution: "ra-core@npm:5.7.3"
+  dependencies:
+    "@tanstack/react-query": "npm:^5.21.7"
+    clsx: "npm:^2.1.1"
+    date-fns: "npm:^3.6.0"
+    eventemitter3: "npm:^5.0.1"
+    inflection: "npm:^3.0.0"
+    jsonexport: "npm:^3.2.0"
+    lodash: "npm:^4.17.21"
+    query-string: "npm:^7.1.3"
+    react-error-boundary: "npm:^4.0.13"
+    react-is: "npm:^18.2.0 || ^19.0.0"
+  peerDependencies:
+    react: ^18.0.0 || ^19.0.0
+    react-dom: ^18.0.0 || ^19.0.0
+    react-hook-form: ^7.53.0
+    react-router: ^6.28.1 || ^7.1.1
+    react-router-dom: ^6.28.1 || ^7.1.1
+  checksum: 10/b7af68ade11298ab5c844a6eca9764d211ad6d3231b4af447bb32ebfdf7e534338f4b30143f843c96f9ac698f6f9a5d88026b4d8f9fdd67db39bf1cd6dd19498
+  languageName: node
+  linkType: hard
+
+"ra-data-json-server@npm:^5.7.3":
+  version: 5.7.3
+  resolution: "ra-data-json-server@npm:5.7.3"
   dependencies:
     query-string: "npm:^7.1.3"
-    ra-core: "npm:^5.7.0"
-  checksum: 10/049d30fab40417c80ebb34cc2d37ff6db448a6fc86c0d8e3fed3797590f18f95caf5f8c30d732d9bf9007176071d88b7ffb950b13310d36acb5bed99e4398142
+    ra-core: "npm:^5.7.3"
+  checksum: 10/198aefa36ebcf4091491e0beb3eb935d7fe08bf129436f4905e7586c4397742e6ff61dfba79a3e13a48d4249f8f95ae3504632807b7b009a2b0fd7e77ce72b31
   languageName: node
   linkType: hard
 
