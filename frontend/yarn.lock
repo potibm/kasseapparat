@@ -3200,9 +3200,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react-compiler@npm:^19.0.0-beta-e552027-20250112":
-  version: 19.0.0-beta-e552027-20250112
-  resolution: "eslint-plugin-react-compiler@npm:19.0.0-beta-e552027-20250112"
+"eslint-plugin-react-compiler@npm:^19.0.0-beta-ebf51a3-20250411":
+  version: 19.0.0-beta-ebf51a3-20250411
+  resolution: "eslint-plugin-react-compiler@npm:19.0.0-beta-ebf51a3-20250411"
   dependencies:
     "@babel/core": "npm:^7.24.4"
     "@babel/parser": "npm:^7.24.4"
@@ -3212,7 +3212,7 @@ __metadata:
     zod-validation-error: "npm:^3.0.3"
   peerDependencies:
     eslint: ">=7"
-  checksum: 10/87c1908a30fbfb1b2cee75d1981ecd80b95c3c53de076ef951507699e5a03e8247a25d824245bd566e4d74778e2834f4434760831c55acbda8a935b68ef78d96
+  checksum: 10/20f672089357ec43a245a29719afb12035380249368c7078eeb962ecc221cd7343a3a10369e9ab731ebdac7fea03bffef0d5596ec73de7735ba10f98a21ea658
   languageName: node
   linkType: hard
 
@@ -4645,7 +4645,7 @@ __metadata:
     esbuild: "npm:^0.25.1"
     eslint: "npm:^9.23.0"
     eslint-plugin-react: "npm:^7.37.4"
-    eslint-plugin-react-compiler: "npm:^19.0.0-beta-e552027-20250112"
+    eslint-plugin-react-compiler: "npm:^19.0.0-beta-ebf51a3-20250411"
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.19"
     flowbite-react: "npm:^0.11.5"
