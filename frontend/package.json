@@ -19,7 +19,7 @@
     "flowbite-react": "^0.11.5",
     "install": "^0.13.0",
     "jwt-decode": "^4.0.0",
-    "ra-data-json-server": "^5.7.0",
+    "ra-data-json-server": "^5.7.4",
     "react": "^19.1.0",
     "react-admin": "^5.7.0",
     "react-dom": "^19.1.0",
