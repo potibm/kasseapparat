@@ -25,6 +25,7 @@ var (
 	authMiddleware *jwt.GinJWTMiddleware
 )
 
+// InitializeHttpServer configures and returns a Gin HTTP server with embedded static file serving, JWT authentication, CORS, Sentry error tracking, and API routes.
 func InitializeHttpServer(myhandler handler.Handler, repository repository.Repository, staticFiles embed.FS) *gin.Engine {
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	r = gin.Default()
