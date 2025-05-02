@@ -35,7 +35,12 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 
 	r.Use(createCorsMiddleware())
 
-	r.Use(static.Serve("/", static.EmbedFolder(staticFiles, "assets")))
+	folder, err := static.EmbedFolder(staticFiles, "assets")
+	if err != nil {
+		log.Fatalf("Failed to create embedded folder: %v", err)
+	}
+
+	r.Use(static.Serve("/", folder))
 
 	authMiddleware := registerAuthMiddleware(repository)
 	registerApiRoutes(myhandler, authMiddleware)
