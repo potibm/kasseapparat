@@ -24,6 +24,9 @@ RUN CGO_ENABLED=1 go build -o kasseapparat ./cmd/main.go && \
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS runtime
 WORKDIR /app
 VOLUME [ "/app/data" ]
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 RUN useradd -m -s /bin/bash appuser
 
 # Copy frontend build
