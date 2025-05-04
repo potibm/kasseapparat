@@ -86,7 +86,7 @@ func filterHiddenProducts(products []models.Product) []models.Product {
 }
 
 func createExtendedProductResponse(repo *repository.Repository, products []models.Product, decimalPlaces int32) []response.ExtendedProductResponse {
-	var productsResponse = []response.ExtendedProductResponse{}
+	var productsResponse []response.ExtendedProductResponse = []response.ExtendedProductResponse{}
 
 	for _, product := range products {
 		unitsSold, _ := repo.GetPurchasedQuantitiesByProductID(product.ID)
