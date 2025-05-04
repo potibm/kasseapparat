@@ -26,7 +26,7 @@ import Decimal from "decimal.js";
 
 function Kasseapparat() {
   const [cart, setCart] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(null);
   const [purchaseHistory, setPurchaseHistory] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const { username, token } = useAuth();
@@ -178,13 +178,18 @@ function Kasseapparat() {
         </Alert>
       )}
       <div className="w-full overflow-hidden">
-        {products.length === 0 && (
+        {products === null && (
           <div className="w-9/12 text-gray-500 text-left p-5">
             Loading products...
             <Spinner className="ml-2" />
           </div>
         )}
-        {products.length > 0 && (
+        {products !== null && products.length === 0 && (
+          <div className="w-9/12 text-gray-500 text-left p-5">
+            No products, yet.
+          </div>
+        )}
+        {products !== null && products.length > 0 && (
           <div className="w-9/12">
             <ProductList
               products={products}

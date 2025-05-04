@@ -9,7 +9,7 @@ import (
 )
 
 func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
-	var products []response.ProductStats
+	var products = []response.ProductStats{}
 
 	query := repo.db.Table("products").
 		Select("products.id, products.name, 0 as sold_items, 0 as total_net_price, 0 as total_gross_price").

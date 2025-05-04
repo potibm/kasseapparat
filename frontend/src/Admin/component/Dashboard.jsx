@@ -25,7 +25,7 @@ const Dashboard = () => {
 };
 
 const ProductStatsCard = () => {
-  const [stats, setStats] = useState([]);
+  const [stats, setStats] = useState(null);
   const dataProvider = useDataProvider();
   const currency = useConfig().currency;
 
@@ -42,8 +42,10 @@ const ProductStatsCard = () => {
       });
   }, [dataProvider]);
 
-  if (stats.length === 0) {
+  if (stats === null) {
     return <div>Loading...</div>;
+  } else if (stats.length === 0) {
+    return <div>No products, yet.</div>;
   }
 
   const customCompactTheme = {
