@@ -26,8 +26,8 @@ WORKDIR /app
 VOLUME [ "/app/data" ]
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
-RUN useradd -m -s /bin/bash appuser
+    useradd -m -s /bin/bash appuser && \
+    rm -rf /var/lib/apt/lists/* 
 
 # Copy frontend build
 COPY --from=backend-build /app/backend/kasseapparat ./kasseapparat
