@@ -9,7 +9,7 @@ import (
 )
 
 func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
-	var products []response.ProductStats
+	var products []response.ProductStats = []response.ProductStats{}
 
 	query := repo.db.Table("products").
 		Select("products.id, products.name, 0 as sold_items, 0 as total_net_price, 0 as total_gross_price").
@@ -20,7 +20,7 @@ func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
 	if err := query.Scan(&products).Error; err != nil {
 		return nil, errors.New("unable to retrieve the products")
 	}
-
+	
 	for i := range products {
 		var purchaseItems []models.PurchaseItem
 
@@ -42,6 +42,6 @@ func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
 			products[i].TotalGrossPrice = products[i].TotalGrossPrice.Add(purchaseItems[j].TotalGrossPrice(repo.decimalPlaces))
 		}
 	}
-
+	
 	return products, nil
 }
