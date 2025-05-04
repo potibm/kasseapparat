@@ -44,8 +44,7 @@ const ProductStatsCard = () => {
 
   if (stats === null) {
     return <div>Loading...</div>;
-  }
-  else if (stats.length === 0) {
+  } else if (stats.length === 0) {
     return <div>No products, yet.</div>;
   }
 
