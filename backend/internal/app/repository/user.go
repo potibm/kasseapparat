@@ -104,8 +104,13 @@ func (repo *Repository) GetUsers(limit int, offset int, sort string, order strin
 	query = filters.AddWhere(query)
 
 	var users []models.User
+
 	if err := query.Find(&users).Error; err != nil {
 		return nil, errors.New("users not found")
+	}
+
+	if len(users) == 0 {
+		users = []models.User{}
 	}
 
 	return users, nil

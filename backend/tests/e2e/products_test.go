@@ -42,6 +42,19 @@ func TestGetProducts(t *testing.T) {
 	productWithList.Value("guestlists").Array().Length().IsEqual(2)
 }
 
+func TestGetProductsEmpty(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	res := withDemoUserAuthToken(e.GET(productBaseUrl)).
+		WithQuery("id", 0).
+		Expect().
+		Status(http.StatusOK)
+
+	// assert that the response is an empty array
+	res.JSON().Array().Length().IsEqual(0)
+}
+
 func TestGetProductsWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
