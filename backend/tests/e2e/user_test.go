@@ -36,6 +36,19 @@ func TestGetUsers(t *testing.T) {
 	validateUserObjectAdmin(user)
 }
 
+func TestGetUsersEmpty(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	res := withDemoUserAuthToken(e.GET(userBaseUrl)).
+		WithQuery("q", "arandomstringthatnousernamecontains").
+		Expect().
+		Status(http.StatusOK)
+
+	// assert that the response is an empty array
+	res.JSON().Array().Length().IsEqual(0)
+}
+
 func TestGetUsersWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()

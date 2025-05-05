@@ -37,6 +37,19 @@ func TestGetGuestlists(t *testing.T) {
 	list.Value("product").Object().Value("id").Number().IsEqual(2)
 }
 
+func TestGetGuestlistsEmpty(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	res := withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
+		WithQuery("id", 0).
+		Expect().
+		Status(http.StatusOK)
+
+	// assert that the response is an empty array
+	res.JSON().Array().Length().IsEqual(0)
+}
+
 func TestGetGuestlistsWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()

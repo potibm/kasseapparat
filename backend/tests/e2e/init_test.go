@@ -45,6 +45,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 
 	repo := repository.NewLocalRepository(currencyDecimalPlaces)
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
+	mailer.SetDisabled(true)
 	handler := handler.NewHandler(repo, *mailer, "v1", currencyDecimalPlaces)
 
 	router := initializer.InitializeHttpServer(*handler, *repo, embed.FS{})
