@@ -13,7 +13,7 @@ type Mailer struct {
 	host     string
 	port     int
 
-	Disabled bool
+	disabled bool
 
 	from          string
 	subjectPrefix string
@@ -50,7 +50,7 @@ func NewMailer(dsn string) *Mailer {
 		from:            "kasseapparat@example.com",
 		subjectPrefix:   "[Kasseapparat] ",
 		frontendBaseUrl: frontendBaseUrl,
-		Disabled:        false,
+		disabled:        false,
 	}
 }
 
@@ -70,8 +70,12 @@ func (m *Mailer) address() string {
 	return m.host + ":" + strconv.Itoa(m.port)
 }
 
+func (m *Mailer) SetDisabled(disabled bool) {
+	m.disabled = disabled
+}
+
 func (m *Mailer) SendMail(to string, subject string, body string) error {
-	if m.Disabled {
+	if m.disabled {
 		log.Println("Mailer is disabled, not sending email")
 		return nil
 	}
