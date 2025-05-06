@@ -7,4 +7,5 @@ type Purchase struct {
 	TotalNetPrice   decimal.Decimal `gorm:"type:TEXT"             json:"totalNetPrice"`
 	TotalGrossPrice decimal.Decimal `gorm:"type:TEXT"             json:"totalGrossPrice"`
 	PurchaseItems   []PurchaseItem  `gorm:"foreignKey:PurchaseID" json:"purchaseItems"`
+	PaymentMethod   string          `gorm:"type:TEXT"             json:"paymentMethod"`
 }

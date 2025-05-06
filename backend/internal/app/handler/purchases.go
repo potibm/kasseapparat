@@ -25,6 +25,7 @@ type PurchaseRequest struct {
 	TotalNetPrice   decimal.Decimal       `binding:"required"      form:"totalNetPrice"`
 	TotalGrossPrice decimal.Decimal       `binding:"required"      form:"totalGrossPrice"`
 	Cart            []PurchaseCartRequest `binding:"required,dive" form:"cart"`
+	PaymentMethod   string                `binding:"required"      form:"paymentMethod"`
 }
 
 func (handler *Handler) DeletePurchase(c *gin.Context) {
@@ -57,6 +58,12 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	var purchaseRequest PurchaseRequest
 	if err := c.ShouldBind(&purchaseRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
+		return
+	}
+
+	if !handler.IsValidPaymentMethod(purchaseRequest.PaymentMethod) {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid payment method"))
 
 		return
 	}
@@ -139,6 +146,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 	purchase.TotalNetPrice = calculatedTotalNetPrice
 	purchase.TotalGrossPrice = calculatedTotalGrossPrice
+	purchase.PaymentMethod = purchaseRequest.PaymentMethod
 
 	purchase, err = handler.repo.StorePurchases(purchase)
 	if err != nil {

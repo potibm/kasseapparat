@@ -68,6 +68,7 @@ export const storePurchase = async (apiHost, jwtToken, cart) => {
         Authorization: `Bearer ${jwtToken}`,
       },
       body: JSON.stringify({
+        paymentMethod: "CASH",
         cart: cartPayload,
         totalGrossPrice: cart.reduce(
           (total, item) => total.add(item.totalGrossPrice),

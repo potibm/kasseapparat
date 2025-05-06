@@ -3,9 +3,16 @@ package initializer
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
+
+var allAvailablePaymentMethods = map[string]string{
+	"CASH":    "💶 Cash",
+	"CC":      "💳 Creditcard",
+	"VOUCHER": "🎟️ Voucher",
+}
 
 func InitializeDotenv() {
 	_ = godotenv.Load()
@@ -21,4 +28,22 @@ func GetCurrencyDecimalPlaces() int32 {
 	}
 
 	return int32(fractionDigitsMax)
+}
+func GetEnabledPaymentMethods() map[string]string {
+	enabled := make(map[string]string)
+
+	raw := os.Getenv("PAYMENT_METHODS")
+	if raw == "" {
+		// fallback: default to only CASH if not set
+		raw = "CASH"
+	}
+
+	for _, code := range strings.Split(raw, ",") {
+		code = strings.TrimSpace(code)
+		if label, ok := allAvailablePaymentMethods[code]; ok {
+			enabled[code] = label
+		}
+	}
+
+	return enabled
 }

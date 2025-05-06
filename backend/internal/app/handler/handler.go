@@ -10,14 +10,15 @@ import (
 )
 
 type Handler struct {
-	repo          *repository.Repository
-	mailer        mailer.Mailer
-	version       string
-	decimalPlaces int32
+	repo           *repository.Repository
+	mailer         mailer.Mailer
+	version        string
+	decimalPlaces  int32
+	paymentMethods map[string]string
 }
 
-func NewHandler(repo *repository.Repository, mailer mailer.Mailer, version string, decimalPlaces int32) *Handler {
-	return &Handler{repo: repo, mailer: mailer, version: version, decimalPlaces: decimalPlaces}
+func NewHandler(repo *repository.Repository, mailer mailer.Mailer, version string, decimalPlaces int32, paymentMethods map[string]string) *Handler {
+	return &Handler{repo: repo, mailer: mailer, version: version, decimalPlaces: decimalPlaces, paymentMethods: paymentMethods}
 }
 
 func queryArrayInt(c *gin.Context, field string) []int {
@@ -35,4 +36,12 @@ func queryArrayInt(c *gin.Context, field string) []int {
 	}
 
 	return ids
+}
+
+func (handler *Handler) IsValidPaymentMethod(code string) bool {
+	if _, ok := handler.paymentMethods[code]; ok {
+		return true
+	}
+
+	return false
 }
