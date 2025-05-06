@@ -46,7 +46,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	// Create a purchase
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
-			"paymentMethod":   "CASH",
+			"paymentMethod":   "CC",
 			"totalNetPrice":   "18.69",
 			"totalGrossPrice": "20",
 			"cart": []map[string]interface{}{
@@ -97,6 +97,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	purchaseList.Length().IsEqual(1)
 	purchaseListItem := purchaseList.Value(0).Object()
 	purchaseListItem.Value("id").Number().IsEqual(purchaseId)
+	purchaseListItem.Value("paymentMethod").String().IsEqual("CC")
 
 	// Delete the purchase
 	withDemoUserAuthToken(e.DELETE(purchaseUrl)).

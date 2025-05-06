@@ -33,6 +33,7 @@ export const PurchaseList = () => {
           options={currency}
         />
         <TextField source="createdBy.username" />
+        <TextField source="paymentMethod" />
         <DeleteButton mutationMode="pessimistic" />
       </Datagrid>
     </List>
@@ -48,6 +49,7 @@ export const PurchaseShow = (props) => {
       <SimpleShowLayout>
         <NumberField source="id" />
         <DateField source="createdAt" showTime={true} />
+        <TextField source="paymentMethod" />
         <NumberField
           source="totalNetPrice"
           locales={locale}
