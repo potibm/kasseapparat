@@ -53,7 +53,12 @@ export const fetchGuestlistByProductId = async (
   });
 };
 
-export const storePurchase = async (apiHost, jwtToken, cart) => {
+export const storePurchase = async (
+  apiHost,
+  jwtToken,
+  cart,
+  paymentMethodCode,
+) => {
   return new Promise((resolve, reject) => {
     // null the cart items list property to avoid unnecessary data transfer
     const cartPayload = cart;
@@ -68,7 +73,7 @@ export const storePurchase = async (apiHost, jwtToken, cart) => {
         Authorization: `Bearer ${jwtToken}`,
       },
       body: JSON.stringify({
-        paymentMethod: "CASH",
+        paymentMethod: paymentMethodCode,
         cart: cartPayload,
         totalGrossPrice: cart.reduce(
           (total, item) => total.add(item.totalGrossPrice),
