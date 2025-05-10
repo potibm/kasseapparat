@@ -25,7 +25,7 @@ type PurchaseFilters struct {
 
 func (filters PurchaseFilters) AddWhere(query *gorm.DB) *gorm.DB {
 	if len(filters.IDs) > 0 {
-		query = query.Where("Guests.ID IN ?", filters.IDs)
+		query = query.Where("purchases.ID IN ?", filters.IDs)
 	}
 
 	if filters.CreatedByID != 0 {

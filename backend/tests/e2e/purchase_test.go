@@ -33,6 +33,7 @@ func TestGetPurchasesListWithAllFilters(t *testing.T) {
 		WithQuery("createdById", "1").
 		WithQuery("totalGrossPrice_gte", "1").
 		WithQuery("totalGrossPrice_lte", "100").
+		WithQuery("id", "1,2,3").
 		Expect().
 		Status(http.StatusOK)
 
