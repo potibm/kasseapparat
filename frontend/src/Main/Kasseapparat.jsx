@@ -129,8 +129,8 @@ function Kasseapparat() {
     return getCartProductQuantity(cart, product);
   };
 
-  const handleCheckoutCart = async () => {
-    return storePurchase(apiHost, token, cart)
+  const handleCheckoutCart = async (paymentMethodCode) => {
+    return storePurchase(apiHost, token, cart, paymentMethodCode)
       .then((createdPurchase) => {
         setCart(checkoutCart());
         handleAddToPurchaseHistory(createdPurchase.purchase);

@@ -39,6 +39,7 @@ CURRENCY_CODE="EUR"
 FRACTION_DIGITS_MIN="0"
 FRACTION_DIGITS_MAX="2"
 VAT_RATES='[{"rate":0,"name":"Exempt"},{"rate":7,"name":"Reduced"},{"rate":19,"name":"Standard"}]'
+PAYMENT_METHODS="CASH,CC,VOUCHER"
 FRONTEND_URL="https://kasseapparat.example.cp,"
 MAIL_DSN="smtp://username:password@smtp.example.com:587"
 MAIL_FROM="kasseapparat<kasseapparat@example.com>"

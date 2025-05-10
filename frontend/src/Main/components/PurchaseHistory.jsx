@@ -20,6 +20,17 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
   const [openModal, setOpenModal] = useState({ show: false, purchase: null });
   const [processing, setProcessing] = useState(false);
 
+  const paymentMethods = useConfig().paymentMethods;
+
+  const findPaymentMethod = (code) => {
+    const paymentMethod = paymentMethods.find((method) => method.code === code);
+    if (paymentMethod) {
+      return paymentMethod.name;
+    } else {
+      return code;
+    }
+  };
+
   const confirmDelete = (purchase) => {
     if (processing) {
       return;
@@ -102,6 +113,11 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
                   ))}
               </TableBody>
             </Table>
+
+            <div className="mx-auto mb-4 text-gray-400 dark:text-gray-200">
+              Selected payment method:{" "}
+              <b>{findPaymentMethod(openModal?.purchase?.paymentMethod)}</b>
+            </div>
 
             <div className="flex justify-center gap-4">
               <MyButton

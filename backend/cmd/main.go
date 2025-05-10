@@ -26,7 +26,7 @@ func main() {
 
 	repository := repository.NewRepository(initializer.GetCurrencyDecimalPlaces())
 	mailer := initializer.InitializeMailer()
-	myhandler := handler.NewHandler(repository, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces())
+	myhandler := handler.NewHandler(repository, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces(), initializer.GetEnabledPaymentMethods())
 
 	router := initializer.InitializeHttpServer(*myhandler, *repository, staticFiles)
 

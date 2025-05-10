@@ -24,12 +24,32 @@ func TestGetPurchasesListIsEmpty(t *testing.T) {
 	purchaseList.Length().IsEqual(0)
 }
 
+func TestGetPurchasesListWithAllFilters(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+		WithQuery("paymentMethod", "CASH").
+		WithQuery("createdById", "1").
+		WithQuery("totalGrossPrice_gte", "1").
+		WithQuery("totalGrossPrice_lte", "100").
+		WithQuery("id", "1,2,3").
+		Expect().
+		Status(http.StatusOK)
+
+	purchaseListResponse.Header(totalCountHeader).AsNumber().IsEqual(0)
+
+	purchaseList := purchaseListResponse.JSON().Array()
+
+	purchaseList.Length().IsEqual(0)
+}
+
 func TestGetPurchasesWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
 	// define an array of sort fields
-	sortFields := []string{"id", "createdAt", "totalGrossPrice", "createdBy.username"}
+	sortFields := []string{"id", "createdAt", "totalGrossPrice", "createdBy.username", "paymentMethod"}
 
 	for _, sortField := range sortFields {
 		withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
@@ -46,6 +66,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	// Create a purchase
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
+			"paymentMethod":   "CC",
 			"totalNetPrice":   "18.69",
 			"totalGrossPrice": "20",
 			"cart": []map[string]interface{}{
@@ -96,6 +117,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	purchaseList.Length().IsEqual(1)
 	purchaseListItem := purchaseList.Value(0).Object()
 	purchaseListItem.Value("id").Number().IsEqual(purchaseId)
+	purchaseListItem.Value("paymentMethod").String().IsEqual("CC")
 
 	// Delete the purchase
 	withDemoUserAuthToken(e.DELETE(purchaseUrl)).
@@ -111,9 +133,10 @@ func TestCreatePurchaseWithWrongTotalGrossPrice(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a purchase, but with a wrong total price
+	// Create a purchase, but with a wrong total gross price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
+			"paymentMethod":   "CASH",
 			"totalGrossPrice": "21",
 			"totalNetPrice":   "18.69",
 			"cart": []map[string]interface{}{
@@ -134,9 +157,10 @@ func TestCreatePurchaseWithWrongTotalNetPrice(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a purchase, but with a wrong total price
+	// Create a purchase, but with a wrong total net price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
+			"paymentMethod":   "CASH",
 			"totalGrossPrice": "20",
 			"totalNetPrice":   "1.69",
 			"cart": []map[string]interface{}{
@@ -157,9 +181,10 @@ func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a purchase, but with a wrong total price
+	// Create a purchase, but with a wrong product ID
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
+			"paymentMethod":   "CASH",
 			"totalGrossPrice": "21",
 			"totalNetPrice":   "21",
 			"cart": []map[string]interface{}{
@@ -176,6 +201,30 @@ func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
 	validateErrorDetailMessage(errorResponse, "Product not found")
 }
 
+func TestCreatePurchaseWithInvalidPaymentMethod(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// Create a purchase, but with a wrong payment method
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+		WithJSON(map[string]interface{}{
+			"paymentMethod":   "INVALID",
+			"totalGrossPrice": "21",
+			"totalNetPrice":   "21",
+			"cart": []map[string]interface{}{
+				{
+					"ID":        123,
+					"quantity":  1,
+					"listItems": []map[string]interface{}{},
+				},
+			},
+		}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	validateErrorDetailMessage(errorResponse, "Invalid payment method")
+}
+
 func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -183,6 +232,7 @@ func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
 	// Create a purchase
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
+			"paymentMethod":   "CASH",
 			"totalNetPrice":   "11.11",
 			"totalGrossPrice": "12.12",
 			"cart": []map[string]interface{}{
@@ -211,6 +261,7 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 	// Create a purchase
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
+			"paymentMethod":   "CASH",
 			"totalNetPrice":   "11.11",
 			"totalGrossPrice": "12.12",
 			"cart": []map[string]interface{}{
@@ -235,6 +286,7 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 func createPurchase() string {
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
+			"paymentMethod":   "CASH",
 			"totalNetPrice":   "37.38",
 			"totalGrossPrice": "40",
 			"cart": []map[string]interface{}{

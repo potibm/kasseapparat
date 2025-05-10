@@ -18,6 +18,7 @@ import Decimal from "decimal.js";
 
 function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
   const currency = useConfig().currency;
+  const paymentMethods = useConfig().paymentMethods;
 
   const [flash, setFlash] = useState(false);
   const [checkoutProcessing, setCheckoutProcessing] = useState(false);
@@ -30,13 +31,13 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
     }, 500);
   };
 
-  const handleCheckoutCart = async () => {
+  const handleCheckoutCart = async (paymentMethodCode) => {
     if (checkoutProcessing) {
       return;
     }
     setCheckoutProcessing(true);
 
-    checkoutCart().then(() => {
+    checkoutCart(paymentMethodCode).then(() => {
       setCheckoutProcessing(false);
     });
   };
@@ -147,21 +148,23 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
         </TableBody>
       </Table>
 
-      <MyButton
-        {...((cart.length === 0 || checkoutProcessing) && { disabled: true })}
-        className="w-full mt-2 uppercase"
-        onClick={handleCheckoutCart}
-      >
-        Checkout&nbsp;
-        {cart.length > 0 &&
-          currency.format(
-            cart.reduce(
-              (total, item) => total.add(item.totalGrossPrice),
-              new Decimal(0),
-            ),
-          )}
-        {checkoutProcessing && <Spinner color="gray" className="ml-3" />}
-      </MyButton>
+      {paymentMethods.map((paymentMethod) => (
+        <MyButton
+          {...((cart.length === 0 || checkoutProcessing) && { disabled: true })}
+          className="w-full mt-2 uppercase"
+          onClick={() => handleCheckoutCart(paymentMethod.code)}
+        >
+          {paymentMethod.name}&nbsp;
+          {cart.length > 0 &&
+            currency.format(
+              cart.reduce(
+                (total, item) => total.add(item.totalGrossPrice),
+                new Decimal(0),
+              ),
+            )}
+          {checkoutProcessing && <Spinner color="gray" className="ml-3" />}
+        </MyButton>
+      ))}
     </div>
   );
 }

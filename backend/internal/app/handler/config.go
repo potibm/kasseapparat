@@ -7,23 +7,37 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type PaymentMethodsConfig struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
 type Config struct {
-	Version                       string  `json:"version"`
-	SentryDSN                     string  `json:"sentryDSN"`
-	SentryTraceSampleRate         float64 `json:"sentryTraceSampleRate"`
-	SentryReplaySessionSampleRate float64 `json:"sentryReplaySessionSampleRate"`
-	SentryReplayErrorSampleRate   float64 `json:"sentryReplayErrorSampleRate"`
-	CurrencyLocale                string  `json:"currencyLocale"`
-	CurrencyCode                  string  `json:"currencyCode"`
-	VATRates                      string  `json:"vatRates"`
-	DateLocale                    string  `json:"dateLocale"`
-	DateOptions                   string  `json:"dateOptions"`
-	FractionDigitsMin             int     `json:"fractionDigitsMin"`
-	FractionDigitsMax             int     `json:"fractionDigitsMax"`
-	EnvironmentMessage            string  `json:"environmentMessage"`
+	Version                       string                 `json:"version"`
+	SentryDSN                     string                 `json:"sentryDSN"`
+	SentryTraceSampleRate         float64                `json:"sentryTraceSampleRate"`
+	SentryReplaySessionSampleRate float64                `json:"sentryReplaySessionSampleRate"`
+	SentryReplayErrorSampleRate   float64                `json:"sentryReplayErrorSampleRate"`
+	CurrencyLocale                string                 `json:"currencyLocale"`
+	CurrencyCode                  string                 `json:"currencyCode"`
+	VATRates                      string                 `json:"vatRates"`
+	DateLocale                    string                 `json:"dateLocale"`
+	DateOptions                   string                 `json:"dateOptions"`
+	FractionDigitsMin             int                    `json:"fractionDigitsMin"`
+	FractionDigitsMax             int                    `json:"fractionDigitsMax"`
+	EnvironmentMessage            string                 `json:"environmentMessage"`
+	PaymentMethods                []PaymentMethodsConfig `json:"paymentMethods"`
 }
 
 func (handler *Handler) GetConfig(c *gin.Context) {
+	paymentMethods := make([]PaymentMethodsConfig, 0, len(handler.paymentMethods))
+	for code, name := range handler.paymentMethods {
+		paymentMethods = append(paymentMethods, PaymentMethodsConfig{
+			Code: code,
+			Name: name,
+		})
+	}
+
 	config := Config{
 		Version:                       handler.version,
 		SentryDSN:                     getEnv("SENTRY_DSN", ""),
@@ -38,6 +52,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		FractionDigitsMin:             getEnvAsInt("FRACTION_DIGITS_MIN", 0),
 		FractionDigitsMax:             getEnvAsInt("FRACTION_DIGITS_MAX", 2),
 		EnvironmentMessage:            getEnv("ENV_MESSAGE", ""),
+		PaymentMethods:                paymentMethods,
 	}
 
 	c.JSON(200, config)
