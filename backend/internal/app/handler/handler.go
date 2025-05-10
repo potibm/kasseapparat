@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/repository"
+	"github.com/shopspring/decimal"
 )
 
 type Handler struct {
@@ -36,6 +37,22 @@ func queryArrayInt(c *gin.Context, field string) []int {
 	}
 
 	return ids
+}
+
+func queryDecimal(c *gin.Context, field string) *decimal.Decimal {
+	value := c.DefaultQuery(field, "none")
+
+	if value == "none" {
+		return nil
+	} else {
+		decimalValue, err := decimal.NewFromString(value)
+		if err != nil {
+			// ignore silently
+			return nil
+		}
+
+		return &decimalValue
+	}
 }
 
 func (handler *Handler) IsValidPaymentMethod(code string) bool {

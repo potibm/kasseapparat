@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/repository"
 	response "github.com/potibm/kasseapparat/internal/app/response"
 	"github.com/shopspring/decimal"
 )
@@ -185,8 +186,14 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "DESC")
+	filters := repository.PurchaseFilters{}
+	filters.PaymentMethod = c.DefaultQuery("paymentMethod", "")
+	filters.CreatedByID, _ = strconv.Atoi(c.DefaultQuery("createdById", "0"))
+	filters.TotalGrossPriceGte = queryDecimal(c, "totalGrossPrice_gte")
+	filters.TotalGrossPriceLte = queryDecimal(c, "totalGrossPrice_lte")
+	filters.IDs = queryArrayInt(c, "id")
 
-	purchases, err := handler.repo.GetPurchases(end-start, start, sort, order)
+	purchases, err := handler.repo.GetPurchases(end-start, start, sort, order, filters)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 

@@ -5,12 +5,46 @@ import (
 	"errors"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 )
 
 type ProductPurchaseStats struct {
 	ProductID int
 	Quantity  int
 	Name      string
+}
+
+type PurchaseFilters struct {
+	CreatedByID        int
+	PaymentMethod      string
+	TotalGrossPriceLte *decimal.Decimal
+	TotalGrossPriceGte *decimal.Decimal
+	IDs                []int
+}
+
+func (filters PurchaseFilters) AddWhere(query *gorm.DB) *gorm.DB {
+	if len(filters.IDs) > 0 {
+		query = query.Where("Guests.ID IN ?", filters.IDs)
+	}
+
+	if filters.CreatedByID != 0 {
+		query = query.Where("purchases.created_by_id = ?", filters.CreatedByID)
+	}
+
+	if filters.PaymentMethod != "" {
+		query = query.Where("purchases.payment_method = ?", filters.PaymentMethod)
+	}
+
+	if filters.TotalGrossPriceLte != nil {
+		query = query.Where("purchases.total_gross_price <= ?", filters.TotalGrossPriceLte)
+	}
+
+	if filters.TotalGrossPriceGte != nil {
+		query = query.Where("purchases.total_gross_price >= ?", filters.TotalGrossPriceGte)
+	}
+
+	return query
 }
 
 var purchaseSortFieldMappings = map[string]string{
@@ -46,7 +80,7 @@ func (repo *Repository) GetPurchaseByID(id int) (*models.Purchase, error) {
 	return &purchase, nil
 }
 
-func (repo *Repository) GetPurchases(limit int, offset int, sort string, order string) ([]models.Purchase, error) {
+func (repo *Repository) GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -57,7 +91,11 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 	}
 
 	var purchases []models.Purchase
-	if err := repo.db.Joins("CreatedBy").Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").Order(sort + " " + order + ", purchases.created_at DESC").Limit(limit).Offset(offset).Find(&purchases).Error; err != nil {
+
+	query := repo.db.Joins("CreatedBy").Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").Order(sort + " " + order + ", purchases.created_at DESC").Limit(limit).Offset(offset)
+	query = filters.AddWhere(query)
+
+	if err := query.Find(&purchases).Error; err != nil {
 		return nil, errors.New("purchases not found")
 	}
 

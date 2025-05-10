@@ -24,6 +24,25 @@ func TestGetPurchasesListIsEmpty(t *testing.T) {
 	purchaseList.Length().IsEqual(0)
 }
 
+func TestGetPurchasesListWithAllFilters(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+		WithQuery("paymentMethod", "CASH").
+		WithQuery("createdById", "1").
+		WithQuery("totalGrossPrice_gte", "1").
+		WithQuery("totalGrossPrice_lte", "100").
+		Expect().
+		Status(http.StatusOK)
+
+	purchaseListResponse.Header(totalCountHeader).AsNumber().IsEqual(0)
+
+	purchaseList := purchaseListResponse.JSON().Array()
+
+	purchaseList.Length().IsEqual(0)
+}
+
 func TestGetPurchasesWithSort(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()

@@ -9,16 +9,24 @@ import {
   Show,
   SimpleShowLayout,
   ArrayField,
+  ReferenceInput,
+  AutocompleteInput,
+  SelectArrayInput,
+  NumberInput,
+  Filter,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
+import { PurchaseFilters } from "./PurchaseFilters";
 
 export const PurchaseList = () => {
-  const currency = useConfig().currencyOptions;
-  const locale = useConfig().Locale;
+  const { currencyOptions: currency, Locale: locale } = useConfig();
 
   return (
-    <List sort={{ field: "createdAt", order: "DESC" }}>
+    <List
+      filters={<PurchaseFilters />}
+      sort={{ field: "createdAt", order: "DESC" }}
+    >
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <NumberField source="id" />
         <DateField
