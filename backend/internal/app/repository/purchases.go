@@ -52,6 +52,7 @@ var purchaseSortFieldMappings = map[string]string{
 	"createdAt":          "purchases.created_at",
 	"totalGrossPrice":    "purchases.total_gross_price",
 	"createdBy.username": "CreatedBy.username",
+	"paymentMethod":      "purchases.payment_method",
 	"pos":                "Pos",
 }
 

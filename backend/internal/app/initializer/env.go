@@ -14,6 +14,8 @@ var allAvailablePaymentMethods = map[string]string{
 	"VOUCHER": "🎟️ Voucher",
 }
 
+const defaultPaymentMethod = "CASH"
+
 func InitializeDotenv() {
 	_ = godotenv.Load()
 }
@@ -35,7 +37,7 @@ func GetEnabledPaymentMethods() map[string]string {
 	raw := os.Getenv("PAYMENT_METHODS")
 	if raw == "" {
 		// fallback: default to only CASH if not set
-		raw = "CASH"
+		raw = defaultPaymentMethod
 	}
 
 	for _, code := range strings.Split(raw, ",") {
@@ -43,6 +45,10 @@ func GetEnabledPaymentMethods() map[string]string {
 		if label, ok := allAvailablePaymentMethods[code]; ok {
 			enabled[code] = label
 		}
+	}
+
+	if len(enabled) == 0 {
+		enabled[defaultPaymentMethod] = allAvailablePaymentMethods[defaultPaymentMethod]
 	}
 
 	return enabled

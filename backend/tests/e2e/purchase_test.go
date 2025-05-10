@@ -48,7 +48,7 @@ func TestGetPurchasesWithSort(t *testing.T) {
 	defer cleanup()
 
 	// define an array of sort fields
-	sortFields := []string{"id", "createdAt", "totalGrossPrice", "createdBy.username"}
+	sortFields := []string{"id", "createdAt", "totalGrossPrice", "createdBy.username", "paymentMethod"}
 
 	for _, sortField := range sortFields {
 		withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
@@ -132,7 +132,7 @@ func TestCreatePurchaseWithWrongTotalGrossPrice(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a purchase, but with a wrong total price
+	// Create a purchase, but with a wrong total gross price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"paymentMethod":   "CASH",
@@ -156,7 +156,7 @@ func TestCreatePurchaseWithWrongTotalNetPrice(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a purchase, but with a wrong total price
+	// Create a purchase, but with a wrong total net price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"paymentMethod":   "CASH",
@@ -180,7 +180,7 @@ func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a purchase, but with a wrong total price
+	// Create a purchase, but with a wrong product ID
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"paymentMethod":   "CASH",
@@ -204,7 +204,7 @@ func TestCreatePurchaseWithInvalidPaymentMethod(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a purchase, but with a wrong total price
+	// Create a purchase, but with a wrong payment method
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"paymentMethod":   "INVALID",

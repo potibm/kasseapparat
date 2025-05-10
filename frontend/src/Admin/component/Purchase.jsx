@@ -9,18 +9,18 @@ import {
   Show,
   SimpleShowLayout,
   ArrayField,
-  ReferenceInput,
-  AutocompleteInput,
-  SelectArrayInput,
-  NumberInput,
-  Filter,
+  FunctionField,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
 import { PurchaseFilters } from "./PurchaseFilters";
 
 export const PurchaseList = () => {
-  const { currencyOptions: currency, Locale: locale } = useConfig();
+  const {
+    currencyOptions: currency,
+    Locale: locale,
+    paymentMethods,
+  } = useConfig();
 
   return (
     <List
@@ -41,7 +41,24 @@ export const PurchaseList = () => {
           options={currency}
         />
         <TextField source="createdBy.username" />
-        <TextField source="paymentMethod" />
+        <FunctionField
+          source="paymentMethod"
+          render={(record) => {
+            if (!paymentMethods) {
+              return record.paymentMethod;
+            }
+            if (Array.isArray(paymentMethods)) {
+              const paymentMethod = paymentMethods.find(
+                (pm) => pm.code === record.paymentMethod,
+              );
+              if (paymentMethod) {
+                return paymentMethod.name;
+              }
+            }
+
+            return record.paymentMethod;
+          }}
+        />
         <DeleteButton mutationMode="pessimistic" />
       </Datagrid>
     </List>
