@@ -117,9 +117,7 @@ const GuestlistModal = ({
               </MyButton>
             </div>
 
-            <div
-              className="relative"
-            >
+            <div className="relative">
               <GuestlistResultTable
                 error={error}
                 loading={loading}
