@@ -60,7 +60,7 @@ const GuestlistModal = ({
         setLoadedSearchQuery("");
       }
     },
-    [product.id, searchQuery, apiHost, token],
+    [product.id, apiHost, token],
   );
 
   useEffect(() => {
@@ -88,6 +88,7 @@ const GuestlistModal = ({
           {/* Sidebar */}
           <div className="w-4/12 bg-gray-100 dark:bg-gray-900 p-4">
             <FloatingLabel
+              className="mb-4"
               variant="filled"
               label="Search..."
               value={searchQuery}
@@ -99,7 +100,7 @@ const GuestlistModal = ({
 
             <MyButton
               className="w-full mt-5"
-              color="warning"
+              color="alternative"
               onClick={handleManualAddToCart}
             >
               Manual

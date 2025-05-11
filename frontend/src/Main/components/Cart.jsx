@@ -150,6 +150,7 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
 
       {paymentMethods.map((paymentMethod) => (
         <MyButton
+          key={paymentMethod.code}
           {...((cart.length === 0 || checkoutProcessing) && { disabled: true })}
           className="w-full mt-2 uppercase"
           onClick={() => handleCheckoutCart(paymentMethod.code)}
