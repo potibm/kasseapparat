@@ -84,7 +84,7 @@ const GuestlistModal = ({
       dismissible
     >
       <ModalBody className="overflow-hidden">
-        <div className="flex h-full">
+        <div className="flex h-[calc(100vh-6rem)]">
           {/* Sidebar */}
           <div className="w-4/12 bg-gray-100 dark:bg-gray-900 p-4">
             <FloatingLabel
@@ -108,7 +108,6 @@ const GuestlistModal = ({
           </div>
           <div
             className="w-3/4 p-4 overflow-y-auto dark:text-white"
-            style={{ maxHeight: "calc(100vh - 10rem)" }}
             id="results"
           >
             <div className="text-xl mb-4 flex justify-between items-center">
@@ -120,7 +119,6 @@ const GuestlistModal = ({
 
             <div
               className="relative"
-              style={{ maxHeight: "calc(100vh - 10rem)", minHeight: "200px" }}
             >
               <GuestlistResultTable
                 error={error}
