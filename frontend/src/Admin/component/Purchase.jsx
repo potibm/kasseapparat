@@ -9,16 +9,24 @@ import {
   Show,
   SimpleShowLayout,
   ArrayField,
+  FunctionField,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
+import { PurchaseFilters } from "./PurchaseFilters";
 
 export const PurchaseList = () => {
-  const currency = useConfig().currencyOptions;
-  const locale = useConfig().Locale;
+  const {
+    currencyOptions: currency,
+    Locale: locale,
+    paymentMethods,
+  } = useConfig();
 
   return (
-    <List sort={{ field: "createdAt", order: "DESC" }}>
+    <List
+      filters={<PurchaseFilters />}
+      sort={{ field: "createdAt", order: "DESC" }}
+    >
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <NumberField source="id" />
         <DateField
@@ -33,6 +41,24 @@ export const PurchaseList = () => {
           options={currency}
         />
         <TextField source="createdBy.username" />
+        <FunctionField
+          source="paymentMethod"
+          render={(record) => {
+            if (!paymentMethods) {
+              return record.paymentMethod;
+            }
+            if (Array.isArray(paymentMethods)) {
+              const paymentMethod = paymentMethods.find(
+                (pm) => pm.code === record.paymentMethod,
+              );
+              if (paymentMethod) {
+                return paymentMethod.name;
+              }
+            }
+
+            return record.paymentMethod;
+          }}
+        />
         <DeleteButton mutationMode="pessimistic" />
       </Datagrid>
     </List>
@@ -48,6 +74,7 @@ export const PurchaseShow = (props) => {
       <SimpleShowLayout>
         <NumberField source="id" />
         <DateField source="createdAt" showTime={true} />
+        <TextField source="paymentMethod" />
         <NumberField
           source="totalNetPrice"
           locales={locale}

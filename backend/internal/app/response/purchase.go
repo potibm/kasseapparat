@@ -12,6 +12,7 @@ type PurchaseResponse struct {
 	CreatedAt       time.Time              `json:"createdAt"`
 	CreatedByID     *uint                  `json:"createdById"`
 	CreatedBy       *models.User           `json:"createdBy"`
+	PaymentMethod   string                 `json:"paymentMethod"`
 	TotalNetPrice   decimal.Decimal        `json:"totalNetPrice"`
 	TotalGrossPrice decimal.Decimal        `json:"totalGrossPrice"`
 	TotalVatAmount  decimal.Decimal        `json:"totalVatAmount"`
@@ -24,6 +25,7 @@ func ToPurchaseResponse(purchase models.Purchase, decimalPlaces int32) PurchaseR
 		CreatedAt:       purchase.CreatedAt,
 		CreatedByID:     purchase.CreatedByID,
 		CreatedBy:       purchase.CreatedBy,
+		PaymentMethod:   purchase.PaymentMethod,
 		TotalNetPrice:   purchase.TotalNetPrice,
 		TotalGrossPrice: purchase.TotalGrossPrice,
 		TotalVatAmount:  purchase.TotalGrossPrice.Sub(purchase.TotalNetPrice),

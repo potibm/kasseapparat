@@ -42,11 +42,15 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 	t.Setenv("JWT_SECRET", "test")
 
 	currencyDecimalPlaces := int32(2)
+	paymentMethods := map[string]string{
+		"CASH": "💶 Cash",
+		"CC":   "💳 Creditcard",
+	}
 
 	repo := repository.NewLocalRepository(currencyDecimalPlaces)
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)
-	handler := handler.NewHandler(repo, *mailer, "v1", currencyDecimalPlaces)
+	handler := handler.NewHandler(repo, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
 
 	router := initializer.InitializeHttpServer(*handler, *repo, embed.FS{})
 

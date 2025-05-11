@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/repository"
 	response "github.com/potibm/kasseapparat/internal/app/response"
 	"github.com/shopspring/decimal"
 )
@@ -25,6 +26,7 @@ type PurchaseRequest struct {
 	TotalNetPrice   decimal.Decimal       `binding:"required"      form:"totalNetPrice"`
 	TotalGrossPrice decimal.Decimal       `binding:"required"      form:"totalGrossPrice"`
 	Cart            []PurchaseCartRequest `binding:"required,dive" form:"cart"`
+	PaymentMethod   string                `binding:"required"      form:"paymentMethod"`
 }
 
 func (handler *Handler) DeletePurchase(c *gin.Context) {
@@ -57,6 +59,12 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	var purchaseRequest PurchaseRequest
 	if err := c.ShouldBind(&purchaseRequest); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
+		return
+	}
+
+	if !handler.IsValidPaymentMethod(purchaseRequest.PaymentMethod) {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid payment method"))
 
 		return
 	}
@@ -139,6 +147,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 	purchase.TotalNetPrice = calculatedTotalNetPrice
 	purchase.TotalGrossPrice = calculatedTotalGrossPrice
+	purchase.PaymentMethod = purchaseRequest.PaymentMethod
 
 	purchase, err = handler.repo.StorePurchases(purchase)
 	if err != nil {
@@ -177,8 +186,14 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "DESC")
+	filters := repository.PurchaseFilters{}
+	filters.PaymentMethod = c.DefaultQuery("paymentMethod", "")
+	filters.CreatedByID, _ = strconv.Atoi(c.DefaultQuery("createdById", "0"))
+	filters.TotalGrossPriceGte = queryDecimal(c, "totalGrossPrice_gte")
+	filters.TotalGrossPriceLte = queryDecimal(c, "totalGrossPrice_lte")
+	filters.IDs = queryArrayInt(c, "id")
 
-	purchases, err := handler.repo.GetPurchases(end-start, start, sort, order)
+	purchases, err := handler.repo.GetPurchases(end-start, start, sort, order, filters)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 

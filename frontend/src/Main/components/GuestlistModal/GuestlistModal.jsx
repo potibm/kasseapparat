@@ -60,7 +60,7 @@ const GuestlistModal = ({
         setLoadedSearchQuery("");
       }
     },
-    [product.id, searchQuery, apiHost, token],
+    [product.id, apiHost, token],
   );
 
   useEffect(() => {
@@ -84,10 +84,11 @@ const GuestlistModal = ({
       dismissible
     >
       <ModalBody className="overflow-hidden">
-        <div className="flex h-full">
+        <div className="flex h-[calc(100vh-6rem)]">
           {/* Sidebar */}
           <div className="w-4/12 bg-gray-100 dark:bg-gray-900 p-4">
             <FloatingLabel
+              className="mb-4"
               variant="filled"
               label="Search..."
               value={searchQuery}
@@ -99,7 +100,7 @@ const GuestlistModal = ({
 
             <MyButton
               className="w-full mt-5"
-              color="warning"
+              color="alternative"
               onClick={handleManualAddToCart}
             >
               Manual
@@ -107,7 +108,6 @@ const GuestlistModal = ({
           </div>
           <div
             className="w-3/4 p-4 overflow-y-auto dark:text-white"
-            style={{ maxHeight: "calc(100vh - 10rem)" }}
             id="results"
           >
             <div className="text-xl mb-4 flex justify-between items-center">
@@ -117,10 +117,7 @@ const GuestlistModal = ({
               </MyButton>
             </div>
 
-            <div
-              className="relative"
-              style={{ maxHeight: "calc(100vh - 10rem)", minHeight: "200px" }}
-            >
+            <div className="relative">
               <GuestlistResultTable
                 error={error}
                 loading={loading}
