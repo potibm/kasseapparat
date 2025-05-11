@@ -13,7 +13,7 @@ import {
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
-import { PurchaseFilters } from "./PurchaseFilters";
+import { PurchaseListToolbar } from "./PurchaseListToolbar";
 
 export const PurchaseList = () => {
   const {
@@ -23,10 +23,8 @@ export const PurchaseList = () => {
   } = useConfig();
 
   return (
-    <List
-      filters={<PurchaseFilters />}
-      sort={{ field: "createdAt", order: "DESC" }}
-    >
+    <List sort={{ field: "createdAt", order: "DESC" }} actions={false}>
+      <PurchaseListToolbar />
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <NumberField source="id" />
         <DateField
