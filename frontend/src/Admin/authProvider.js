@@ -154,3 +154,4 @@ const authProvider = {
   },
 };
 export default authProvider;
+export { getAdminData };

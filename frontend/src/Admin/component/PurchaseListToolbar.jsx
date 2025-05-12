@@ -49,7 +49,7 @@ export const PurchaseListToolbar = (props) => {
   return (
     <Toolbar {...props}>
       <FilterForm filters={purchaseFilters} />
-      <div class="MuiToolbar-root MuiToolbar-dense css-oynclu-MuiToolbar-root-RaTopToolbar-root">
+      <div className="MuiToolbar-root MuiToolbar-dense css-oynclu-MuiToolbar-root-RaTopToolbar-root">
         <FilterButton filters={purchaseFilters} />
         <PurchaseExportButton paymentMethods={paymentMethods} />
         <ExportButton {...props} />

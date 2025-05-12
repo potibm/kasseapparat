@@ -103,6 +103,19 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 	return purchases, nil
 }
 
+func (repo *Repository) GetFilteredPurchases(filters PurchaseFilters) ([]models.Purchase, error) {
+	var purchases []models.Purchase
+
+	query := repo.db.Joins("CreatedBy").Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").Order("purchases.created_at DESC")
+	query = filters.AddWhere(query)
+
+	if err := query.Find(&purchases).Error; err != nil {
+		return nil, errors.New("purchases not found")
+	}
+
+	return purchases, nil
+}
+
 func getPurchasesValidFieldName(input string) (string, error) {
 	if field, exists := purchaseSortFieldMappings[input]; exists {
 		return field, nil

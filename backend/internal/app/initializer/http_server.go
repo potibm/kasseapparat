@@ -71,7 +71,7 @@ func createCorsMiddleware() gin.HandlerFunc {
 	corsConfig.AllowAllOrigins = false
 	corsConfig.AllowCredentials = true
 	corsConfig.AddAllowHeaders("Authorization", "Credentials")
-	corsConfig.AddExposeHeaders("X-Total-Count")
+	corsConfig.AddExposeHeaders("X-Total-Count", "Content-Disposition")
 
 	return cors.New(corsConfig)
 }
@@ -169,6 +169,7 @@ func registerPurchaseRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 		purchases.GET("/:id", handler.GetPurchaseByID)
 		purchases.POST("", handler.PostPurchases)
 		purchases.DELETE("/:id", handler.DeletePurchase)
+		purchases.GET("/export", handler.ExportPurchases)
 	}
 }
 

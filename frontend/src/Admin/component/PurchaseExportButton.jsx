@@ -10,12 +10,16 @@ import {
   Checkbox,
 } from "@mui/material";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import { useAuthProvider } from "react-admin";
+import { useConfig } from "../../provider/ConfigProvider";
+import { getAdminData } from "../authProvider";
 
 export const PurchaseExportButton = ({ paymentMethods }) => {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState([]);
-  const authProvider = useAuthProvider();
+  const adminData = getAdminData();
+  const token = adminData?.token;
+
+  const { apiHost } = useConfig();
 
   const togglePaymentMethod = (code) => {
     setSelected((prev) =>
@@ -24,16 +28,13 @@ export const PurchaseExportButton = ({ paymentMethods }) => {
   };
 
   const handleExport = async () => {
-    const identity = await authProvider.getIdentity();
-    const token = identity?.token;
-
     const params = new URLSearchParams();
     if (selected.length > 0) {
       params.set("paymentMethods", selected.join(","));
     }
 
     const response = await fetch(
-      `/admin/exports/purchases.csv?${params.toString()}`,
+      `${apiHost}/api/v2/purchases/export?${params.toString()}`,
       {
         method: "GET",
         headers: {
@@ -44,16 +45,20 @@ export const PurchaseExportButton = ({ paymentMethods }) => {
 
     if (!response.ok) {
       alert(
-        `Fehler beim Exportieren (Status ${response.status}): ${response.statusText}`,
+        `An error occurred while exporting purchases (Status ${response.status}): ${response.statusText}. Please try again later or contact support if the issue persists.`,
       );
       return;
     }
 
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
+    const filename = response.headers
+      .get("Content-Disposition")
+      ?.match(/filename="([^"]+)"/)?.[1];
+
     const a = document.createElement("a");
     a.href = url;
-    a.download = "purchases.csv";
+    a.download = filename || "purchases.csv";
     document.body.appendChild(a);
     a.click();
     a.remove();
