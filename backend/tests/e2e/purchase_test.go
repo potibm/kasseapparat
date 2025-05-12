@@ -283,6 +283,20 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 	validateErrorDetailMessage(errorResponse, "Additional guests exceed available guests")
 }
 
+func TestPurchasesAuthentication(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	purchaseUrlWithId := createPurchase()
+
+	e.Request("GET", purchaseBaseUrl).Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", purchaseUrlWithId).Expect().Status(http.StatusUnauthorized)
+	e.Request("POST", purchaseBaseUrl).Expect().Status(http.StatusUnauthorized)
+	e.Request("DELETE", purchaseUrlWithId).Expect().Status(http.StatusUnauthorized)
+
+	deletePurchase(purchaseUrlWithId)
+}
+
 func createPurchase() string {
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{

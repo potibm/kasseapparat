@@ -7,6 +7,7 @@ type PurchaseItem struct {
 	PurchaseID uint            `json:"purchaseID"` // Foreign key to Purchase
 	ProductID  uint            `json:"productID"`  // Foreign key to Product
 	Product    Product         `json:"product"`
+	Purchase   Purchase        `json:"purchase"`
 	Quantity   int             `json:"quantity"`
 	NetPrice   decimal.Decimal `gorm:"type:TEXT"  json:"netPrice"`
 	VATRate    decimal.Decimal `gorm:"type:TEXT"  json:"vatRate"`

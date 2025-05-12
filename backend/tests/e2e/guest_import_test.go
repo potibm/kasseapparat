@@ -120,3 +120,10 @@ func uploadGuestImport(fileContent string) *httpexpect.Response {
 		WithFile("file", "import.csv", reader).
 		Expect()
 }
+
+func TestGuestsImportAuthentication(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	e.Request("POST", guestsImportUrl).Expect().Status(http.StatusUnauthorized)
+}

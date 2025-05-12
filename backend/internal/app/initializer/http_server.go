@@ -33,7 +33,7 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 
 	r.GET("/api/v2/purchases/stats", myhandler.GetPurchaseStats)
 
-	r.Use(createCorsMiddleware())
+	r.Use(CreateCorsMiddleware())
 
 	folder, err := static.EmbedFolder(staticFiles, "assets")
 	if err != nil {
@@ -59,7 +59,7 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 	return r
 }
 
-func createCorsMiddleware() gin.HandlerFunc {
+func CreateCorsMiddleware() gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
 
 	corsAllowOrigins := os.Getenv("CORS_ALLOW_ORIGINS")

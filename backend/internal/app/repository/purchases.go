@@ -103,17 +103,30 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 	return purchases, nil
 }
 
-func (repo *Repository) GetFilteredPurchases(filters PurchaseFilters) ([]models.Purchase, error) {
-	var purchases []models.Purchase
+func (repo *Repository) GetFilteredPurchases(filters PurchaseFilters) ([]models.PurchaseItem, error) {
+	var purchaseItems []models.PurchaseItem
 
-	query := repo.db.Joins("CreatedBy").Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").Order("purchases.created_at DESC")
-	query = filters.AddWhere(query)
+	query := repo.db.
+		Model(&models.PurchaseItem{}).
+		Joins("JOIN purchases ON purchases.id = purchase_items.purchase_id").
+		// Where("purchases.payment_method IN ?", filters.PaymentMethod).
+		Preload("Product").
+		Preload("Purchase").
+		Find(&purchaseItems)
 
-	if err := query.Find(&purchases).Error; err != nil {
+		/*
+			query := repo.db.Joins("CreatedBy").
+				Model(&models.Purchase{}).
+				Preload("PurchaseItems").
+				Preload("PurchaseItems.Product").
+				Order("purchases.created_at DESC")
+			query = filters.AddWhere(query)*/
+
+	if err := query.Find(&purchaseItems).Error; err != nil {
 		return nil, errors.New("purchases not found")
 	}
 
-	return purchases, nil
+	return purchaseItems, nil
 }
 
 func getPurchasesValidFieldName(input string) (string, error) {
