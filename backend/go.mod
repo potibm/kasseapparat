@@ -17,8 +17,8 @@ require (
 	github.com/sethvargo/go-password v0.3.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/crypto v0.37.0
-	golang.org/x/text v0.24.0
+	golang.org/x/crypto v0.38.0
+	golang.org/x/text v0.25.0
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.26.0
 )
@@ -74,7 +74,7 @@ require (
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	golang.org/x/arch v0.16.0 // indirect
 	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
