@@ -8,7 +8,7 @@ import (
 
 var purchaseBaseUrl = "/api/v2/purchases"
 
-func TestGetPurchasesListIsEmpty(t *testing.T) {
+func TestGetPurchasesList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
@@ -17,11 +17,21 @@ func TestGetPurchasesListIsEmpty(t *testing.T) {
 		Expect().
 		Status(http.StatusOK)
 
-	purchaseListResponse.Header(totalCountHeader).AsNumber().IsEqual(0)
+	purchaseListResponse.Header(totalCountHeader).AsNumber().Ge(1)
 
 	purchaseList := purchaseListResponse.JSON().Array()
 
-	purchaseList.Length().IsEqual(0)
+	purchaseList.Length().Ge(1)
+
+	purchaseListItem := purchaseList.Value(0).Object()
+	purchaseListItem.Value("id").Number().Gt(0)
+	purchaseListItem.Value("totalGrossPrice").String()
+	purchaseListItem.Value("totalNetPrice").String()
+	purchaseListItem.Value("totalVatAmount").String()
+	purchaseListItem.Value("createdAt").String().NotEmpty()
+	purchaseListItem.Value("createdBy").Object().Value("username").String().NotEmpty()
+	purchaseListItem.Value("paymentMethod").String().NotEmpty()
+	purchaseListItem.Value("purchaseItems").Array().Length().Gt(0)
 }
 
 func TestGetPurchasesListWithAllFilters(t *testing.T) {
@@ -107,14 +117,16 @@ func TestCreatePurchaseWithList(t *testing.T) {
 
 	// Get the purchase list
 	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+		WithQuery("_sort", "id").
+		WithQuery("_order", "DESC").
 		Expect().
 		Status(http.StatusOK)
 
-	purchaseListResponse.Header(totalCountHeader).AsNumber().IsEqual(1)
+	purchaseListResponse.Header(totalCountHeader).AsNumber().Ge(1)
 
 	purchaseList := purchaseListResponse.JSON().Array()
 
-	purchaseList.Length().IsEqual(1)
+	purchaseList.Length().Ge(1)
 	purchaseListItem := purchaseList.Value(0).Object()
 	purchaseListItem.Value("id").Number().IsEqual(purchaseId)
 	purchaseListItem.Value("paymentMethod").String().IsEqual("CC")

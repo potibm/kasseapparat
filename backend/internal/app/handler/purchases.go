@@ -200,7 +200,7 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 		return
 	}
 
-	total, err := handler.repo.GetTotalPurchases()
+	total, err := handler.repo.GetTotalPurchases(filters)
 	if err != nil {
 		_ = c.Error(InternalServerError)
 

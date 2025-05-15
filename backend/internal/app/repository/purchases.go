@@ -137,10 +137,12 @@ func getPurchasesValidFieldName(input string) (string, error) {
 	return "", errors.New("invalid sort field name")
 }
 
-func (repo *Repository) GetTotalPurchases() (int64, error) {
+func (repo *Repository) GetTotalPurchases(filters PurchaseFilters) (int64, error) {
 	var totalRows int64
 
-	repo.db.Model(&models.Purchase{}).Count(&totalRows)
+	query := repo.db.Model(&models.Purchase{})
+	query = filters.AddWhere(query)
+	query.Count(&totalRows)
 
 	return totalRows, nil
 }

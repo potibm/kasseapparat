@@ -18,6 +18,7 @@ import (
 var (
 	purgeDB           bool // Flag to indicate whether to purge the database
 	seedData          bool // Flag to indicate whether to seed initial data
+	seedDataWithTest  bool // Flag to indicate whether to seed initial data with test data
 	createUserName    string
 	createUserEmail   string
 	userImportCsvFile string
@@ -28,6 +29,7 @@ func init() {
 	// Register command-line flags
 	flag.BoolVar(&purgeDB, "purge", false, "Purge the database before initializing")
 	flag.BoolVar(&seedData, "seed", false, "Seed initial data to the database")
+	flag.BoolVar(&seedDataWithTest, "seed-with-test", false, "Seed initial data plus testdata to the database")
 	flag.StringVar(&userImportCsvFile, "import-users", "", "CSV file to import users from")
 	flag.StringVar(&createUserName, "create-user", "", "Create a user with the given username")
 	flag.StringVar(&createUserEmail, "create-user-email", "", "Email for the user to create")
@@ -85,7 +87,10 @@ func main() {
 	// Seed initial data if requested
 	if seedData {
 		log.Println("Start seeding DB...")
-		utils.SeedDatabase(db)
+		utils.SeedDatabase(db, false)
+	} else if seedDataWithTest {
+		log.Println("Start seeding DB with test data...")
+		utils.SeedDatabase(db, true)
 	}
 }
 
