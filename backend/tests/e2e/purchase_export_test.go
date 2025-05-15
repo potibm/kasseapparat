@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -33,6 +34,7 @@ func TestGetPurchaseExport(t *testing.T) {
 	res.Header("Content-Disposition").Contains(".csv\"")
 
 	raw := res.Body().Raw()
+
 	lines := strings.Split(raw, "\n")
 	for i, line := range lines {
 		if i == 0 || len(line) == 0 {
@@ -51,16 +53,16 @@ func TestGetPurchaseExport(t *testing.T) {
 			t.Errorf("Expected a valid date in the first column, got %s in line %d", columns[0], i)
 		}
 
-		// validate that column 2 is a valid integer
-		if _, err := strconv.Atoi(columns[1]); err != nil {
-			t.Errorf("Expected a valid integer in column 2, got %s in line %d", columns[1], i)
+		// validate that column 2 is a valid uuid
+		if _, err := uuid.Parse(columns[1]); err != nil {
+			t.Errorf("Expected a valid integer in column 2 (id), got %s in line %d", columns[1], i)
 		}
-		
+
 		// validate that column 3 is a valid integer
 		if _, err := strconv.Atoi(columns[2]); err != nil {
-			t.Errorf("Expected a valid integer in column 3, got %s in line %d", columns[2], i)
+			t.Errorf("Expected a valid integer in column 3 (quantity), got %s in line %d", columns[2], i)
 		}
-		
+
 		// decimal columns should be in the format "0.00"
 		for j := 5; j <= 13; j++ {
 			// validate that the column is a valid decimal.Decimal value
@@ -90,6 +92,7 @@ func testGetPurchaseExportFilterOnPaymentMethod(t *testing.T, paymentMethod stri
 	res.Status(http.StatusOK)
 
 	raw := res.Body().Raw()
+
 	lines := strings.Split(raw, "\n")
 	for i, line := range lines {
 		if i == 0 || len(line) == 0 {

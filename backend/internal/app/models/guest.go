@@ -4,6 +4,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Guest represents a guest in a guestlist.
@@ -18,7 +20,7 @@ type Guest struct {
 	ArrivedAt            *time.Time `json:"arrivedAt"`
 	ArrivalNote          *string    `json:"arrivalNote"`
 	NotifyOnArrivalEmail *string    `json:"notifyOnArrivalEmail"`
-	PurchaseID           *uint      `json:"purchaseId"`
+	PurchaseID           *uuid.UUID `json:"purchaseId"`
 	Purchase             *Purchase  `json:"-"`
 }
 

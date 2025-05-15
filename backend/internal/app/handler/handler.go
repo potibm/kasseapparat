@@ -56,9 +56,9 @@ func queryDecimal(c *gin.Context, field string) *decimal.Decimal {
 	}
 }
 
-func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods  map[string]string) []string {
-	paymentMethods := c.DefaultQuery(field,"")
-	
+func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods map[string]string) []string {
+	paymentMethods := c.DefaultQuery(field, "")
+
 	result := make([]string, 0)
 
 	paymentMethodsArray := strings.Split(paymentMethods, ",")
@@ -66,11 +66,12 @@ func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods  map[
 		if code == "" {
 			continue
 		}
+
 		if _, ok := validPaymentMethods[code]; ok {
 			result = append(result, code)
 		}
 	}
-	
+
 	return result
 }
 

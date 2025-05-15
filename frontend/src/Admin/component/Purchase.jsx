@@ -26,7 +26,17 @@ export const PurchaseList = () => {
     <List sort={{ field: "createdAt", order: "DESC" }} actions={false}>
       <PurchaseListToolbar />
       <Datagrid rowClick="show" bulkActionButtons={false}>
-        <NumberField source="id" />
+        <FunctionField
+          source="id"
+          label="ID"
+          render={(record) =>
+            record.id ? (
+              <span title={record.id}>
+                {record.id.slice(0, 4)}…{record.id.slice(-4)}
+              </span>
+            ) : null
+          }
+        />
         <DateField
           source="createdAt"
           showTime={true}

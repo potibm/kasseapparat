@@ -17,7 +17,7 @@ type ProductPurchaseStats struct {
 
 type PurchaseFilters struct {
 	CreatedByID        int
-	PaymentMethods      []string
+	PaymentMethods     []string
 	TotalGrossPriceLte *decimal.Decimal
 	TotalGrossPriceGte *decimal.Decimal
 	IDs                []int
@@ -62,19 +62,24 @@ func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchas
 	return purchase, result.Error
 }
 
-func (repo *Repository) DeletePurchaseByID(id int, deletedBy models.User) {
+func (repo *Repository) DeletePurchaseByID(id string, deletedBy models.User) {
 	// rollback list entries
 	repo.db.Model(&models.Guest{}).Where("purchase_id = ?", id).Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil})
 
 	repo.db.Model(&models.Purchase{}).Where("id = ?", id).Update("DeletedByID", deletedBy.ID)
-	repo.db.Delete(&models.Purchase{}, id)
+	repo.db.Where("id = ?", id).Delete(&models.Purchase{})
 
 	repo.db.Where("purchase_id = ?", id).Delete(&models.PurchaseItem{})
 }
 
-func (repo *Repository) GetPurchaseByID(id int) (*models.Purchase, error) {
+func (repo *Repository) GetPurchaseByID(id string) (*models.Purchase, error) {
 	var purchase models.Purchase
-	if err := repo.db.Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").First(&purchase, id).Error; err != nil {
+	if err := repo.db.Model(&models.Purchase{}).
+		Preload("PurchaseItems").
+		Preload("PurchaseItems.Product").
+		Where("id = ?", id).
+		First(&purchase).
+		Error; err != nil {
 		return nil, errors.New("purchase not found")
 	}
 

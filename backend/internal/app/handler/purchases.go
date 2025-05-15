@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 	response "github.com/potibm/kasseapparat/internal/app/response"
@@ -37,7 +38,11 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 		return
 	}
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
+	if uuid.Validate(id) != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
+		return
+	}
 
 	handler.repo.DeletePurchaseByID(id, *executingUserObj)
 
@@ -215,7 +220,14 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 }
 
 func (handler *Handler) GetPurchaseByID(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
+
+	// validate that id is a uuid
+	if uuid.Validate(id) != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
+		return
+	}
+
 	purchase, err := handler.repo.GetPurchaseByID(id)
 
 	if err != nil {

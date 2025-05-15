@@ -15,6 +15,7 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethods", handler.paymentMethods)
 
 	log.Println("Payment methods filter: ", filters)
+
 	purchases, err := handler.repo.GetFilteredPurchases(filters)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
@@ -38,7 +39,7 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 
 		_ = writer.Write([]string{
 			fmt.Sprint(p.CreatedAt.Format("2006-01-02 15:04:05")),
-			strconv.Itoa(int(p.Purchase.ID)),
+			p.Purchase.ID.String(),
 			strconv.Itoa(p.Quantity),
 			p.Product.Name,
 			p.VATRate.String() + "%",

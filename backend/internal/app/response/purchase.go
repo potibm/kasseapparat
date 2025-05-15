@@ -3,12 +3,13 @@ package response
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/shopspring/decimal"
 )
 
 type PurchaseResponse struct {
-	ID              uint                   `json:"id"`
+	ID              uuid.UUID              `json:"id"`
 	CreatedAt       time.Time              `json:"createdAt"`
 	CreatedByID     *uint                  `json:"createdById"`
 	CreatedBy       *models.User           `json:"createdBy"`

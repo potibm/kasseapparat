@@ -1,13 +1,14 @@
 package response
 
 import (
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/shopspring/decimal"
 )
 
 type PurchaseItemResponse struct {
 	ID              uint            `json:"id"`
-	PurchaseID      uint            `json:"purchaseID"` // Foreign key to Purchase
+	PurchaseID      uuid.UUID       `json:"purchaseID"` // Foreign key to Purchase
 	ProductID       uint            `json:"productID"`  // Foreign key to Product
 	Product         ProductResponse `json:"product"`
 	Quantity        int             `json:"quantity"`
