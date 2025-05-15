@@ -21,6 +21,7 @@ func TestProductStats(t *testing.T) {
 
 	obj := res.JSON().Array()
 	validateProductStatsArray(obj)
+	soldItemsValue := obj.Value(0).Object().Value("soldItems").Number().Raw()
 
 	purchaseUrl := createPurchase()
 
@@ -32,7 +33,7 @@ func TestProductStats(t *testing.T) {
 	validateProductStatsArray(obj)
 
 	item := obj.Value(0).Object()
-	item.Value("soldItems").Number().IsEqual(1)
+	item.Value("soldItems").Number().IsEqual(soldItemsValue + 1)
 	item.Value("totalGrossPrice").String()
 	item.Value("totalNetPrice").String()
 

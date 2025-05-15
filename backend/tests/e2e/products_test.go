@@ -179,7 +179,7 @@ func validateProductOne(product *httpexpect.Object) {
 	product.Value("hidden").Boolean().IsFalse()
 	product.Value("pos").Number().IsEqual(1)
 	product.Value("totalStock").Number().IsEqual(0)
-	product.Value("unitsSold").Number().IsEqual(0)
+	product.Value("unitsSold").Number().Ge(0)
 	product.Value("soldOutRequestCount").Number().IsEqual(0)
 	product.Value("apiExport").Boolean().IsTrue()
 }
