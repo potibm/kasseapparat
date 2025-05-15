@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
@@ -53,6 +54,24 @@ func queryDecimal(c *gin.Context, field string) *decimal.Decimal {
 
 		return &decimalValue
 	}
+}
+
+func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods  map[string]string) []string {
+	paymentMethods := c.DefaultQuery(field,"")
+	
+	result := make([]string, 0)
+
+	paymentMethodsArray := strings.Split(paymentMethods, ",")
+	for _, code := range paymentMethodsArray {
+		if code == "" {
+			continue
+		}
+		if _, ok := validPaymentMethods[code]; ok {
+			result = append(result, code)
+		}
+	}
+	
+	return result
 }
 
 func (handler *Handler) IsValidPaymentMethod(code string) bool {

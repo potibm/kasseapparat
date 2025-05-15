@@ -17,7 +17,7 @@ type ProductPurchaseStats struct {
 
 type PurchaseFilters struct {
 	CreatedByID        int
-	PaymentMethod      string
+	PaymentMethods      []string
 	TotalGrossPriceLte *decimal.Decimal
 	TotalGrossPriceGte *decimal.Decimal
 	IDs                []int
@@ -32,8 +32,8 @@ func (filters PurchaseFilters) AddWhere(query *gorm.DB) *gorm.DB {
 		query = query.Where("purchases.created_by_id = ?", filters.CreatedByID)
 	}
 
-	if filters.PaymentMethod != "" {
-		query = query.Where("purchases.payment_method = ?", filters.PaymentMethod)
+	if len(filters.PaymentMethods) > 0 {
+		query = query.Where("purchases.payment_method IN ?", filters.PaymentMethods)
 	}
 
 	if filters.TotalGrossPriceLte != nil {
@@ -109,18 +109,11 @@ func (repo *Repository) GetFilteredPurchases(filters PurchaseFilters) ([]models.
 	query := repo.db.
 		Model(&models.PurchaseItem{}).
 		Joins("JOIN purchases ON purchases.id = purchase_items.purchase_id").
-		// Where("purchases.payment_method IN ?", filters.PaymentMethod).
 		Preload("Product").
 		Preload("Purchase").
 		Find(&purchaseItems)
 
-		/*
-			query := repo.db.Joins("CreatedBy").
-				Model(&models.Purchase{}).
-				Preload("PurchaseItems").
-				Preload("PurchaseItems.Product").
-				Order("purchases.created_at DESC")
-			query = filters.AddWhere(query)*/
+	query = filters.AddWhere(query)
 
 	if err := query.Find(&purchaseItems).Error; err != nil {
 		return nil, errors.New("purchases not found")

@@ -187,7 +187,8 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "DESC")
 	filters := repository.PurchaseFilters{}
-	filters.PaymentMethod = c.DefaultQuery("paymentMethod", "")
+
+	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethod", handler.paymentMethods)
 	filters.CreatedByID, _ = strconv.Atoi(c.DefaultQuery("createdById", "0"))
 	filters.TotalGrossPriceGte = queryDecimal(c, "totalGrossPrice_gte")
 	filters.TotalGrossPriceLte = queryDecimal(c, "totalGrossPrice_lte")

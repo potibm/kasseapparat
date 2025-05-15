@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/csv"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,9 @@ import (
 
 func (handler *Handler) ExportPurchases(c *gin.Context) {
 	filters := repository.PurchaseFilters{}
+	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethods", handler.paymentMethods)
 
+	log.Println("Payment methods filter: ", filters)
 	purchases, err := handler.repo.GetFilteredPurchases(filters)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
