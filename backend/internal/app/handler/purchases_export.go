@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/repository"
@@ -23,7 +25,13 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("purchases_%s.csv", purchases[0].CreatedAt.Format("2006-01-02"))
+	paymentMethodsString := "all"
+	if len(filters.PaymentMethods) > 0 {
+		paymentMethodsString = strings.ToLower(strings.Join(filters.PaymentMethods, "_"))
+	}
+
+	time := time.Now().Format("20060102150405")
+	filename := fmt.Sprintf("purchases_%s_%s.csv", time, paymentMethodsString)
 
 	c.Header("Content-Type", "text/csv")
 	c.Header("Content-Disposition", "attachment; filename=\""+filename+"\"")
