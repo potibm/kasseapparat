@@ -63,6 +63,7 @@ func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods map[s
 
 	paymentMethodsArray := strings.Split(paymentMethods, ",")
 	for _, code := range paymentMethodsArray {
+		code = strings.TrimSpace(code)
 		if code == "" {
 			continue
 		}
