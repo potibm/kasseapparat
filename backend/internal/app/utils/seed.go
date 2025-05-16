@@ -88,11 +88,11 @@ func (ds *DatabaseSeed) seedProducts() {
 	ds.products = append(ds.products, models.Product{Name: "👕 Male XL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
 	ds.products = append(ds.products, models.Product{Name: "👕 Male XXL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
 	ds.products = append(ds.products, models.Product{Name: "👕 Male 4XL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Femal S", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Femal M", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Femal L", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Femal XL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Femal XXL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
+	ds.products = append(ds.products, models.Product{Name: "👕 Female S", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
+	ds.products = append(ds.products, models.Product{Name: "👕 Female M", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
+	ds.products = append(ds.products, models.Product{Name: "👕 Female L", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
+	ds.products = append(ds.products, models.Product{Name: "👕 Female XL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
+	ds.products = append(ds.products, models.Product{Name: "👕 Female XXL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
 	ds.products = append(ds.products, models.Product{Name: "☕ Coffee Mug", NetPrice: price1GrossAt19, VATRate: vat19, Pos: 30})
 
 	for i := range ds.products {
