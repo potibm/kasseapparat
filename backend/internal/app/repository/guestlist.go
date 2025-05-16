@@ -106,7 +106,7 @@ func (repo *Repository) CreateGuestlist(guestlist models.Guestlist) (models.Gues
 }
 
 func (repo *Repository) DeleteGuestlist(guestlist models.Guestlist, deletedBy models.User) {
-	repo.db.Model(&models.Guestlist{}).Where("id = ?", guestlist.ID).Update("DeletedByID", deletedBy.ID)
+	repo.db.Model(&models.Guestlist{}).Where(whereIDEquals, guestlist.ID).Update("DeletedByID", deletedBy.ID)
 	repo.db.Model(&models.Guest{}).Where("guestlist_id = ?", guestlist.ID).Update("DeletedByID", deletedBy.ID)
 
 	repo.db.Delete(&models.Guest{}, "guestlist_id = ?", guestlist.ID)

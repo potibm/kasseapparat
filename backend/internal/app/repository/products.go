@@ -99,7 +99,7 @@ func (repo *Repository) CreateProduct(product models.Product) (models.Product, e
 }
 
 func (repo *Repository) DeleteProduct(product models.Product, deletedBy models.User) {
-	repo.db.Model(&models.Product{}).Where("id = ?", product.ID).Update("DeletedByID", deletedBy.ID)
+	repo.db.Model(&models.Product{}).Where(whereIDEquals, product.ID).Update("DeletedByID", deletedBy.ID)
 
 	repo.db.Delete(&product)
 }

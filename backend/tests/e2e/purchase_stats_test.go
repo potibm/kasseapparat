@@ -16,7 +16,9 @@ func TestPurchaseStats(t *testing.T) {
 		Status(http.StatusOK)
 
 	res.Header("Access-Control-Allow-Origin").IsEqual("*")
-	res.JSON().Object().Value("totalQuantity").Number().IsEqual(0)
+	res.JSON().Object().Value("totalQuantity").Number()
+	// store this value for later use
+	totalQuantity := res.JSON().Object().Value("totalQuantity").Number().Raw()
 
 	purchaseUrl := createPurchase()
 
@@ -24,7 +26,7 @@ func TestPurchaseStats(t *testing.T) {
 		Expect().
 		Status(http.StatusOK)
 
-	res.JSON().Object().Value("totalQuantity").Number().IsEqual(1)
+	res.JSON().Object().Value("totalQuantity").Number().IsEqual(totalQuantity + 1)
 
 	deletePurchase(purchaseUrl)
 }

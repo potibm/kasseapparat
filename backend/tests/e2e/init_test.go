@@ -34,7 +34,7 @@ func setup() {
 	db := utils.ConnectToLocalDatabase()
 	utils.PurgeDatabase(db)
 	utils.MigrateDatabase(db)
-	utils.SeedDatabase(db)
+	utils.SeedDatabase(db, true)
 }
 
 func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {

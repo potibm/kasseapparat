@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 	response "github.com/potibm/kasseapparat/internal/app/response"
@@ -37,7 +38,11 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 		return
 	}
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
+	if uuid.Validate(id) != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
+		return
+	}
 
 	handler.repo.DeletePurchaseByID(id, *executingUserObj)
 
@@ -187,7 +192,8 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "DESC")
 	filters := repository.PurchaseFilters{}
-	filters.PaymentMethod = c.DefaultQuery("paymentMethod", "")
+
+	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethod", handler.paymentMethods)
 	filters.CreatedByID, _ = strconv.Atoi(c.DefaultQuery("createdById", "0"))
 	filters.TotalGrossPriceGte = queryDecimal(c, "totalGrossPrice_gte")
 	filters.TotalGrossPriceLte = queryDecimal(c, "totalGrossPrice_lte")
@@ -200,7 +206,7 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 		return
 	}
 
-	total, err := handler.repo.GetTotalPurchases()
+	total, err := handler.repo.GetTotalPurchases(filters)
 	if err != nil {
 		_ = c.Error(InternalServerError)
 
@@ -214,7 +220,14 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 }
 
 func (handler *Handler) GetPurchaseByID(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
+
+	// validate that id is a uuid
+	if uuid.Validate(id) != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
+		return
+	}
+
 	purchase, err := handler.repo.GetPurchaseByID(id)
 
 	if err != nil {

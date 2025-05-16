@@ -33,7 +33,7 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 
 	r.GET("/api/v2/purchases/stats", myhandler.GetPurchaseStats)
 
-	r.Use(createCorsMiddleware())
+	r.Use(CreateCorsMiddleware())
 
 	folder, err := static.EmbedFolder(staticFiles, "assets")
 	if err != nil {
@@ -59,7 +59,7 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 	return r
 }
 
-func createCorsMiddleware() gin.HandlerFunc {
+func CreateCorsMiddleware() gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
 
 	corsAllowOrigins := os.Getenv("CORS_ALLOW_ORIGINS")
@@ -71,7 +71,7 @@ func createCorsMiddleware() gin.HandlerFunc {
 	corsConfig.AllowAllOrigins = false
 	corsConfig.AllowCredentials = true
 	corsConfig.AddAllowHeaders("Authorization", "Credentials")
-	corsConfig.AddExposeHeaders("X-Total-Count")
+	corsConfig.AddExposeHeaders("X-Total-Count", "Content-Disposition")
 
 	return cors.New(corsConfig)
 }
@@ -169,6 +169,7 @@ func registerPurchaseRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 		purchases.GET("/:id", handler.GetPurchaseByID)
 		purchases.POST("", handler.PostPurchases)
 		purchases.DELETE("/:id", handler.DeletePurchase)
+		purchases.GET("/export", handler.ExportPurchases)
 	}
 }
 

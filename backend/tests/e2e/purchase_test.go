@@ -2,13 +2,12 @@ package tests_e2e
 
 import (
 	"net/http"
-	"strconv"
 	"testing"
 )
 
 var purchaseBaseUrl = "/api/v2/purchases"
 
-func TestGetPurchasesListIsEmpty(t *testing.T) {
+func TestGetPurchasesList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
@@ -17,11 +16,21 @@ func TestGetPurchasesListIsEmpty(t *testing.T) {
 		Expect().
 		Status(http.StatusOK)
 
-	purchaseListResponse.Header(totalCountHeader).AsNumber().IsEqual(0)
+	purchaseListResponse.Header(totalCountHeader).AsNumber().Ge(1)
 
 	purchaseList := purchaseListResponse.JSON().Array()
 
-	purchaseList.Length().IsEqual(0)
+	purchaseList.Length().Ge(1)
+
+	purchaseListItem := purchaseList.Value(0).Object()
+	purchaseListItem.Value("id").String()
+	purchaseListItem.Value("totalGrossPrice").String()
+	purchaseListItem.Value("totalNetPrice").String()
+	purchaseListItem.Value("totalVatAmount").String()
+	purchaseListItem.Value("createdAt").String().NotEmpty()
+	purchaseListItem.Value("createdBy").Object().Value("username").String().NotEmpty()
+	purchaseListItem.Value("paymentMethod").String().NotEmpty()
+	purchaseListItem.Value("purchaseItems").Array().Length().Gt(0)
 }
 
 func TestGetPurchasesListWithAllFilters(t *testing.T) {
@@ -89,34 +98,36 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	purchaseResponse.Value("message").String().IsEqual("Purchase successful")
 	purchaseResponse.Value("purchase").Object()
 	purchase := purchaseResponse.Value("purchase").Object()
-	purchase.Value("id").Number().Gt(0)
+	purchase.Value("id").String()
 	purchase.Value("totalGrossPrice").String().IsEqual("20")
 	purchase.Value("totalNetPrice").String().IsEqual("18.69")
 
-	purchaseId := purchase.Value("id").Number().Raw()
-	purchaseUrl := purchaseBaseUrl + "/" + strconv.FormatFloat(purchaseId, 'f', -1, 64)
+	purchaseId := purchase.Value("id").String().Raw()
+	purchaseUrl := purchaseBaseUrl + "/" + purchaseId
 
 	// Get the purchase
 	purchase = withDemoUserAuthToken(e.GET(purchaseUrl)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	purchase.Value("id").Number().IsEqual(purchaseId)
+	purchase.Value("id").String().IsEqual(purchaseId)
 	purchase.Value("totalGrossPrice").String().IsEqual("20")
 	purchase.Value("totalNetPrice").String().IsEqual("18.69")
 
 	// Get the purchase list
 	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+		WithQuery("_sort", "createdAt").
+		WithQuery("_order", "DESC").
 		Expect().
 		Status(http.StatusOK)
 
-	purchaseListResponse.Header(totalCountHeader).AsNumber().IsEqual(1)
+	purchaseListResponse.Header(totalCountHeader).AsNumber().Ge(1)
 
 	purchaseList := purchaseListResponse.JSON().Array()
 
-	purchaseList.Length().IsEqual(1)
+	purchaseList.Length().Ge(1)
 	purchaseListItem := purchaseList.Value(0).Object()
-	purchaseListItem.Value("id").Number().IsEqual(purchaseId)
+	purchaseListItem.Value("id").String().IsEqual(purchaseId)
 	purchaseListItem.Value("paymentMethod").String().IsEqual("CC")
 
 	// Delete the purchase
@@ -283,6 +294,44 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 	validateErrorDetailMessage(errorResponse, "Additional guests exceed available guests")
 }
 
+func TestPurchasesAuthentication(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	purchaseUrlWithId := createPurchase()
+
+	e.Request("GET", purchaseBaseUrl).Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", purchaseUrlWithId).Expect().Status(http.StatusUnauthorized)
+	e.Request("POST", purchaseBaseUrl).Expect().Status(http.StatusUnauthorized)
+	e.Request("DELETE", purchaseUrlWithId).Expect().Status(http.StatusUnauthorized)
+
+	deletePurchase(purchaseUrlWithId)
+}
+
+func TestPurchaseGetByIdWithoutUuid(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// Get a purchase with a wrong ID
+	errorResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl + "/123")).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	validateErrorDetailMessage(errorResponse, "Invalid purchase ID")
+}
+
+func TestPurchaseDeleteWithoutUuid(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// Get a purchase with a wrong ID
+	errorResponse := withDemoUserAuthToken(e.DELETE(purchaseBaseUrl + "/123")).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	validateErrorDetailMessage(errorResponse, "Invalid purchase ID")
+}
+
 func createPurchase() string {
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
@@ -301,9 +350,9 @@ func createPurchase() string {
 		Status(http.StatusCreated).JSON().Object()
 
 	purchase := purchaseResponse.Value("purchase").Object()
-	purchaseId := purchase.Value("id").Number().Raw()
+	purchaseId := purchase.Value("id").String().Raw()
 
-	return purchaseBaseUrl + "/" + strconv.FormatFloat(purchaseId, 'f', -1, 64)
+	return purchaseBaseUrl + "/" + purchaseId
 }
 
 func deletePurchase(purchaseUrl string) {

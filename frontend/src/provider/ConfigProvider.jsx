@@ -50,7 +50,6 @@ const ConfigProvider = ({ children }) => {
           console.error("Error parsing vatRates:", error);
           data.vatRates = {};
         }
-        console.log("Config loaded:", data);
 
         setConfig(data);
         setLoading(false);

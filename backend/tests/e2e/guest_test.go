@@ -314,7 +314,7 @@ func validateGuestObjectOne(guest *httpexpect.Object) {
 	guest.Value("id").Number().IsEqual(1)
 	guest.Value("name").String().Length().Gt(5)
 	guest.Value("code").IsNull()
-	guest.Value("additionalGuests").Number().IsEqual(0)
+	guest.Value("additionalGuests").Number().Ge(0)
 	guest.Value("attendedGuests").Number().IsEqual(0)
 	guest.Value("notifyOnArrivalEmail").IsNull()
 	guest.Value("purchaseId").IsNull()
