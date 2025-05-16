@@ -12,6 +12,7 @@ import {
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { useConfig } from "../../provider/ConfigProvider";
 import { getAdminData } from "../authProvider";
+import PropTypes from "prop-types";
 
 export const PurchaseExportButton = ({ paymentMethods }) => {
   const [open, setOpen] = useState(false);
@@ -52,9 +53,9 @@ export const PurchaseExportButton = ({ paymentMethods }) => {
 
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
-    const filename = response.headers
-      .get("Content-Disposition")
-      ?.match(/filename="([^"]+)"/)?.[1];
+    const filename = RegExp(/filename="([^"]+)"/).exec(
+      response.headers.get("Content-Disposition"),
+    )?.[1];
 
     const a = document.createElement("a");
     a.href = url;
@@ -100,4 +101,13 @@ export const PurchaseExportButton = ({ paymentMethods }) => {
       </Dialog>
     </>
   );
+};
+
+PurchaseExportButton.propTypes = {
+  paymentMethods: PropTypes.arrayOf(
+    PropTypes.shape({
+      code: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
 };
