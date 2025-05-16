@@ -39,13 +39,18 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 	writer := csv.NewWriter(c.Writer)
 	defer writer.Flush()
 
-	_ = writer.Write([]string{"Time", "Purchase ID", "Quantity", "Product Name", "VAT Rate", "Gross Price", "Net Price", "VAT Amount", "Total Gross Price", "Total Net Price", "Total VAT Amount",
+	err = writer.Write([]string{"Time", "Purchase ID", "Quantity", "Product Name", "VAT Rate", "Gross Price", "Net Price", "VAT Amount", "Total Gross Price", "Total Net Price", "Total VAT Amount",
 		"Purchase Gross Price", "Purchase Net Price", "Purchase VAT", "Payment Method"})
+
+	if err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to write CSV header: "+err.Error()))
+		return
+	}
 
 	for _, p := range purchases {
 		Vat := p.Purchase.TotalGrossPrice.Sub(p.Purchase.TotalNetPrice)
 
-		_ = writer.Write([]string{
+		err = writer.Write([]string{
 			fmt.Sprint(p.CreatedAt.Format("2006-01-02 15:04:05")),
 			p.Purchase.ID.String(),
 			strconv.Itoa(p.Quantity),
@@ -62,5 +67,10 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 			Vat.StringFixed(handler.decimalPlaces),
 			p.Purchase.PaymentMethod,
 		})
+
+		if err != nil {
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to write CSV header: "+err.Error()))
+			return
+		}
 	}
 }
