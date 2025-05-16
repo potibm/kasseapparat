@@ -39,7 +39,7 @@ func (repo *Repository) GetProductInterestByID(id int) (*models.ProductInterest,
 }
 
 func (repo *Repository) DeleteProductInterest(productInterest models.ProductInterest, deletedBy models.User) {
-	repo.db.Model(&models.ProductInterest{}).Where("id = ?", productInterest.ID).Update("DeletedByID", deletedBy.ID)
+	repo.db.Model(&models.ProductInterest{}).Where(whereIDEquals, productInterest.ID).Update("DeletedByID", deletedBy.ID)
 
 	repo.db.Delete(&productInterest)
 }

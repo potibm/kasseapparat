@@ -66,8 +66,8 @@ func (repo *Repository) DeletePurchaseByID(id string, deletedBy models.User) {
 	// rollback list entries
 	repo.db.Model(&models.Guest{}).Where("purchase_id = ?", id).Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil})
 
-	repo.db.Model(&models.Purchase{}).Where("id = ?", id).Update("DeletedByID", deletedBy.ID)
-	repo.db.Where("id = ?", id).Delete(&models.Purchase{})
+	repo.db.Model(&models.Purchase{}).Where(whereIDEquals, id).Update("DeletedByID", deletedBy.ID)
+	repo.db.Where(whereIDEquals, id).Delete(&models.Purchase{})
 
 	repo.db.Where("purchase_id = ?", id).Delete(&models.PurchaseItem{})
 }
@@ -77,7 +77,7 @@ func (repo *Repository) GetPurchaseByID(id string) (*models.Purchase, error) {
 	if err := repo.db.Model(&models.Purchase{}).
 		Preload("PurchaseItems").
 		Preload("PurchaseItems.Product").
-		Where("id = ?", id).
+		Where(whereIDEquals, id).
 		First(&purchase).
 		Error; err != nil {
 		return nil, errors.New("purchase not found")

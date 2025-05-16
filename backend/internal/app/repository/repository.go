@@ -5,6 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const whereIDEquals = "id = ?"
+
 type Repository struct {
 	db            *gorm.DB
 	decimalPlaces int32
