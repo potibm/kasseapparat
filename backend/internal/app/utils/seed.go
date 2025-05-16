@@ -30,7 +30,7 @@ func NewDatabaseSeed(db *gorm.DB) *DatabaseSeed {
 func (ds *DatabaseSeed) Seed(includeTestData bool) {
 	const (
 		DefaultGuestlistCount            = 38
-		DefaultPurchaseCount             = 10
+		DefaultPurchaseCount             = 30
 		MaxNotPresentEntriesPerGuestlist = 10
 		MaxPresentEntriesPerGuestlist    = 2
 	)
