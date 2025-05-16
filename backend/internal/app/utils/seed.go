@@ -178,7 +178,7 @@ func (ds *DatabaseSeed) seedPurchases(purchaseCount int) {
 				purchase.PurchaseItems = append(purchase.PurchaseItems, purchaseItem)
 			}
 
-			purchase.CreatedBy = ds.demoUser
+			purchase.CreatedByID = &ds.demoUser.ID
 
 			ds.db.Create(&purchase)
 		}
