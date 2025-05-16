@@ -45,7 +45,7 @@ func TestGetPurchaseExport(t *testing.T) {
 
 		// assert that the number of columns is correct
 		if len(columns) != 15 {
-			t.Errorf("Expected 14 columns, got %d in line %d", len(columns), i)
+			t.Errorf("Expected 15 columns, got %d in line %d", len(columns), i)
 		}
 
 		// assert that the first column is a valid date
@@ -103,7 +103,7 @@ func testGetPurchaseExportFilterOnPaymentMethod(t *testing.T, paymentMethod stri
 
 		// assert that the number of columns is correct
 		if len(columns) != 15 {
-			t.Fatalf("Expected 14 columns, got %d in line %d", len(columns), i)
+			t.Fatalf("Expected 15 columns, got %d in line %d", len(columns), i)
 		}
 
 		paymentMethodInCSV := columns[14]
