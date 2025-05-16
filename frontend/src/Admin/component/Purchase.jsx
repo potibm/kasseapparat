@@ -80,7 +80,7 @@ export const PurchaseShow = (props) => {
   return (
     <Show {...props}>
       <SimpleShowLayout>
-        <NumberField source="id" />
+        <TextField source="id" />
         <DateField source="createdAt" showTime={true} />
         <TextField source="paymentMethod" />
         <NumberField
