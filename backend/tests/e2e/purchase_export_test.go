@@ -41,34 +41,30 @@ func TestGetPurchaseExport(t *testing.T) {
 			continue
 		}
 
-		columns := strings.Split(line, ",")
+		validatePurchaseExportLine(t, strings.Split(line, ","), i)
+	}
+}
 
-		// assert that the number of columns is correct
-		if len(columns) != 15 {
-			t.Errorf("Expected 15 columns, got %d in line %d", len(columns), i)
-		}
+func validatePurchaseExportLine(t *testing.T, columns []string, i int) {
+	if len(columns) != 15 {
+		t.Errorf("Expected 15 columns, got %d in line %d", len(columns), i)
+	}
 
-		// assert that the first column is a valid date
-		if _, err := time.Parse("2006-01-02 15:04:05", columns[0]); err != nil {
-			t.Errorf("Expected a valid date in the first column, got %s in line %d", columns[0], i)
-		}
+	if _, err := time.Parse("2006-01-02 15:04:05", columns[0]); err != nil {
+		t.Errorf("Expected a valid date in the first column, got %s in line %d", columns[0], i)
+	}
 
-		// validate that column 2 is a valid uuid
-		if _, err := uuid.Parse(columns[1]); err != nil {
-			t.Errorf("Expected a valid integer in column 2 (id), got %s in line %d", columns[1], i)
-		}
+	if _, err := uuid.Parse(columns[1]); err != nil {
+		t.Errorf("Expected a valid integer in column 2 (id), got %s in line %d", columns[1], i)
+	}
 
-		// validate that column 3 is a valid integer
-		if _, err := strconv.Atoi(columns[2]); err != nil {
-			t.Errorf("Expected a valid integer in column 3 (quantity), got %s in line %d", columns[2], i)
-		}
+	if _, err := strconv.Atoi(columns[2]); err != nil {
+		t.Errorf("Expected a valid integer in column 3 (quantity), got %s in line %d", columns[2], i)
+	}
 
-		// decimal columns should be in the format "0.00"
-		for j := 5; j <= 13; j++ {
-			// validate that the column is a valid decimal.Decimal value
-			if _, err := decimal.NewFromString(columns[j]); err != nil {
-				t.Errorf("Expected a valid decimal value in column %d, got %s in line %d", j, columns[j], i)
-			}
+	for j := 5; j <= 13; j++ {
+		if _, err := decimal.NewFromString(columns[j]); err != nil {
+			t.Errorf("Expected a valid decimal value in column %d, got %s in line %d", j, columns[j], i)
 		}
 	}
 }
