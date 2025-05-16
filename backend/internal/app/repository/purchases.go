@@ -115,8 +115,7 @@ func (repo *Repository) GetFilteredPurchases(filters PurchaseFilters) ([]models.
 		Model(&models.PurchaseItem{}).
 		Joins("JOIN purchases ON purchases.id = purchase_items.purchase_id").
 		Preload("Product").
-		Preload("Purchase").
-		Find(&purchaseItems)
+		Preload("Purchase")
 
 	query = filters.AddWhere(query)
 
