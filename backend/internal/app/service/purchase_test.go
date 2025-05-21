@@ -1,16 +1,23 @@
 package service
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/shopspring/decimal"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 type MockRepository struct {
-	Products map[int]*models.Product
-	Guests   map[int]*models.Guest
+	Products       map[int]*models.Product
+	Guests         map[int]*models.Guest
+	StoredPurchase *models.Purchase
+	UpdatedGuests  map[int]*models.Guest
 }
 
 func (m *MockRepository) GetProductByID(id int) (*models.Product, error) {
@@ -29,6 +36,41 @@ func (m *MockRepository) GetFullGuestByID(id int) (*models.Guest, error) {
 	}
 
 	return g, nil
+}
+
+func (m *MockRepository) StorePurchasesTx(tx *gorm.DB, purchase models.Purchase) (models.Purchase, error) {
+	purchase.ID = uuid.New()
+	m.StoredPurchase = &purchase
+
+	return purchase, nil
+}
+
+func (m *MockRepository) UpdateGuestByIDTx(tx *gorm.DB, id int, guest models.Guest) (*models.Guest, error) {
+	g, ok := m.Guests[id]
+	if !ok || g == nil {
+		return nil, fmt.Errorf("guest %d not found in mock", id)
+	}
+
+	g.AttendedGuests = guest.AttendedGuests
+	g.PurchaseID = guest.PurchaseID
+	g.ArrivedAt = guest.ArrivedAt
+
+	if m.UpdatedGuests == nil {
+		m.UpdatedGuests = make(map[int]*models.Guest)
+	}
+
+	m.UpdatedGuests[id] = g
+
+	return g, nil
+}
+
+func testDB() *gorm.DB {
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	return db
 }
 
 func TestValidateAndCalculatePricesWithSuccess(t *testing.T) {
@@ -219,5 +261,79 @@ func TestValidateAndPrepareGuestsWithGuestAlreadyAttended(t *testing.T) {
 	_, err := service.ValidateAndPrepareGuests(input)
 	if err == nil {
 		t.Errorf("expected error for already attended guest, got none")
+	}
+}
+
+func TestCreatePurchaseWithSuccess(t *testing.T) {
+	ctx := context.Background()
+
+	g := &models.Guest{
+		AdditionalGuests: 1,
+		AttendedGuests:   0,
+		Guestlist: models.Guestlist{
+			ProductID: 1,
+		},
+	}
+	g.ID = 42
+
+	p := &models.Product{
+		NetPrice: decimal.NewFromFloat(10.00),
+		VATRate:  decimal.NewFromFloat(19),
+	}
+	p.ID = 1
+
+	mockRepo := &MockRepository{
+		Products: map[int]*models.Product{
+			1: p,
+		},
+		Guests: map[int]*models.Guest{
+			42: g,
+		},
+	}
+
+	service := &PurchaseService{
+		Repo:          mockRepo,
+		DB:            testDB(),
+		DecimalPlaces: 2,
+	}
+
+	input := PurchaseInput{
+		PaymentMethod:   "CASH",
+		TotalNetPrice:   decimal.NewFromFloat(10.00),
+		TotalGrossPrice: decimal.NewFromFloat(11.90),
+		Cart: []PurchaseCartItem{
+			{
+				ID:       1,
+				Quantity: 1,
+				ListItems: []ListItemInput{
+					{ID: 42, AttendedGuests: 1},
+				},
+			},
+		},
+	}
+
+	purchase, err := service.CreatePurchase(ctx, input, 7)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if purchase == nil {
+		t.Fatal("expected purchase, got nil")
+	}
+
+	if purchase.PaymentMethod != "CASH" {
+		t.Errorf("unexpected payment method: %s", purchase.PaymentMethod)
+	}
+
+	if len(mockRepo.UpdatedGuests) != 1 {
+		t.Errorf("expected 1 updated guest, got %d", len(mockRepo.UpdatedGuests))
+	}
+
+	if g.AttendedGuests != 1 {
+		t.Errorf("guest not marked as attended: %+v", g)
+	}
+
+	if g.PurchaseID == nil {
+		t.Error("guest has no purchase ID")
 	}
 }

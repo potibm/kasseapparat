@@ -57,8 +57,11 @@ var purchaseSortFieldMappings = map[string]string{
 }
 
 func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchase, error) {
-	result := repo.db.Create(&purchase)
+	return repo.StorePurchasesTx(repo.db, purchase)
+}
 
+func (repo *Repository) StorePurchasesTx(tx *gorm.DB, purchase models.Purchase) (models.Purchase, error) {
+	result := tx.Create(&purchase)
 	return purchase, result.Error
 }
 

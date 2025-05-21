@@ -143,14 +143,18 @@ func (repo *Repository) GetFullGuestByID(id int) (*models.Guest, error) {
 }
 
 func (repo *Repository) UpdateGuestByID(id int, updatedGuest models.Guest) (*models.Guest, error) {
+	return repo.UpdateGuestByIDTx(repo.db, id, updatedGuest)
+}
+
+func (repo *Repository) UpdateGuestByIDTx(tx *gorm.DB, id int, updatedGuest models.Guest) (*models.Guest, error) {
 	var guest models.Guest
-	if err := repo.db.First(&guest, id).Error; err != nil {
+	if err := tx.First(&guest, id).Error; err != nil {
 		return nil, errors.New(ErrGuestNotFound)
 	}
 
 	updatedGuest.ID = guest.ID
 
-	if err := repo.db.Save(&updatedGuest).Error; err != nil {
+	if err := tx.Save(&updatedGuest).Error; err != nil {
 		return nil, errors.New("failed to update guest")
 	}
 

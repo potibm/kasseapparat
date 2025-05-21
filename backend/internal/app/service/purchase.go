@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -8,15 +9,19 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 )
 
 type Repository interface {
 	GetProductByID(id int) (*models.Product, error)
 	GetFullGuestByID(id int) (*models.Guest, error)
+	StorePurchasesTx(tx *gorm.DB, purchase models.Purchase) (models.Purchase, error)
+	UpdateGuestByIDTx(tx *gorm.DB, id int, updatedGuest models.Guest) (*models.Guest, error)
 }
 
 type PurchaseService struct {
 	Repo          Repository
+	DB            *gorm.DB
 	Mailer        mailer.Mailer
 	DecimalPlaces int32
 }
@@ -25,6 +30,7 @@ type PurchaseInput struct {
 	Cart            []PurchaseCartItem
 	TotalNetPrice   decimal.Decimal
 	TotalGrossPrice decimal.Decimal
+	PaymentMethod   string
 }
 
 type ListItemInput struct {
@@ -43,9 +49,14 @@ var (
 	ErrProductNotFound     = errors.New("product not found")
 )
 
+func uintPtr(v uint) *uint {
+	return &v
+}
+
 func NewPurchaseService(repo *repository.Repository, mailer mailer.Mailer, decimalPlaces int32) *PurchaseService {
 	return &PurchaseService{
 		Repo:          repo,
+		DB:            repo.GetDB(),
 		Mailer:        mailer,
 		DecimalPlaces: decimalPlaces,
 	}
@@ -109,4 +120,73 @@ func (s *PurchaseService) ValidateAndPrepareGuests(input PurchaseInput) ([]model
 	}
 
 	return updatedGuests, nil
+}
+
+func (s *PurchaseService) CreatePurchase(ctx context.Context, input PurchaseInput, userID int) (*models.Purchase, error) {
+	// Schritt 1: Preise validieren
+	net, gross, err := s.ValidateAndCalculatePrices(input)
+	if err != nil {
+		return nil, err
+	}
+
+	// Schritt 2: Gästelisten validieren
+	guests, err := s.ValidateAndPrepareGuests(input)
+	if err != nil {
+		return nil, err
+	}
+
+	// Schritt 3: Transaktion starten
+	var savedPurchase *models.Purchase
+
+	err = s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// 3.1 Purchase-Objekt aufbauen
+		purchase := &models.Purchase{
+			TotalNetPrice:   net,
+			TotalGrossPrice: gross,
+			PaymentMethod:   input.PaymentMethod,
+		}
+		purchase.CreatedByID = uintPtr(uint(userID))
+
+		// 3.2 PurchaseItems aufbauen
+		for _, item := range input.Cart {
+			product, err := s.Repo.GetProductByID(item.ID)
+			if err != nil {
+				return err
+			}
+
+			pi := models.PurchaseItem{
+				ProductID: product.ID,
+				Quantity:  item.Quantity,
+				NetPrice:  product.NetPrice,
+				VATRate:   product.VATRate,
+				//TotalPrice: product.GrossPrice(s.DecimalPlaces).Mul(decimal.NewFromInt(int64(item.Quantity))),
+			}
+
+			purchase.PurchaseItems = append(purchase.PurchaseItems, pi)
+		}
+
+		// 3.3 Speichern
+		stored, err := s.Repo.StorePurchasesTx(tx, *purchase)
+		if err != nil {
+			return err
+		}
+
+		savedPurchase = &stored
+
+		// 3.4 Gäste aktualisieren
+		for _, guest := range guests {
+			guest.PurchaseID = &stored.ID
+			if _, err := s.Repo.UpdateGuestByIDTx(tx, int(guest.ID), guest); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return savedPurchase, nil
 }
