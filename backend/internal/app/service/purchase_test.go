@@ -13,6 +13,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const errUnexpected = "unexpected error: %v"
+
 type MockRepository struct {
 	Products       map[int]*models.Product
 	Guests         map[int]*models.Guest
@@ -107,7 +109,7 @@ func TestValidateAndCalculatePricesWithSuccess(t *testing.T) {
 
 	net, gross, err := service.ValidateAndCalculatePrices(input)
 	if err != nil {
-		t.Errorf("unexpected error: %v", err)
+		t.Errorf(errUnexpected, err)
 	}
 
 	if !net.Equal(decimal.NewFromFloat(20.00)) {
@@ -203,7 +205,7 @@ func TestValidateAndPrepareGuestsWithSuccess(t *testing.T) {
 
 	guests, err := service.ValidateAndPrepareGuests(input)
 	if err != nil {
-		t.Errorf("unexpected error: %v", err)
+		t.Errorf(errUnexpected, err)
 	}
 
 	if len(guests) != 1 {
@@ -357,7 +359,7 @@ func TestCreatePurchaseWithSuccess(t *testing.T) {
 
 	purchase, err := service.CreatePurchase(ctx, input, 7)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Fatalf(errUnexpected, err)
 	}
 
 	if purchase == nil {
