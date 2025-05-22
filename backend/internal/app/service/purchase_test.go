@@ -73,6 +73,15 @@ func testDB() *gorm.DB {
 	return db
 }
 
+type MockMailer struct {
+	Sent []string
+}
+
+func (m *MockMailer) SendNotificationOnArrival(email, name string) error {
+	m.Sent = append(m.Sent, email+"|"+name)
+	return nil
+}
+
 func TestValidateAndCalculatePricesWithSuccess(t *testing.T) {
 	mockRepo := &MockRepository{
 		Products: map[int]*models.Product{
@@ -158,8 +167,8 @@ func TestValidateAndCalculatePricesWithPriceMismatch(t *testing.T) {
 	}
 
 	_, _, err := service.ValidateAndCalculatePrices(input)
-	if err == nil || err != ErrInvalidProductPrice {
-		t.Errorf("expected ErrInvalidProductPrice, got: %v", err)
+	if err == nil || err != ErrInvalidTotalNetPrice {
+		t.Errorf("expected ErrInvalidTotalNetPrice, got: %v", err)
 	}
 }
 
@@ -229,38 +238,72 @@ func TestValidateAndPrepareGuestsWithGuestNotFound(t *testing.T) {
 	}
 }
 
-func TestValidateAndPrepareGuestsWithGuestAlreadyAttended(t *testing.T) {
-	mockRepo := &MockRepository{
-		Guests: map[int]*models.Guest{
-			43: {
-				AttendedGuests:   1,
-				AdditionalGuests: 1,
-				Guestlist: models.Guestlist{
-					ProductID: 1,
-				},
-			},
-		},
-	}
-
+func TestValidateGuestWithGuestNotFound(t *testing.T) {
 	service := &PurchaseService{
-		Repo: mockRepo,
+		Repo: &MockRepository{
+			Guests: map[int]*models.Guest{},
+		},
 	}
 
-	input := PurchaseInput{
-		Cart: []PurchaseCartItem{
-			{
-				ID:       1,
-				Quantity: 1,
-				ListItems: []ListItemInput{
-					{ID: 43, AttendedGuests: 1},
+	_, err := service.validateGuest(ListItemInput{ID: 99, AttendedGuests: 1}, 1)
+	if err != ErrGuestNotFound {
+		t.Fatalf("expected ErrGuestNotFound, got %v", err)
+	}
+}
+
+func TestValidateGuestWithGuestAlreadyAttended(t *testing.T) {
+	service := &PurchaseService{
+		Repo: &MockRepository{
+			Guests: map[int]*models.Guest{
+				42: {
+					AttendedGuests: 1,
+					Guestlist:      models.Guestlist{ProductID: 1},
 				},
 			},
 		},
 	}
 
-	_, err := service.ValidateAndPrepareGuests(input)
-	if err == nil {
-		t.Errorf("expected error for already attended guest, got none")
+	_, err := service.validateGuest(ListItemInput{ID: 42, AttendedGuests: 1}, 1)
+	if err != ErrGuestAlreadyAttended {
+		t.Fatalf("expected ErrGuestAlreadyAttended, got %v", err)
+	}
+}
+
+func TestValidateGuestWithTooManyAdditionalGuests(t *testing.T) {
+	service := &PurchaseService{
+		Repo: &MockRepository{
+			Guests: map[int]*models.Guest{
+				42: {
+					AttendedGuests:   0,
+					AdditionalGuests: 1,
+					Guestlist:        models.Guestlist{ProductID: 1},
+				},
+			},
+		},
+	}
+
+	_, err := service.validateGuest(ListItemInput{ID: 42, AttendedGuests: 3}, 1)
+	if err != ErrTooManyAdditionalGuests {
+		t.Fatalf("expected ErrTooManyAdditionalGuests, got %v", err)
+	}
+}
+
+func TestValidateGuestWithWrongProductId(t *testing.T) {
+	service := &PurchaseService{
+		Repo: &MockRepository{
+			Guests: map[int]*models.Guest{
+				42: {
+					AttendedGuests:   0,
+					AdditionalGuests: 1,
+					Guestlist:        models.Guestlist{ProductID: 1},
+				},
+			},
+		},
+	}
+
+	_, err := service.validateGuest(ListItemInput{ID: 42, AttendedGuests: 1}, 2)
+	if err != ErrListItemWrongProduct {
+		t.Fatalf("expected ErrListItemWrongProduct, got %v", err)
 	}
 }
 
@@ -336,4 +379,46 @@ func TestCreatePurchaseWithSuccess(t *testing.T) {
 	if g.PurchaseID == nil {
 		t.Error("guest has no purchase ID")
 	}
+}
+
+func TestNotifyGuestsWithSendsExpectedEmails(t *testing.T) {
+	mailer := &MockMailer{}
+	service := &PurchaseService{
+		Mailer: mailer,
+	}
+
+	guests := []models.Guest{
+		{
+			Name:                 "Alice",
+			NotifyOnArrivalEmail: ptr("alice@example.com"),
+		},
+		{
+			Name: "Bob",
+			// no email, should not trigger
+		},
+		{
+			Name:                 "Eve",
+			NotifyOnArrivalEmail: ptr("eve@example.com"),
+		},
+	}
+
+	service.notifyGuests(guests)
+
+	if len(mailer.Sent) != 2 {
+		t.Fatalf("expected 2 mails, got %d", len(mailer.Sent))
+	}
+
+	want := []string{
+		"alice@example.com|Alice",
+		"eve@example.com|Eve",
+	}
+	for i, expected := range want {
+		if mailer.Sent[i] != expected {
+			t.Errorf("mail %d: expected %q, got %q", i, expected, mailer.Sent[i])
+		}
+	}
+}
+
+func ptr(s string) *string {
+	return &s
 }

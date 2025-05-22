@@ -6,9 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 	response "github.com/potibm/kasseapparat/internal/app/response"
+	"github.com/potibm/kasseapparat/internal/app/service"
+	"github.com/potibm/kasseapparat/internal/app/utils"
 	"github.com/shopspring/decimal"
 )
 
@@ -28,6 +29,31 @@ type PurchaseRequest struct {
 	TotalGrossPrice decimal.Decimal       `binding:"required"      form:"totalGrossPrice"`
 	Cart            []PurchaseCartRequest `binding:"required,dive" form:"cart"`
 	PaymentMethod   string                `binding:"required"      form:"paymentMethod"`
+}
+
+func (req PurchaseRequest) ToInput() service.PurchaseInput {
+	input := service.PurchaseInput{
+		PaymentMethod:   req.PaymentMethod,
+		TotalNetPrice:   req.TotalNetPrice,
+		TotalGrossPrice: req.TotalGrossPrice,
+	}
+
+	for _, cart := range req.Cart {
+		item := service.PurchaseCartItem{
+			ID:       cart.ID,
+			Quantity: cart.Quantity,
+		}
+		for _, li := range cart.ListItems {
+			item.ListItems = append(item.ListItems, service.ListItemInput{
+				ID:             li.ID,
+				AttendedGuests: int(li.AttendedGuests),
+			})
+		}
+
+		input.Cart = append(input.Cart, item)
+	}
+
+	return input
 }
 
 func (handler *Handler) DeletePurchase(c *gin.Context) {
@@ -57,133 +83,44 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		return
 	}
 
-	var purchase models.Purchase
-
-	updatedListEntries := make([]models.Guest, 0)
-
-	var purchaseRequest PurchaseRequest
-	if err := c.ShouldBind(&purchaseRequest); err != nil {
+	var req PurchaseRequest
+	if err := c.ShouldBind(&req); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
-
 		return
 	}
 
-	if !handler.IsValidPaymentMethod(purchaseRequest.PaymentMethod) {
+	if !handler.IsValidPaymentMethod(req.PaymentMethod) {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid payment method"))
-
 		return
 	}
 
-	calculatedTotalNetPrice := decimal.NewFromInt(0)
-	calculatedTotalGrossPrice := decimal.NewFromInt(0)
+	input := req.ToInput()
+	purchaseService := service.NewPurchaseService(handler.repo, &handler.mailer, handler.decimalPlaces)
 
-	for i := range len(purchaseRequest.Cart) {
-		id := purchaseRequest.Cart[i].ID
-		quantity := purchaseRequest.Cart[i].Quantity
-
-		product, err := handler.repo.GetProductByID(id)
-		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Product not found"))
-
-			return
-		}
-
-		calculatedPurchaseItemNetPrice := product.NetPrice.Mul(decimal.NewFromInt(int64(quantity)))
-		calculatedTotalNetPrice = calculatedTotalNetPrice.Add(calculatedPurchaseItemNetPrice)
-
-		calculatedPurchaseItemGrossPrice := product.GrossPrice(handler.decimalPlaces).Mul(decimal.NewFromInt(int64(quantity)))
-		calculatedTotalGrossPrice = calculatedTotalGrossPrice.Add(calculatedPurchaseItemGrossPrice)
-
-		purchaseItem := models.PurchaseItem{
-			Product:  *product,
-			Quantity: purchaseRequest.Cart[i].Quantity,
-			NetPrice: product.NetPrice,
-			VATRate:  product.VATRate,
-		}
-		purchase.PurchaseItems = append(purchase.PurchaseItems, purchaseItem)
-		purchase.CreatedByID = &executingUserObj.ID
-
-		for j := range len(purchaseRequest.Cart[i].ListItems) {
-			var listEntry *models.Guest
-
-			listEntry, err = handler.repo.GetFullGuestByID(purchaseRequest.Cart[i].ListItems[j].ID)
-			if err != nil || listEntry == nil {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item not found"))
-
-				return
-			}
-
-			if listEntry.AttendedGuests != 0 {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item has already been attended"))
-
-				return
-			}
-
-			if listEntry.AdditionalGuests+1 < purchaseRequest.Cart[i].ListItems[j].AttendedGuests {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Additional guests exceed available guests"))
-
-				return
-			}
-
-			if listEntry.Guestlist.ProductID != uint(id) {
-				_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "List item does not belong to product"))
-
-				return
-			}
-
-			listEntry.AttendedGuests = purchaseRequest.Cart[i].ListItems[j].AttendedGuests
-			listEntry.MarkAsArrived()
-
-			updatedListEntries = append(updatedListEntries, *listEntry)
-		}
-	}
-	// check that total price is correct
-	if !calculatedTotalNetPrice.Equal(purchaseRequest.TotalNetPrice) {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Total net price does not match"))
-
-		return
-	}
-
-	if !calculatedTotalGrossPrice.Equal(purchaseRequest.TotalGrossPrice) {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Total gross price does not match"))
-
-		return
-	}
-
-	purchase.TotalNetPrice = calculatedTotalNetPrice
-	purchase.TotalGrossPrice = calculatedTotalGrossPrice
-	purchase.PaymentMethod = purchaseRequest.PaymentMethod
-
-	purchase, err = handler.repo.StorePurchases(purchase)
+	purchase, err := purchaseService.CreatePurchase(c.Request.Context(), input, int(executingUserObj.ID))
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
-
-		return
-	}
-
-	// update the list of listEntries
-	for i := range updatedListEntries {
-		updatedListEntry := updatedListEntries[i]
-		updatedListEntry.PurchaseID = &purchase.ID
-
-		_, err := handler.repo.UpdateGuestByID(int(updatedListEntry.ID), updatedListEntry)
-		if err != nil {
+		switch err {
+		case service.ErrInvalidProductPrice,
+			service.ErrInvalidTotalGrossPrice,
+			service.ErrInvalidTotalNetPrice,
+			service.ErrProductNotFound,
+			service.ErrGuestNotFound,
+			service.ErrGuestAlreadyAttended,
+			service.ErrTooManyAdditionalGuests,
+			service.ErrListItemWrongProduct:
+			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, utils.CapitalizeFirstRune(err.Error())))
+			return
+		default:
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
-
 			return
 		}
 	}
 
-	for i := range updatedListEntries {
-		updatedListEntry := updatedListEntries[i]
-		if updatedListEntry.NotifyOnArrivalEmail != nil {
-			_ = handler.mailer.SendNotificationOnArrival(*updatedListEntry.NotifyOnArrivalEmail, updatedListEntry.Name)
-		}
-	}
-
-	purchasesResponse := response.ToPurchaseResponse(purchase, handler.decimalPlaces)
-
-	c.JSON(http.StatusCreated, gin.H{"message": "Purchase successful", "purchase": purchasesResponse})
+	purchaseResponse := response.ToPurchaseResponse(*purchase, handler.decimalPlaces)
+	c.JSON(http.StatusCreated, gin.H{
+		"message":  "Purchase successful",
+		"purchase": purchaseResponse,
+	})
 }
 
 func (handler *Handler) GetPurchases(c *gin.Context) {
