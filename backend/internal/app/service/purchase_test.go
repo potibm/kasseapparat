@@ -145,7 +145,7 @@ func TestValidateAndCalculatePricesWithProductNotFound(t *testing.T) {
 	}
 }
 
-func TestValidateAndCalculatePricesWithPriceMismatch(t *testing.T) {
+func TestValidateAndCalculatePricesWithTotalPriceMismatch(t *testing.T) {
 	mockRepo := &MockRepository{
 		Products: map[int]*models.Product{
 			1: {
@@ -171,6 +171,35 @@ func TestValidateAndCalculatePricesWithPriceMismatch(t *testing.T) {
 	_, _, err := service.ValidateAndCalculatePrices(input)
 	if err == nil || err != ErrInvalidTotalNetPrice {
 		t.Errorf("expected ErrInvalidTotalNetPrice, got: %v", err)
+	}
+}
+
+func TestValidateAndCalculatePricesWithProductPriceMismatch(t *testing.T) {
+	mockRepo := &MockRepository{
+		Products: map[int]*models.Product{
+			1: {
+				NetPrice: decimal.NewFromFloat(10.00),
+				VATRate:  decimal.NewFromInt(19),
+			},
+		},
+	}
+
+	service := &PurchaseService{
+		Repo:          mockRepo,
+		DecimalPlaces: 2,
+	}
+
+	input := PurchaseInput{
+		Cart: []PurchaseCartItem{
+			{ID: 1, Quantity: 1, NetPrice: decimal.NewFromFloat(15.00)},
+		},
+		TotalNetPrice:   decimal.NewFromFloat(10.00),
+		TotalGrossPrice: decimal.NewFromFloat(11.90),
+	}
+
+	_, _, err := service.ValidateAndCalculatePrices(input)
+	if err == nil || err != ErrInvalidProductPrice {
+		t.Errorf("expected ErrInvalidProductPrice, got: %v", err)
 	}
 }
 
