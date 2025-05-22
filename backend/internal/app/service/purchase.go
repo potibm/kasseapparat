@@ -43,6 +43,7 @@ type ListItemInput struct {
 
 type PurchaseCartItem struct {
 	ID        int
+	NetPrice  decimal.Decimal
 	Quantity  int
 	ListItems []ListItemInput
 }
@@ -79,6 +80,10 @@ func (s *PurchaseService) ValidateAndCalculatePrices(input PurchaseInput) (decim
 		product, err := s.Repo.GetProductByID(item.ID)
 		if err != nil || product == nil {
 			return decimal.Zero, decimal.Zero, ErrProductNotFound
+		}
+
+		if !product.NetPrice.Round(s.DecimalPlaces).Equal(item.NetPrice.Round(s.DecimalPlaces)) {
+			return decimal.Zero, decimal.Zero, ErrInvalidProductPrice
 		}
 
 		net := product.NetPrice.Mul(decimal.NewFromInt(int64(item.Quantity)))

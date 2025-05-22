@@ -101,7 +101,7 @@ func TestValidateAndCalculatePricesWithSuccess(t *testing.T) {
 
 	input := PurchaseInput{
 		Cart: []PurchaseCartItem{
-			{ID: 1, Quantity: 2},
+			{ID: 1, Quantity: 2, NetPrice: decimal.NewFromFloat(10.00)},
 		},
 		TotalNetPrice:   decimal.NewFromFloat(20.00),
 		TotalGrossPrice: decimal.NewFromFloat(23.80),
@@ -133,7 +133,7 @@ func TestValidateAndCalculatePricesWithProductNotFound(t *testing.T) {
 
 	input := PurchaseInput{
 		Cart: []PurchaseCartItem{
-			{ID: 999, Quantity: 1},
+			{ID: 999, Quantity: 1, NetPrice: decimal.NewFromFloat(10.00)},
 		},
 		TotalNetPrice:   decimal.NewFromFloat(10.00),
 		TotalGrossPrice: decimal.NewFromFloat(11.90),
@@ -162,10 +162,10 @@ func TestValidateAndCalculatePricesWithPriceMismatch(t *testing.T) {
 
 	input := PurchaseInput{
 		Cart: []PurchaseCartItem{
-			{ID: 1, Quantity: 1},
+			{ID: 1, Quantity: 1, NetPrice: decimal.NewFromFloat(10.00)},
 		},
-		TotalNetPrice:   decimal.NewFromFloat(15.00), // falsch!
-		TotalGrossPrice: decimal.NewFromFloat(17.85), // falsch!
+		TotalNetPrice:   decimal.NewFromFloat(15.00), // wrong
+		TotalGrossPrice: decimal.NewFromFloat(17.85), // wrong
 	}
 
 	_, _, err := service.ValidateAndCalculatePrices(input)
@@ -350,6 +350,7 @@ func TestCreatePurchaseWithSuccess(t *testing.T) {
 			{
 				ID:       1,
 				Quantity: 1,
+				NetPrice: decimal.NewFromFloat(10.00),
 				ListItems: []ListItemInput{
 					{ID: 42, AttendedGuests: 1},
 				},

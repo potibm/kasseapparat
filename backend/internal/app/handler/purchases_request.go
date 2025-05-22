@@ -15,6 +15,7 @@ type PurchaseListItemRequest struct {
 type PurchaseCartRequest struct {
 	ID        int                       `binding:"required"      form:"ID"`
 	Quantity  int                       `binding:"required"      form:"quantity"`
+	NetPrice  decimal.Decimal           `binding:"required" form:"netPrice"`
 	ListItems []PurchaseListItemRequest `binding:"required,dive" form:"listItems"`
 }
 
@@ -87,6 +88,7 @@ func (req PurchaseRequest) ToInput() service.PurchaseInput {
 		item := service.PurchaseCartItem{
 			ID:       cart.ID,
 			Quantity: cart.Quantity,
+			NetPrice: cart.NetPrice,
 		}
 		for _, li := range cart.ListItems {
 			item.ListItems = append(item.ListItems, service.ListItemInput{
