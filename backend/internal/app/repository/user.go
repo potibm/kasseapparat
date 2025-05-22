@@ -9,7 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
-const ErrUserNotFound = "user not found"
+var (
+	ErrUserNotFound           = errors.New("user not found")
+	ErrUserNotFoundByEmail    = errors.New("user not found by email")
+	ErrUserNotFoundByUsername = errors.New("user not found by username")
+)
 
 type UserFilters struct {
 	Query   string
@@ -43,7 +47,7 @@ func (filters UserFilters) AddWhere(query *gorm.DB) *gorm.DB {
 func (repo *Repository) GetUserByID(id int) (*models.User, error) {
 	var user models.User
 	if err := repo.db.Model(&models.User{}).First(&user, id).Error; err != nil {
-		return nil, errors.New(ErrUserNotFound)
+		return nil, ErrUserNotFound
 	}
 
 	return &user, nil
@@ -52,7 +56,7 @@ func (repo *Repository) GetUserByID(id int) (*models.User, error) {
 func (repo *Repository) GetUserByUsername(username string) (*models.User, error) {
 	var user models.User
 	if err := repo.db.Model(&models.User{}).Where("LOWER(Username) = ?", strings.ToLower(username)).First(&user).Error; err != nil {
-		return nil, errors.New(ErrUserNotFound + " by username")
+		return nil, ErrUserNotFoundByUsername
 	}
 
 	return &user, nil
@@ -61,7 +65,7 @@ func (repo *Repository) GetUserByUsername(username string) (*models.User, error)
 func (repo *Repository) GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
 	if err := repo.db.Model(&models.User{}).Where("LOWER(Email) = ?", strings.ToLower(email)).First(&user).Error; err != nil {
-		return nil, errors.New(ErrUserNotFound + " by email")
+		return nil, ErrUserNotFoundByEmail
 	}
 
 	return &user, nil
@@ -70,7 +74,7 @@ func (repo *Repository) GetUserByEmail(email string) (*models.User, error) {
 func (repo *Repository) GetUserByUserameOrEmail(login string) (*models.User, error) {
 	var user models.User
 	if err := repo.db.Model(&models.User{}).Where("LOWER(Username) = ? OR LOWER(Email) = ?", strings.ToLower(login), strings.ToLower(login)).First(&user).Error; err != nil {
-		return nil, errors.New(ErrUserNotFound)
+		return nil, ErrUserNotFound
 	}
 
 	return &user, nil
@@ -158,7 +162,7 @@ func (repo *Repository) DeleteUser(user models.User) {
 func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models.User, error) {
 	var user models.User
 	if err := repo.db.First(&user, id).Error; err != nil {
-		return nil, errors.New(ErrUserNotFound)
+		return nil, ErrUserNotFound
 	}
 
 	// Update the product with the new values

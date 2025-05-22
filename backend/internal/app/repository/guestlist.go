@@ -6,7 +6,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-const ErrGuestlistNotFound = "guestlist not found"
+var ErrGuestlistNotFound = errors.New("guestlist not found")
 
 type GuestlistFilters = struct {
 	Query string
@@ -66,7 +66,7 @@ func (repo *Repository) GetTotalGuestlists() (int64, error) {
 func (repo *Repository) GetGuestlistByID(id int) (*models.Guestlist, error) {
 	var guestlist models.Guestlist
 	if err := repo.db.First(&guestlist, id).Error; err != nil {
-		return nil, errors.New(ErrGuestlistNotFound)
+		return nil, ErrGuestlistNotFound
 	}
 
 	return &guestlist, nil
@@ -75,7 +75,7 @@ func (repo *Repository) GetGuestlistByID(id int) (*models.Guestlist, error) {
 func (repo *Repository) GetGuestlistWithTypeCode() (*models.Guestlist, error) {
 	var guestlist models.Guestlist
 	if err := repo.db.Where("type_code = ?", "1").First(&guestlist).Error; err != nil {
-		return nil, errors.New(ErrGuestlistNotFound)
+		return nil, ErrGuestlistNotFound
 	}
 
 	return &guestlist, nil
@@ -84,7 +84,7 @@ func (repo *Repository) GetGuestlistWithTypeCode() (*models.Guestlist, error) {
 func (repo *Repository) UpdateGuestlistByID(id int, updatedGuestlist models.Guestlist) (*models.Guestlist, error) {
 	var guestlist models.Guestlist
 	if err := repo.db.First(&guestlist, id).Error; err != nil {
-		return nil, errors.New(ErrGuestlistNotFound)
+		return nil, ErrGuestlistNotFound
 	}
 
 	guestlist.Name = updatedGuestlist.Name
