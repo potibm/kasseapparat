@@ -23,3 +23,7 @@ func NewLocalRepository(decimalPlaces int32) *Repository {
 
 	return &Repository{db: db, decimalPlaces: decimalPlaces}
 }
+
+func (r *Repository) GetDB() *gorm.DB {
+	return r.db
+}

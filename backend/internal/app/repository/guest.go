@@ -7,9 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	ErrGuestNotFound  = "guest not found"
-	ErrGuestsNotFound = "guests not found"
+var (
+	ErrGuestNotFound  = errors.New("guest not found")
+	ErrGuestsNotFound = errors.New("guests not found")
 )
 
 type GuestFilters struct {
@@ -68,7 +68,7 @@ func (repo *Repository) GetGuests(limit int, offset int, sort string, order stri
 	query = filters.AddWhere(query)
 
 	if err := query.Find(&guests).Error; err != nil {
-		return nil, errors.New(ErrGuestsNotFound)
+		return nil, ErrGuestsNotFound
 	}
 
 	return guests, nil
@@ -109,7 +109,7 @@ func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) 
 	}
 
 	if err := query.Scan(&guests).Error; err != nil {
-		return nil, errors.New(ErrGuestsNotFound)
+		return nil, ErrGuestsNotFound
 	}
 
 	return guests, nil
@@ -118,7 +118,7 @@ func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) 
 func (repo *Repository) GetGuestByID(id int) (*models.Guest, error) {
 	var guest models.Guest
 	if err := repo.db.First(&guest, id).Error; err != nil {
-		return nil, errors.New(ErrGuestNotFound)
+		return nil, ErrGuestNotFound
 	}
 
 	return &guest, nil
@@ -127,7 +127,7 @@ func (repo *Repository) GetGuestByID(id int) (*models.Guest, error) {
 func (repo *Repository) GetGuestByCode(code string) (*models.Guest, error) {
 	var guest models.Guest
 	if err := repo.db.Where("code = ?", code).First(&guest).Error; err != nil {
-		return nil, errors.New(ErrGuestNotFound)
+		return nil, ErrGuestNotFound
 	}
 
 	return &guest, nil
@@ -136,21 +136,25 @@ func (repo *Repository) GetGuestByCode(code string) (*models.Guest, error) {
 func (repo *Repository) GetFullGuestByID(id int) (*models.Guest, error) {
 	var guest models.Guest
 	if err := repo.db.Preload("Guestlist").Preload("Guestlist.Product").First(&guest, id).Error; err != nil {
-		return nil, errors.New(ErrGuestNotFound)
+		return nil, ErrGuestNotFound
 	}
 
 	return &guest, nil
 }
 
 func (repo *Repository) UpdateGuestByID(id int, updatedGuest models.Guest) (*models.Guest, error) {
+	return repo.UpdateGuestByIDTx(repo.db, id, updatedGuest)
+}
+
+func (repo *Repository) UpdateGuestByIDTx(tx *gorm.DB, id int, updatedGuest models.Guest) (*models.Guest, error) {
 	var guest models.Guest
-	if err := repo.db.First(&guest, id).Error; err != nil {
-		return nil, errors.New(ErrGuestNotFound)
+	if err := tx.First(&guest, id).Error; err != nil {
+		return nil, ErrGuestNotFound
 	}
 
 	updatedGuest.ID = guest.ID
 
-	if err := repo.db.Save(&updatedGuest).Error; err != nil {
+	if err := tx.Save(&updatedGuest).Error; err != nil {
 		return nil, errors.New("failed to update guest")
 	}
 

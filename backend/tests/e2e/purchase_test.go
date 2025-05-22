@@ -82,6 +82,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 				{
 					"ID":       2,
 					"quantity": 1,
+					"netPrice": "18.69",
 					"listItems": []map[string]interface{}{
 						{
 							"ID":             1,
@@ -154,6 +155,7 @@ func TestCreatePurchaseWithWrongTotalGrossPrice(t *testing.T) {
 				{
 					"ID":        2,
 					"quantity":  1,
+					"netPrice":  "18.69",
 					"listItems": []map[string]interface{}{},
 				},
 			},
@@ -178,6 +180,7 @@ func TestCreatePurchaseWithWrongTotalNetPrice(t *testing.T) {
 				{
 					"ID":        2,
 					"quantity":  1,
+					"netPrice":  "18.69",
 					"listItems": []map[string]interface{}{},
 				},
 			},
@@ -186,6 +189,31 @@ func TestCreatePurchaseWithWrongTotalNetPrice(t *testing.T) {
 		Status(http.StatusBadRequest).JSON().Object()
 
 	validateErrorDetailMessage(errorResponse, "Total net price does not match")
+}
+
+func TestCreatePurchaseWithWrongProductPrice(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// Create a purchase, but with a wrong total net price
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+		WithJSON(map[string]interface{}{
+			"paymentMethod":   "CASH",
+			"totalGrossPrice": "20",
+			"totalNetPrice":   "18.69",
+			"cart": []map[string]interface{}{
+				{
+					"ID":        2,
+					"quantity":  1,
+					"netPrice":  "1.69", // wrong price
+					"listItems": []map[string]interface{}{},
+				},
+			},
+		}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	validateErrorDetailMessage(errorResponse, "Invalid product price")
 }
 
 func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
@@ -202,6 +230,7 @@ func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
 				{
 					"ID":        123,
 					"quantity":  1,
+					"netPrice":  "21",
 					"listItems": []map[string]interface{}{},
 				},
 			},
@@ -226,6 +255,7 @@ func TestCreatePurchaseWithInvalidPaymentMethod(t *testing.T) {
 				{
 					"ID":        123,
 					"quantity":  1,
+					"netPrice":  "21",
 					"listItems": []map[string]interface{}{},
 				},
 			},
@@ -244,12 +274,13 @@ func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"paymentMethod":   "CASH",
-			"totalNetPrice":   "11.11",
-			"totalGrossPrice": "12.12",
+			"totalNetPrice":   "0",
+			"totalGrossPrice": "0",
 			"cart": []map[string]interface{}{
 				{
-					"ID":       3,
+					"ID":       3, // free product
 					"quantity": 1,
+					"netPrice": 0,
 					"listItems": []map[string]interface{}{
 						{
 							"ID":             1,
@@ -273,12 +304,13 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
 		WithJSON(map[string]interface{}{
 			"paymentMethod":   "CASH",
-			"totalNetPrice":   "11.11",
-			"totalGrossPrice": "12.12",
+			"totalNetPrice":   "0",
+			"totalGrossPrice": "0",
 			"cart": []map[string]interface{}{
 				{
-					"ID":       3,
+					"ID":       3, // free product
 					"quantity": 1,
+					"netPrice": 0,
 					"listItems": []map[string]interface{}{
 						{
 							"ID":             1,
@@ -342,6 +374,7 @@ func createPurchase() string {
 				{
 					"ID":        1,
 					"quantity":  1,
+					"netPrice":  "37.38",
 					"listItems": []map[string]interface{}{},
 				},
 			},
