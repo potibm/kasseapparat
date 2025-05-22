@@ -14,7 +14,7 @@ func TestToInputWithInvalidQuantity(t *testing.T) {
 		},
 	}
 
-	_, err := req.ToInput()
+	err := req.Validate()
 	if err == nil || !strings.Contains(err.Error(), "quantity") {
 		t.Errorf("expected quantity error, got %v", err)
 	}
@@ -26,7 +26,7 @@ func TestToInputWithNegativeTotalNetPrice(t *testing.T) {
 		Cart:          []PurchaseCartRequest{},
 	}
 
-	_, err := req.ToInput()
+	err := req.Validate()
 	if err == nil || !strings.Contains(err.Error(), "total price must not be negative") {
 		t.Errorf("expected total price not negative error, got %v", err)
 	}
@@ -38,7 +38,7 @@ func TestToInputWithNegativeTotalGrossPrice(t *testing.T) {
 		Cart:            []PurchaseCartRequest{},
 	}
 
-	_, err := req.ToInput()
+	err := req.Validate()
 	if err == nil || !strings.Contains(err.Error(), "total price must not be negative") {
 		t.Errorf("expected total price not negative error, got %v", err)
 	}
@@ -54,7 +54,7 @@ func TestToInputWithDuplicateProductId(t *testing.T) {
 		},
 	}
 
-	_, err := req.ToInput()
+	err := req.Validate()
 	if err == nil || !strings.Contains(err.Error(), "duplicate") {
 		t.Errorf("expected duplicate product id error, got %v", err)
 	}
@@ -65,7 +65,7 @@ func TestToInputWithEmptyCart(t *testing.T) {
 		Cart: []PurchaseCartRequest{},
 	}
 
-	_, err := req.ToInput()
+	err := req.Validate()
 	if err == nil || !strings.Contains(err.Error(), "empty") {
 		t.Errorf("expected empty cart error, got %v", err)
 	}
@@ -78,7 +78,7 @@ func TestToInputWithInvalidAttendedGuestsValue(t *testing.T) {
 		},
 	}
 
-	_, err := req.ToInput()
+	err := req.Validate()
 	if err == nil || !strings.Contains(err.Error(), "attendedGuests") {
 		t.Errorf("expected attendedGuests must at least be 1 error, got %v", err)
 	}
