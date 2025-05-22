@@ -206,11 +206,11 @@ func (s *PurchaseService) CreatePurchase(ctx context.Context, input PurchaseInpu
 		return nil
 	})
 
-	s.notifyGuests(guests)
-
 	if err != nil {
 		return nil, err
 	}
+
+	s.notifyGuests(guests)
 
 	return savedPurchase, nil
 }
