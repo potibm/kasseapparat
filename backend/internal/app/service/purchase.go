@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 	"github.com/shopspring/decimal"
@@ -63,7 +62,7 @@ func uintPtr(v uint) *uint {
 	return &v
 }
 
-func NewPurchaseService(repo *repository.Repository, mailer *mailer.Mailer, decimalPlaces int32) *PurchaseService {
+func NewPurchaseService(repo *repository.Repository, mailer Mailer, decimalPlaces int32) *PurchaseService {
 	return &PurchaseService{
 		Repo:          repo,
 		DB:            repo.GetDB(),
