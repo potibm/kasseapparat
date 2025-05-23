@@ -96,6 +96,9 @@ const AuthProvider = ({ children }) => {
       if (auth.token == null) {
         return;
       }
+      if (window.location.pathname.startsWith("/admin")) {
+        return
+      }
 
       const now = new Date();
       const expiryDate = new Date(auth.expiryDate);
