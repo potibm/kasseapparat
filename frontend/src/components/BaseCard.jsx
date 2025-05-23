@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, DarkThemeToggle } from "flowbite-react";
-import { useConfig } from "../provider/ConfigProvider";
+import Version from "./Version";
 import PropTypes from "prop-types";
 import { Link } from "react-router";
 
@@ -10,8 +10,6 @@ const BaseCard = ({
   linkLogin = false,
   linkForgotPassword = false,
 }) => {
-  const version = useConfig().version;
-
   return (
     <div className="flex justify-center items-center h-screen">
       <Card className="max-w-sm ">
@@ -61,7 +59,7 @@ const BaseCard = ({
             Manual
           </Link>
           <span className="mx-2">&ndash;</span>
-          Version {version}
+          <Version />
           <DarkThemeToggle aria-label="Toggle dark mode" className="mx-2" />
         </p>
       </Card>

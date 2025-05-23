@@ -97,7 +97,7 @@ const AuthProvider = ({ children }) => {
         return;
       }
       if (window.location.pathname.startsWith("/admin")) {
-        return
+        return;
       }
 
       const now = new Date();

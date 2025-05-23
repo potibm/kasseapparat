@@ -22,6 +22,7 @@ import {
 } from "./hooks/Cart";
 import { useAuth } from "../Auth/provider/AuthProvider";
 import { useConfig } from "../provider/ConfigProvider";
+import Version from "../components/Version";
 import Decimal from "decimal.js";
 
 function Kasseapparat() {
@@ -30,7 +31,6 @@ function Kasseapparat() {
   const [purchaseHistory, setPurchaseHistory] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const { username, token } = useAuth();
-  const version = useConfig().version;
   const apiHost = useConfig().apiHost;
   const envMessage = useConfig().environmentMessage;
 
@@ -215,7 +215,9 @@ function Kasseapparat() {
 
           <MainMenu username={username} />
 
-          <p className="text-xs mt-10 dark:text-white">Version {version}</p>
+          <p className="text-xs mt-10 dark:text-white">
+            <Version />
+          </p>
         </div>
       </div>
       <ErrorModal message={errorMessage} onClose={handleCloseError} />
