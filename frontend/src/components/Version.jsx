@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useConfig } from "../provider/ConfigProvider";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
 
 export const Version = () => {
   const version = useConfig().version;
@@ -9,16 +8,32 @@ export const Version = () => {
   const [latestVersion, setLatestVersion] = useState(null);
 
   useEffect(() => {
-    fetch("https://api.github.com/repos/potibm/kasseapparat/releases/latest")
+    const cached = sessionStorage.getItem("kasseapparat_latest_version");
+    if (cached) {
+      setLatestVersion(cached);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    fetch("https://api.github.com/repos/potibm/kasseapparat/releases/latest", {
+      signal: controller.signal,
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data?.tag_name) {
-          setLatestVersion(data.tag_name.replace(/^v/, ""));
+          const cleanVersion = data.tag_name.replace(/^v/, "");
+          sessionStorage.setItem("kasseapparat_latest_version", cleanVersion);
+          setLatestVersion(cleanVersion);
         }
       })
       .catch((err) => {
-        console.error("Error loading the version from GitHub:", err);
+        if (err.name !== "AbortError") {
+          console.error("Error loading the version from GitHub:", err);
+        }
       });
+
+    return () => controller.abort();
   }, []);
 
   let versionLink = null;
@@ -32,6 +47,7 @@ export const Version = () => {
     <Link
       to={versionLink}
       target="_blank"
+      rel="noopener noreferrer"
       reloadDocument
       className={isOutdated ? "text-red-600 font-semibold" : ""}
       title={
