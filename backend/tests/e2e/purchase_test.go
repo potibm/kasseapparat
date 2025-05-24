@@ -102,6 +102,14 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	purchase.Value("id").String()
 	purchase.Value("totalGrossPrice").String().IsEqual("20")
 	purchase.Value("totalNetPrice").String().IsEqual("18.69")
+	purchaseItems := purchase.Value("purchaseItems").Array()
+	purchaseItems.Length().IsEqual(1)
+	purchaseItem := purchaseItems.Value(0).Object()
+	purchaseItem.Value("id").Number().Gt(0)
+	purchaseItem.Value("productID").Number().IsEqual(2)
+	product := purchaseItem.Value("product").Object()
+	product.Value("id").Number().IsEqual(2)
+	product.Value("name").String().NotEmpty() // see issue #469
 
 	purchaseId := purchase.Value("id").String().Raw()
 	purchaseUrl := purchaseBaseUrl + "/" + purchaseId

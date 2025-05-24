@@ -78,7 +78,13 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		}
 	}
 
-	purchaseResponse := response.ToPurchaseResponse(*purchase, handler.decimalPlaces)
+	reloadedPurchase, err := handler.repo.GetPurchaseByID(purchase.ID.String())
+	if err != nil {
+		reloadedPurchase = purchase // Fallback to the created purchase if reloading fails
+	}
+
+	purchaseResponse := response.ToPurchaseResponse(*reloadedPurchase, handler.decimalPlaces)
+
 	c.JSON(http.StatusCreated, gin.H{
 		"message":  "Purchase successful",
 		"purchase": purchaseResponse,
