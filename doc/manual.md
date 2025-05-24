@@ -122,7 +122,7 @@ You will have to fill out some fields (in multiple tabs):
   - "Wrap After" (set this to true and the next product will be shown on a new line in the POS)
   - "Hidden" (set this to true and your product will not be shown)
 - Stock
-  - "Total Stock" (0, when you have an infinite number of this product)
+  - "Total Stock" (0 for unlimited stock)
   - "Units sold" will be displayed for information
 - Sold out
   - "Sold out" (enable to collect information how big the interest is)
