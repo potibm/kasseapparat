@@ -21,3 +21,5 @@ jobs:
           push: false
           platforms: linux/amd64
           tags: my-temp-image:latest
+          build-args: |
+            VERSION=0.0.$(date +%Y-%m-%d)
