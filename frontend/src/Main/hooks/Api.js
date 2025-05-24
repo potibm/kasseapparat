@@ -100,13 +100,16 @@ export const storePurchase = async (
 
 export const fetchPurchases = async (apiHost, jwtToken, userId) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v2/purchases?createdById=${userId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwtToken}`,
+    fetch(
+      `${apiHost}/api/v2/purchases?createdById=${encodeURIComponent(userId)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
       },
-    })
+    )
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {

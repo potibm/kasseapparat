@@ -122,12 +122,12 @@ You will have to fill out some fields (in multiple tabs):
   - "Wrap After" (set this to true and the next product will be shown on a new line in the POS)
   - "Hidden" (set this to true and your product will not be shown)
 - Stock
-  - "Total Stock" (0, when you have an inifite number of this product)
+  - "Total Stock" (0, when you have an infinite number of this product)
   - "Units sold" will be displayed for information
 - Sold out
   - "Sold out" (enable to collect information how big the interest is)
-  - "Sold out request count" will be displayed for information
-- API 
+  - "Sold-out request count" will be displayed for information
+- API
   - "API export" (should be true for visitor, false for merchandise and co. all those with value true will count towards the number of visitors)
 
 Save.
@@ -178,13 +178,13 @@ Kasseapparat is designed with trust in mind: **we assume that all users act resp
 
 Only a few **critical or sensitive operations** are restricted to users with admin privileges. These include:
 
-- Changing another user's password  
-- Changing a user's role (e.g., promoting someone to admin)  
-- Creating a new user **with** admin rights  
-- Deleting users  
-- Deleting a product  
-- Deleting a guestlist that was created by someone else  
-- Deleting a guest entry created by another user  
+- Changing another user's password
+- Changing a user's role (e.g., promoting someone to admin)
+- Creating a new user **with** admin rights
+- Deleting users
+- Deleting a product
+- Deleting a guestlist that was created by someone else
+- Deleting a guest entry created by another user
 
 All other actions — such as managing products, creating guestlists, or handling purchases — are available to all users.
 

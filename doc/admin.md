@@ -234,16 +234,15 @@ Kasseapparat is built on trust: **we assume that users act responsibly and colla
 
 Only a small set of **critical or security-sensitive actions** are restricted to admins:
 
-- Changing another user's password  
-- Changing a user's role (e.g., making someone an admin)  
-- Creating a new user **with** admin rights  
-- Deleting users  
-- Deleting a product  
-- Deleting a guestlist created by another user  
-- Deleting a guest added by someone else  
+- Changing another user's password
+- Changing a user's role (e.g., making someone an admin)
+- Creating a new user **with** admin rights
+- Deleting users
+- Deleting a product
+- Deleting a guestlist created by another user
+- Deleting a guest added by someone else
 
 This minimal restriction model allows flexibility for everyone while ensuring that core system integrity is maintained.
-
 
 ### Create single user
 
