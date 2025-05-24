@@ -3,7 +3,7 @@ BACKEND_DIR = backend
 DIST_DIR = dist
 BACKEND_BUILD_CMD = go build -o ../$(DIST_DIR)
 
-.PHONY: list run run-fe run-be deps-be deps-fe run-tool linter linter-fix test test-fe test-be build docker-build docker-run
+.PHONY: list run run-fe run-be deps-be deps-fe run-tool linter linter-fix test test-fe test-be build docker-build docker-run manual
 
 list:
 	@LC_ALL=C $(MAKE) -pRrq -f $(firstword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/(^|\n)# Files(\n|$$)/,/(^|\n)# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$'
@@ -94,7 +94,7 @@ manual:
 	@rm -f doc/manual.pdf
 
 	@echo "🐳 Building Docker image (if needed)..."
-	@docker buildx inspect md-to-pdf-converter >/dev/null 2>&1 || docker buildx create --use
+	@docker buildx inspect md-to-pdf-converter >/dev/null 2>&1 || docker buildx create --name md-to-pdf-converter --use
 	@docker buildx build --platform linux/amd64 -t md-to-pdf-converter tools/md-to-pdf --load
 
 	@echo "📄 Generating manual.pdf from markdown..."
@@ -102,7 +102,7 @@ manual:
 		-v "$(PWD)/doc:/app" \
 		--shm-size=1g \
 		md-to-pdf-converter manual.md
-		
+
 	@echo "📁 Moving generated PDF to frontend..."
 	@mkdir -p "$(FRONTEND_DIR)/public"
 	@mv doc/manual.pdf "$(FRONTEND_DIR)/public/manual.pdf"
