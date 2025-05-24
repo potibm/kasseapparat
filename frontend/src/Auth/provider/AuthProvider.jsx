@@ -40,6 +40,9 @@ const AuthProvider = ({ children }) => {
     if (auth.token == null) {
       return;
     }
+    if (window.location.pathname.startsWith("/admin")) {
+      return;
+    }
     refreshJwtToken(apiHost, auth.token)
       .then((response) => {
         const newToken = response.token;
@@ -94,6 +97,9 @@ const AuthProvider = ({ children }) => {
 
     const handleReviviedApp = () => {
       if (auth.token == null) {
+        return;
+      }
+      if (window.location.pathname.startsWith("/admin")) {
         return;
       }
 

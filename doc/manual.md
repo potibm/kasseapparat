@@ -109,14 +109,26 @@ The Interface consists of several areas:
 
 To create a product click on "POS > Products" in the menu, then "+ Create" in the action bar.
 
-You will have to fill out some fields:
+You will have to fill out some fields (in multiple tabs):
 
 - Name
-- Price
-- Pos (products will be ordered by this position in the POS, simply enter a value that is between the product that should be before and the product that should be after your product)
-- Wrap After (set this to true and the next product will be shown on a new line in the POS)
-- Hidden (set this to true and your product will not be shown)
-- API export (should be true for visitor, false for merchandise and co. all those with value true will count towards the number of visitors)
+  - "Name"
+- Pricing
+  - "Net Price" (without VAT)
+  - "VAT"
+  - "Gross price" will be displayed for information
+- Layout
+  - "Pos" (products will be ordered by this position in the POS, simply enter a value that is between the product that should be before and the product that should be after your product)
+  - "Wrap After" (set this to true and the next product will be shown on a new line in the POS)
+  - "Hidden" (set this to true and your product will not be shown)
+- Stock
+  - "Total Stock" (0 for unlimited stock)
+  - "Units sold" will be displayed for information
+- Sold out
+  - "Sold out" (enable to collect information how big the interest is)
+  - "Sold-out request count" will be displayed for information
+- API
+  - "API export" (should be true for visitor, false for merchandise and co. all those with value true will count towards the number of visitors)
 
 Save.
 
@@ -159,6 +171,24 @@ Enter the following information:
 Save.
 
 The user will receive an email with a password reset link.
+
+#### User roles and permissions
+
+Kasseapparat is designed with trust in mind: **we assume that all users act responsibly and cooperatively**. Therefore, most actions in the system can be performed by any logged-in user — regardless of their role.
+
+Only a few **critical or sensitive operations** are restricted to users with admin privileges. These include:
+
+- Changing another user's password
+- Changing a user's role (e.g., promoting someone to admin)
+- Creating a new user **with** admin rights
+- Deleting users
+- Deleting a product
+- Deleting a guestlist that was created by someone else
+- Deleting a guest entry created by another user
+
+All other actions — such as managing products, creating guestlists, or handling purchases — are available to all users.
+
+This lightweight role concept allows for flexibility and autonomy while protecting essential system integrity.
 
 ### Add a user to the guestlist
 

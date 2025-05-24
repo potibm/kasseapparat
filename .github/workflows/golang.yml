@@ -16,15 +16,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Create assets file
         run: |
           mkdir -p backend/cmd/assets && \
           touch backend/cmd/assets/index.html
+
       - uses: actions/setup-go@v5
         with:
           cache-dependency-path: backend/go.sum
           go-version-file: backend/go.mod
           cache: true
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v7
         with:
@@ -38,23 +41,35 @@ jobs:
     needs: linter
     steps:
       - uses: actions/checkout@v4
+
       - name: Create assets file
         run: |
           mkdir -p backend/cmd/assets && \
           touch backend/cmd/assets/index.html
+
       - uses: actions/setup-go@v5
         with:
           cache-dependency-path: backend/go.sum
           go-version-file: backend/go.mod
           cache: true
+
       - name: Install dependencies
         run: go mod download
         working-directory: backend
+
       - name: Build
         run: |
           go build -v ./cmd/main.go && \
           go build -v ./tools/main.go
         working-directory: backend
+
       - name: Test with the Go CLI
-        run: go test -v ./...
+        run: go test -coverprofile=coverage.out ./...
         working-directory: backend
+
+      - name: Upload Go coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: backend/coverage.out
+          flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}

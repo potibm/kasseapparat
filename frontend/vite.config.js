@@ -15,5 +15,8 @@ export default defineConfig({
     globals: true,
     setupFiles: "./tests/setup.js",
     teardownTimeout: 1000,
+    coverage: {
+      reporter: ["text", "html", "lcov"],
+    },
   },
 });
