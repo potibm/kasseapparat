@@ -22,4 +22,5 @@ jobs:
           platforms: linux/amd64
           tags: my-temp-image:latest
           build-args: |
-            VERSION=0.0.$(date +%Y-%m-%d)
+            VERSION=0.1.2
+            BUILD_DATE=2000-01-01T00:00:00Z
