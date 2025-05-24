@@ -8,6 +8,11 @@ BACKEND_BUILD_CMD = go build -o ../$(DIST_DIR)
 list:
 	@LC_ALL=C $(MAKE) -pRrq -f $(firstword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/(^|\n)# Files(\n|$$)/,/(^|\n)# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$'
 
+prepare-buildx:
+	@docker buildx inspect kasseapparat-builder >/dev/null 2>&1 || \
+		docker buildx create --name kasseapparat-builder --use && \
+		docker buildx inspect --bootstrap
+
 run:
 	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001 &
 	docker run -d -p 8025:8025 -p 1025:1025 mailhog/mailhog
@@ -84,18 +89,32 @@ build:
 	mkdir -p $(DIST_DIR)/data
 	cd $(DIST_DIR) && ./kasseapparat-tool --seed --purge
 
-docker-build:
-	echo "$(shell date +%y%m%d%H%M)" > VERSION
-	docker build -t kasseapparat:latest .
+docker-build: prepare-buildx
+	@VERSION=0.0.$$(date +%y%m%d%H%M); \
+	echo $$VERSION > VERSION; \
+	docker buildx build --load --build-arg VERSION=$$VERSION -t kasseapparat:$$VERSION -t kasseapparat:latest .; \
 	rm VERSION
 
-manual: 
+docker-run:
+	@if ! docker image inspect kasseapparat:latest >/dev/null 2>&1; then \
+		echo "❌ Docker image 'kasseapparat:latest' not found. Please run 'make docker-build' first."; \
+		exit 1; \
+	fi
+	docker run -p 3003:8080 \
+		-e "CORS_ALLOW_ORIGINS=http://localhost:3003" \
+		-v ./backend/data:/app/data \
+		kasseapparat:latest
+		
+manual: prepare-buildx
 	@echo "🧹 Removing old manual.pdf if it exists..."
 	@rm -f doc/manual.pdf
 
 	@echo "🐳 Building Docker image (if needed)..."
-	@docker buildx inspect md-to-pdf-converter >/dev/null 2>&1 || docker buildx create --name md-to-pdf-converter --use
-	@docker buildx build --platform linux/amd64 -t md-to-pdf-converter tools/md-to-pdf --load
+	@docker buildx build \
+		--builder kasseapparat-builder \
+		--platform linux/amd64 \
+		-t md-to-pdf-converter tools/md-to-pdf \
+		--load
 
 	@echo "📄 Generating manual.pdf from markdown..."
 	@docker run --platform linux/amd64 --rm \
@@ -106,6 +125,3 @@ manual:
 	@echo "📁 Moving generated PDF to frontend..."
 	@mkdir -p "$(FRONTEND_DIR)/public"
 	@mv doc/manual.pdf "$(FRONTEND_DIR)/public/manual.pdf"
-
-docker-run:
-	docker run -p 3003:8080 -e "CORS_ALLOW_ORIGINS=http://localhost:3003" -v ./backend/data:/app/data kasseapparat:latest

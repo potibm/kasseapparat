@@ -1,3 +1,5 @@
+ARG VERSION
+
 # Build the frontend
 FROM --platform=$BUILDPLATFORM node:23 AS frontend-build
 WORKDIR /app/frontend
@@ -22,6 +24,14 @@ RUN CGO_ENABLED=1 go build -o kasseapparat ./cmd/main.go && \
 
 # Create the final image
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS runtime
+ARG VERSION
+LABEL org.opencontainers.image.title="kasseapparat" \
+      org.opencontainers.image.description="POS container for demoparties" \
+      org.opencontainers.image.authors="poti <poti@kaoz.org>" \
+      org.opencontainers.image.url="https://github.com/potibm/kasseapparat" \
+      org.opencontainers.image.source="https://github.com/potibm/kasseapparat" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.version=$VERSION
 WORKDIR /app
 VOLUME [ "/app/data" ]
 RUN apt-get update && \
