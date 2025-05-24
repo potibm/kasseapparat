@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, ButtonGroup, DarkThemeToggle, Tooltip } from "flowbite-react";
-import { HiCog, HiLogout, HiOutlineUserCircle } from "react-icons/hi";
+import { HiLogout, HiOutlineUserCircle } from "react-icons/hi";
 import { Link } from "react-router";
 import PropTypes from "prop-types";
 import AdminButton from "./AdminButton";
