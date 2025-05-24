@@ -4,7 +4,7 @@ import Cart from "./components/Cart";
 import ProductList from "./components/ProductList";
 import PurchaseHistory from "./components/PurchaseHistory";
 import ErrorModal from "./components/ErrorModal";
-import MainMenu from "./components/MainMenu";
+import MainMenu from "./components/MainMenu/MainMenu";
 import {
   deletePurchaseById,
   fetchProducts,
