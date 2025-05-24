@@ -81,3 +81,9 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
+
+      - name: Sign image with Cosign
+        run: |
+          cosign sign --yes ${{ steps.meta.outputs.tags }}
+        env:
+          COSIGN_EXPERIMENTAL: "1"
