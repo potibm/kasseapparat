@@ -29,7 +29,7 @@ ARG VERSION
 ARG BUILD_DATE
 LABEL org.opencontainers.image.title="kasseapparat" \
       org.opencontainers.image.description="A POS system for demoparties" \
-      org.opencontainers.image.authors="poti" \
+      org.opencontainers.image.authors="potibm" \
       org.opencontainers.image.url="https://github.com/potibm/kasseapparat" \
       org.opencontainers.image.source="https://github.com/potibm/kasseapparat" \
       org.opencontainers.image.licenses="MIT" \
