@@ -23,7 +23,7 @@ const MainMenu = ({ username, ...props }) => {
         as={Link}
         to="/logout"
         size="sm"
-        className="hover:bg-cyan-800 dark:hover:bg-cyan-700 hover:text-white"
+        className="hover:bg-primary-800 dark:hover:bg-cyan-700 hover:text-white"
       >
         <Tooltip content="Logout">
           <HiLogout className="h-5 w-5" />
@@ -36,7 +36,7 @@ const MainMenu = ({ username, ...props }) => {
         rel="noopener noreferrer"
         to="/admin"
         size="sm"
-        className="hover:bg-cyan-800 dark:hover:bg-cyan-700 hover:text-white"
+        className="hover:bg-primary-800 dark:hover:bg-cyan-700 hover:text-white"
       >
         <HiCog className="h-5 w-5" />
         <span className="ml-2 max-xl:hidden text-sm">Admin</span>
