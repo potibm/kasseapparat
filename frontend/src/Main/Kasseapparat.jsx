@@ -30,7 +30,7 @@ function Kasseapparat() {
   const [products, setProducts] = useState(null);
   const [purchaseHistory, setPurchaseHistory] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const { username, token } = useAuth();
+  const { username, token, id: userId } = useAuth();
   const apiHost = useConfig().apiHost;
   const envMessage = useConfig().environmentMessage;
 
@@ -56,9 +56,7 @@ function Kasseapparat() {
         );
     };
     const getHistory = async () => {
-      const history = await fetchPurchases(apiHost, token);
-      setPurchaseHistory(history);
-      fetchPurchases(apiHost, token)
+      fetchPurchases(apiHost, token, userId)
         .then((history) => setPurchaseHistory(history))
         .catch((error) =>
           showError(
@@ -69,7 +67,7 @@ function Kasseapparat() {
     };
     getProducts();
     getHistory();
-  }, [apiHost, token]); // Empty dependency array to run only once on mount
+  }, [apiHost, token, userId]); // Empty dependency array to run only once on mount
 
   const handleAddToCart = (product, count = 1, listItem = null) => {
     setCart(addToCart(cart, product, count, listItem));
@@ -102,7 +100,7 @@ function Kasseapparat() {
   const handleRemoveFromPurchaseHistory = async (purchase) => {
     return deletePurchaseById(apiHost, token, purchase.id)
       .then(() => {
-        fetchPurchases(apiHost, token)
+        fetchPurchases(apiHost, token, userId)
           .then((history) => setPurchaseHistory(history))
           .catch((error) =>
             showError(

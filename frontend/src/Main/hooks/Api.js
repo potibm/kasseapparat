@@ -98,9 +98,9 @@ export const storePurchase = async (
   });
 };
 
-export const fetchPurchases = async (apiHost, jwtToken) => {
+export const fetchPurchases = async (apiHost, jwtToken, userId) => {
   return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v2/purchases`, {
+    fetch(`${apiHost}/api/v2/purchases?createdById=${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

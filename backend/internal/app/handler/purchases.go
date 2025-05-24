@@ -94,10 +94,10 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 func (handler *Handler) GetPurchases(c *gin.Context) {
 	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
-	sort := c.DefaultQuery("_sort", "id")
+	sort := c.DefaultQuery("_sort", "createdAt")
 	order := c.DefaultQuery("_order", "DESC")
-	filters := repository.PurchaseFilters{}
 
+	filters := repository.PurchaseFilters{}
 	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethod", handler.paymentMethods)
 	filters.CreatedByID, _ = strconv.Atoi(c.DefaultQuery("createdById", "0"))
 	filters.TotalGrossPriceGte = queryDecimal(c, "totalGrossPrice_gte")
