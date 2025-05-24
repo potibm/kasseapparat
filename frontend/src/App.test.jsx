@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 import React from "react";
 
 const mockConfig = {
-  version: "1.0.0",
+  version: "0.2.0",
 };
 
 const MockConfigProvider = ({ children }) => (
@@ -55,7 +55,7 @@ describe("App", () => {
     const headlineElement = screen.getByText(/Kasseapparat/i);
     expect(headlineElement).toBeInTheDocument();
 
-    const versionElement = screen.getByText(/Version 1.0.0/i);
+    const versionElement = screen.getByText(/Version 0.2.0/i);
     expect(versionElement).toBeInTheDocument();
   });
 });
