@@ -43,7 +43,7 @@ jobs:
           echo "tag2=$(echo $RAW_TAG | cut -d. -f1)" >> "$GITHUB_OUTPUT"
           echo "tag3=$(echo $RAW_TAG | cut -d. -f1-2)" >> "$GITHUB_OUTPUT"
           echo "tag4=latest" >> "$GITHUB_OUTPUT"
-      
+
       - name: Generate comma-separated tags
         id: tags
         run: |
