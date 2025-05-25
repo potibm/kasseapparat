@@ -2,10 +2,9 @@ name: Docker Image Publish DEV
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Version suffix (e.g. 2.5.3-dev)"
-        required: true
+  push:
+    branches:
+      - fix/container-bake
 
 env:
   REGISTRY: ghcr.io
