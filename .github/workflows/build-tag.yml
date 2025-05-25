@@ -67,7 +67,6 @@ jobs:
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/tree/main/doc
-
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.authors=potibm
           annotations: |
