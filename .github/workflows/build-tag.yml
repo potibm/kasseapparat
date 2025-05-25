@@ -77,7 +77,7 @@ jobs:
             org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/tree/main/doc
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.authors=potibm
-            
+
       # Extract the version from the release output
       - name: Extract version (from semantic release)
         run: echo "${{steps.meta.outputs.version }}" > VERSION
