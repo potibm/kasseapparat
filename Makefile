@@ -99,6 +99,7 @@ docker-build: prepare-buildx
 	BUILD_DATE=$$(date -Iseconds); \
 	echo $$VERSION > VERSION; \
 	docker buildx build \
+	    --builder kasseapparat-builder \
 		--build-arg VERSION=$$VERSION \
 		--build-arg BUILD_DATE=$$BUILD_DATE \
 		--tag kasseapparat:latest \

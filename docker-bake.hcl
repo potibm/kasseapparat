@@ -5,13 +5,12 @@ group "default" {
 target "kasseapparat" {
   context    = "."
   dockerfile = "Dockerfile"
-
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms  = ["linux/amd64", "linux/arm64"]
 
   args = {
-    VERSION    = "unset"
-    BUILD_DATE = "unset"
-  }
+    VERSION    = "dev-unknown"
+    BUILD_DATE = "1970-01-01T00:00:00Z"
+    }
 
   labels = {
     "org.opencontainers.image.title"         = "kasseapparat"
@@ -21,8 +20,8 @@ target "kasseapparat" {
     "org.opencontainers.image.documentation" = "https://github.com/potibm/kasseapparat/tree/main/doc"
     "org.opencontainers.image.licenses"      = "MIT"
     "org.opencontainers.image.authors"       = "potibm"
-    "org.opencontainers.image.version"       = "unset"
-    "org.opencontainers.image.created"       = "unset"
+    "org.opencontainers.image.version"       = "dev-unknown"
+    "org.opencontainers.image.created"       = "1970-01-01T00:00:00Z"
   }
 
   annotations = [
@@ -33,7 +32,7 @@ target "kasseapparat" {
     "index,manifest:org.opencontainers.image.documentation=https://github.com/potibm/kasseapparat/tree/main/doc",
     "index,manifest:org.opencontainers.image.licenses=MIT",
     "index,manifest:org.opencontainers.image.authors=potibm",
-    "index,manifest:org.opencontainers.image.version=unset",
-    "index,manifest:org.opencontainers.image.created=unset"
+    "index,manifest:org.opencontainers.image.version=dev-unknown",
+    "index,manifest:org.opencontainers.image.created=1970-01-01T00:00:00Z"
   ]
 }
