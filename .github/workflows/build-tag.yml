@@ -66,6 +66,15 @@ jobs:
             org.opencontainers.image.description=A POS system for demoparties
             org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/tree/main/doc
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.authors=potibm
+          annotations: |
+            org.opencontainers.image.title=kasseapparat
+            org.opencontainers.image.description=A POS system for demoparties
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/tree/main/doc
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.authors=potibm
 
@@ -83,7 +92,16 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.created }}
+          annotations: |
+            ${{ steps.meta.outputs.annotations }}
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.created }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |

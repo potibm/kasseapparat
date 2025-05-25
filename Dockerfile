@@ -32,6 +32,7 @@ LABEL org.opencontainers.image.title="kasseapparat" \
       org.opencontainers.image.authors="potibm" \
       org.opencontainers.image.url="https://github.com/potibm/kasseapparat" \
       org.opencontainers.image.source="https://github.com/potibm/kasseapparat" \
+      org.opencontainers.image.documentation="https://github.com/potibm/kasseapparat/tree/main/doc" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.created="${BUILD_DATE}" 
