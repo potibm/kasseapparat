@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Image tag (required, e.g. 2.5.3-dev)"
+        description: 'Image tag (e.g. 2.5.3-dev)'
         required: true
 
   push:
@@ -43,9 +43,18 @@ jobs:
         id: meta
         run: echo "value=$(date --iso-8601=seconds)" >> "$GITHUB_OUTPUT"
 
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=dev-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Debug version and date
         run: |
-          echo "Tag: ${{ github.event.inputs.version }}"
+          echo "Tag: ${{ steps.version.outputs.value }}"
           echo "Build date: ${{ steps.meta.outputs.value }}"
 
       - name: Build and push with Bake
@@ -54,10 +63,10 @@ jobs:
           push: true
           targets: kasseapparat
           set: |
-            kasseapparat.tags=ghcr.io/${{ github.repository }}:${{ github.event.inputs.version }}
-            kasseapparat.args.VERSION=${{ github.event.inputs.version }}
+            kasseapparat.tags=ghcr.io/${{ github.repository }}:${{ steps.version.outputs.value }}
+            kasseapparat.args.VERSION=${{ steps.version.outputs.value }}
             kasseapparat.args.BUILD_DATE=${{ steps.meta.outputs.value }}
-            kasseapparat.labels.org.opencontainers.image.version=${{ github.event.inputs.version }}
+            kasseapparat.labels.org.opencontainers.image.version=${{ steps.version.outputs.value }}
             kasseapparat.labels.org.opencontainers.image.created=${{ steps.meta.outputs.value }}
-            kasseapparat.annotations=index,manifest:org.opencontainers.image.version=${{ github.event.inputs.version }}
+            kasseapparat.annotations=index,manifest:org.opencontainers.image.version=${{ steps.version.outputs.value }}
             kasseapparat.annotations=index,manifest:org.opencontainers.image.created=${{ steps.meta.outputs.value }}
