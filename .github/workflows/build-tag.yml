@@ -1,115 +1,74 @@
-name: Docker Image Publish
+name: Docker Release Build
 
 on:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
 
 env:
-  # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: false
     permissions:
       contents: read
       packages: write
       id-token: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      # Install the cosign tool
-      # https://github.com/sigstore/cosign-installer
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3
-        with:
-          cosign-release: "v2.4.1"
 
       - name: Setup QEMU (for multi-arch builds)
         uses: docker/setup-qemu-action@v3
 
-      - name: Setup Docker buildx
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Login against a Docker registry
-      # https://github.com/docker/login-action
-      - name: Log into registry ${{ env.REGISTRY }}
+      - name: Login to registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
+      - name: Extract semver tags
+        id: semver
+        run: |
+          RAW_TAG="${GITHUB_REF_NAME#v}"
+          echo "version=$RAW_TAG" >> "$GITHUB_OUTPUT"
+          echo "tag1=$RAW_TAG" >> "$GITHUB_OUTPUT"
+          echo "tag2=$(echo $RAW_TAG | cut -d. -f1)" >> "$GITHUB_OUTPUT"
+          echo "tag3=$(echo $RAW_TAG | cut -d. -f1-2)" >> "$GITHUB_OUTPUT"
+          echo "tag4=latest" >> "$GITHUB_OUTPUT"
+
+      - name: Generate build date
         id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-          labels: |
-            org.opencontainers.image.title=kasseapparat
-            org.opencontainers.image.description=A POS system for demoparties
-            org.opencontainers.image.url=https://github.com/${{ github.repository }}
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/tree/main/doc
-            org.opencontainers.image.licenses=MIT
-            org.opencontainers.image.authors=potibm
-          annotations: |
-            org.opencontainers.image.title=kasseapparat
-            org.opencontainers.image.description=A POS system for demoparties
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.url=https://github.com/${{ github.repository }}
-            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/tree/main/doc
-            org.opencontainers.image.licenses=MIT
-            org.opencontainers.image.authors=potibm
+        run: echo "value=$(date --iso-8601=seconds)" >> "$GITHUB_OUTPUT"
 
-      # Extract the version from the release output
-      - name: Extract version (from semantic release)
-        run: echo "${{steps.meta.outputs.version }}" > VERSION
-
-      # Build and push Docker image with Buildx
-      # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        id: build-and-push
-        uses: docker/build-push-action@v6
+      - name: Build and push with Bake
+        id: bake
+        uses: docker/bake-action@v4
         with:
-          context: .
           push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: |
-            ${{ steps.meta.outputs.labels }}
-            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ steps.meta.outputs.created }}
-          annotations: |
-            ${{ steps.meta.outputs.annotations }}
-            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ steps.meta.outputs.created }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version }}
-            BUILD_DATE=${{ steps.meta.outputs.created }}
+          targets: kasseapparat
+          set: |
+            kasseapparat.tags=\
+              ${{ env.REGISTRY }}/${{ github.repository }}:${{ steps.semver.outputs.tag1 }},\
+              ${{ env.REGISTRY }}/${{ github.repository }}:${{ steps.semver.outputs.tag2 }},\
+              ${{ env.REGISTRY }}/${{ github.repository }}:${{ steps.semver.outputs.tag3 }},\
+              ${{ env.REGISTRY }}/${{ github.repository }}:${{ steps.semver.outputs.tag4 }}
+            kasseapparat.args.VERSION=${{ steps.semver.outputs.version }}
+            kasseapparat.args.BUILD_DATE=${{ steps.meta.outputs.value }}
+            kasseapparat.labels.org.opencontainers.image.version=${{ steps.semver.outputs.version }}
+            kasseapparat.labels.org.opencontainers.image.created=${{ steps.meta.outputs.value }}
+            kasseapparat.annotations=index,manifest:org.opencontainers.image.version=${{ steps.semver.outputs.version }}
+            kasseapparat.annotations=index,manifest:org.opencontainers.image.created=${{ steps.meta.outputs.value }}
 
       - name: Sign image with Cosign
         run: |
-          cosign sign --yes ghcr.io/${{ github.repository }}@${{ steps.build-and-push.outputs.digest }}
+          cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}@${{ steps.bake.outputs.digest }}
         env:
           COSIGN_EXPERIMENTAL: "1"

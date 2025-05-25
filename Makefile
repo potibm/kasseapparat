@@ -9,9 +9,14 @@ list:
 	@LC_ALL=C $(MAKE) -pRrq -f $(firstword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/(^|\n)# Files(\n|$$)/,/(^|\n)# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$'
 
 prepare-buildx:
-	@docker buildx inspect kasseapparat-builder >/dev/null 2>&1 || \
-		docker buildx create --name kasseapparat-builder --use && \
-		docker buildx inspect --bootstrap
+	@if ! docker buildx inspect kasseapparat-builder >/dev/null 2>&1; then \
+		echo "🔧 Creating buildx builder 'kasseapparat-builder'..."; \
+		docker buildx create --name kasseapparat-builder --use --bootstrap; \
+	else \
+		echo "✅ Using existing buildx builder 'kasseapparat-builder'"; \
+		docker buildx use kasseapparat-builder; \
+		docker buildx inspect --bootstrap > /dev/null; \
+	fi
 
 run:
 	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001 &
@@ -91,8 +96,16 @@ build:
 
 docker-build: prepare-buildx
 	@VERSION=0.0.$$(date +%y%m%d%H%M); \
+	BUILD_DATE=$$(date -Iseconds); \
 	echo $$VERSION > VERSION; \
-	docker buildx build --load --build-arg VERSION=$$VERSION -t kasseapparat:$$VERSION -t kasseapparat:latest .; \
+	docker buildx build \
+	    --builder kasseapparat-builder \
+		--build-arg VERSION=$$VERSION \
+		--build-arg BUILD_DATE=$$BUILD_DATE \
+		--tag kasseapparat:latest \
+		--tag kasseapparat:$$VERSION \
+		--load \
+		. ; \
 	rm VERSION
 
 docker-run:
