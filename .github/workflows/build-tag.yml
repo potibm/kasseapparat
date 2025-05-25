@@ -48,9 +48,9 @@ jobs:
         id: tags
         run: |
           TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag1 }},\
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag3 }},\
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag2 }},\
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag3 }},\
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag2 }},\
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           echo "value=$TAGS" >> "$GITHUB_OUTPUT"
 
       - name: Generate build date
