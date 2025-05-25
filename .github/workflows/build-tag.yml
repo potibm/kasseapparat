@@ -21,6 +21,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+        with:
+          cosign-release: "v2.5.0"
+
       - name: Setup QEMU (for multi-arch builds)
         uses: docker/setup-qemu-action@v3
 
