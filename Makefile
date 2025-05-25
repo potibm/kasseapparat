@@ -102,6 +102,7 @@ docker-build: prepare-buildx
 		--build-arg VERSION=$$VERSION \
 		--build-arg BUILD_DATE=$$BUILD_DATE \
 		--tag kasseapparat:latest \
+		--tag kasseapparat:$$VERSION \
 		--load \
 		. ; \
 	rm VERSION
