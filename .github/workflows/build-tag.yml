@@ -110,6 +110,6 @@ jobs:
 
       - name: Sign image with Cosign
         run: |
-          cosign sign --yes ${{ steps.meta.outputs.tags }}
+          cosign sign --yes ghcr.io/${{ github.repository }}@${{ steps.build-and-push.outputs.digest }}
         env:
           COSIGN_EXPERIMENTAL: "1"
