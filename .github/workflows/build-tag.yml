@@ -77,7 +77,7 @@ jobs:
             org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/tree/main/doc
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.authors=potibm
-
+            
       # Extract the version from the release output
       - name: Extract version (from semantic release)
         run: echo "${{steps.meta.outputs.version }}" > VERSION
@@ -107,6 +107,7 @@ jobs:
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             BUILD_DATE=${{ steps.meta.outputs.created }}
+
       - name: Sign image with Cosign
         run: |
           cosign sign --yes ${{ steps.meta.outputs.tags }}
