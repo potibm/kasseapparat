@@ -56,27 +56,20 @@ jobs:
       # Extract the version from the release output
       - name: Extract version (from semantic release)
         run: echo "${{ steps.semver.outputs.version }}" > "$GITHUB_WORKSPACE/VERSION"
-
-      - name: Check Docker context root
-        run: |
-          echo "::group::Listing build context"
-          find $GITHUB_WORKSPACE -maxdepth 2
-          echo "::endgroup::"
-
+        
       - name: Build and push with Bake
         id: bake
         uses: docker/bake-action@v6
         with:
           push: true
           targets: kasseapparat
-          files: ${{ github.workspace }}/docker-bake.hcl
-          workdir: ${{ github.workspace }}
+          source: .
           set: |
             kasseapparat.context=${{ github.workspace }}
             kasseapparat.tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag1 }}
-            kasseapparat.tags+=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag3 }}
-            kasseapparat.tags+=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag2 }}
-            kasseapparat.tags+=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag4 }}
+            kasseapparat.tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag3 }}
+            kasseapparat.tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag2 }}
+            kasseapparat.tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag4 }}
             kasseapparat.args.VERSION=${{ steps.semver.outputs.version }}
             kasseapparat.args.BUILD_DATE=${{ steps.meta.outputs.value }}
             kasseapparat.labels.org.opencontainers.image.version=${{ steps.semver.outputs.version }}
