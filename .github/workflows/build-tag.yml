@@ -63,6 +63,8 @@ jobs:
         with:
           push: true
           targets: kasseapparat
+          files: ./docker-bake.hcl
+          workdir: ${{ github.workspace }}
           set: |
             kasseapparat.tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag1 }}
             kasseapparat.tags+=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag3 }}
