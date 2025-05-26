@@ -10,7 +10,9 @@ target "kasseapparat" {
   args = {
     VERSION    = "dev-unknown"
     BUILD_DATE = "1970-01-01T00:00:00Z"
-    }
+  }
+
+  output = ["type=image,push=true"]
 
   labels = {
     "org.opencontainers.image.title"         = "kasseapparat"
