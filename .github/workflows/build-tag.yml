@@ -53,10 +53,9 @@ jobs:
         id: meta
         run: echo "value=$(date --iso-8601=seconds)" >> "$GITHUB_OUTPUT"
 
-      # Extract the version from the release output
       - name: Extract version (from semantic release)
         run: echo "${{ steps.semver.outputs.version }}" > "$GITHUB_WORKSPACE/VERSION"
-        
+
       - name: Build and push with Bake
         id: bake
         uses: docker/bake-action@v6
