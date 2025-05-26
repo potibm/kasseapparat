@@ -55,7 +55,7 @@ jobs:
 
       # Extract the version from the release output
       - name: Extract version (from semantic release)
-        run: echo "${{ steps.semver.outputs.version }}" > VERSION
+        run: echo "${{ steps.semver.outputs.version }}" > $GITHUB_WORKSPACE/VERSION
 
       - name: Build and push with Bake
         id: bake
