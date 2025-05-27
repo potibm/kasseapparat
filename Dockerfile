@@ -25,17 +25,10 @@ RUN CGO_ENABLED=1 go build -o kasseapparat ./cmd/main.go && \
 
 # Create the final image
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS runtime
+
 ARG VERSION
 ARG BUILD_DATE
-LABEL org.opencontainers.image.title="kasseapparat" \
-      org.opencontainers.image.description="A POS system for demoparties" \
-      org.opencontainers.image.authors="potibm" \
-      org.opencontainers.image.url="https://github.com/potibm/kasseapparat" \
-      org.opencontainers.image.source="https://github.com/potibm/kasseapparat" \
-      org.opencontainers.image.documentation="https://github.com/potibm/kasseapparat/tree/main/doc" \
-      org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.created="${BUILD_DATE}" 
+
 WORKDIR /app
 VOLUME [ "/app/data" ]
 RUN apt-get update && \
@@ -46,10 +39,10 @@ RUN apt-get update && \
 # Copy frontend build
 COPY --from=backend-build /app/backend/kasseapparat ./kasseapparat
 COPY --from=backend-build /app/backend/kasseapparat-tool ./kasseapparat-tool
-COPY VERSION .
 
 # Copy backend build
-RUN mkdir -p /app/data && \
+RUN echo "${VERSION}" > /VERSION \
+    mkdir -p /app/data && \
     chown -R appuser:appuser /app/data && \
     chown -R appuser:appuser /app && \
     chmod +x /app/kasseapparat && \

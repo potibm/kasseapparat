@@ -11,8 +11,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set version to current date
-        run: echo "$(date +%Y-%m-%d)" > VERSION
+      - name: Generate build version
+        id: buildversion
+        run: echo "value=0.0.$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate build date
+        id: builddate
+        run: echo "value=$(date --iso-8601=seconds)" >> "$GITHUB_OUTPUT"
 
       - name: Build Docker image (without pushing)
         uses: docker/build-push-action@v6
@@ -22,5 +27,5 @@ jobs:
           platforms: linux/amd64
           tags: my-temp-image:latest
           build-args: |
-            VERSION=0.1.2
-            BUILD_DATE=2000-01-01T00:00:00Z
+            VERSION=${{ steps.buildversion.outputs.value }}
+            BUILD_DATE=${{ steps.builddate.outputs.value }}

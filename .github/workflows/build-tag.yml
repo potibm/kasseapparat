@@ -7,77 +7,140 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+
+permissions:
+  actions: read
+  contents: write
+  packages: write
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3
+      - name: Extract metadata (tags + labels + annotations)
+        id: meta
+        uses: docker/metadata-action@v5
         with:
-          cosign-release: "v2.5.0"
+          images: ${{ env.IMAGE_NAME }}
+          bake-target: kasseapparat
+          tags: |
+            type=ref,event=tag,prefix=,suffix=
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
 
-      - name: Setup QEMU (for multi-arch builds)
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      - name: Setup Docker Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to registry
+      - name: Log in to registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract semver tags
-        id: semver
-        run: |
-          RAW_TAG="${GITHUB_REF_NAME#v}"
-          echo "version=$RAW_TAG" >> "$GITHUB_OUTPUT"
-          echo "tag1=$RAW_TAG" >> "$GITHUB_OUTPUT"
-          echo "tag2=$(echo $RAW_TAG | cut -d. -f1)" >> "$GITHUB_OUTPUT"
-          echo "tag3=$(echo $RAW_TAG | cut -d. -f1-2)" >> "$GITHUB_OUTPUT"
-          echo "tag4=latest" >> "$GITHUB_OUTPUT"
-
       - name: Generate build date
-        id: meta
+        id: builddate
         run: echo "value=$(date --iso-8601=seconds)" >> "$GITHUB_OUTPUT"
 
-      - name: Extract version (from semantic release)
-        run: echo "${{ steps.semver.outputs.version }}" > "$GITHUB_WORKSPACE/VERSION"
-
-      - name: Build and push with Bake
+      - name: Build and push image
         id: bake
         uses: docker/bake-action@v6
         with:
+          files: |
+            ./docker-bake.hcl
+            cwd://${{ steps.meta.outputs.bake-file-tags }}
+            cwd://${{ steps.meta.outputs.bake-file-labels }}
+            cwd://${{ steps.meta.outputs.bake-file-annotations }}
           push: true
           targets: kasseapparat
-          source: .
           set: |
-            kasseapparat.context=${{ github.workspace }}
-            kasseapparat.tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag1 }}
-            kasseapparat.tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag3 }}
-            kasseapparat.tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag2 }}
-            kasseapparat.tags=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.semver.outputs.tag4 }}
-            kasseapparat.args.VERSION=${{ steps.semver.outputs.version }}
-            kasseapparat.args.BUILD_DATE=${{ steps.meta.outputs.value }}
-            kasseapparat.labels.org.opencontainers.image.version=${{ steps.semver.outputs.version }}
-            kasseapparat.labels.org.opencontainers.image.created=${{ steps.meta.outputs.value }}
-            kasseapparat.annotations=index,manifest:org.opencontainers.image.version=${{ steps.semver.outputs.version }}
-            kasseapparat.annotations=index,manifest:org.opencontainers.image.created=${{ steps.meta.outputs.value }}
+            kasseapparat.args.VERSION=${{ steps.meta.outputs.version }}
+            kasseapparat.args.BUILD_DATE=${{ steps.builddate.outputs.value }}            
+            kasseapparat.labels.org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            kasseapparat.labels.org.opencontainers.image.created=${{ steps.builddate.outputs.value }}
+            kasseapparat.labels.org.opencontainers.image.description=A POS system for demoparties
+            kasseapparat.labels.org.opencontainers.image.title=Kasseapparat
+            kasseapparat.labels.org.opencontainers.image.licenses=MIT
+            kasseapparat.annotations=index,manifest:org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            kasseapparat.annotations=index,manifest:org.opencontainers.image.created=${{ steps.builddate.outputs.value }}
+
+      - name: Get digest
+        id: digest
+        run: |
+          IMAGE=${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          OUT=$(docker buildx imagetools inspect "$IMAGE")
+          echo "$OUT"
+          DIGEST=$(echo "$OUT" | grep -E '^Digest:' | awk '{print $2}')
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Generate SBOM with Anchore
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          output-file: sbom.spdx.json
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          upload-release-assets: false
+
+      - name: Publish SBOM Artifact
+        uses: anchore/sbom-action/publish-sbom@v0
+        with:
+          sbom-artifact-match: ".*\\.spdx\\.json$"
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+        with:
+          cosign-release: "v2.5.0"
 
       - name: Sign image with Cosign
         run: |
-          cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}@${{ steps.bake.outputs.digest }}
+          cosign sign --yes ${{ env.IMAGE_NAME }}@${{ steps.digest.outputs.digest }}
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+
+      - name: Attest description
+        run: |
+          jq -n --arg version "${{ steps.meta.outputs.version }}" \
+                --arg built_at "${{ steps.builddate.outputs.value }}" \
+                '{
+                  description: "Image built and signed via GitHub Actions",
+                  project: "kasseapparat",
+                  version: $version,
+                  built_at: $built_at,
+                  repository: "https://github.com/potibm/kasseapparat"
+                }' > description.json
+          cosign attest --yes \
+            --predicate description.json \
+            --type custom \
+            ${{ env.IMAGE_NAME }}@${{ steps.digest.outputs.digest }}
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+
+      - name: Attest SBOM with Cosign
+        run: |
+          cosign attest --yes \
+            --predicate sbom.spdx.json \
+            --type spdx \
+            ${{ env.IMAGE_NAME }}@${{ steps.digest.outputs.digest }}
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+
+      - name: Verify SBOM attestation
+        run: |
+          cosign verify-attestation \
+            --type spdx \
+            --certificate-identity-regexp "github.com/potibm/.*" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            ${{ env.IMAGE_NAME }}@${{ steps.digest.outputs.digest }}
         env:
           COSIGN_EXPERIMENTAL: "1"
