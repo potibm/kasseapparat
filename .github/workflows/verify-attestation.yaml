@@ -1,20 +1,43 @@
+name: Verify Image Attestations
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Image version tag (e.g. 2.3.1)"
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+
+permissions:
+  id-token: write # Required for keyless verification
+
 jobs:
-  verify:
-    needs: release
+  verify-attestations:
     runs-on: ubuntu-latest
-    continue-on-error: true
+
     steps:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
         with:
           cosign-release: "v2.5.0"
 
-      - name: Verify SBOM
+      - name: Get image digest
+        id: digest
+        run: |
+          IMAGE=${{ env.IMAGE_NAME }}:${{ github.event.inputs.version }}
+          DIGEST=$(docker buildx imagetools inspect "$IMAGE" | grep -m1 Digest | awk '{print $2}')
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Verify SBOM attestation
         run: |
           cosign verify-attestation \
             --type spdx \
-            --certificate-identity-regexp "github.com/potibm/.*" \
+            --certificate-identity-regexp "github.com/${{ github.repository }}/.*" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-            ghcr.io/potibm/kasseapparat@sha256:<digest>
+            ${{ env.IMAGE_NAME }}@${{ steps.digest.outputs.digest }}
         env:
           COSIGN_EXPERIMENTAL: "1"
