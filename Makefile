@@ -97,7 +97,6 @@ build:
 docker-build: prepare-buildx
 	@VERSION=0.0.$$(date +%y%m%d%H%M); \
 	BUILD_DATE=$$(date -Iseconds); \
-	echo $$VERSION > VERSION; \
 	docker buildx build \
 	    --builder kasseapparat-builder \
 		--build-arg VERSION=$$VERSION \
@@ -106,8 +105,7 @@ docker-build: prepare-buildx
 		--tag kasseapparat:$$VERSION \
 		--load \
 		. ; \
-	rm VERSION
-
+	
 docker-run:
 	@if ! docker image inspect kasseapparat:latest >/dev/null 2>&1; then \
 		echo "❌ Docker image 'kasseapparat:latest' not found. Please run 'make docker-build' first."; \
