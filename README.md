@@ -22,3 +22,4 @@ It is a simple point of sale (POS) system aimed at [demoparties](https://en.wiki
 
 - [Admin Documentation](doc/admin.md)
 - [User Documentation](doc/manual.md)
+- [Image Signing and SBOM Attestations](docs/supply_chain.md)
