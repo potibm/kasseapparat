@@ -116,6 +116,7 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 
 		registerPurchaseRoutes(protectedApiRouter, myhandler)
 		registerUserRoutes(protectedApiRouter, myhandler)
+
 	}
 
 	// unprotected routes
@@ -125,6 +126,8 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 
 		unprotectedApiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
 		unprotectedApiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
+
+		registerSumupReadersRoutes(unprotectedApiRouter, myhandler)
 	}
 }
 
@@ -190,5 +193,13 @@ func registerProductInterestRoutes(rg *gin.RouterGroup, handler handler.Handler)
 		productInterests.GET("", handler.GetProductInterests)
 		productInterests.DELETE("/:id", handler.DeleteProductInterestByID)
 		productInterests.POST("", handler.CreateProductInterest)
+	}
+}
+
+func registerSumupReadersRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+	sumupReaders := rg.Group("/sumup/readers")
+	{
+		sumupReaders.GET("", handler.GetSumupReaders)
+		sumupReaders.GET("/:id", handler.GetSumupReaderByID)
 	}
 }

@@ -8,19 +8,21 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/repository"
+	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/shopspring/decimal"
 )
 
 type Handler struct {
-	repo           *repository.Repository
-	mailer         mailer.Mailer
-	version        string
-	decimalPlaces  int32
-	paymentMethods map[string]string
+	repo            *repository.Repository
+	sumupRepository *sumup.Repository
+	mailer          mailer.Mailer
+	version         string
+	decimalPlaces   int32
+	paymentMethods  map[string]string
 }
 
-func NewHandler(repo *repository.Repository, mailer mailer.Mailer, version string, decimalPlaces int32, paymentMethods map[string]string) *Handler {
-	return &Handler{repo: repo, mailer: mailer, version: version, decimalPlaces: decimalPlaces, paymentMethods: paymentMethods}
+func NewHandler(repo *repository.Repository, sumupRepository *sumup.Repository, mailer mailer.Mailer, version string, decimalPlaces int32, paymentMethods map[string]string) *Handler {
+	return &Handler{repo: repo, sumupRepository: sumupRepository, mailer: mailer, version: version, decimalPlaces: decimalPlaces, paymentMethods: paymentMethods}
 }
 
 func queryArrayInt(c *gin.Context, field string) []int {
