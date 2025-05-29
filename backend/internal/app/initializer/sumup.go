@@ -16,7 +16,6 @@ var (
 
 func InitializeSumup() *sumupSevice.Service {
 	once.Do(func() {
-
 		options := client.New()
 		clientOptions := options.WithAPIKey(os.Getenv("SUMUP_API_KEY"))
 
@@ -32,5 +31,6 @@ func GetSumupService() *sumupSevice.Service {
 	if instance == nil {
 		panic("SumUp service is not initialized. Call InitializeSumup first.")
 	}
+
 	return instance
 }

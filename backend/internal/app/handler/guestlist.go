@@ -161,5 +161,5 @@ func (handler *Handler) DeleteGuestlistByID(c *gin.Context) {
 
 	handler.repo.DeleteGuestlist(*guestlist, *executingUserObj)
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.Status(http.StatusNoContent)
 }

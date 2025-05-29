@@ -188,7 +188,7 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 
 	handler.repo.DeleteUser(*user)
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.Status(http.StatusNoContent)
 }
 
 func (handler *Handler) getUserFromContext(c *gin.Context) (*models.User, error) {

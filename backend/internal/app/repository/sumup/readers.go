@@ -25,12 +25,15 @@ func (r *Repository) GetReaders() ([]Reader, error) {
 func (r *Repository) GetReader(readerId string) (*Reader, error) {
 	params := readers.GetReaderParams{}
 	id := readers.ReaderId(readerId)
+
 	reader, err := r.service.Client.Readers.Get(context.Background(), r.service.MerchantCode, id, params)
 	if err != nil {
 		log.Printf("Error retrieving reader with ID %s: %v", readerId, err)
+
 		if err.Error() == "The requested Reader resource does not exists." {
 			return nil, nil
 		}
+
 		return nil, err
 	}
 
@@ -44,6 +47,7 @@ func (r *Repository) CreateReader(pairingCode string, readerName string) (*Reade
 		PairingCode: readers.ReaderPairingCode(pairingCode),
 		Name:        &name,
 	}
+
 	createdReader, err := r.service.Client.Readers.Create(context.Background(), r.service.MerchantCode, body)
 	if err != nil {
 		return nil, err

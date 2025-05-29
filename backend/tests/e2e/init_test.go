@@ -12,6 +12,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/repository"
+	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
@@ -43,14 +44,31 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 
 	currencyDecimalPlaces := int32(2)
 	paymentMethods := map[string]string{
-		"CASH": "💶 Cash",
-		"CC":   "💳 Creditcard",
+		"CASH":  "💶 Cash",
+		"CC":    "💳 Creditcard",
+		"SUMUP": "💳 SumUp",
 	}
 
 	repo := repository.NewLocalRepository(currencyDecimalPlaces)
+	sumupRepo := &MockSumUpRepository{
+		GetReadersFunc: func() ([]sumup.Reader, error) {
+			return []sumup.Reader{
+				{ID: "mock-1", Name: "Mock Reader 1"},
+			}, nil
+		},
+		GetReaderFunc: func(readerId string) (*sumup.Reader, error) {
+			return &sumup.Reader{ID: readerId, Name: "Mock Reader"}, nil
+		},
+		CreateReaderFunc: func(pairingCode string, readerName string) (*sumup.Reader, error) {
+			return &sumup.Reader{ID: "created-1", Name: readerName}, nil
+		},
+		DeleteReaderFunc: func(readerId string) error {
+			return nil
+		},
+	}
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)
-	handler := handler.NewHandler(repo, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
+	handler := handler.NewHandler(repo, sumupRepo, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
 
 	router := initializer.InitializeHttpServer(*handler, *repo, embed.FS{})
 
@@ -75,7 +93,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 }
 
 func getJwtForUser(username, password string) string {
-	// Login durchführen
+	// Perform login request
 	login := e.POST("/login").
 		WithJSON(map[string]string{
 			"login":    username,
@@ -85,7 +103,7 @@ func getJwtForUser(username, password string) string {
 		Status(http.StatusOK).
 		JSON().Object()
 
-	// JWT auslesen
+	// Read the JWT token from the response
 	jwt := login.Value("token").String().Raw()
 
 	return jwt

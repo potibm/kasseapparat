@@ -28,7 +28,7 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 
 	handler.repo.DeletePurchaseByID(id, *executingUserObj)
 
-	c.JSON(http.StatusOK, gin.H{"message": "Purchase deleted"})
+	c.Status(http.StatusNoContent)
 }
 
 func (handler *Handler) PostPurchases(c *gin.Context) {

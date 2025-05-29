@@ -14,14 +14,14 @@ import (
 
 type Handler struct {
 	repo            *repository.Repository
-	sumupRepository *sumup.Repository
+	sumupRepository sumup.RepositoryInterface
 	mailer          mailer.Mailer
 	version         string
 	decimalPlaces   int32
 	paymentMethods  map[string]string
 }
 
-func NewHandler(repo *repository.Repository, sumupRepository *sumup.Repository, mailer mailer.Mailer, version string, decimalPlaces int32, paymentMethods map[string]string) *Handler {
+func NewHandler(repo *repository.Repository, sumupRepository sumup.RepositoryInterface, mailer mailer.Mailer, version string, decimalPlaces int32, paymentMethods map[string]string) *Handler {
 	return &Handler{repo: repo, sumupRepository: sumupRepository, mailer: mailer, version: version, decimalPlaces: decimalPlaces, paymentMethods: paymentMethods}
 }
 

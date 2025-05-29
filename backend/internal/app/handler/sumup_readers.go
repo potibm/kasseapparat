@@ -21,7 +21,6 @@ type ReaderReponse struct {
 }
 
 func (handler *Handler) GetSumupReaders(c *gin.Context) {
-
 	readers, _ := handler.sumupRepository.GetReaders()
 
 	c.Header("X-Total-Count", strconv.Itoa(len(readers)))
@@ -93,5 +92,6 @@ func toReaderResponses(readers []sumup.Reader) []ReaderReponse {
 	for i, reader := range readers {
 		responses[i] = toReaderResponse(reader)
 	}
+
 	return responses
 }
