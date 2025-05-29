@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   List,
   Datagrid,
@@ -12,14 +12,24 @@ import {
   TopToolbar,
   CreateButton,
   FunctionField,
+  Button,
+  useListContext,
 } from "react-admin";
 import { useConfig } from "../../provider/ConfigProvider";
-import { Box } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import LinkOffIcon from "@mui/icons-material/LinkOff";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import TouchAppIcon from "@mui/icons-material/TouchApp";
 import ErrorIcon from "@mui/icons-material/Error";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import {
+  getCurrentReaderId,
+  setCurrentReaderId,
+  clearCurrentReaderId,
+} from "../../helper/ReaderCookie";
+import PropTypes from "prop-types";
 
 const SumupListActions = () => (
   <TopToolbar>
@@ -62,8 +72,45 @@ const renderStatus = (record) => {
   }
 };
 
+const renderReaderSelection = (record, selectedReaderId, onSelect) => {
+  if (record.status !== "paired") return null;
+
+  const isCurrent = selectedReaderId === record.id;
+
+  return isCurrent ? (
+    <Box sx={{ display: "flex", alignItems: "center", color: "success.main" }}>
+      <CheckCircleOutlineIcon sx={{ mr: 1 }} />
+      Selected
+    </Box>
+  ) : (
+    <Tooltip title="Assign this reader to this device">
+      <span>
+        <Button
+          onClick={() => onSelect(record.id)}
+          size="small"
+          startIcon={<TouchAppIcon />}
+          variant="text"
+          color="primary"
+          label="Use this reader"
+        />
+      </span>
+    </Tooltip>
+  );
+};
+
 export const SumupReaderList = (props) => {
   const sumupEnabled = useConfig().sumupEnabled;
+  const [selectedReaderId, setSelectedReaderId] = useState(undefined);
+
+  useEffect(() => {
+    setSelectedReaderId(getCurrentReaderId());
+  }, []);
+
+  const handleReaderSelect = (id) => {
+    setCurrentReaderId(id);
+    setSelectedReaderId(id);
+  };
+
   if (!sumupEnabled) {
     return (
       <div>
@@ -78,12 +125,68 @@ export const SumupReaderList = (props) => {
 
   return (
     <List title="SumUp Readers" {...props} actions={<SumupListActions />}>
-      <Datagrid rowClick="" bulkActionButtons={false}>
+      {/* Innerhalb von List: Jetzt ist ListContext verfügbar */}
+      <ReaderListContent
+        selectedReaderId={selectedReaderId}
+        onClear={() => {
+          clearCurrentReaderId();
+          setSelectedReaderId(undefined);
+        }}
+        onSelect={handleReaderSelect}
+      />
+    </List>
+  );
+};
+
+const ReaderListContent = ({ selectedReaderId, onClear, onSelect }) => {
+  const { data: readers = [], isLoading } = useListContext();
+
+  const isSelectedReaderMissing =
+    !isLoading &&
+    selectedReaderId &&
+    !readers.some((r) => r.id === selectedReaderId);
+
+  return (
+    <>
+      {isSelectedReaderMissing && (
+        <Box
+          sx={{
+            p: 2,
+            mb: 2,
+            backgroundColor: "#fff3cd",
+            color: "#856404",
+            borderRadius: 1,
+            border: "1px solid #ffeeba",
+          }}
+        >
+          <Box sx={{ mb: 1 }}>
+            The previously selected reader ({selectedReaderId}) is no longer
+            available or paired.
+          </Box>
+          <Button variant="outlined" size="small" onClick={onClear}>
+            Clear selection
+          </Button>
+        </Box>
+      )}
+
+      <Datagrid
+        rowClick=""
+        bulkActionButtons={false}
+        rowSx={(record) =>
+          record.id === selectedReaderId ? { backgroundColor: "#e0f7fa" } : {}
+        }
+      >
         <TextField source="id" />
         <TextField source="name" />
         <FunctionField label="Status" render={renderStatus} />
         <TextField source="deviceIdentifier" />
         <TextField source="deviceModel" />
+        <FunctionField
+          label="Action"
+          render={(record) =>
+            renderReaderSelection(record, selectedReaderId, onSelect)
+          }
+        />
         <DeleteWithConfirmButton
           label="Unpair"
           confirmTitle="Unpair device"
@@ -92,8 +195,14 @@ export const SumupReaderList = (props) => {
           icon={<LinkOffIcon />}
         />
       </Datagrid>
-    </List>
+    </>
   );
+};
+
+ReaderListContent.propTypes = {
+  selectedReaderId: PropTypes.string,
+  onClear: PropTypes.func.isRequired,
+  onSelect: PropTypes.func.isRequired,
 };
 
 const validatePairingCode = (value) => {
