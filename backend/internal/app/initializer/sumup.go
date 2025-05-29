@@ -2,6 +2,7 @@ package initializer
 
 import (
 	"os"
+	"strconv"
 	"sync"
 
 	sumupSevice "github.com/potibm/kasseapparat/internal/app/service/sumup"
@@ -16,12 +17,17 @@ var (
 
 func InitializeSumup() *sumupSevice.Service {
 	once.Do(func() {
+		apiKey := getEnv("SUMUP_API_KEY", "")
+		merchantCode := getEnv("SUMUP_MERCHANT_CODE", "")
+		paymentCurrency := getEnv("CURRENCY_CODE", "DKK")
+		paymentMinorUnit := getEnvAsInt("FRACTION_DIGITS_MAX", 2)
+
 		options := client.New()
-		clientOptions := options.WithAPIKey(os.Getenv("SUMUP_API_KEY"))
+		clientOptions := options.WithAPIKey(apiKey)
 
 		client := sumup.NewClient(clientOptions)
 
-		instance = sumupSevice.NewService(client, os.Getenv("SUMUP_MERCHANT_CODE"))
+		instance = sumupSevice.NewService(client, merchantCode, paymentCurrency, uint(paymentMinorUnit))
 	})
 
 	return instance
@@ -33,4 +39,27 @@ func GetSumupService() *sumupSevice.Service {
 	}
 
 	return instance
+}
+
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+
+	return value
+}
+
+func getEnvAsInt(key string, defaultValue int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+
+	intValue, err := strconv.Atoi(value)
+	if err != nil {
+		return defaultValue
+	}
+
+	return intValue
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/shopspring/decimal"
 	"github.com/sumup/sumup-go/readers"
 )
 
@@ -40,12 +41,12 @@ func (r *Repository) GetReader(readerId string) (*Reader, error) {
 	return fromSDKReader(reader), nil
 }
 
-func (r *Repository) CreateReader(pairingCode string, readerName string) (*Reader, error) {
-	name := readers.ReaderName(readerName)
+func (r *Repository) CreateReader(pairingCode string, name string) (*Reader, error) {
+	readerName := readers.ReaderName(name)
 
 	body := readers.CreateReaderBody{
 		PairingCode: readers.ReaderPairingCode(pairingCode),
-		Name:        &name,
+		Name:        &readerName,
 	}
 
 	createdReader, err := r.service.Client.Readers.Create(context.Background(), r.service.MerchantCode, body)
@@ -54,6 +55,33 @@ func (r *Repository) CreateReader(pairingCode string, readerName string) (*Reade
 	}
 
 	return fromSDKReader(createdReader), nil
+}
+
+func (r *Repository) CreateReaderCheckout(readerId string, readerName string, amount decimal.Decimal) (*string, error) {
+	amountStruct := readers.CreateReaderCheckoutAmount{
+		Currency:  r.service.PaymentCurrency,
+		Value:     getValueFromDecimal(amount, int(r.service.PaymentMinorUnit)), // Example amount in cents (10.00 EUR)
+		MinorUnit: int(r.service.PaymentMinorUnit),
+	}
+
+	body := readers.CreateReaderCheckoutBody{
+		TotalAmount: amountStruct,
+	}
+
+	response, err := r.service.Client.Readers.CreateCheckout(context.Background(), r.service.MerchantCode, readerId, body)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Data.ClientTransactionId, nil
+}
+
+func getValueFromDecimal(value decimal.Decimal, minorUnit int) int {
+	return int(value.Shift(int32(minorUnit)).IntPart())
+}
+
+func (r *Repository) CreateReaderTerminateAction(readerId string) error {
+	return r.service.Client.Readers.TerminateCheckout(context.Background(), r.service.MerchantCode, readerId)
 }
 
 func (r *Repository) DeleteReader(readerId string) error {
