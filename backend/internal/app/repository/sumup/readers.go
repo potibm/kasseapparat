@@ -2,6 +2,7 @@ package sumup
 
 import (
 	"context"
+	"log"
 
 	"github.com/sumup/sumup-go/readers"
 )
@@ -26,6 +27,10 @@ func (r *Repository) GetReader(readerId string) (*Reader, error) {
 	id := readers.ReaderId(readerId)
 	reader, err := r.service.Client.Readers.Get(context.Background(), r.service.MerchantCode, id, params)
 	if err != nil {
+		log.Printf("Error retrieving reader with ID %s: %v", readerId, err)
+		if err.Error() == "The requested Reader resource does not exists." {
+			return nil, nil
+		}
 		return nil, err
 	}
 

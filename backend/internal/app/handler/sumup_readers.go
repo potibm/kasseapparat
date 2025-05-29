@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -42,6 +43,37 @@ func (handler *Handler) GetSumupReaderByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, toReaderResponse(*reader))
+}
+
+func (handler *Handler) CreateSumupReader(c *gin.Context) {
+	var request struct {
+		PairingCode string `json:"pairingCode" binding:"required"`
+		Name        string `json:"name"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		return
+	}
+
+	reader, err := handler.sumupRepository.CreateReader(strings.ToUpper(request.PairingCode), request.Name)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to create reader"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, toReaderResponse(*reader))
+}
+
+func (handler *Handler) DeleteSumupReader(c *gin.Context) {
+	id := c.Param("id")
+
+	if err := handler.sumupRepository.DeleteReader(id); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete reader"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 func toReaderResponse(c sumup.Reader) ReaderReponse {

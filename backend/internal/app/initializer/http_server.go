@@ -201,5 +201,7 @@ func registerSumupReadersRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	{
 		sumupReaders.GET("", handler.GetSumupReaders)
 		sumupReaders.GET("/:id", handler.GetSumupReaderByID)
+		sumupReaders.DELETE("/:id", handler.DeleteSumupReader)
+		sumupReaders.POST("", handler.CreateSumupReader)
 	}
 }

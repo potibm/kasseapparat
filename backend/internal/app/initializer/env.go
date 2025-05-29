@@ -12,6 +12,7 @@ var allAvailablePaymentMethods = map[string]string{
 	"CASH":    "💶 Cash",
 	"CC":      "💳 Creditcard",
 	"VOUCHER": "🎟️ Voucher",
+	"SUMUP":   "💳 Sumup",
 }
 
 const defaultPaymentMethod = "CASH"

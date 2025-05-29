@@ -1,6 +1,14 @@
 // Admin.js
 import React from "react";
-import { Admin, Layout, Menu, Resource, useSidebarState } from "react-admin";
+import {
+  Admin,
+  MenuItemLink,
+  Layout,
+  Menu,
+  Resource,
+  useSidebarState,
+  useResourceDefinitions,
+} from "react-admin";
 import dataProvider from "./dataProvider";
 import authProvider from "./authProvider";
 import {
@@ -27,6 +35,11 @@ import {
   ProductInterestList,
   ProductInterestIcon,
 } from "./component/ProductInterest";
+import {
+  SumupReaderCreate,
+  SumupReaderList,
+  SumupReaderIcon,
+} from "./component/SumupReader";
 import PropTypes from "prop-types";
 import Dashboard from "./component/Dashboard";
 import { useConfig } from "../provider/ConfigProvider";
@@ -69,6 +82,13 @@ const AdminPanel = () => (
     />
     <Resource name="purchases" list={PurchaseList} show={PurchaseShow} />
     <Resource
+      name="sumupReaders"
+      list={SumupReaderList}
+      create={SumupReaderCreate}
+      icon={SumupReaderIcon}
+      options={{ label: "Readers" }}
+    />
+    <Resource
       name="users"
       list={UserList}
       edit={UserEdit}
@@ -100,6 +120,9 @@ MyMenuMessage.propTypes = {
 
 const MyMenu = () => {
   const environmentMessage = useConfig().environmentMessage;
+  const sumupEnabled = useConfig().sumupEnabled;
+  const resources = useResourceDefinitions();
+
   const [isSidebarOpen] = useSidebarState();
 
   return (
@@ -114,6 +137,20 @@ const MyMenu = () => {
       <MyMenuDivider name="Guestlist" />
       <Menu.ResourceItem name="guestlists" />
       <Menu.ResourceItem name="guests" />
+
+      <MyMenuDivider name="Sumup" />
+      {sumupEnabled ? (
+        <Menu.ResourceItem name="sumupReaders" />
+      ) : (
+        <MenuItemLink
+          to="#"
+          primaryText={
+            resources.sumupReaders?.options?.label || "Sumup Readers"
+          }
+          leftIcon={<SumupReaderIcon />}
+          disabled
+        />
+      )}
 
       <MyMenuDivider name="Admin" />
       <Menu.ResourceItem name="users" />
