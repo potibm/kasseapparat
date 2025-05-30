@@ -133,7 +133,7 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 
 	withAdminUserAuthToken(e.DELETE(productUrl)).
 		Expect().
-		Status(http.StatusOK)
+		Status(http.StatusNoContent)
 
 	withDemoUserAuthToken(e.GET(productUrl)).
 		Expect().

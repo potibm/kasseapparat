@@ -212,5 +212,5 @@ func (handler *Handler) DeleteGuestByID(c *gin.Context) {
 
 	handler.repo.DeleteGuest(*guest, *executingUserObj)
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.Status(http.StatusNoContent)
 }

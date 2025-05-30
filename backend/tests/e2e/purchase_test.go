@@ -142,7 +142,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	// Delete the purchase
 	withDemoUserAuthToken(e.DELETE(purchaseUrl)).
 		Expect().
-		Status(http.StatusOK)
+		Status(http.StatusNoContent)
 
 	withDemoUserAuthToken(e.GET(purchaseUrl)).
 		Expect().
@@ -399,5 +399,5 @@ func createPurchase() string {
 func deletePurchase(purchaseUrl string) {
 	withDemoUserAuthToken(e.DELETE(purchaseUrl)).
 		Expect().
-		Status(http.StatusOK)
+		Status(http.StatusNoContent)
 }

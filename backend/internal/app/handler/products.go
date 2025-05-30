@@ -233,5 +233,5 @@ func (handler *Handler) DeleteProductByID(c *gin.Context) {
 
 	handler.repo.DeleteProduct(*product, *executingUserObj)
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.Status(http.StatusNoContent)
 }

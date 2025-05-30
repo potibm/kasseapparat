@@ -1,0 +1,86 @@
+package handler
+
+import (
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
+	"github.com/shopspring/decimal"
+)
+
+type SumupTransactionReponse struct {
+	ID              string          `json:"id"`
+	TransactionCode string          `json:"transactionCode"`
+	Amount          decimal.Decimal `json:"amount"`
+	Currency        string          `json:"currency"`
+	CreatedAt       time.Time       `json:"createdAt"`
+	Status          string          `json:"status"`
+}
+
+func (handler *Handler) GetSumupTransactions(c *gin.Context) {
+	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
+	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
+
+	transactions, _ := handler.sumupRepository.GetTransactions()
+
+	transactionsLen := len(transactions)
+
+	if end > transactionsLen {
+		end = transactionsLen
+	}
+
+	// limit the results based on start and end parameters
+	if start < 0 || start >= end {
+		c.JSON(http.StatusOK, []SumupTransactionReponse{})
+		return
+	}
+
+	transactions = transactions[start:end]
+
+	c.Header("X-Total-Count", strconv.Itoa(transactionsLen))
+	c.JSON(http.StatusOK, toSumupTransactionResponses(transactions))
+}
+
+func (handler *Handler) GetSumupTransactionByID(c *gin.Context) {
+	transactionID := c.Param("id")
+
+	if transactionID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id is required"})
+		return
+	}
+
+	transaction, err := handler.sumupRepository.GetTransactionById(transactionID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve transaction"})
+		return
+	}
+
+	if transaction == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "transaction not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, toSumupTransactionResponse(*transaction))
+}
+
+func toSumupTransactionResponse(c sumup.Transaction) SumupTransactionReponse {
+	return SumupTransactionReponse{
+		ID:              c.ID,
+		TransactionCode: c.TransactionCode,
+		Amount:          c.Amount,
+		Currency:        c.Currency,
+		CreatedAt:       c.CreatedAt,
+		Status:          c.Status,
+	}
+}
+
+func toSumupTransactionResponses(transactions []sumup.Transaction) []SumupTransactionReponse {
+	responses := make([]SumupTransactionReponse, len(transactions))
+	for i, transaction := range transactions {
+		responses[i] = toSumupTransactionResponse(transaction)
+	}
+
+	return responses
+}

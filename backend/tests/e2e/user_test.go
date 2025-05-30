@@ -171,7 +171,7 @@ func TestCreateUpdateAndDeleteUser(t *testing.T) {
 
 	withAdminUserAuthToken(e.DELETE(userUrl)).
 		Expect().
-		Status(http.StatusOK)
+		Status(http.StatusNoContent)
 
 	withDemoUserAuthToken(e.GET(userUrl)).
 		Expect().

@@ -54,7 +54,7 @@ func (handler *Handler) DeleteProductInterestByID(c *gin.Context) {
 
 	handler.repo.DeleteProductInterest(*productInterest, *executingUserObj)
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.Status(http.StatusNoContent)
 }
 
 func (handler *Handler) CreateProductInterest(c *gin.Context) {
