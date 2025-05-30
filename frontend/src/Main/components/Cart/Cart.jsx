@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { HiXCircle } from "react-icons/hi";
 import {
-  Spinner,
   Table,
   Tooltip,
   TableHeadCell,
@@ -11,14 +10,14 @@ import {
   TableCell,
 } from "flowbite-react";
 import PropTypes from "prop-types";
-import { useConfig } from "../../provider/ConfigProvider";
+import { useConfig } from "../../../provider/ConfigProvider";
 import "animate.css";
-import MyButton from "./MyButton";
+import MyButton from "../MyButton";
 import Decimal from "decimal.js";
+import CheckoutButtons from "./CheckoutButtons";
 
-function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
+const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
   const currency = useConfig().currency;
-  const paymentMethods = useConfig().paymentMethods;
 
   const [flash, setFlash] = useState(false);
   const [checkoutProcessing, setCheckoutProcessing] = useState(false);
@@ -31,11 +30,14 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
     }, 500);
   };
 
-  const handleCheckoutCart = async (paymentMethodCode) => {
+  const handleCheckoutCart = async (paymentMethodCode, paymentMethodData) => {
     if (checkoutProcessing) {
       return;
     }
     setCheckoutProcessing(true);
+    console.log(
+      `Checkout with payment method: ${paymentMethodCode}, data: ${JSON.stringify(paymentMethodData)}`,
+    );
 
     checkoutCart(paymentMethodCode).then(() => {
       setCheckoutProcessing(false);
@@ -148,27 +150,14 @@ function Cart({ cart, removeFromCart, removeAllFromCart, checkoutCart }) {
         </TableBody>
       </Table>
 
-      {paymentMethods.map((paymentMethod) => (
-        <MyButton
-          key={paymentMethod.code}
-          {...((cart.length === 0 || checkoutProcessing) && { disabled: true })}
-          className="w-full mt-2 uppercase"
-          onClick={() => handleCheckoutCart(paymentMethod.code)}
-        >
-          {paymentMethod.name}&nbsp;
-          {cart.length > 0 &&
-            currency.format(
-              cart.reduce(
-                (total, item) => total.add(item.totalGrossPrice),
-                new Decimal(0),
-              ),
-            )}
-          {checkoutProcessing && <Spinner color="gray" className="ml-3" />}
-        </MyButton>
-      ))}
+      <CheckoutButtons
+        cart={cart}
+        checkoutProcessing={checkoutProcessing}
+        handleCheckoutCart={handleCheckoutCart}
+      />
     </div>
   );
-}
+};
 
 Cart.propTypes = {
   cart: PropTypes.array.isRequired,
