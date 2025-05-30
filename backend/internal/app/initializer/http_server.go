@@ -118,6 +118,7 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 		registerUserRoutes(protectedApiRouter, myhandler)
 
 		registerSumupReadersRoutes(protectedApiRouter, myhandler)
+		registerSumupTransactionRoutes(protectedApiRouter, myhandler)
 	}
 
 	// unprotected routes
@@ -127,8 +128,6 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 
 		unprotectedApiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
 		unprotectedApiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
-
-		registerSumupTransactionRoutes(unprotectedApiRouter, myhandler)
 	}
 }
 
@@ -210,5 +209,6 @@ func registerSumupTransactionRoutes(rg *gin.RouterGroup, handler handler.Handler
 	sumupTransactions := rg.Group("/sumup/transactions")
 	{
 		sumupTransactions.GET("", handler.GetSumupTransactions)
+		sumupTransactions.GET("/:id", handler.GetSumupTransactionByID)
 	}
 }

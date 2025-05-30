@@ -20,10 +20,49 @@ type SumupTransactionReponse struct {
 }
 
 func (handler *Handler) GetSumupTransactions(c *gin.Context) {
+	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
+	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
+
 	transactions, _ := handler.sumupRepository.GetTransactions()
 
-	c.Header("X-Total-Count", strconv.Itoa(len(transactions)))
+	transactionsLen := len(transactions)
+
+	if end > transactionsLen {
+		end = transactionsLen
+	}
+
+	// limit the results based on start and end parameters
+	if start < 0 || start >= end {
+		c.JSON(http.StatusOK, []SumupTransactionReponse{})
+		return
+	}
+
+	transactions = transactions[start:end]
+
+	c.Header("X-Total-Count", strconv.Itoa(transactionsLen))
 	c.JSON(http.StatusOK, toSumupTransactionResponses(transactions))
+}
+
+func (handler *Handler) GetSumupTransactionByID(c *gin.Context) {
+	transactionID := c.Param("id")
+
+	if transactionID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id is required"})
+		return
+	}
+
+	transaction, err := handler.sumupRepository.GetTransactionById(transactionID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve transaction"})
+		return
+	}
+
+	if transaction == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "transaction not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, toSumupTransactionResponse(*transaction))
 }
 
 func toSumupTransactionResponse(c sumup.Transaction) SumupTransactionReponse {

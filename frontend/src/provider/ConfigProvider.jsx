@@ -52,14 +52,12 @@ const ConfigProvider = ({ children }) => {
         }
 
         data.sumupEnabled = false;
-        console.log("Config data:", data);
         // when code == "SUMUP" in the array of paymentMethods, set sumupEnabled to true
         if (data.paymentMethods && Array.isArray(data.paymentMethods)) {
           data.sumupEnabled = data.paymentMethods.some(
             (method) => method.code === "SUMUP",
           );
         }
-        console.log("Sumup enabled:", data.sumupEnabled);
 
         setConfig(data);
         setLoading(false);

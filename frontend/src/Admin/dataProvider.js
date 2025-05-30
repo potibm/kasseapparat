@@ -5,6 +5,7 @@ const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 
 const resourceAlias = {
   sumupReaders: "sumup/readers",
+  sumupTransactions: "sumup/transactions",
 };
 
 const resolveResource = (resource) => resourceAlias[resource] || resource;
@@ -28,8 +29,6 @@ const httpClient = (url, options = {}) => {
 
   return fetchUtils.fetchJson(url, options);
 };
-
-//const dataProvider = jsonServerProvider(`${API_HOST}/api/v2`, httpClient);
 
 const baseProvider = jsonServerProvider(`${API_HOST}/api/v2`, httpClient);
 

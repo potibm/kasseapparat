@@ -125,7 +125,6 @@ export const SumupReaderList = (props) => {
 
   return (
     <List title="SumUp Readers" {...props} actions={<SumupListActions />}>
-      {/* Innerhalb von List: Jetzt ist ListContext verfügbar */}
       <ReaderListContent
         selectedReaderId={selectedReaderId}
         onClear={() => {
@@ -176,11 +175,11 @@ const ReaderListContent = ({ selectedReaderId, onClear, onSelect }) => {
           record.id === selectedReaderId ? { backgroundColor: "#e0f7fa" } : {}
         }
       >
-        <TextField source="id" />
-        <TextField source="name" />
-        <FunctionField label="Status" render={renderStatus} />
-        <TextField source="deviceIdentifier" />
-        <TextField source="deviceModel" />
+        <TextField source="id" sortable={false} />
+        <TextField source="name" sortable={false} />
+        <FunctionField label="Status" render={renderStatus} sortable={false} />
+        <TextField source="deviceIdentifier" sortable={false} />
+        <TextField source="deviceModel" sortable={false} />
         <FunctionField
           label="Action"
           render={(record) =>

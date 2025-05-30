@@ -11,9 +11,9 @@ import {
   ArrayField,
   FunctionField,
 } from "react-admin";
-import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
 import { PurchaseListToolbar } from "./PurchaseListToolbar";
+import ListIcon from "@mui/icons-material/List";
 
 export const PurchaseList = () => {
   const {
@@ -119,4 +119,4 @@ export const PurchaseShow = (props) => {
   );
 };
 
-export const ProductIcon = () => <InventoryIcon />;
+export const PurchaseIcon = () => <ListIcon />;
