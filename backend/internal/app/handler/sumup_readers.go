@@ -10,7 +10,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 )
 
-type ReaderReponse struct {
+type SumupReaderReponse struct {
 	ID               string    `json:"id"`
 	Name             string    `json:"name"`
 	Status           string    `json:"status"`
@@ -24,7 +24,7 @@ func (handler *Handler) GetSumupReaders(c *gin.Context) {
 	readers, _ := handler.sumupRepository.GetReaders()
 
 	c.Header("X-Total-Count", strconv.Itoa(len(readers)))
-	c.JSON(http.StatusOK, toReaderResponses(readers))
+	c.JSON(http.StatusOK, toSumupReaderResponses(readers))
 }
 
 func (handler *Handler) GetSumupReaderByID(c *gin.Context) {
@@ -41,7 +41,7 @@ func (handler *Handler) GetSumupReaderByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, toReaderResponse(*reader))
+	c.JSON(http.StatusOK, toSumupReaderResponse(*reader))
 }
 
 func (handler *Handler) CreateSumupReader(c *gin.Context) {
@@ -61,7 +61,7 @@ func (handler *Handler) CreateSumupReader(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, toReaderResponse(*reader))
+	c.JSON(http.StatusCreated, toSumupReaderResponse(*reader))
 }
 
 func (handler *Handler) DeleteSumupReader(c *gin.Context) {
@@ -75,8 +75,8 @@ func (handler *Handler) DeleteSumupReader(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func toReaderResponse(c sumup.Reader) ReaderReponse {
-	return ReaderReponse{
+func toSumupReaderResponse(c sumup.Reader) SumupReaderReponse {
+	return SumupReaderReponse{
 		ID:               c.ID,
 		Name:             c.Name,
 		Status:           c.Status,
@@ -87,10 +87,10 @@ func toReaderResponse(c sumup.Reader) ReaderReponse {
 	}
 }
 
-func toReaderResponses(readers []sumup.Reader) []ReaderReponse {
-	responses := make([]ReaderReponse, len(readers))
+func toSumupReaderResponses(readers []sumup.Reader) []SumupReaderReponse {
+	responses := make([]SumupReaderReponse, len(readers))
 	for i, reader := range readers {
-		responses[i] = toReaderResponse(reader)
+		responses[i] = toSumupReaderResponse(reader)
 	}
 
 	return responses
