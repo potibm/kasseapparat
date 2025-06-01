@@ -95,10 +95,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
 
-	// we probably want to change this at one point :)
-	purchaseResponse.Value("message").String().IsEqual("Purchase successful")
-	purchaseResponse.Value("purchase").Object()
-	purchase := purchaseResponse.Value("purchase").Object()
+	purchase := purchaseResponse
 	purchase.Value("id").String()
 	purchase.Value("totalGrossPrice").String().IsEqual("20")
 	purchase.Value("totalNetPrice").String().IsEqual("18.69")
@@ -390,7 +387,7 @@ func createPurchase() string {
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
 
-	purchase := purchaseResponse.Value("purchase").Object()
+	purchase := purchaseResponse
 	purchaseId := purchase.Value("id").String().Raw()
 
 	return purchaseBaseUrl + "/" + purchaseId

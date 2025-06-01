@@ -16,7 +16,7 @@ type RepositoryInterface interface {
 	GetReader(readerId string) (*Reader, error)
 	CreateReader(pairingCode string, readerName string) (*Reader, error)
 	DeleteReader(readerId string) error
-	CreateReaderCheckout(readerId string, readerName string, amount decimal.Decimal) (*string, error)
+	CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string) (*string, error)
 	CreateReaderTerminateAction(readerId string) error
 	GetCheckouts() ([]Checkout, error)
 	GetCheckout(id string) (*Checkout, error)

@@ -12,7 +12,7 @@ type MockSumUpRepository struct {
 	GetReaderFunc                   func(readerId string) (*sumup.Reader, error)
 	CreateReaderFunc                func(pairingCode string, readerName string) (*sumup.Reader, error)
 	DeleteReaderFunc                func(readerId string) error
-	CreateReaderCheckoutFunc        func(readerId string, readerName string, amount decimal.Decimal) (*string, error)
+	CreateReaderCheckoutFunc        func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string) (*string, error)
 	CreateReaderTerminateActionFunc func(readerId string) error
 	GetCheckoutsFunc                func() ([]sumup.Checkout, error)
 	GetCheckoutFunc                 func(id string) (*sumup.Checkout, error)
@@ -37,8 +37,8 @@ func (m *MockSumUpRepository) DeleteReader(readerId string) error {
 	return m.DeleteReaderFunc(readerId)
 }
 
-func (m *MockSumUpRepository) CreateReaderCheckout(readerId string, readerName string, amount decimal.Decimal) (*string, error) {
-	return m.CreateReaderCheckoutFunc(readerId, readerName, amount)
+func (m *MockSumUpRepository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string) (*string, error) {
+	return m.CreateReaderCheckoutFunc(readerId, amount, description, affiliateTransactionId)
 }
 
 func (m *MockSumUpRepository) CreateReaderTerminateAction(readerId string) error {
@@ -76,7 +76,7 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 		DeleteReaderFunc: func(readerId string) error {
 			return nil
 		},
-		CreateReaderCheckoutFunc: func(readerId string, readerName string, amount decimal.Decimal) (*string, error) {
+		CreateReaderCheckoutFunc: func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string) (*string, error) {
 			checkoutId := "checkout-1"
 			return &checkoutId, nil
 		},

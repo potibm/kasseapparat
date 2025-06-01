@@ -39,7 +39,7 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
       `Checkout with payment method: ${paymentMethodCode}, data: ${JSON.stringify(paymentMethodData)}`,
     );
 
-    checkoutCart(paymentMethodCode).then(() => {
+    checkoutCart(paymentMethodCode, paymentMethodData).then(() => {
       setCheckoutProcessing(false);
     });
   };

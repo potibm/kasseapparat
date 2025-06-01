@@ -127,9 +127,17 @@ const Kasseapparat = () => {
     return getCartProductQuantity(cart, product);
   };
 
-  const handleCheckoutCart = async (paymentMethodCode) => {
-    return storePurchase(apiHost, token, cart, paymentMethodCode)
+  const handleCheckoutCart = async (paymentMethodCode, paymentMethodData) => {
+    return storePurchase(
+      apiHost,
+      token,
+      cart,
+      paymentMethodCode,
+      paymentMethodData,
+    )
       .then((createdPurchase) => {
+        // probably we need to wait for pending purchases to be processed
+
         setCart(checkoutCart());
         handleAddToPurchaseHistory(createdPurchase.purchase);
         fetchProducts(apiHost, token)

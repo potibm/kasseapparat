@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -45,8 +46,9 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		return
 	}
 
-	if !handler.IsValidPaymentMethod(req.PaymentMethod) {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid payment method"))
+	err = handler.ValidatePaymentMethodPayload(req.PaymentMethod, req.SumupReaderID)
+	if err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
 		return
 	}
 
@@ -58,6 +60,29 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	input := req.ToInput()
 
 	purchaseService := service.NewPurchaseService(handler.repo, &handler.mailer, handler.decimalPlaces)
+
+	if req.PaymentMethod == "SUMUP" {
+		// @TODO: perform validation (pricing and guests)
+		
+		purchaseUuid := uuid.New()
+
+		// @TODO: add tags to checkout (user?)
+		checkout, _ := handler.sumupRepository.CreateReaderCheckout(
+			req.SumupReaderID,
+			req.TotalGrossPrice,
+			"Purchase from Kasseapparat",
+			purchaseUuid.String(),
+		)
+
+		// @TODO: create a purchase with the sumup transaction id
+
+		// @TODO: start polling for the status of the checkout
+
+		log.Printf("Created SumUp reader checkout: %s", *checkout)
+
+		// @TODO: return the purchase object 
+		return 
+	}
 
 	purchase, err := purchaseService.CreatePurchase(c.Request.Context(), input, int(executingUserObj.ID))
 	if err != nil {
@@ -85,10 +110,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 	purchaseResponse := response.ToPurchaseResponse(*reloadedPurchase, handler.decimalPlaces)
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message":  "Purchase successful",
-		"purchase": purchaseResponse,
-	})
+	c.JSON(http.StatusCreated, purchaseResponse)
 }
 
 func (handler *Handler) GetPurchases(c *gin.Context) {
@@ -103,6 +125,7 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 	filters.TotalGrossPriceGte = queryDecimal(c, "totalGrossPrice_gte")
 	filters.TotalGrossPriceLte = queryDecimal(c, "totalGrossPrice_lte")
 	filters.IDs = queryArrayInt(c, "id")
+	filters.Status = queryPurchaseStatus(c, "status")
 
 	purchases, err := handler.repo.GetPurchases(end-start, start, sort, order, filters)
 	if err != nil {

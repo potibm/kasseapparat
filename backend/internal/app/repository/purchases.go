@@ -18,6 +18,7 @@ type ProductPurchaseStats struct {
 type PurchaseFilters struct {
 	CreatedByID        int
 	PaymentMethods     []string
+	Status             *models.PurchaseStatus
 	TotalGrossPriceLte *decimal.Decimal
 	TotalGrossPriceGte *decimal.Decimal
 	IDs                []int
@@ -44,6 +45,10 @@ func (filters PurchaseFilters) AddWhere(query *gorm.DB) *gorm.DB {
 		query = query.Where("purchases.total_gross_price >= ?", filters.TotalGrossPriceGte)
 	}
 
+	if filters.Status != nil {
+		query = query.Where("purchases.status = ?", *filters.Status)
+	}
+
 	return query
 }
 
@@ -53,6 +58,7 @@ var purchaseSortFieldMappings = map[string]string{
 	"totalGrossPrice":    "purchases.total_gross_price",
 	"createdBy.username": "CreatedBy.username",
 	"paymentMethod":      "purchases.payment_method",
+	"status":             "purchases.status",
 	"pos":                "Pos",
 }
 

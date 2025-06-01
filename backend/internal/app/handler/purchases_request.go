@@ -24,6 +24,7 @@ type PurchaseRequest struct {
 	TotalGrossPrice decimal.Decimal       `binding:"required"      form:"totalGrossPrice"`
 	Cart            []PurchaseCartRequest `binding:"required,dive" form:"cart"`
 	PaymentMethod   string                `binding:"required"      form:"paymentMethod"`
+	SumupReaderID   string                `binding:"omitempty"     form:"sumupReaderId"`
 }
 
 func (req PurchaseRequest) Validate() error {

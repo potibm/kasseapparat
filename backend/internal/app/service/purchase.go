@@ -174,6 +174,7 @@ func (s *PurchaseService) CreatePurchase(ctx context.Context, input PurchaseInpu
 			TotalNetPrice:   net,
 			TotalGrossPrice: gross,
 			PaymentMethod:   input.PaymentMethod,
+			Status:          models.PurchaseStatusConfirmed,
 		}
 		purchase.CreatedByID = uintPtr(uint(userID))
 

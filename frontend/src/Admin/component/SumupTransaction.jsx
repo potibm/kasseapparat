@@ -118,9 +118,18 @@ export const SumupTransactionShow = (props) => {
         </SimpleShowLayout>
         <DateField
           source="createdAt"
+          showDate={true}
           showTime={true}
           locales={locale}
-          options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
+          options={{
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }}
           sortable={false}
         />
         <FunctionField label="Status" render={renderStatus} />

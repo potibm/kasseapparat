@@ -9,12 +9,15 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 )
 
 func (handler *Handler) ExportPurchases(c *gin.Context) {
 	filters := repository.PurchaseFilters{}
 	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethods", handler.paymentMethods)
+	status := models.PurchaseStatusConfirmed
+	filters.Status = &status
 
 	log.Println("Payment methods filter: ", filters)
 

@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"errors"
 	"log"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
+	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/shopspring/decimal"
@@ -78,10 +80,46 @@ func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods map[s
 	return result
 }
 
-func (handler *Handler) IsValidPaymentMethod(code string) bool {
-	if _, ok := handler.paymentMethods[code]; ok {
-		return true
+func queryPurchaseStatus(c *gin.Context, field string) *models.PurchaseStatus {
+	status := c.DefaultQuery(field, "")
+
+	if status == "" {
+		return nil
 	}
 
-	return false
+	statusMapper := map[string]models.PurchaseStatus{
+		"pending":   models.PurchaseStatusPending,
+		"confirmed": models.PurchaseStatusConfirmed,
+		"failed":    models.PurchaseStatusFailed,
+		"cancelled": models.PurchaseStatusCancelled,
+	}
+
+	if purchaseStatus, ok := statusMapper[strings.ToLower(status)]; ok {
+		return &purchaseStatus
+	}
+
+	return nil
+}
+
+func (handler *Handler) IsValidPaymentMethod(code string) bool {
+	// Check if the payment method code is valid
+	if _, ok := handler.paymentMethods[code]; !ok {
+		return false
+	}
+
+	return true
+}
+
+func (handler *Handler) ValidatePaymentMethodPayload(code string, sumupReaderId string) error {
+	// Check if the payment method code is valid
+	if !handler.IsValidPaymentMethod(code) {
+		return errors.New("invalid payment method")
+	}
+
+	// If payment method is SUMUP, sumupReaderId must be provided
+	if code == "SUMUP" && sumupReaderId == "" {
+		return errors.New("the SumUp reader ID is required for SumUp payments")
+	}
+
+	return nil
 }
