@@ -62,7 +62,7 @@ func TestCreateAndDeleteProductInterest(t *testing.T) {
 
 	withDemoUserAuthToken(e.DELETE(productInterestUrl)).
 		Expect().
-		Status(http.StatusOK)
+		Status(http.StatusNoContent)
 
 	getTotalCountOfProductInterests().IsEqual(0)
 }

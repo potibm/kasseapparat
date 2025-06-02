@@ -5,9 +5,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/potibm/kasseapparat/internal/app/handler"
+	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
+	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 )
 
 //go:embed assets
@@ -18,15 +19,18 @@ func main() {
 	initializer.InitializeVersion()
 	initializer.InitializeSentry()
 	initializer.OutputVersion()
+	initializer.InitializeSumup()
 
 	port := ":3000" // Default port number
 	if len(os.Args) > 1 {
 		port = ":" + os.Args[1] // Use the provided port number if available
 	}
 
-	repository := repository.NewRepository(initializer.GetCurrencyDecimalPlaces())
+	repository := sqliteRepo.NewRepository(initializer.GetCurrencyDecimalPlaces())
+	sumupRepository := sumup.NewRepository(initializer.GetSumupService())
+
 	mailer := initializer.InitializeMailer()
-	myhandler := handler.NewHandler(repository, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces(), initializer.GetEnabledPaymentMethods())
+	myhandler := handlerHttp.NewHandler(repository, sumupRepository, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces(), initializer.GetEnabledPaymentMethods())
 
 	router := initializer.InitializeHttpServer(*myhandler, *repository, staticFiles)
 

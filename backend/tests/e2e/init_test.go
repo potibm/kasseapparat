@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	"github.com/gavv/httpexpect/v2"
-	"github.com/potibm/kasseapparat/internal/app/handler"
+	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
@@ -43,16 +43,18 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 
 	currencyDecimalPlaces := int32(2)
 	paymentMethods := map[string]string{
-		"CASH": "💶 Cash",
-		"CC":   "💳 Creditcard",
+		"CASH":  "💶 Cash",
+		"CC":    "💳 Creditcard",
+		"SUMUP": "💳 SumUp",
 	}
 
-	repo := repository.NewLocalRepository(currencyDecimalPlaces)
+	repo := sqliteRepo.NewLocalRepository(currencyDecimalPlaces)
+	sumupRepo := NewMockSumUpRepository()
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)
-	handler := handler.NewHandler(repo, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
+	handlerHttp := handlerHttp.NewHandler(repo, sumupRepo, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
 
-	router := initializer.InitializeHttpServer(*handler, *repo, embed.FS{})
+	router := initializer.InitializeHttpServer(*handlerHttp, *repo, embed.FS{})
 
 	ts := httptest.NewServer(router)
 
@@ -75,7 +77,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 }
 
 func getJwtForUser(username, password string) string {
-	// Login durchführen
+	// Perform login request
 	login := e.POST("/login").
 		WithJSON(map[string]string{
 			"login":    username,
@@ -85,7 +87,7 @@ func getJwtForUser(username, password string) string {
 		Status(http.StatusOK).
 		JSON().Object()
 
-	// JWT auslesen
+	// Read the JWT token from the response
 	jwt := login.Value("token").String().Raw()
 
 	return jwt

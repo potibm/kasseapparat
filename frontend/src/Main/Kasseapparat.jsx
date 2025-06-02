@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Alert, Spinner } from "flowbite-react";
-import Cart from "./components/Cart";
+import Cart from "./components/Cart/Cart";
 import ProductList from "./components/ProductList";
 import PurchaseHistory from "./components/PurchaseHistory";
 import ErrorModal from "./components/ErrorModal";
@@ -25,7 +25,7 @@ import { useConfig } from "../provider/ConfigProvider";
 import Version from "../components/Version";
 import Decimal from "decimal.js";
 
-function Kasseapparat() {
+const Kasseapparat = () => {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState(null);
   const [purchaseHistory, setPurchaseHistory] = useState(null);
@@ -127,9 +127,17 @@ function Kasseapparat() {
     return getCartProductQuantity(cart, product);
   };
 
-  const handleCheckoutCart = async (paymentMethodCode) => {
-    return storePurchase(apiHost, token, cart, paymentMethodCode)
+  const handleCheckoutCart = async (paymentMethodCode, paymentMethodData) => {
+    return storePurchase(
+      apiHost,
+      token,
+      cart,
+      paymentMethodCode,
+      paymentMethodData,
+    )
       .then((createdPurchase) => {
+        // probably we need to wait for pending purchases to be processed
+
         setCart(checkoutCart());
         handleAddToPurchaseHistory(createdPurchase.purchase);
         fetchProducts(apiHost, token)
@@ -221,6 +229,6 @@ function Kasseapparat() {
       <ErrorModal message={errorMessage} onClose={handleCloseError} />
     </div>
   );
-}
+};
 
 export default Kasseapparat;
