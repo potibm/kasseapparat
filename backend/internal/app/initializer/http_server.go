@@ -14,7 +14,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
-	"github.com/potibm/kasseapparat/internal/app/handler"
+	httpHandler "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository"
@@ -25,7 +25,7 @@ var (
 	authMiddleware *jwt.GinJWTMiddleware
 )
 
-func InitializeHttpServer(myhandler handler.Handler, repository repository.Repository, staticFiles embed.FS) *gin.Engine {
+func InitializeHttpServer(myhandler httpHandler.Handler, repository repository.Repository, staticFiles embed.FS) *gin.Engine {
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	r = gin.Default()
 	r.Use(sentrygin.New(sentrygin.Options{}))
@@ -102,7 +102,7 @@ func SentryMiddleware() gin.HandlerFunc {
 	}
 }
 
-func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMiddleware) {
+func registerApiRoutes(myhandler httpHandler.Handler, authMiddleware *jwt.GinJWTMiddleware) {
 	protectedApiRouter := r.Group("/api/v2")
 	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
 	{
@@ -131,7 +131,7 @@ func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMidd
 	}
 }
 
-func registerProductRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerProductRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	products := rg.Group("/products")
 	{
 		products.GET("", handler.GetProducts)
@@ -143,7 +143,7 @@ func registerProductRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	}
 }
 
-func registerGuestlistRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerGuestlistRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	guestlist := rg.Group("/guestlists")
 	{
 		guestlist.GET("", handler.GetGuestlists)
@@ -154,7 +154,7 @@ func registerGuestlistRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	}
 }
 
-func registerGuestRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerGuestRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	guests := rg.Group("/guests")
 	{
 		guests.GET("", handler.GetGuests)
@@ -165,7 +165,7 @@ func registerGuestRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	}
 }
 
-func registerPurchaseRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerPurchaseRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	purchases := rg.Group("/purchases")
 	{
 		purchases.GET("", handler.GetPurchases)
@@ -176,7 +176,7 @@ func registerPurchaseRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	}
 }
 
-func registerUserRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerUserRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	users := rg.Group("/users")
 	{
 		users.GET("", handler.GetUsers)
@@ -187,7 +187,7 @@ func registerUserRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	}
 }
 
-func registerProductInterestRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerProductInterestRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	productInterests := rg.Group("/productInterests")
 	{
 		productInterests.GET("", handler.GetProductInterests)
@@ -196,7 +196,7 @@ func registerProductInterestRoutes(rg *gin.RouterGroup, handler handler.Handler)
 	}
 }
 
-func registerSumupReadersRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerSumupReadersRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	sumupReaders := rg.Group("/sumup/readers")
 	{
 		sumupReaders.GET("", handler.GetSumupReaders)
@@ -205,7 +205,7 @@ func registerSumupReadersRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 		sumupReaders.POST("", handler.CreateSumupReader)
 	}
 }
-func registerSumupTransactionRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerSumupTransactionRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	sumupTransactions := rg.Group("/sumup/transactions")
 	{
 		sumupTransactions.GET("", handler.GetSumupTransactions)

@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/gavv/httpexpect/v2"
-	"github.com/potibm/kasseapparat/internal/app/handler"
+	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/repository"
@@ -52,9 +52,9 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 	sumupRepo := NewMockSumUpRepository()
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)
-	handler := handler.NewHandler(repo, sumupRepo, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
+	handlerHttp := handlerHttp.NewHandler(repo, sumupRepo, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
 
-	router := initializer.InitializeHttpServer(*handler, *repo, embed.FS{})
+	router := initializer.InitializeHttpServer(*handlerHttp, *repo, embed.FS{})
 
 	ts := httptest.NewServer(router)
 

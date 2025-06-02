@@ -268,7 +268,7 @@ func TestCreatePurchaseWithInvalidPaymentMethod(t *testing.T) {
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object()
 
-	validateErrorDetailMessage(errorResponse, "Invalid payment method")
+	validateErrorDetailMessage(errorResponse, "invalid payment method")
 }
 
 func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {

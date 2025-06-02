@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/potibm/kasseapparat/internal/app/handler"
+	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/repository"
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
@@ -30,7 +30,7 @@ func main() {
 	sumupRepository := sumup.NewRepository(initializer.GetSumupService())
 
 	mailer := initializer.InitializeMailer()
-	myhandler := handler.NewHandler(repository, sumupRepository, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces(), initializer.GetEnabledPaymentMethods())
+	myhandler := handlerHttp.NewHandler(repository, sumupRepository, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces(), initializer.GetEnabledPaymentMethods())
 
 	router := initializer.InitializeHttpServer(*myhandler, *repository, staticFiles)
 
