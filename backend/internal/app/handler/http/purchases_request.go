@@ -3,7 +3,7 @@ package http
 import (
 	"fmt"
 
-	"github.com/potibm/kasseapparat/internal/app/service"
+	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 	"github.com/shopspring/decimal"
 )
 
@@ -78,21 +78,21 @@ func validateListItem(li PurchaseListItemRequest) error {
 	return nil
 }
 
-func (req PurchaseRequest) ToInput() service.PurchaseInput {
-	input := service.PurchaseInput{
+func (req PurchaseRequest) ToInput() purchaseService.PurchaseInput {
+	input := purchaseService.PurchaseInput{
 		PaymentMethod:   req.PaymentMethod,
 		TotalNetPrice:   req.TotalNetPrice,
 		TotalGrossPrice: req.TotalGrossPrice,
 	}
 
 	for _, cart := range req.Cart {
-		item := service.PurchaseCartItem{
+		item := purchaseService.PurchaseCartItem{
 			ID:       cart.ID,
 			Quantity: cart.Quantity,
 			NetPrice: cart.NetPrice,
 		}
 		for _, li := range cart.ListItems {
-			item.ListItems = append(item.ListItems, service.ListItemInput{
+			item.ListItems = append(item.ListItems, purchaseService.ListItemInput{
 				ID:             li.ID,
 				AttendedGuests: int(li.AttendedGuests),
 			})

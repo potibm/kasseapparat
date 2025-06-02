@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	response "github.com/potibm/kasseapparat/internal/app/response"
-	"github.com/potibm/kasseapparat/internal/app/service"
+	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
@@ -59,11 +59,10 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 	input := req.ToInput()
 
-	purchaseService := service.NewPurchaseService(handler.repo, &handler.mailer, handler.decimalPlaces)
+	service := purchaseService.NewPurchaseService(handler.repo, &handler.mailer, handler.decimalPlaces)
 
 	if req.PaymentMethod == "SUMUP" {
 		// @TODO: perform validation (pricing and guests)
-		
 		purchaseUuid := uuid.New()
 
 		// @TODO: add tags to checkout (user?)
@@ -80,21 +79,21 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 		log.Printf("Created SumUp reader checkout: %s", *checkout)
 
-		// @TODO: return the purchase object 
-		return 
+		// @TODO: return the purchase object
+		return
 	}
 
-	purchase, err := purchaseService.CreatePurchase(c.Request.Context(), input, int(executingUserObj.ID))
+	purchase, err := service.CreatePurchase(c.Request.Context(), input, int(executingUserObj.ID))
 	if err != nil {
 		switch err {
-		case service.ErrInvalidProductPrice,
-			service.ErrInvalidTotalGrossPrice,
-			service.ErrInvalidTotalNetPrice,
-			service.ErrProductNotFound,
-			service.ErrGuestNotFound,
-			service.ErrGuestAlreadyAttended,
-			service.ErrTooManyAdditionalGuests,
-			service.ErrListItemWrongProduct:
+		case purchaseService.ErrInvalidProductPrice,
+			purchaseService.ErrInvalidTotalGrossPrice,
+			purchaseService.ErrInvalidTotalNetPrice,
+			purchaseService.ErrProductNotFound,
+			purchaseService.ErrGuestNotFound,
+			purchaseService.ErrGuestAlreadyAttended,
+			purchaseService.ErrTooManyAdditionalGuests,
+			purchaseService.ErrListItemWrongProduct:
 			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, utils.CapitalizeFirstRune(err.Error())))
 			return
 		default:
