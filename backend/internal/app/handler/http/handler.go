@@ -9,13 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/shopspring/decimal"
 )
 
 type Handler struct {
-	repo            *repository.Repository
+	repo            *sqliteRepo.Repository
 	sumupRepository sumup.RepositoryInterface
 	mailer          mailer.Mailer
 	version         string
@@ -23,7 +23,7 @@ type Handler struct {
 	paymentMethods  map[string]string
 }
 
-func NewHandler(repo *repository.Repository, sumupRepository sumup.RepositoryInterface, mailer mailer.Mailer, version string, decimalPlaces int32, paymentMethods map[string]string) *Handler {
+func NewHandler(repo *sqliteRepo.Repository, sumupRepository sumup.RepositoryInterface, mailer mailer.Mailer, version string, decimalPlaces int32, paymentMethods map[string]string) *Handler {
 	return &Handler{repo: repo, sumupRepository: sumupRepository, mailer: mailer, version: version, decimalPlaces: decimalPlaces, paymentMethods: paymentMethods}
 }
 

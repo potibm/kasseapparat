@@ -17,7 +17,7 @@ import (
 	httpHandler "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
 
 var (
@@ -25,7 +25,7 @@ var (
 	authMiddleware *jwt.GinJWTMiddleware
 )
 
-func InitializeHttpServer(myhandler httpHandler.Handler, repository repository.Repository, staticFiles embed.FS) *gin.Engine {
+func InitializeHttpServer(myhandler httpHandler.Handler, repository sqliteRepo.Repository, staticFiles embed.FS) *gin.Engine {
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	r = gin.Default()
 	r.Use(sentrygin.New(sentrygin.Options{}))
@@ -76,7 +76,7 @@ func CreateCorsMiddleware() gin.HandlerFunc {
 	return cors.New(corsConfig)
 }
 
-func registerAuthMiddleware(repository repository.Repository) *jwt.GinJWTMiddleware {
+func registerAuthMiddleware(repository sqliteRepo.Repository) *jwt.GinJWTMiddleware {
 	authMiddleware, _ = jwt.New(middleware.InitParams(repository, os.Getenv("JWT_REALM"), os.Getenv("JWT_SECRET"), 10))
 	r.Use(middleware.HandlerMiddleWare(authMiddleware))
 

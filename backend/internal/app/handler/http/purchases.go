@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	response "github.com/potibm/kasseapparat/internal/app/response"
 	"github.com/potibm/kasseapparat/internal/app/service"
 	"github.com/potibm/kasseapparat/internal/app/utils"
@@ -119,7 +119,7 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 	sort := c.DefaultQuery("_sort", "createdAt")
 	order := c.DefaultQuery("_order", "DESC")
 
-	filters := repository.PurchaseFilters{}
+	filters := sqliteRepo.PurchaseFilters{}
 	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethod", handler.paymentMethods)
 	filters.CreatedByID, _ = strconv.Atoi(c.DefaultQuery("createdById", "0"))
 	filters.TotalGrossPriceGte = queryDecimal(c, "totalGrossPrice_gte")

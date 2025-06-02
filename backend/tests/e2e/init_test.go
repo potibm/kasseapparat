@@ -11,7 +11,7 @@ import (
 	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
@@ -48,7 +48,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		"SUMUP": "💳 SumUp",
 	}
 
-	repo := repository.NewLocalRepository(currencyDecimalPlaces)
+	repo := sqliteRepo.NewLocalRepository(currencyDecimalPlaces)
 	sumupRepo := NewMockSumUpRepository()
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)

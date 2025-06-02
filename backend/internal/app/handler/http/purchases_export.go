@@ -10,11 +10,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
 
 func (handler *Handler) ExportPurchases(c *gin.Context) {
-	filters := repository.PurchaseFilters{}
+	filters := sqliteRepo.PurchaseFilters{}
 	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethods", handler.paymentMethods)
 	status := models.PurchaseStatusConfirmed
 	filters.Status = &status

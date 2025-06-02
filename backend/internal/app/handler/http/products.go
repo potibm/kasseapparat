@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	response "github.com/potibm/kasseapparat/internal/app/response"
 	"github.com/shopspring/decimal"
 )
@@ -85,7 +85,7 @@ func filterHiddenProducts(products []models.Product) []models.Product {
 	return filteredProducts
 }
 
-func createExtendedProductResponse(repo *repository.Repository, products []models.Product, decimalPlaces int32) []response.ExtendedProductResponse {
+func createExtendedProductResponse(repo *sqliteRepo.Repository, products []models.Product, decimalPlaces int32) []response.ExtendedProductResponse {
 	var productsResponse = []response.ExtendedProductResponse{}
 
 	for _, product := range products {

@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 )
@@ -32,7 +32,7 @@ func (r *deineTicketsRecord) validateBlocked() bool {
 	return r.Blocked == ""
 }
 
-func (r *deineTicketsRecord) Validate(repo *repository.Repository) (bool, string) {
+func (r *deineTicketsRecord) Validate(repo *sqliteRepo.Repository) (bool, string) {
 	if !r.validateCode() {
 		return false, "Invalid code"
 	}

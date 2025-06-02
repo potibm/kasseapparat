@@ -1,4 +1,4 @@
-package repository
+package sqlite
 
 import (
 	"github.com/potibm/kasseapparat/internal/app/utils"

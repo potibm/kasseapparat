@@ -11,7 +11,7 @@ import (
 
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
@@ -139,7 +139,7 @@ func importUsers(filename string) {
 }
 
 func createUser(username string, email string, isAdmin bool) error {
-	repo := repository.NewRepository(2)
+	repo := sqliteRepo.NewRepository(2)
 	mailer := initializer.InitializeMailer()
 
 	user := models.User{

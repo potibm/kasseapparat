@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
 
 func (handler *Handler) GetUsers(c *gin.Context) {
@@ -18,7 +18,7 @@ func (handler *Handler) GetUsers(c *gin.Context) {
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "ASC")
-	filters := repository.UserFilters{}
+	filters := sqliteRepo.UserFilters{}
 	filters.Query = c.DefaultQuery("q", "")
 	filters.IsAdmin = c.DefaultQuery("isAdmin", "false") == "true"
 

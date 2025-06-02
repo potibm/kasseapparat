@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
 
 type GuestCreateRequest struct {
@@ -37,7 +37,7 @@ func (handler *Handler) GetGuests(c *gin.Context) {
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
 	sort := c.DefaultQuery("_sort", "id")
 	order := c.DefaultQuery("_order", "ASC")
-	filters := repository.GuestFilters{}
+	filters := sqliteRepo.GuestFilters{}
 	filters.Query = c.DefaultQuery("q", "")
 	filters.GuestlistID, _ = strconv.Atoi(c.DefaultQuery("guestlist_id", "0"))
 	filters.Present = c.DefaultQuery("isPresent", "false") == "true"

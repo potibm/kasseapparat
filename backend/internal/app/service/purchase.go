@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
@@ -62,7 +62,7 @@ func uintPtr(v uint) *uint {
 	return &v
 }
 
-func NewPurchaseService(repo *repository.Repository, mailer Mailer, decimalPlaces int32) *PurchaseService {
+func NewPurchaseService(repo *sqliteRepo.Repository, mailer Mailer, decimalPlaces int32) *PurchaseService {
 	return &PurchaseService{
 		Repo:          repo,
 		DB:            repo.GetDB(),
