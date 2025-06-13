@@ -37,6 +37,7 @@ func (handler *Handler) GetSumupTransactions(c *gin.Context) {
 	if start < 0 || start >= end {
 		c.Header("X-Total-Count", "0")
 		c.JSON(http.StatusOK, []SumupTransactionReponse{})
+
 		return
 	}
 

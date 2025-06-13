@@ -16,7 +16,6 @@ var upgrader = websocket.Upgrader{
 }
 
 func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
-
 	transactionID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
@@ -35,7 +34,22 @@ func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 	registerConnection(transactionID, conn)
 	defer unregisterConnection(transactionID)
 
-	// @TODO write a status message once the connection is established
+	purchase, err := h.sqliteRepository.GetPurchaseByID(transactionID)
+	if err != nil {
+		log.Println("Failed to get purchase by ID:", err)
+
+		_ = conn.WriteJSON(map[string]interface{}{
+			"type":    "error",
+			"message": "failed to retrieve purchase",
+		})
+
+		return
+	}
+
+	_ = conn.WriteJSON(map[string]interface{}{
+		"type":   "status_update",
+		"status": purchase.Status,
+	})
 
 	for {
 		var msg map[string]interface{}
@@ -51,31 +65,33 @@ func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 		case "cancel_payment":
 			readerID, ok := msg["reader_id"].(string)
 			if !ok || readerID == "" {
-				conn.WriteJSON(map[string]interface{}{
+				_ = conn.WriteJSON(map[string]interface{}{
 					"type":    "error",
 					"message": "reader_id missing or invalid",
 				})
+
 				break
 			}
+
 			err = h.sumupRepository.CreateReaderTerminateAction(readerID)
 			if err != nil {
-				conn.WriteJSON(map[string]interface{}{
-					"type":           "error",
+				_ = conn.WriteJSON(map[string]interface{}{
+					"type":    "error",
 					"messahe": "failed to cancel payment",
-				})			
+				})
 			} else {
-				conn.WriteJSON(map[string]interface{}{
+				_ = conn.WriteJSON(map[string]interface{}{
 					"type":           "cancel_ack",
-					"transaction_id": transactionID,	
+					"transaction_id": transactionID,
 				})
 			}
 		case "ping":
-			conn.WriteJSON(map[string]interface{}{
+			_ = conn.WriteJSON(map[string]interface{}{
 				"type": "pong",
 			})
 
 		default:
-			conn.WriteJSON(map[string]interface{}{
+			_ = conn.WriteJSON(map[string]interface{}{
 				"type":           "error",
 				"message":        "unknown command",
 				"transaction_id": transactionID,

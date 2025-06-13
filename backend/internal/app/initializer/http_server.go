@@ -137,7 +137,6 @@ func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocke
 }
 
 func testHandler(c *gin.Context) {
-
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Test handler is working",
 	})

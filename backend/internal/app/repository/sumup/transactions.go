@@ -91,6 +91,7 @@ func sortTransactionsByCreatedAt(transactions []*transactions.TransactionHistory
 		if transactions[i].Timestamp == nil || transactions[j].Timestamp == nil {
 			return false
 		}
+
 		return transactions[i].Timestamp.After(*transactions[j].Timestamp)
 	})
 }
@@ -199,9 +200,11 @@ func (r *Repository) GetTransactionByClientTransactionId(transactionId string) (
 
 	resp, err := client.Do(req)
 	log.Println("Response status:", resp.Status)
+
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
@@ -228,17 +231,6 @@ func (r *Repository) RefundTransaction(transactionId string) error {
 	}
 
 	return nil
-}
-
-func fromRawSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transaction {
-	return &Transaction{
-		ID:              utils.StrPtr(sdkCheckout.Id),
-		TransactionCode: string(*sdkCheckout.TransactionCode),
-		Amount:          utils.F64PtrToDecimal(sdkCheckout.Amount),
-		Currency:        string(*sdkCheckout.Currency),
-		CreatedAt:       utils.TimePtr(sdkCheckout.Timestamp),
-		Status:          string(*sdkCheckout.Status),
-	}
 }
 
 func fromSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transaction {

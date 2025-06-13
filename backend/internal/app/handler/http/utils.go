@@ -45,7 +45,6 @@ func queryDecimal(c *gin.Context, field string) *decimal.Decimal {
 	}
 }
 
-
 func queryTime(c *gin.Context, field string, defaultValue *time.Time) *time.Time {
 	timeString := c.DefaultQuery(field, "")
 

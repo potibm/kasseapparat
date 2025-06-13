@@ -143,12 +143,12 @@ const Kasseapparat = () => {
         console.log("Purchase created: ", createdPurchase);
         if (createdPurchase.status === "pending") {
           // open the polling modal
-           setPendingPurchase(createdPurchase);
-           setPollingModalOpen(true);
-          
-        }  else if (createdPurchase.status !== "confirmed") {
+          setPendingPurchase(createdPurchase);
+          setPollingModalOpen(true);
+        } else if (createdPurchase.status !== "confirmed") {
           throw new Error(
-            "Purchase status is not pending or confirmed: " + createdPurchase.status,
+            "Purchase status is not pending or confirmed: " +
+              createdPurchase.status,
           );
         }
 
@@ -242,17 +242,17 @@ const Kasseapparat = () => {
       </div>
       <ErrorModal message={errorMessage} onClose={handleCloseError} />
       {pollingModalOpen && pendingPurchase && (
-      <PollingModal
-        purchase={pendingPurchase}
-        show={pollingModalOpen}
-        onClose={() => setPollingModalOpen(false)}
-        onConfirmed={(updatedPurchase) => {
-          setPollingModalOpen(false);
-          handleAddToPurchaseHistory(updatedPurchase);
-          setCart(checkoutCart());
-        }}
-      />
-    )}
+        <PollingModal
+          purchase={pendingPurchase}
+          show={pollingModalOpen}
+          onClose={() => setPollingModalOpen(false)}
+          onConfirmed={(updatedPurchase) => {
+            setPollingModalOpen(false);
+            handleAddToPurchaseHistory(updatedPurchase);
+            setCart(checkoutCart());
+          }}
+        />
+      )}
     </div>
   );
 };

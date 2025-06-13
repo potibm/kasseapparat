@@ -38,7 +38,7 @@ func main() {
 	poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseService)
 
 	httpHandler := handlerHttp.NewHandler(sqliteRepository, sumupRepository, purchaseService, poller, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces(), initializer.GetEnabledPaymentMethods())
-	websocketHandler := websocket.NewHandler(sumupRepository, purchaseService)
+	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService)
 
 	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles)
 

@@ -9,9 +9,12 @@ import (
 
 	"github.com/gavv/httpexpect/v2"
 	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
+	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
+	"github.com/potibm/kasseapparat/internal/app/monitor"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
+	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
@@ -48,13 +51,19 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		"SUMUP": "💳 SumUp",
 	}
 
-	repo := sqliteRepo.NewLocalRepository(currencyDecimalPlaces)
+	sqliteRepo := sqliteRepo.NewLocalRepository(currencyDecimalPlaces)
 	sumupRepo := NewMockSumUpRepository()
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)
-	handlerHttp := handlerHttp.NewHandler(repo, sumupRepo, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
 
-	router := initializer.InitializeHttpServer(*handlerHttp, *repo, embed.FS{})
+	purchaseService := purchaseService.NewPurchaseService(sqliteRepo, sumupRepo, mailer, currencyDecimalPlaces)
+
+	poller := monitor.NewPoller(sumupRepo, sqliteRepo, purchaseService)
+
+	handlerHttp := handlerHttp.NewHandler(sqliteRepo, sumupRepo, purchaseService, poller, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
+	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService)
+
+	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{})
 
 	ts := httptest.NewServer(router)
 

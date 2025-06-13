@@ -2,6 +2,8 @@ package websocket
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/potibm/kasseapparat/internal/app/models"
 	sumupRepo "github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 )
@@ -13,10 +15,15 @@ type HandlerInterface interface {
 }
 
 type Handler struct {
-	sumupRepository sumupRepo.RepositoryInterface
-	purchaseService purchaseService.Service	
+	sumupRepository  sumupRepo.RepositoryInterface
+	sqliteRepository sqliteRepository
+	purchaseService  purchaseService.Service
 }
 
-func NewHandler(sumupRepository sumupRepo.RepositoryInterface, purchaseService purchaseService.Service) *Handler {
-	return &Handler{sumupRepository: sumupRepository, purchaseService: purchaseService}
+type sqliteRepository interface {
+	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
+}
+
+func NewHandler(sqliteRepository sqliteRepository, sumupRepository sumupRepo.RepositoryInterface, purchaseService purchaseService.Service) *Handler {
+	return &Handler{sqliteRepository: sqliteRepository, sumupRepository: sumupRepository, purchaseService: purchaseService}
 }

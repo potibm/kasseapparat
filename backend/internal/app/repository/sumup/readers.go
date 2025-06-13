@@ -77,7 +77,7 @@ func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decima
 		TotalAmount: amountStruct,
 		Description: &description,
 		Affiliate:   affiliate,
-		ReturnUrl: &returnUrl,
+		ReturnUrl:   &returnUrl,
 	}
 
 	response, err := r.service.Client.Readers.CreateCheckout(context.Background(), r.service.MerchantCode, readerId, body)

@@ -248,6 +248,7 @@ func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input Pu
 	if err != nil {
 		return nil, nil, err
 	}
+
 	return savedPurchase, guests, nil
 }
 
@@ -298,7 +299,6 @@ func (s *PurchaseService) setPurchaseStatus(ctx context.Context, purchaseId uuid
 	var purchase *models.Purchase
 
 	err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-
 		p, err := s.sqliteRepo.UpdatePurchaseStatusByIDTx(tx, purchaseId, status)
 
 		if err != nil {

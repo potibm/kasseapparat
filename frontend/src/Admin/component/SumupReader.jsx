@@ -174,7 +174,9 @@ const ReaderListContent = ({ selectedReaderId, onClear, onSelect }) => {
         rowClick=""
         bulkActionButtons={false}
         rowSx={(record) =>
-          record.id === selectedReaderId ? { backgroundColor: theme.palette.action.selected } : {}
+          record.id === selectedReaderId
+            ? { backgroundColor: theme.palette.action.selected }
+            : {}
         }
       >
         <TextField source="id" sortable={false} />

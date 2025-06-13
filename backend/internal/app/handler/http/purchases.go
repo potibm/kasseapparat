@@ -102,9 +102,12 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		)
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create SumUp reader checkout"))
+
 			log.Printf("Error creating SumUp reader checkout: %v", err)
+
 			return
 		}
+
 		log.Printf("Created SumUp reader checkout: %s", *clientTransactionId)
 
 		_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByIDTx(handler.repo.GetDB(), reloadedPurchase.ID, *clientTransactionId)
@@ -112,6 +115,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to update purchase with SumUp transaction ID"))
 			return
 		}
+
 		log.Printf("Updated purchase %s with SumUp client transaction ID %s", reloadedPurchase.ID, *clientTransactionId)
 		log.Printf("Monitor: %+v", handler.monitor)
 

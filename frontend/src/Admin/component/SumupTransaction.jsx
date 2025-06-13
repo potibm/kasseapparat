@@ -10,7 +10,7 @@ import {
   SimpleShowLayout,
   ShowActions,
   Filter,
-  SelectInput
+  SelectInput,
 } from "react-admin";
 import { useConfig } from "../../provider/ConfigProvider";
 import { Box } from "@mui/material";
@@ -76,7 +76,12 @@ export const SumupTransactionList = (props) => {
   }
 
   return (
-    <List title="SumUp Transactions" filters={<TimeRangeFilter />} empty={false} {...props}>
+    <List
+      title="SumUp Transactions"
+      filters={<TimeRangeFilter />}
+      empty={false}
+      {...props}
+    >
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <TextField source="id" sortable={false} />
         <TextField source="transactionCode" sortable={false} />

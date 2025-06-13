@@ -3,7 +3,6 @@ package monitor
 import (
 	"context"
 	"log"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -35,15 +34,14 @@ type transactionPoller struct {
 	SqliteRepository *sqliteRepo.Repository
 	PurchaseService  purchaseService.Service
 	StatusUpdater    func(transactionID string) // optional fallback
-	mu               sync.Mutex
 	active           map[string]struct{}
 }
 
-func NewPoller(sumupRepo sumupRepo.RepositoryInterface, sqliteRepo *sqliteRepo.Repository, PurchaseService purchaseService.Service) Poller {
+func NewPoller(sumupRepo sumupRepo.RepositoryInterface, sqliteRepo *sqliteRepo.Repository, purchaseService purchaseService.Service) Poller {
 	return &transactionPoller{
 		SumupRepository:  sumupRepo,
 		SqliteRepository: sqliteRepo,
-		PurchaseService:  PurchaseService,
+		PurchaseService:  purchaseService,
 		active:           make(map[string]struct{}),
 	}
 }
@@ -65,74 +63,74 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
 
-		for {
-			select {
-			case <-ticker.C:
+		for range ticker.C {
+			// Fetch current status from DB
+			purchase, err := n.SqliteRepository.GetPurchaseByID(transactionID)
+			if err != nil {
+				log.Printf("DB error for %s: %v", transactionID, err)
+				continue
+			}
 
-				// Fetch current status from DB
-				purchase, err := n.SqliteRepository.GetPurchaseByID(transactionID)
+			if purchase.PaymentMethod != "SUMUP" {
+				log.Printf("Skipping polling for %s, not a SumUp transaction", transactionID)
+				return
+			}
+
+			if isFinal(string(purchase.Status)) {
+				websocket.PushUpdate(transactionID, string(purchase.Status))
+
+				log.Printf("Polling ended for %s", transactionID)
+
+				return
+			}
+
+			// Fetch current status from SumUp
+			transaction, err := n.SumupRepository.GetTransactionByClientTransactionId(purchase.SumupClientTransactionID)
+			if err != nil {
+				log.Printf("Error fetching transaction %s from SumUp: %v", purchase.SumupTransactionID, err)
+				continue
+			}
+
+			log.Printf("Transaction %s status: %s", purchase.SumupTransactionID, transaction.Status)
+
+			if purchase.SumupTransactionID == "" {
+				_, err = n.SqliteRepository.UpdatePurchaseSumupTransactionIDByIDTx(n.SqliteRepository.GetDB(), transactionID, transaction.ID)
 				if err != nil {
-					log.Printf("DB error for %s: %v", transactionID, err)
-					continue
+					log.Printf("Error updating purchase %s with SumUp transaction ID: %v", transactionID, err)
 				}
+			}
 
-				if purchase.PaymentMethod != "SUMUP" {
-					log.Printf("Skipping polling for %s, not a SumUp transaction", transactionID)
-					return
-				}
+			ctx := context.Background()
 
-				if isFinal(string(purchase.Status)) {
-					websocket.PushUpdate(transactionID, string(purchase.Status))
+			var updatedPurchase *models.Purchase
 
-					log.Printf("Polling ended for %s", transactionID)
-					return
-				}
+			switch transaction.Status {
+			case "PENDING":
+				log.Printf("Transaction %s is still pending, continuing to poll", purchase.SumupTransactionID)
+				websocket.PushUpdate(transactionID, string(purchase.Status))
 
-				// Fetch current status from SumUp
-				transaction, err := n.SumupRepository.GetTransactionByClientTransactionId(purchase.SumupClientTransactionID)
-				if err != nil {
-					log.Printf("Error fetching transaction %s from SumUp: %v", purchase.SumupTransactionID, err)
-					continue
-				}
-				log.Printf("Transaction %s status: %s", purchase.SumupTransactionID, transaction.Status)
-				if purchase.SumupTransactionID == "" {
-					_, err = n.SqliteRepository.UpdatePurchaseSumupTransactionIDByIDTx(n.SqliteRepository.GetDB(), transactionID, transaction.ID)
-					if err != nil {
-						log.Printf("Error updating purchase %s with SumUp transaction ID: %v", transactionID, err)
-					}
-				}
+				continue
+			case "SUCCESSFUL":
+				updatedPurchase, err = n.PurchaseService.FinalizePurchase(ctx, transactionID)
+			case "FAILED":
+				updatedPurchase, err = n.PurchaseService.FailPurchase(ctx, transactionID)
+			case "CANCELED":
+				updatedPurchase, err = n.PurchaseService.CancelPurchase(ctx, transactionID)
+			default:
+				log.Printf("Unknown transaction status %s for %s, skipping update", transaction.Status, transactionID)
+				continue
+			}
 
-				ctx := context.Background()
-				var updatedPurchase *models.Purchase
+			if err != nil {
+				log.Printf("Error updating purchase %s status: %v", transactionID, err)
+				continue
+			}
 
-				if transaction.Status == "PENDING" {
-					log.Printf("Transaction %s is still pending, continuing to poll", purchase.SumupTransactionID)
-					websocket.PushUpdate(transactionID, string(purchase.Status))
-					continue
+			websocket.PushUpdate(transactionID, string(updatedPurchase.Status))
 
-				} else if transaction.Status == "SUCCESSFUL" {
-					updatedPurchase, err = n.PurchaseService.FinalizePurchase(ctx, transactionID)
-				} else if transaction.Status == "FAILED" {
-					updatedPurchase, err = n.PurchaseService.FailPurchase(ctx, transactionID)
-
-				} else if transaction.Status == "CANCELED" {
-					updatedPurchase, err = n.PurchaseService.CancelPurchase(ctx, transactionID)
-				} else {
-					log.Printf("Unknown transaction status %s for %s, skipping update", transaction.Status, transactionID)
-					continue
-				}
-
-				if err != nil {
-					log.Printf("Error updating purchase %s status: %v", transactionID, err)
-					continue
-				}
-
-				websocket.PushUpdate(transactionID, string(updatedPurchase.Status))
-
-				if isFinal(string(updatedPurchase.Status)) {
-					log.Printf("Polling ended for %s", transactionID)
-					return
-				}
+			if isFinal(string(updatedPurchase.Status)) {
+				log.Printf("Polling ended for %s", transactionID)
+				return
 			}
 		}
 	}()

@@ -2,6 +2,7 @@ package tests_e2e
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/shopspring/decimal"
@@ -12,11 +13,11 @@ type MockSumUpRepository struct {
 	GetReaderFunc                   func(readerId string) (*sumup.Reader, error)
 	CreateReaderFunc                func(pairingCode string, readerName string) (*sumup.Reader, error)
 	DeleteReaderFunc                func(readerId string) error
-	CreateReaderCheckoutFunc        func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string) (*string, error)
+	CreateReaderCheckoutFunc        func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*string, error)
 	CreateReaderTerminateActionFunc func(readerId string) error
 	GetCheckoutsFunc                func() ([]sumup.Checkout, error)
 	GetCheckoutFunc                 func(id string) (*sumup.Checkout, error)
-	GetTransactionsFunc             func() ([]sumup.Transaction, error)
+	GetTransactionsFunc             func(oldestFrom *time.Time) ([]sumup.Transaction, error)
 	GetTransactionByIdFunc          func(transactionId string) (*sumup.Transaction, error)
 	RefundTransactionFunc           func(transactionId string) error
 }
@@ -37,8 +38,8 @@ func (m *MockSumUpRepository) DeleteReader(readerId string) error {
 	return m.DeleteReaderFunc(readerId)
 }
 
-func (m *MockSumUpRepository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string) (*string, error) {
-	return m.CreateReaderCheckoutFunc(readerId, amount, description, affiliateTransactionId)
+func (m *MockSumUpRepository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*string, error) {
+	return m.CreateReaderCheckoutFunc(readerId, amount, description, affiliateTransactionId, returnUrl)
 }
 
 func (m *MockSumUpRepository) CreateReaderTerminateAction(readerId string) error {
@@ -50,8 +51,11 @@ func (m *MockSumUpRepository) GetCheckouts() ([]sumup.Checkout, error) {
 func (m *MockSumUpRepository) GetCheckout(id string) (*sumup.Checkout, error) {
 	return m.GetCheckoutFunc(id)
 }
-func (m *MockSumUpRepository) GetTransactions() ([]sumup.Transaction, error) {
-	return m.GetTransactionsFunc()
+func (m *MockSumUpRepository) GetTransactions(oldestFrom *time.Time) ([]sumup.Transaction, error) {
+	return m.GetTransactionsFunc(oldestFrom)
+}
+func (m *MockSumUpRepository) GetTransactionByClientTransactionId(transactionId string) (*sumup.Transaction, error) {
+	return m.GetTransactionByIdFunc(transactionId)
 }
 func (m *MockSumUpRepository) GetTransactionById(transactionId string) (*sumup.Transaction, error) {
 	return m.GetTransactionByIdFunc(transactionId)
@@ -76,7 +80,7 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 		DeleteReaderFunc: func(readerId string) error {
 			return nil
 		},
-		CreateReaderCheckoutFunc: func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string) (*string, error) {
+		CreateReaderCheckoutFunc: func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*string, error) {
 			checkoutId := "checkout-1"
 			return &checkoutId, nil
 		},
@@ -94,7 +98,7 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 			}
 			return nil, nil
 		},
-		GetTransactionsFunc: func() ([]sumup.Transaction, error) {
+		GetTransactionsFunc: func(oldestFrom *time.Time) ([]sumup.Transaction, error) {
 			return []sumup.Transaction{
 				{ID: "transaction-1", Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"},
 			}, nil

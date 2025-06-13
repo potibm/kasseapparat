@@ -8,8 +8,6 @@ import (
 	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 )
 
-
-
 type Handler struct {
 	repo            *sqliteRepo.Repository
 	sumupRepository sumupRepo.RepositoryInterface

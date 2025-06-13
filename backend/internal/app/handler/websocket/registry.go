@@ -45,7 +45,7 @@ func PushUpdate(transactionID uuid.UUID, status string) {
 	client.mu.Lock()
 	defer client.mu.Unlock()
 
-	client.Conn.WriteJSON(map[string]interface{}{
+	_ = client.Conn.WriteJSON(map[string]interface{}{
 		"type":   "status_update",
 		"status": status,
 	})

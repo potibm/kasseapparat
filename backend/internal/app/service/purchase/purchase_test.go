@@ -22,6 +22,20 @@ type MockRepository struct {
 	UpdatedGuests  map[int]*models.Guest
 }
 
+func (m *MockRepository) GetDB() *gorm.DB {
+	return nil
+}
+
+func (m *MockRepository) UpdatePurchaseStatusByIDTx(tx *gorm.DB, id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
+	if m.StoredPurchase == nil || m.StoredPurchase.ID.String() != id.String() {
+		return nil, fmt.Errorf("purchase %s not found in mock", id)
+	}
+
+	m.StoredPurchase.Status = status
+
+	return m.StoredPurchase, nil
+}
+
 func (m *MockRepository) GetProductByID(id int) (*models.Product, error) {
 	p, ok := m.Products[id]
 	if !ok {
@@ -103,7 +117,7 @@ func TestValidateAndCalculatePricesWithSuccess(t *testing.T) {
 	}
 
 	service := &PurchaseService{
-		Repo:          mockRepo,
+		sqliteRepo:    mockRepo,
 		DecimalPlaces: 2,
 	}
 
@@ -135,7 +149,7 @@ func TestValidateAndCalculatePricesWithProductNotFound(t *testing.T) {
 	}
 
 	service := &PurchaseService{
-		Repo:          mockRepo,
+		sqliteRepo:    mockRepo,
 		DecimalPlaces: 2,
 	}
 
@@ -164,7 +178,7 @@ func TestValidateAndCalculatePricesWithTotalPriceMismatch(t *testing.T) {
 	}
 
 	service := &PurchaseService{
-		Repo:          mockRepo,
+		sqliteRepo:    mockRepo,
 		DecimalPlaces: 2,
 	}
 
@@ -193,7 +207,7 @@ func TestValidateAndCalculatePricesWithProductPriceMismatch(t *testing.T) {
 	}
 
 	service := &PurchaseService{
-		Repo:          mockRepo,
+		sqliteRepo:    mockRepo,
 		DecimalPlaces: 2,
 	}
 
@@ -225,7 +239,7 @@ func TestValidateAndPrepareGuestsWithSuccess(t *testing.T) {
 	}
 
 	service := &PurchaseService{
-		Repo: mockRepo,
+		sqliteRepo: mockRepo,
 	}
 
 	input := PurchaseInput{
@@ -256,7 +270,7 @@ func TestValidateAndPrepareGuestsWithSuccess(t *testing.T) {
 
 func TestValidateAndPrepareGuestsWithGuestNotFound(t *testing.T) {
 	service := &PurchaseService{
-		Repo: &MockRepository{Guests: map[int]*models.Guest{}}, // leer!
+		sqliteRepo: &MockRepository{Guests: map[int]*models.Guest{}}, // leer!
 	}
 
 	input := PurchaseInput{
@@ -279,7 +293,7 @@ func TestValidateAndPrepareGuestsWithGuestNotFound(t *testing.T) {
 
 func TestValidateGuestWithGuestNotFound(t *testing.T) {
 	service := &PurchaseService{
-		Repo: &MockRepository{
+		sqliteRepo: &MockRepository{
 			Guests: map[int]*models.Guest{},
 		},
 	}
@@ -292,7 +306,7 @@ func TestValidateGuestWithGuestNotFound(t *testing.T) {
 
 func TestValidateGuestWithGuestAlreadyAttended(t *testing.T) {
 	service := &PurchaseService{
-		Repo: &MockRepository{
+		sqliteRepo: &MockRepository{
 			Guests: map[int]*models.Guest{
 				42: {
 					AttendedGuests: 1,
@@ -310,7 +324,7 @@ func TestValidateGuestWithGuestAlreadyAttended(t *testing.T) {
 
 func TestValidateGuestWithTooManyAdditionalGuests(t *testing.T) {
 	service := &PurchaseService{
-		Repo: &MockRepository{
+		sqliteRepo: &MockRepository{
 			Guests: map[int]*models.Guest{
 				42: {
 					AttendedGuests:   0,
@@ -329,7 +343,7 @@ func TestValidateGuestWithTooManyAdditionalGuests(t *testing.T) {
 
 func TestValidateGuestWithWrongProductId(t *testing.T) {
 	service := &PurchaseService{
-		Repo: &MockRepository{
+		sqliteRepo: &MockRepository{
 			Guests: map[int]*models.Guest{
 				42: {
 					AttendedGuests:   0,
@@ -374,7 +388,7 @@ func TestCreatePurchaseWithSuccess(t *testing.T) {
 	}
 
 	service := &PurchaseService{
-		Repo:          mockRepo,
+		sqliteRepo:    mockRepo,
 		DB:            testDB(),
 		DecimalPlaces: 2,
 	}

@@ -146,9 +146,9 @@ export const PurchaseShow = (props) => {
         />
         <ReferenceField
           label="SumUp Transaction"
-          source="sumupTransactionId" 
+          source="sumupTransactionId"
           reference="sumupTransactions"
-          link="show" 
+          link="show"
         >
           <TextField source="id" />
         </ReferenceField>
