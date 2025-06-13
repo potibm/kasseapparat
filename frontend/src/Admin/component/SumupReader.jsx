@@ -24,6 +24,7 @@ import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import TouchAppIcon from "@mui/icons-material/TouchApp";
 import ErrorIcon from "@mui/icons-material/Error";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { useTheme } from "@mui/material/styles";
 import {
   getCurrentReaderId,
   setCurrentReaderId,
@@ -139,6 +140,7 @@ export const SumupReaderList = (props) => {
 
 const ReaderListContent = ({ selectedReaderId, onClear, onSelect }) => {
   const { data: readers = [], isLoading } = useListContext();
+  const theme = useTheme();
 
   const isSelectedReaderMissing =
     !isLoading &&
@@ -172,7 +174,7 @@ const ReaderListContent = ({ selectedReaderId, onClear, onSelect }) => {
         rowClick=""
         bulkActionButtons={false}
         rowSx={(record) =>
-          record.id === selectedReaderId ? { backgroundColor: "#e0f7fa" } : {}
+          record.id === selectedReaderId ? { backgroundColor: theme.palette.action.selected } : {}
         }
       >
         <TextField source="id" sortable={false} />

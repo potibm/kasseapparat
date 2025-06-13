@@ -9,6 +9,8 @@ import {
   Show,
   SimpleShowLayout,
   ShowActions,
+  Filter,
+  SelectInput
 } from "react-admin";
 import { useConfig } from "../../provider/ConfigProvider";
 import { Box } from "@mui/material";
@@ -74,7 +76,7 @@ export const SumupTransactionList = (props) => {
   }
 
   return (
-    <List title="SumUp Readers" {...props}>
+    <List title="SumUp Transactions" filters={<TimeRangeFilter />} empty={false} {...props}>
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <TextField source="id" sortable={false} />
         <TextField source="transactionCode" sortable={false} />
@@ -97,6 +99,32 @@ export const SumupTransactionList = (props) => {
     </List>
   );
 };
+
+const getOldestTimeOptions = () => {
+  const now = Date.now();
+
+  const toISO = (msAgo) => new Date(now - msAgo).toISOString();
+
+  return [
+    { id: toISO(10 * 60 * 1000), name: "Last 10 minutes" },
+    { id: toISO(60 * 60 * 1000), name: "Last 1 hour" },
+    { id: toISO(24 * 60 * 60 * 1000), name: "Last 24 hours" },
+    { id: toISO(48 * 60 * 60 * 1000), name: "Last 48 hours" },
+    { id: toISO(7 * 24 * 60 * 60 * 1000), name: "Last 1 week" },
+    { id: toISO(30 * 24 * 60 * 60 * 1000), name: "Last 1 month" },
+  ];
+};
+
+const TimeRangeFilter = (props) => (
+  <Filter {...props}>
+    <SelectInput
+      source="oldest_time"
+      label="Time Range"
+      choices={getOldestTimeOptions()}
+      alwaysOn
+    />
+  </Filter>
+);
 
 export const SumupTransactionShow = (props) => {
   const currency = useConfig().currencyOptions;

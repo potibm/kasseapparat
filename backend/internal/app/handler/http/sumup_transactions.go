@@ -22,8 +22,10 @@ type SumupTransactionReponse struct {
 func (handler *Handler) GetSumupTransactions(c *gin.Context) {
 	start, _ := strconv.Atoi(c.DefaultQuery("_start", "0"))
 	end, _ := strconv.Atoi(c.DefaultQuery("_end", "10"))
+	defaultOldestTime := time.Now().Add(-10 * time.Minute)
+	oldestTime := queryTime(c, "oldest_time", &defaultOldestTime)
 
-	transactions, _ := handler.sumupRepository.GetTransactions()
+	transactions, _ := handler.sumupRepository.GetTransactions(oldestTime)
 
 	transactionsLen := len(transactions)
 
@@ -33,6 +35,7 @@ func (handler *Handler) GetSumupTransactions(c *gin.Context) {
 
 	// limit the results based on start and end parameters
 	if start < 0 || start >= end {
+		c.Header("X-Total-Count", "0")
 		c.JSON(http.StatusOK, []SumupTransactionReponse{})
 		return
 	}

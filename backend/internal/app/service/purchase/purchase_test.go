@@ -66,6 +66,14 @@ func (m *MockRepository) UpdateGuestByIDTx(tx *gorm.DB, id int, guest models.Gue
 	return g, nil
 }
 
+func (m *MockRepository) GetPurchaseByIDTx(tx *gorm.DB, id uuid.UUID) (*models.Purchase, error) {
+	if m.StoredPurchase == nil || m.StoredPurchase.ID.String() != id.String() {
+		return nil, fmt.Errorf("purchase %s not found in mock", id)
+	}
+
+	return m.StoredPurchase, nil
+}
+
 func testDB() *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
@@ -387,7 +395,7 @@ func TestCreatePurchaseWithSuccess(t *testing.T) {
 		},
 	}
 
-	purchase, err := service.CreatePurchase(ctx, input, 7)
+	purchase, err := service.CreateConfirmedPurchase(ctx, input, 7)
 	if err != nil {
 		t.Fatalf(errUnexpected, err)
 	}

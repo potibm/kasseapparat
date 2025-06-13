@@ -2,8 +2,14 @@ package sumup
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"net/url"
+	"sort"
+	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/utils"
 	"github.com/sumup/sumup-go/transactions"
@@ -11,13 +17,13 @@ import (
 
 const (
 	TransactionPageSize = 100
-	TransactionMaxPages = 3
+	TransactionMaxPages = 5
 )
 
-func (r *Repository) GetTransactions() ([]Transaction, error) {
+func (r *Repository) GetTransactions(oldestFrom *time.Time) ([]Transaction, error) {
 	ctx := context.Background()
 
-	sdkItems, err := r.fetchPagedTransactions(ctx, TransactionMaxPages, TransactionPageSize)
+	sdkItems, err := r.fetchPagedTransactions(ctx, oldestFrom, TransactionMaxPages, TransactionPageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -30,13 +36,16 @@ func (r *Repository) GetTransactions() ([]Transaction, error) {
 	return result, nil
 }
 
-func (r *Repository) fetchPagedTransactions(ctx context.Context, maxPages, pageSize int) ([]*transactions.TransactionHistory, error) {
+func (r *Repository) fetchPagedTransactions(ctx context.Context, oldestFrom *time.Time, maxPages, pageSize int) ([]*transactions.TransactionHistory, error) {
 	var allItems []*transactions.TransactionHistory
 
 	pageCount := 0
 
 	params := transactions.ListTransactionsV21Params{
 		Limit: &pageSize,
+	}
+	if oldestFrom != nil {
+		params.OldestTime = oldestFrom
 	}
 
 	for {
@@ -45,8 +54,6 @@ func (r *Repository) fetchPagedTransactions(ctx context.Context, maxPages, pageS
 		}
 
 		pageCount++
-
-		log.Printf("Fetching transactions, page %d with limit %d", pageCount, pageSize)
 
 		resp, err := r.service.Client.Transactions.List(ctx, r.service.MerchantCode, params)
 		if err != nil {
@@ -58,6 +65,7 @@ func (r *Repository) fetchPagedTransactions(ctx context.Context, maxPages, pageS
 		}
 
 		allItems = append(allItems, ptrSliceToSlice(resp.Items)...)
+		sortTransactionsByCreatedAt(allItems)
 
 		nextHref := findNextHref(resp.Links)
 		if nextHref == "" {
@@ -72,6 +80,19 @@ func (r *Repository) fetchPagedTransactions(ctx context.Context, maxPages, pageS
 
 		params = *nextParams
 	}
+}
+
+func sortTransactionsByCreatedAt(transactions []*transactions.TransactionHistory) {
+	if transactions == nil {
+		return
+	}
+
+	sort.Slice(transactions, func(i, j int) bool {
+		if transactions[i].Timestamp == nil || transactions[j].Timestamp == nil {
+			return false
+		}
+		return transactions[i].Timestamp.After(*transactions[j].Timestamp)
+	})
 }
 
 func ptrSliceToSlice(ptrSlice *[]transactions.TransactionHistory) []*transactions.TransactionHistory {
@@ -135,20 +156,65 @@ func parseHrefToListTransactionsParams(href string) (*transactions.ListTransacti
 }
 
 func (r *Repository) GetTransactionById(transactionId string) (*Transaction, error) {
-	params := transactions.GetTransactionV21Params{Id: &transactionId}
+	params := transactions.GetTransactionV21Params{
+		Id: &transactionId,
+	}
 
-	return r.getTransaction(params)
+	transaction, err := r.getTransaction(params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction by ID %s: %w", transactionId, err)
+	}
+
+	return transaction, nil
 }
 
 func (r *Repository) getTransaction(params transactions.GetTransactionV21Params) (*Transaction, error) {
 	transactionResp, err := r.service.Client.Transactions.Get(context.Background(), r.service.MerchantCode, params)
 	if err != nil {
-		log.Printf("Error retrieving transaction: %v", err)
-
-		return nil, err
+		return nil, normalizeSumupError(err)
 	}
 
 	return fromSDKTransactionFull(transactionResp), nil
+}
+
+func (r *Repository) GetTransactionByClientTransactionId(transactionId string) (*Transaction, error) {
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	// URL mit query-params korrekt zusammensetzen
+	baseURL := fmt.Sprintf("https://api.sumup.com/v2.1/merchants/%s/transactions", r.service.MerchantCode)
+	params := url.Values{}
+	params.Set("client_transaction_id", transactionId)
+
+	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+	log.Println("Fetching transaction from URL:", fullURL)
+
+	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+r.service.ApiKey)
+
+	resp, err := client.Do(req)
+	log.Println("Response status:", resp.Status)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("unexpected status: %d – %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	var transactionResp transactions.TransactionFull
+	if err := json.NewDecoder(resp.Body).Decode(&transactionResp); err != nil {
+		return nil, fmt.Errorf("decode response: %s", err.Error())
+	}
+
+	return fromSDKTransactionFull(&transactionResp), nil
 }
 
 func (r *Repository) RefundTransaction(transactionId string) error {
@@ -162,6 +228,17 @@ func (r *Repository) RefundTransaction(transactionId string) error {
 	}
 
 	return nil
+}
+
+func fromRawSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transaction {
+	return &Transaction{
+		ID:              utils.StrPtr(sdkCheckout.Id),
+		TransactionCode: string(*sdkCheckout.TransactionCode),
+		Amount:          utils.F64PtrToDecimal(sdkCheckout.Amount),
+		Currency:        string(*sdkCheckout.Currency),
+		CreatedAt:       utils.TimePtr(sdkCheckout.Timestamp),
+		Status:          string(*sdkCheckout.Status),
+	}
 }
 
 func fromSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transaction {

@@ -7,6 +7,8 @@ import (
 
 var purchaseBaseUrl = "/api/v2/purchases"
 
+// @TODO: test a purchase with only a free product, currently leads to an error
+
 func TestGetPurchasesList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()

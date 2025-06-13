@@ -57,7 +57,7 @@ func (r *Repository) CreateReader(pairingCode string, name string) (*Reader, err
 	return fromSDKReader(createdReader), nil
 }
 
-func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string) (*string, error) {
+func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*string, error) {
 	amountStruct := readers.CreateReaderCheckoutAmount{
 		Currency:  r.service.PaymentCurrency,
 		Value:     getValueFromDecimal(amount, int(r.service.PaymentMinorUnit)), // Example amount in cents (10.00 EUR)
@@ -77,6 +77,7 @@ func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decima
 		TotalAmount: amountStruct,
 		Description: &description,
 		Affiliate:   affiliate,
+		ReturnUrl: &returnUrl,
 	}
 
 	response, err := r.service.Client.Readers.CreateCheckout(context.Background(), r.service.MerchantCode, readerId, body)

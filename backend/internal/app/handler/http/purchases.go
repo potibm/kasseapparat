@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	response "github.com/potibm/kasseapparat/internal/app/response"
 	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
@@ -21,8 +22,8 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 		return
 	}
 
-	id := c.Param("id")
-	if uuid.Validate(id) != nil {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
 		return
 	}
@@ -59,31 +60,15 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 	input := req.ToInput()
 
-	service := purchaseService.NewPurchaseService(handler.repo, &handler.mailer, handler.decimalPlaces)
+	// create a variable purchase that is a nil pointer to models.Purchase
+	var purchase *models.Purchase
 
 	if req.PaymentMethod == "SUMUP" {
-		// @TODO: perform validation (pricing and guests)
-		purchaseUuid := uuid.New()
-
-		// @TODO: add tags to checkout (user?)
-		checkout, _ := handler.sumupRepository.CreateReaderCheckout(
-			req.SumupReaderID,
-			req.TotalGrossPrice,
-			"Purchase from Kasseapparat",
-			purchaseUuid.String(),
-		)
-
-		// @TODO: create a purchase with the sumup transaction id
-
-		// @TODO: start polling for the status of the checkout
-
-		log.Printf("Created SumUp reader checkout: %s", *checkout)
-
-		// @TODO: return the purchase object
-		return
+		purchase, err = handler.purchaseService.CreatePendingPurchase(c.Request.Context(), input, int(executingUserObj.ID))
+	} else {
+		purchase, err = handler.purchaseService.CreateConfirmedPurchase(c.Request.Context(), input, int(executingUserObj.ID))
 	}
 
-	purchase, err := service.CreatePurchase(c.Request.Context(), input, int(executingUserObj.ID))
 	if err != nil {
 		switch err {
 		case purchaseService.ErrInvalidProductPrice,
@@ -102,9 +87,36 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		}
 	}
 
-	reloadedPurchase, err := handler.repo.GetPurchaseByID(purchase.ID.String())
+	reloadedPurchase, err := handler.repo.GetPurchaseByID(purchase.ID)
 	if err != nil {
 		reloadedPurchase = purchase // Fallback to the created purchase if reloading fails
+	}
+
+	if req.PaymentMethod == "SUMUP" {
+		clientTransactionId, err := handler.sumupRepository.CreateReaderCheckout(
+			req.SumupReaderID,
+			purchase.TotalGrossPrice,
+			"Purchase from Kasseapparat",
+			purchase.ID.String(),
+			"https://evk.li/logreturn_8fk2.php",
+		)
+		if err != nil {
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create SumUp reader checkout"))
+			log.Printf("Error creating SumUp reader checkout: %v", err)
+			return
+		}
+		log.Printf("Created SumUp reader checkout: %s", *clientTransactionId)
+
+		_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByIDTx(handler.repo.GetDB(), reloadedPurchase.ID, *clientTransactionId)
+		if err != nil {
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to update purchase with SumUp transaction ID"))
+			return
+		}
+		log.Printf("Updated purchase %s with SumUp client transaction ID %s", reloadedPurchase.ID, *clientTransactionId)
+		log.Printf("Monitor: %+v", handler.monitor)
+
+		handler.monitor.Start(reloadedPurchase.ID)
+		log.Printf("Started monitoring for purchase %s", reloadedPurchase.ID)
 	}
 
 	purchaseResponse := response.ToPurchaseResponse(*reloadedPurchase, handler.decimalPlaces)
@@ -147,10 +159,9 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 }
 
 func (handler *Handler) GetPurchaseByID(c *gin.Context) {
-	id := c.Param("id")
+	id, err := uuid.Parse(c.Param("id"))
 
-	// validate that id is a uuid
-	if uuid.Validate(id) != nil {
+	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
 		return
 	}

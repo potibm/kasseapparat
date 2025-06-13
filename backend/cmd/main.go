@@ -6,9 +6,12 @@ import (
 	"os"
 
 	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
+	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
+	"github.com/potibm/kasseapparat/internal/app/monitor"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
-	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
+	sumupRepo "github.com/potibm/kasseapparat/internal/app/repository/sumup"
+	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 )
 
 //go:embed assets
@@ -26,13 +29,18 @@ func main() {
 		port = ":" + os.Args[1] // Use the provided port number if available
 	}
 
-	repository := sqliteRepo.NewRepository(initializer.GetCurrencyDecimalPlaces())
-	sumupRepository := sumup.NewRepository(initializer.GetSumupService())
-
+	sqliteRepository := sqliteRepo.NewRepository(initializer.GetCurrencyDecimalPlaces())
+	sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
 	mailer := initializer.InitializeMailer()
-	myhandler := handlerHttp.NewHandler(repository, sumupRepository, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces(), initializer.GetEnabledPaymentMethods())
 
-	router := initializer.InitializeHttpServer(*myhandler, *repository, staticFiles)
+	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, initializer.GetCurrencyDecimalPlaces())
+
+	poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseService)
+
+	httpHandler := handlerHttp.NewHandler(sqliteRepository, sumupRepository, purchaseService, poller, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces(), initializer.GetEnabledPaymentMethods())
+	websocketHandler := websocket.NewHandler(sumupRepository, purchaseService)
+
+	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles)
 
 	log.Println("Listening on " + port + "...")
 

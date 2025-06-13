@@ -3,7 +3,9 @@ package sqlite
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -71,7 +73,7 @@ func (repo *Repository) StorePurchasesTx(tx *gorm.DB, purchase models.Purchase) 
 	return purchase, result.Error
 }
 
-func (repo *Repository) DeletePurchaseByID(id string, deletedBy models.User) {
+func (repo *Repository) DeletePurchaseByID(id uuid.UUID, deletedBy models.User) {
 	// rollback list entries
 	repo.db.Model(&models.Guest{}).Where("purchase_id = ?", id).Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil})
 
@@ -81,18 +83,58 @@ func (repo *Repository) DeletePurchaseByID(id string, deletedBy models.User) {
 	repo.db.Where("purchase_id = ?", id).Delete(&models.PurchaseItem{})
 }
 
-func (repo *Repository) GetPurchaseByID(id string) (*models.Purchase, error) {
+func (repo *Repository) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error) {
+	return repo.GetPurchaseByIDTx(repo.db, id)
+}
+
+func (repo *Repository) GetPurchaseByIDTx(tx *gorm.DB, id uuid.UUID) (*models.Purchase, error) {
 	var purchase models.Purchase
-	if err := repo.db.Model(&models.Purchase{}).
+	if err := tx.Model(&models.Purchase{}).
 		Preload("PurchaseItems").
 		Preload("PurchaseItems.Product").
-		Where(whereIDEquals, id).
+		Where(whereIDEquals, id.String()).
 		First(&purchase).
 		Error; err != nil {
 		return nil, errors.New("purchase not found")
 	}
 
 	return &purchase, nil
+}
+
+func (repo *Repository) UpdatePurchaseStatusByIDTx(tx *gorm.DB, id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
+
+	return repo.updatePurchaseFieldByIDTx(tx, id, map[string]interface{}{
+		"status": string(status),
+	})
+
+}
+
+func (repo *Repository) UpdatePurchaseSumupTransactionIDByIDTx(tx *gorm.DB, id uuid.UUID, sumupTransactionID string) (*models.Purchase, error) {
+
+	return repo.updatePurchaseFieldByIDTx(tx, id, map[string]interface{}{
+		"sumup_transaction_id": sumupTransactionID,
+	})
+
+}
+
+func (repo *Repository) UpdatePurchaseSumupClientTransactionIDByIDTx(tx *gorm.DB, id uuid.UUID, sumupClientTransactionID string) (*models.Purchase, error) {
+
+	return repo.updatePurchaseFieldByIDTx(tx, id, map[string]interface{}{
+		"sumup_client_transaction_id": sumupClientTransactionID,
+	})
+
+}
+
+func (repo *Repository) updatePurchaseFieldByIDTx(tx *gorm.DB, id uuid.UUID, fields map[string]interface{}) (*models.Purchase, error) {
+	var purchase models.Purchase
+	if err := tx.Model(&purchase).
+		Where(whereIDEquals, id.String()).
+		Updates(fields).
+		Error; err != nil {
+		return nil, fmt.Errorf("failed to update purchase fields: %v", fields)
+	}
+
+	return repo.GetPurchaseByIDTx(tx, id)
 }
 
 func (repo *Repository) GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error) {

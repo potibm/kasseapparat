@@ -1,9 +1,12 @@
 package sumup
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/sumup/sumup-go/shared"
 )
 
 func getStringPtr(v url.Values, key string) *string {
@@ -40,4 +43,24 @@ func getTimePtr(v url.Values, key string) *time.Time {
 	}
 
 	return nil
+}
+
+func normalizeSumupError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	if apiErr, ok := err.(*shared.Error); ok {
+		var code string
+		var message string
+		if apiErr.ErrorCode != nil {
+			code = *apiErr.ErrorCode
+		}
+		if apiErr.Message != nil {
+			message = *apiErr.Message
+		}
+		return fmt.Errorf("SumUp error %s: %s", code, message)
+	}
+
+	return fmt.Errorf("unexpected error: %v", err)
 }

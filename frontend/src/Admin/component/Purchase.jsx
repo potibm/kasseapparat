@@ -10,6 +10,7 @@ import {
   SimpleShowLayout,
   ArrayField,
   FunctionField,
+  ReferenceField,
 } from "react-admin";
 import { useConfig } from "../../provider/ConfigProvider";
 import { Box } from "@mui/material";
@@ -143,7 +144,15 @@ export const PurchaseShow = (props) => {
           locales={locale}
           options={currency}
         />
-
+        <ReferenceField
+          label="SumUp Transaction"
+          source="sumupTransactionId" 
+          reference="sumupTransactions"
+          link="show" 
+        >
+          <TextField source="id" />
+        </ReferenceField>
+        <TextField source="sumupClientTransactionId" />
         <ArrayField source="purchaseItems">
           <Datagrid bulkActionButtons={false}>
             <NumberField source="quantity" />

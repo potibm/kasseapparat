@@ -9,32 +9,34 @@ import (
 )
 
 type PurchaseResponse struct {
-	ID                 uuid.UUID              `json:"id"`
-	CreatedAt          time.Time              `json:"createdAt"`
-	CreatedByID        *uint                  `json:"createdById"`
-	CreatedBy          *models.User           `json:"createdBy"`
-	PaymentMethod      string                 `json:"paymentMethod"`
-	TotalNetPrice      decimal.Decimal        `json:"totalNetPrice"`
-	SumupTransactionID string                 `json:"sumupTransactionId,omitempty"`
-	TotalGrossPrice    decimal.Decimal        `json:"totalGrossPrice"`
-	TotalVatAmount     decimal.Decimal        `json:"totalVatAmount"`
-	PurchaseItems      []PurchaseItemResponse `json:"purchaseItems"`
-	Status             string                 `json:"status"`
+	ID                       uuid.UUID              `json:"id"`
+	CreatedAt                time.Time              `json:"createdAt"`
+	CreatedByID              *uint                  `json:"createdById"`
+	CreatedBy                *models.User           `json:"createdBy"`
+	PaymentMethod            string                 `json:"paymentMethod"`
+	TotalNetPrice            decimal.Decimal        `json:"totalNetPrice"`
+	SumupTransactionID       string                 `json:"sumupTransactionId,omitempty"`
+	SumupClientTransactionID string                 `json:"sumupClientTransactionId,omitempty"`
+	TotalGrossPrice          decimal.Decimal        `json:"totalGrossPrice"`
+	TotalVatAmount           decimal.Decimal        `json:"totalVatAmount"`
+	PurchaseItems            []PurchaseItemResponse `json:"purchaseItems"`
+	Status                   string                 `json:"status"`
 }
 
 func ToPurchaseResponse(purchase models.Purchase, decimalPlaces int32) PurchaseResponse {
 	response := PurchaseResponse{
-		ID:                 purchase.ID,
-		CreatedAt:          purchase.CreatedAt,
-		CreatedByID:        purchase.CreatedByID,
-		CreatedBy:          purchase.CreatedBy,
-		PaymentMethod:      purchase.PaymentMethod,
-		TotalNetPrice:      purchase.TotalNetPrice,
-		TotalGrossPrice:    purchase.TotalGrossPrice,
-		TotalVatAmount:     purchase.TotalGrossPrice.Sub(purchase.TotalNetPrice),
-		PurchaseItems:      ToPurchaseItemsResponse(purchase.PurchaseItems, decimalPlaces),
-		Status:             string(purchase.Status),
-		SumupTransactionID: purchase.SumupTransactionID,
+		ID:                       purchase.ID,
+		CreatedAt:                purchase.CreatedAt,
+		CreatedByID:              purchase.CreatedByID,
+		CreatedBy:                purchase.CreatedBy,
+		PaymentMethod:            purchase.PaymentMethod,
+		TotalNetPrice:            purchase.TotalNetPrice,
+		TotalGrossPrice:          purchase.TotalGrossPrice,
+		TotalVatAmount:           purchase.TotalGrossPrice.Sub(purchase.TotalNetPrice),
+		PurchaseItems:            ToPurchaseItemsResponse(purchase.PurchaseItems, decimalPlaces),
+		Status:                   string(purchase.Status),
+		SumupTransactionID:       purchase.SumupTransactionID,
+		SumupClientTransactionID: purchase.SumupClientTransactionID,
 	}
 
 	return response

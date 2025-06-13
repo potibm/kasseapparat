@@ -5,6 +5,7 @@ import ProductList from "./components/ProductList";
 import PurchaseHistory from "./components/PurchaseHistory";
 import ErrorModal from "./components/ErrorModal";
 import MainMenu from "./components/MainMenu/MainMenu";
+import PollingModal from "./components/Purchase/PollingModal";
 import {
   deletePurchaseById,
   fetchProducts,
@@ -31,6 +32,8 @@ const Kasseapparat = () => {
   const [purchaseHistory, setPurchaseHistory] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const { username, token, id: userId } = useAuth();
+  const [pollingModalOpen, setPollingModalOpen] = useState(false);
+  const [pendingPurchase, setPendingPurchase] = useState(null);
   const apiHost = useConfig().apiHost;
   const envMessage = useConfig().environmentMessage;
 
@@ -137,9 +140,20 @@ const Kasseapparat = () => {
     )
       .then((createdPurchase) => {
         // probably we need to wait for pending purchases to be processed
+        console.log("Purchase created: ", createdPurchase);
+        if (createdPurchase.status === "pending") {
+          // open the polling modal
+           setPendingPurchase(createdPurchase);
+           setPollingModalOpen(true);
+          
+        }  else if (createdPurchase.status !== "confirmed") {
+          throw new Error(
+            "Purchase status is not pending or confirmed: " + createdPurchase.status,
+          );
+        }
 
         setCart(checkoutCart());
-        handleAddToPurchaseHistory(createdPurchase.purchase);
+        handleAddToPurchaseHistory(createdPurchase);
         fetchProducts(apiHost, token)
           .then((products) =>
             setProducts(convertProductsWithDecimals(products)),
@@ -227,6 +241,18 @@ const Kasseapparat = () => {
         </div>
       </div>
       <ErrorModal message={errorMessage} onClose={handleCloseError} />
+      {pollingModalOpen && pendingPurchase && (
+      <PollingModal
+        purchase={pendingPurchase}
+        show={pollingModalOpen}
+        onClose={() => setPollingModalOpen(false)}
+        onConfirmed={(updatedPurchase) => {
+          setPollingModalOpen(false);
+          handleAddToPurchaseHistory(updatedPurchase);
+          setCart(checkoutCart());
+        }}
+      />
+    )}
     </div>
   );
 };

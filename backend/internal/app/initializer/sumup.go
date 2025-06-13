@@ -29,7 +29,7 @@ func InitializeSumup() *sumupSevice.Service {
 
 		client := sumup.NewClient(clientOptions)
 
-		instance = sumupSevice.NewService(client, merchantCode, applicationId, affiliateKey, paymentCurrency, uint(paymentMinorUnit))
+		instance = sumupSevice.NewService(client, merchantCode, applicationId, affiliateKey, paymentCurrency, uint(paymentMinorUnit), apiKey)
 	})
 
 	return instance

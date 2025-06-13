@@ -15,6 +15,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	httpHandler "github.com/potibm/kasseapparat/internal/app/handler/http"
+	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
@@ -25,13 +26,13 @@ var (
 	authMiddleware *jwt.GinJWTMiddleware
 )
 
-func InitializeHttpServer(myhandler httpHandler.Handler, repository sqliteRepo.Repository, staticFiles embed.FS) *gin.Engine {
+func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler websocket.HandlerInterface, repository sqliteRepo.Repository, staticFiles embed.FS) *gin.Engine {
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	r = gin.Default()
 	r.Use(sentrygin.New(sentrygin.Options{}))
 	r.Use(middleware.ErrorHandlingMiddleware())
 
-	r.GET("/api/v2/purchases/stats", myhandler.GetPurchaseStats)
+	r.GET("/api/v2/purchases/stats", httpHandler.GetPurchaseStats)
 
 	r.Use(CreateCorsMiddleware())
 
@@ -43,7 +44,7 @@ func InitializeHttpServer(myhandler httpHandler.Handler, repository sqliteRepo.R
 	r.Use(static.Serve("/", folder))
 
 	authMiddleware := registerAuthMiddleware(repository)
-	registerApiRoutes(myhandler, authMiddleware)
+	registerApiRoutes(httpHandler, websocketHandler, authMiddleware)
 
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
@@ -102,33 +103,44 @@ func SentryMiddleware() gin.HandlerFunc {
 	}
 }
 
-func registerApiRoutes(myhandler httpHandler.Handler, authMiddleware *jwt.GinJWTMiddleware) {
+func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocket.HandlerInterface, authMiddleware *jwt.GinJWTMiddleware) {
 	protectedApiRouter := r.Group("/api/v2")
 	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
 	{
-		registerProductRoutes(protectedApiRouter, myhandler)
-		registerProductInterestRoutes(protectedApiRouter, myhandler)
-		protectedApiRouter.GET("/productStats", myhandler.GetProductStats)
+		registerProductRoutes(protectedApiRouter, httpHandler)
+		registerProductInterestRoutes(protectedApiRouter, httpHandler)
+		protectedApiRouter.GET("/productStats", httpHandler.GetProductStats)
 
-		registerGuestlistRoutes(protectedApiRouter, myhandler)
-		registerGuestRoutes(protectedApiRouter, myhandler)
-		protectedApiRouter.POST("/guestsUpload", myhandler.ImportGuestsFromDeineTicketsCsv)
+		registerGuestlistRoutes(protectedApiRouter, httpHandler)
+		registerGuestRoutes(protectedApiRouter, httpHandler)
+		protectedApiRouter.POST("/guestsUpload", httpHandler.ImportGuestsFromDeineTicketsCsv)
 
-		registerPurchaseRoutes(protectedApiRouter, myhandler)
-		registerUserRoutes(protectedApiRouter, myhandler)
+		registerPurchaseRoutes(protectedApiRouter, httpHandler)
+		registerUserRoutes(protectedApiRouter, httpHandler)
 
-		registerSumupReadersRoutes(protectedApiRouter, myhandler)
-		registerSumupTransactionRoutes(protectedApiRouter, myhandler)
+		registerSumupReadersRoutes(protectedApiRouter, httpHandler)
+		registerSumupTransactionRoutes(protectedApiRouter, httpHandler)
 	}
 
 	// unprotected routes
 	unprotectedApiRouter := r.Group("/api/v2")
 	{
-		unprotectedApiRouter.GET("/config", myhandler.GetConfig)
+		unprotectedApiRouter.GET("/config", httpHandler.GetConfig)
 
-		unprotectedApiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
-		unprotectedApiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
+		unprotectedApiRouter.POST("/auth/changePasswordToken", httpHandler.RequestChangePasswordToken)
+		unprotectedApiRouter.POST("/auth/changePassword", httpHandler.UpdateUserPassword)
+
+		// @TODO: mmve to protected route
+		unprotectedApiRouter.GET("/purchases/:id/ws", websockeHandler.HandleTransactionWebSocket)
+		unprotectedApiRouter.GET("/purchases/test", testHandler)
 	}
+}
+
+func testHandler(c *gin.Context) {
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Test handler is working",
+	})
 }
 
 func registerProductRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
