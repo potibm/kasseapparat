@@ -48,4 +48,6 @@ func main() {
 	if err != nil {
 		panic("[Error] failed to start Gin server due to: " + err.Error())
 	}
+
+	// @TODO we should restart the poller for active transactions
 }
