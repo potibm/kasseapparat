@@ -11,6 +11,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/utils"
 	"github.com/sumup/sumup-go/transactions"
 )
@@ -156,9 +157,10 @@ func parseHrefToListTransactionsParams(href string) (*transactions.ListTransacti
 	return params, nil
 }
 
-func (r *Repository) GetTransactionById(transactionId string) (*Transaction, error) {
+func (r *Repository) GetTransactionById(transactionId uuid.UUID) (*Transaction, error) {
+	transactionIdStr := transactionId.String()
 	params := transactions.GetTransactionV21Params{
-		Id: &transactionId,
+		Id: &transactionIdStr,
 	}
 
 	transaction, err := r.getTransaction(params)
@@ -178,7 +180,7 @@ func (r *Repository) getTransaction(params transactions.GetTransactionV21Params)
 	return fromSDKTransactionFull(transactionResp), nil
 }
 
-func (r *Repository) GetTransactionByClientTransactionId(transactionId string) (*Transaction, error) {
+func (r *Repository) GetTransactionByClientTransactionId(transactionId uuid.UUID) (*Transaction, error) {
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
@@ -186,7 +188,7 @@ func (r *Repository) GetTransactionByClientTransactionId(transactionId string) (
 	// URL mit query-params korrekt zusammensetzen
 	baseURL := fmt.Sprintf("https://api.sumup.com/v2.1/merchants/%s/transactions", r.service.MerchantCode)
 	params := url.Values{}
-	params.Set("client_transaction_id", transactionId)
+	params.Set("client_transaction_id", transactionId.String())
 
 	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 	log.Println("Fetching transaction from URL:", fullURL)
@@ -220,10 +222,10 @@ func (r *Repository) GetTransactionByClientTransactionId(transactionId string) (
 	return fromSDKTransactionFull(&transactionResp), nil
 }
 
-func (r *Repository) RefundTransaction(transactionId string) error {
+func (r *Repository) RefundTransaction(transactionId uuid.UUID) error {
 	body := transactions.RefundTransactionBody{}
 
-	_, err := r.service.Client.Transactions.Refund(context.Background(), transactionId, body)
+	_, err := r.service.Client.Transactions.Refund(context.Background(), transactionId.String(), body)
 	if err != nil {
 		log.Printf("Error retrieving checkout with ID %s: %v", transactionId, err)
 
@@ -234,8 +236,17 @@ func (r *Repository) RefundTransaction(transactionId string) error {
 }
 
 func fromSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transaction {
+	var id uuid.UUID
+
+	if sdkCheckout.Id != nil {
+		parsedId, err := uuid.Parse(*sdkCheckout.Id)
+		if err == nil {
+			id = parsedId
+		}
+	}
+
 	return &Transaction{
-		ID:              utils.StrPtr(sdkCheckout.Id),
+		ID:              id,
 		TransactionCode: string(*sdkCheckout.TransactionCode),
 		Amount:          utils.F64PtrToDecimal(sdkCheckout.Amount),
 		Currency:        string(*sdkCheckout.Currency),
@@ -245,8 +256,17 @@ func fromSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transacti
 }
 
 func fromSDKTransactionFull(sdkCheckout *transactions.TransactionFull) *Transaction {
+	var id uuid.UUID
+
+	if sdkCheckout.Id != nil {
+		parsedId, err := uuid.Parse(*sdkCheckout.Id)
+		if err == nil {
+			id = parsedId
+		}
+	}
+
 	return &Transaction{
-		ID:              utils.StrPtr(sdkCheckout.Id),
+		ID:              id,
 		TransactionCode: string(*sdkCheckout.TransactionCode),
 		Amount:          utils.F64PtrToDecimal(sdkCheckout.Amount),
 		Currency:        string(*sdkCheckout.Currency),

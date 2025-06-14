@@ -3,6 +3,7 @@ package sumup
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -16,18 +17,8 @@ type Reader struct {
 	UpdatedAt        time.Time
 }
 
-type Checkout struct {
-	ID              string
-	Amount          decimal.Decimal
-	Currency        string
-	Description     string
-	Status          string
-	TransactionCode string
-	CreatedAt       time.Time
-}
-
 type Transaction struct {
-	ID              string
+	ID              uuid.UUID
 	TransactionCode string
 	Amount          decimal.Decimal
 	Currency        string

@@ -141,12 +141,7 @@ export const SumupTransactionShow = (props) => {
         <TextField source="id" sortable={false} />
         <TextField source="transactionCode" sortable={false} />
         <SimpleShowLayout direction="row">
-          <NumberField
-            source="amount"
-            locales={locale}
-            options={currency}
-            sortable={false}
-          />
+          <NumberField source="amount" locales={locale} options={currency} />
           <TextField source="currency" sortable={false} />
         </SimpleShowLayout>
         <DateField
@@ -163,7 +158,6 @@ export const SumupTransactionShow = (props) => {
             minute: "2-digit",
             second: "2-digit",
           }}
-          sortable={false}
         />
         <FunctionField label="Status" render={renderStatus} />
       </SimpleShowLayout>

@@ -117,7 +117,7 @@ export const PurchaseList = () => {
 };
 
 export const PurchaseShow = (props) => {
-  const { currency, locale, paymentMethods } = useConfig();
+  const { currencyOptions: currency, locale, paymentMethods } = useConfig();
 
   return (
     <Show {...props}>

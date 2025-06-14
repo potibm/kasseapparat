@@ -6,12 +6,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/shopspring/decimal"
 )
 
 type SumupTransactionReponse struct {
-	ID              string          `json:"id"`
+	ID              uuid.UUID       `json:"id"`
 	TransactionCode string          `json:"transactionCode"`
 	Amount          decimal.Decimal `json:"amount"`
 	Currency        string          `json:"currency"`
@@ -48,10 +49,10 @@ func (handler *Handler) GetSumupTransactions(c *gin.Context) {
 }
 
 func (handler *Handler) GetSumupTransactionByID(c *gin.Context) {
-	transactionID := c.Param("id")
+	transactionID, err := uuid.Parse(c.Param("id"))
 
-	if transactionID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id is required"})
+	if err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid ID"))
 		return
 	}
 

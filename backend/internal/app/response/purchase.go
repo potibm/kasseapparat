@@ -15,8 +15,8 @@ type PurchaseResponse struct {
 	CreatedBy                *models.User           `json:"createdBy"`
 	PaymentMethod            string                 `json:"paymentMethod"`
 	TotalNetPrice            decimal.Decimal        `json:"totalNetPrice"`
-	SumupTransactionID       string                 `json:"sumupTransactionId,omitempty"`
-	SumupClientTransactionID string                 `json:"sumupClientTransactionId,omitempty"`
+	SumupTransactionID       uuid.UUID              `json:"sumupTransactionId,omitempty"`
+	SumupClientTransactionID uuid.UUID              `json:"sumupClientTransactionId,omitempty"`
 	TotalGrossPrice          decimal.Decimal        `json:"totalGrossPrice"`
 	TotalVatAmount           decimal.Decimal        `json:"totalVatAmount"`
 	PurchaseItems            []PurchaseItemResponse `json:"purchaseItems"`
@@ -35,8 +35,16 @@ func ToPurchaseResponse(purchase models.Purchase, decimalPlaces int32) PurchaseR
 		TotalVatAmount:           purchase.TotalGrossPrice.Sub(purchase.TotalNetPrice),
 		PurchaseItems:            ToPurchaseItemsResponse(purchase.PurchaseItems, decimalPlaces),
 		Status:                   string(purchase.Status),
-		SumupTransactionID:       purchase.SumupTransactionID,
-		SumupClientTransactionID: purchase.SumupClientTransactionID,
+		SumupTransactionID:       uuid.Nil,
+		SumupClientTransactionID: uuid.Nil,
+	}
+
+	if purchase.SumupTransactionID != nil {
+		response.SumupTransactionID = *purchase.SumupTransactionID
+	}
+
+	if purchase.SumupClientTransactionID != nil {
+		response.SumupClientTransactionID = *purchase.SumupClientTransactionID
 	}
 
 	return response

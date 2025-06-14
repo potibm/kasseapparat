@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -123,7 +124,11 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		log.Printf("Started monitoring for purchase %s", reloadedPurchase.ID)
 	}
 
+	fmt.Println("we are here")
+
 	purchaseResponse := response.ToPurchaseResponse(*reloadedPurchase, handler.decimalPlaces)
+
+	fmt.Println("we are done here")
 
 	c.JSON(http.StatusCreated, purchaseResponse)
 }

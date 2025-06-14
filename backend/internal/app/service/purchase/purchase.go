@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	sumupRepo "github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
@@ -31,13 +30,17 @@ type sqliteRepository interface {
 	GetDB() *gorm.DB
 }
 
+type sumupRepository interface {
+	RefundTransaction(purchaseId uuid.UUID) error
+}
+
 type Mailer interface {
 	SendNotificationOnArrival(email string, name string) error
 }
 
 type PurchaseService struct {
 	sqliteRepo    sqliteRepository
-	sumupRepo     sumupRepo.RepositoryInterface
+	sumupRepo     sumupRepository
 	DB            *gorm.DB
 	Mailer        Mailer
 	DecimalPlaces int32
@@ -77,7 +80,7 @@ func uintPtr(v uint) *uint {
 	return &v
 }
 
-func NewPurchaseService(sqliteRepo sqliteRepository, sumupRepo sumupRepo.RepositoryInterface, mailer Mailer, decimalPlaces int32) *PurchaseService {
+func NewPurchaseService(sqliteRepo sqliteRepository, sumupRepo sumupRepository, mailer Mailer, decimalPlaces int32) *PurchaseService {
 	return &PurchaseService{
 		sqliteRepo:    sqliteRepo,
 		DB:            sqliteRepo.GetDB(),
@@ -259,6 +262,9 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.
 		return nil, errors.New("failed to finalize purchase: " + err.Error())
 	}
 
+	// @TODO: notify about arrival of guests
+	// 	s.notifyGuests(guests)
+
 	return purchase, nil
 }
 
@@ -269,7 +275,7 @@ func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseId uuid.UU
 		return nil, errors.New("failed to cancel purchase: " + err.Error())
 	}
 
-	// @TODO: refund the purchase (for sumup)
+	// @TODO: refund the purchase (for sumup), perhaps by flag
 
 	return purchase, nil
 }
@@ -281,7 +287,7 @@ func (s *PurchaseService) FailPurchase(ctx context.Context, purchaseId uuid.UUID
 		return nil, errors.New("failed to set the purchase to failed: " + err.Error())
 	}
 
-	// @TODO: refund the purchase (for sumup)
+	// @TODO: refund the purchase (for sumup), perhaps by flag
 
 	return purchase, nil
 }

@@ -107,15 +107,15 @@ func (repo *Repository) UpdatePurchaseStatusByIDTx(tx *gorm.DB, id uuid.UUID, st
 	})
 }
 
-func (repo *Repository) UpdatePurchaseSumupTransactionIDByIDTx(tx *gorm.DB, id uuid.UUID, sumupTransactionID string) (*models.Purchase, error) {
+func (repo *Repository) UpdatePurchaseSumupTransactionIDByIDTx(tx *gorm.DB, id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error) {
 	return repo.updatePurchaseFieldByIDTx(tx, id, map[string]interface{}{
-		"sumup_transaction_id": sumupTransactionID,
+		"sumup_transaction_id": sumupTransactionID.String(),
 	})
 }
 
-func (repo *Repository) UpdatePurchaseSumupClientTransactionIDByIDTx(tx *gorm.DB, id uuid.UUID, sumupClientTransactionID string) (*models.Purchase, error) {
+func (repo *Repository) UpdatePurchaseSumupClientTransactionIDByIDTx(tx *gorm.DB, id uuid.UUID, sumupClientTransactionID uuid.UUID) (*models.Purchase, error) {
 	return repo.updatePurchaseFieldByIDTx(tx, id, map[string]interface{}{
-		"sumup_client_transaction_id": sumupClientTransactionID,
+		"sumup_client_transaction_id": sumupClientTransactionID.String(),
 	})
 }
 

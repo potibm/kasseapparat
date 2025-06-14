@@ -25,8 +25,8 @@ type Purchase struct {
 	TotalGrossPrice          decimal.Decimal `gorm:"type:TEXT"             json:"totalGrossPrice"`
 	PurchaseItems            []PurchaseItem  `gorm:"foreignKey:PurchaseID" json:"purchaseItems"`
 	PaymentMethod            string          `gorm:"type:TEXT"             json:"paymentMethod"`
-	SumupTransactionID       string          `gorm:"type:TEXT"             json:"sumupTransactionId"`
-	SumupClientTransactionID string          `gorm:"type:TEXT"             json:"sumupClientTransactionId"`
+	SumupTransactionID       *uuid.UUID      `gorm:"type:TEXT"             json:"sumupTransactionId"`
+	SumupClientTransactionID *uuid.UUID      `gorm:"type:TEXT"             json:"sumupClientTransactionId"`
 	Status                   PurchaseStatus  `gorm:"type:TEXT;default:'confirmed'"             json:"status"`
 }
 

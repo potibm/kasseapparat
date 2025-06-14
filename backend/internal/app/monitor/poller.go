@@ -85,7 +85,7 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 			}
 
 			// Fetch current status from SumUp
-			transaction, err := n.SumupRepository.GetTransactionByClientTransactionId(purchase.SumupClientTransactionID)
+			transaction, err := n.SumupRepository.GetTransactionByClientTransactionId(*purchase.SumupClientTransactionID)
 			if err != nil {
 				log.Printf("Error fetching transaction %s from SumUp: %v", purchase.SumupTransactionID, err)
 				continue
@@ -93,7 +93,7 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 
 			log.Printf("Transaction %s status: %s", purchase.SumupTransactionID, transaction.Status)
 
-			if purchase.SumupTransactionID == "" {
+			if purchase.SumupTransactionID == nil {
 				_, err = n.SqliteRepository.UpdatePurchaseSumupTransactionIDByIDTx(n.SqliteRepository.GetDB(), transactionID, transaction.ID)
 				if err != nil {
 					log.Printf("Error updating purchase %s with SumUp transaction ID: %v", transactionID, err)

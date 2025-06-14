@@ -3,6 +3,7 @@ package sumup
 import (
 	"time"
 
+	"github.com/google/uuid"
 	sumupService "github.com/potibm/kasseapparat/internal/app/service/sumup"
 	"github.com/shopspring/decimal"
 )
@@ -18,14 +19,12 @@ type RepositoryInterface interface {
 	GetReader(readerId string) (*Reader, error)
 	CreateReader(pairingCode string, readerName string) (*Reader, error)
 	DeleteReader(readerId string) error
-	CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*string, error)
+	CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*uuid.UUID, error)
 	CreateReaderTerminateAction(readerId string) error
-	GetCheckouts() ([]Checkout, error)
-	GetCheckout(id string) (*Checkout, error)
 	GetTransactions(oldestTime *time.Time) ([]Transaction, error)
-	GetTransactionById(transactionId string) (*Transaction, error)
-	GetTransactionByClientTransactionId(clientTransactionId string) (*Transaction, error)
-	RefundTransaction(transactionId string) error
+	GetTransactionById(transactionId uuid.UUID) (*Transaction, error)
+	GetTransactionByClientTransactionId(clientTransactionId uuid.UUID) (*Transaction, error)
+	RefundTransaction(transactionId uuid.UUID) error
 }
 
 func NewRepository(service *sumupService.Service) RepositoryInterface {

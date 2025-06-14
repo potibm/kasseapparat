@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/shopspring/decimal"
 )
@@ -13,13 +14,11 @@ type MockSumUpRepository struct {
 	GetReaderFunc                   func(readerId string) (*sumup.Reader, error)
 	CreateReaderFunc                func(pairingCode string, readerName string) (*sumup.Reader, error)
 	DeleteReaderFunc                func(readerId string) error
-	CreateReaderCheckoutFunc        func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*string, error)
+	CreateReaderCheckoutFunc        func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*uuid.UUID, error)
 	CreateReaderTerminateActionFunc func(readerId string) error
-	GetCheckoutsFunc                func() ([]sumup.Checkout, error)
-	GetCheckoutFunc                 func(id string) (*sumup.Checkout, error)
 	GetTransactionsFunc             func(oldestFrom *time.Time) ([]sumup.Transaction, error)
-	GetTransactionByIdFunc          func(transactionId string) (*sumup.Transaction, error)
-	RefundTransactionFunc           func(transactionId string) error
+	GetTransactionByIdFunc          func(transactionId uuid.UUID) (*sumup.Transaction, error)
+	RefundTransactionFunc           func(transactionId uuid.UUID) error
 }
 
 func (m *MockSumUpRepository) GetReaders() ([]sumup.Reader, error) {
@@ -38,29 +37,27 @@ func (m *MockSumUpRepository) DeleteReader(readerId string) error {
 	return m.DeleteReaderFunc(readerId)
 }
 
-func (m *MockSumUpRepository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*string, error) {
+func (m *MockSumUpRepository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*uuid.UUID, error) {
 	return m.CreateReaderCheckoutFunc(readerId, amount, description, affiliateTransactionId, returnUrl)
 }
 
 func (m *MockSumUpRepository) CreateReaderTerminateAction(readerId string) error {
 	return m.CreateReaderTerminateActionFunc(readerId)
 }
-func (m *MockSumUpRepository) GetCheckouts() ([]sumup.Checkout, error) {
-	return m.GetCheckoutsFunc()
-}
-func (m *MockSumUpRepository) GetCheckout(id string) (*sumup.Checkout, error) {
-	return m.GetCheckoutFunc(id)
-}
+
 func (m *MockSumUpRepository) GetTransactions(oldestFrom *time.Time) ([]sumup.Transaction, error) {
 	return m.GetTransactionsFunc(oldestFrom)
 }
-func (m *MockSumUpRepository) GetTransactionByClientTransactionId(transactionId string) (*sumup.Transaction, error) {
+
+func (m *MockSumUpRepository) GetTransactionByClientTransactionId(transactionId uuid.UUID) (*sumup.Transaction, error) {
 	return m.GetTransactionByIdFunc(transactionId)
 }
-func (m *MockSumUpRepository) GetTransactionById(transactionId string) (*sumup.Transaction, error) {
+
+func (m *MockSumUpRepository) GetTransactionById(transactionId uuid.UUID) (*sumup.Transaction, error) {
 	return m.GetTransactionByIdFunc(transactionId)
 }
-func (m *MockSumUpRepository) RefundTransaction(transactionId string) error {
+
+func (m *MockSumUpRepository) RefundTransaction(transactionId uuid.UUID) error {
 	return m.RefundTransactionFunc(transactionId)
 }
 
@@ -80,37 +77,26 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 		DeleteReaderFunc: func(readerId string) error {
 			return nil
 		},
-		CreateReaderCheckoutFunc: func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*string, error) {
-			checkoutId := "checkout-1"
+		CreateReaderCheckoutFunc: func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*uuid.UUID, error) {
+			checkoutId, _ := uuid.Parse("00000000-0000-4000-8000-000000000000")
 			return &checkoutId, nil
 		},
 		CreateReaderTerminateActionFunc: func(readerId string) error {
 			return nil
 		},
-		GetCheckoutsFunc: func() ([]sumup.Checkout, error) {
-			return []sumup.Checkout{
-				{ID: "checkout-1", Currency: "EUR", Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"},
-			}, nil
-		},
-		GetCheckoutFunc: func(id string) (*sumup.Checkout, error) {
-			if id == "checkout-1" {
-				return &sumup.Checkout{ID: id, Currency: "EUR", TransactionCode: "transaction-1", Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"}, nil
-			}
-			return nil, nil
-		},
 		GetTransactionsFunc: func(oldestFrom *time.Time) ([]sumup.Transaction, error) {
 			return []sumup.Transaction{
-				{ID: "transaction-1", Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"},
+				{ID: uuid.New(), Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"},
 			}, nil
 		},
-		GetTransactionByIdFunc: func(transactionId string) (*sumup.Transaction, error) {
-			if transactionId == "transaction-1" {
+		GetTransactionByIdFunc: func(transactionId uuid.UUID) (*sumup.Transaction, error) {
+			if transactionId.String() == "00000000-0000-4000-8000-000000000000" {
 				return &sumup.Transaction{ID: transactionId, Currency: "EUR", Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"}, nil
 			}
 			return nil, nil
 		},
-		RefundTransactionFunc: func(transactionId string) error {
-			if transactionId == "transaction-1" {
+		RefundTransactionFunc: func(transactionId uuid.UUID) error {
+			if transactionId.String() == "00000000-0000-4000-8000-000000000000" {
 				return nil
 			}
 			return fmt.Errorf("transaction not found")

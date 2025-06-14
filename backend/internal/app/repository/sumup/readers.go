@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/sumup/sumup-go/readers"
 )
@@ -57,7 +58,7 @@ func (r *Repository) CreateReader(pairingCode string, name string) (*Reader, err
 	return fromSDKReader(createdReader), nil
 }
 
-func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*string, error) {
+func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl string) (*uuid.UUID, error) {
 	amountStruct := readers.CreateReaderCheckoutAmount{
 		Currency:  r.service.PaymentCurrency,
 		Value:     getValueFromDecimal(amount, int(r.service.PaymentMinorUnit)), // Example amount in cents (10.00 EUR)
@@ -85,7 +86,12 @@ func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decima
 		return nil, err
 	}
 
-	return response.Data.ClientTransactionId, nil
+	clientTransactionId, err := uuid.Parse(*response.Data.ClientTransactionId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &clientTransactionId, nil
 }
 
 func getValueFromDecimal(value decimal.Decimal, minorUnit int) int {
