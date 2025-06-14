@@ -15,6 +15,7 @@ const (
 	PurchaseStatusConfirmed PurchaseStatus = "confirmed"
 	PurchaseStatusFailed    PurchaseStatus = "failed"
 	PurchaseStatusCancelled PurchaseStatus = "cancelled"
+	PurchaseStatusRefunded  PurchaseStatus = "refunded"
 )
 
 type Purchase struct {

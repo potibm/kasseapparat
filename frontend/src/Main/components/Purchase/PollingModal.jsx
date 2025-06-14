@@ -10,8 +10,9 @@ import { HiClock, HiCheckCircle, HiXCircle } from "react-icons/hi";
 import { getCurrentReaderId } from "../../../helper/ReaderCookie";
 import PropTypes from "prop-types";
 import MyButton from "../MyButton";
+import { useAuth } from "../../../Auth/provider/AuthProvider";
 
-const PollingModal = ({ show, purchase, onClose, onConfirmed }) => {
+const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   const [status, setStatus] = useState(purchase.status);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [now, setNow] = useState(Date.now()); // for age display
@@ -19,6 +20,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed }) => {
   const [flash, setFlash] = useState(false);
   const [processing, setProcessing] = useState(false);
   const wsRef = useRef(null);
+  const { token: jwtToken } = useAuth();
 
   const sumUpReaderId = getCurrentReaderId();
   const closeModalTimeout = 2000;
@@ -39,7 +41,6 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed }) => {
       console.error("WebSocket is not open, cannot send cancel message");
       setError("WebSocket is not open, cannot cancel payment");
       setProcessing(false);
-      return;
     }
   };
 
@@ -75,7 +76,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed }) => {
 
   useEffect(() => {
     const ws = new WebSocket(
-      `ws://localhost:3001/api/v2/purchases/${purchase.id}/ws`,
+      `ws://localhost:3001/api/v2/purchases/${purchase.id}/ws?token=${jwtToken}`,
     );
     wsRef.current = ws;
 
@@ -94,10 +95,12 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed }) => {
 
           if (data.status === "confirmed") {
             ws.close();
+            onComplete(true);
             setTimeout(() => onConfirmed(data), closeModalTimeout);
           } else if (data.status === "failed") {
             ws.close();
             setError("Purchase failed.");
+            onComplete(false);
             setTimeout(onClose, closeModalTimeout);
           } else {
             console.log("Purchase status update:", data.status);
@@ -110,6 +113,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed }) => {
           setStatus("failed");
           setError("Purchase cancelled by user.");
           setTimeout(onClose, closeModalTimeout);
+          onComplete(false);
         }
       } catch (err) {
         console.error("WebSocket parsing error:", err);
@@ -130,7 +134,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed }) => {
         wsRef.current.close();
       }
     };
-  }, [purchase.id, onConfirmed, onClose]);
+  }, [purchase.id, onConfirmed, onClose, onComplete, jwtToken]);
 
   return (
     <Modal show={show} size="md" popup dismissible={false}>
@@ -177,6 +181,7 @@ PollingModal.propTypes = {
   }),
   onClose: PropTypes.func.isRequired,
   onConfirmed: PropTypes.func.isRequired,
+  onComplete: PropTypes.func.isRequired,
 };
 
 export default PollingModal;

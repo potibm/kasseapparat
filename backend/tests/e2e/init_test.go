@@ -16,6 +16,7 @@ import (
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 	"github.com/potibm/kasseapparat/internal/app/utils"
+	"gorm.io/gorm"
 )
 
 var (
@@ -23,6 +24,7 @@ var (
 	demoJwt          string
 	adminJwt         string
 	totalCountHeader = "X-Total-Count"
+	db               *gorm.DB
 )
 
 func TestMain(m *testing.M) {
@@ -34,7 +36,7 @@ func TestMain(m *testing.M) {
 }
 
 func setup() {
-	db := utils.ConnectToLocalDatabase()
+	db = utils.ConnectToLocalDatabase()
 	utils.PurgeDatabase(db)
 	utils.MigrateDatabase(db)
 	utils.SeedDatabase(db, true)
@@ -51,7 +53,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		"SUMUP": "💳 SumUp",
 	}
 
-	sqliteRepo := sqliteRepo.NewLocalRepository(currencyDecimalPlaces)
+	sqliteRepo := sqliteRepo.NewRepository(db, currencyDecimalPlaces)
 	sumupRepo := NewMockSumUpRepository()
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)

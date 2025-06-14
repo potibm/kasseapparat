@@ -33,6 +33,7 @@ const Kasseapparat = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const { username, token, id: userId } = useAuth();
   const [pollingModalOpen, setPollingModalOpen] = useState(false);
+  const [onPollingComplete, setOnPollingComplete] = useState(() => () => {});
   const [pendingPurchase, setPendingPurchase] = useState(null);
   const apiHost = useConfig().apiHost;
   const envMessage = useConfig().environmentMessage;
@@ -97,6 +98,7 @@ const Kasseapparat = () => {
     if (purchaseHistory === null) {
       return;
     }
+    console.log("Adding purchase to history: ", purchase);
     setPurchaseHistory([purchase, ...purchaseHistory]);
   };
 
@@ -131,42 +133,51 @@ const Kasseapparat = () => {
   };
 
   const handleCheckoutCart = async (paymentMethodCode, paymentMethodData) => {
-    return storePurchase(
-      apiHost,
-      token,
-      cart,
-      paymentMethodCode,
-      paymentMethodData,
-    )
-      .then((createdPurchase) => {
-        // probably we need to wait for pending purchases to be processed
-        console.log("Purchase created: ", createdPurchase);
-        if (createdPurchase.status === "pending") {
-          // open the polling modal
-          setPendingPurchase(createdPurchase);
-          setPollingModalOpen(true);
-        } else if (createdPurchase.status !== "confirmed") {
-          throw new Error(
-            "Purchase status is not pending or confirmed: " +
-              createdPurchase.status,
-          );
-        }
+    try {
+      const createdPurchase = await storePurchase(
+        apiHost,
+        token,
+        cart,
+        paymentMethodCode,
+        paymentMethodData,
+      );
 
-        setCart(checkoutCart());
-        handleAddToPurchaseHistory(createdPurchase);
-        fetchProducts(apiHost, token)
-          .then((products) =>
-            setProducts(convertProductsWithDecimals(products)),
-          )
-          .catch((error) =>
-            showError(
-              "There was an error fetching the products: " + error.message,
-            ),
-          );
-      })
-      .catch((error) => {
-        showError("There was an error storing the purchase: " + error.message);
-      });
+      // probably we need to wait for pending purchases to be processed
+      console.log("Purchase created: ", createdPurchase);
+
+      if (createdPurchase.status === "pending") {
+        // open modal and wait
+        const purchaseSucceeded = await new Promise((resolve) => {
+          setPollingModalOpen(true);
+          setPendingPurchase(createdPurchase);
+          setOnPollingComplete(() => resolve);
+
+          // optional: timeout after X seconds?
+          // setTimeout(() => reject(new Error("Polling timed out")), 60000);
+        });
+
+        if (purchaseSucceeded === false) {
+          return;
+        }
+      } else if (createdPurchase.status !== "confirmed") {
+        throw new Error(
+          "Purchase status is not confirmed: " + createdPurchase.status,
+        );
+      }
+      console.log("Checkout successful, purchase: ", createdPurchase);
+
+      setCart(checkoutCart());
+      handleAddToPurchaseHistory(createdPurchase);
+      fetchProducts(apiHost, token)
+        .then((products) => setProducts(convertProductsWithDecimals(products)))
+        .catch((error) =>
+          showError(
+            "There was an error fetching the products: " + error.message,
+          ),
+        );
+    } catch (error) {
+      showError("There was an error during checkout: " + error.message);
+    }
   };
 
   const handleAddProductInterest = (product) => {
@@ -246,10 +257,9 @@ const Kasseapparat = () => {
           purchase={pendingPurchase}
           show={pollingModalOpen}
           onClose={() => setPollingModalOpen(false)}
-          onConfirmed={(updatedPurchase) => {
+          onComplete={onPollingComplete}
+          onConfirmed={() => {
             setPollingModalOpen(false);
-            handleAddToPurchaseHistory(updatedPurchase);
-            setCart(checkoutCart());
           }}
         />
       )}

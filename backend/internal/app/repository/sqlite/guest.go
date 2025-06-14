@@ -3,6 +3,7 @@ package sqlite
 import (
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"gorm.io/gorm"
 )
@@ -171,4 +172,11 @@ func (repo *Repository) DeleteGuest(guest models.Guest, deletedBy models.User) {
 	repo.db.Model(&models.Guest{}).Where(whereIDEquals, guest.ID).Update("DeletedByID", deletedBy.ID)
 
 	repo.db.Delete(&guest)
+}
+
+func (repo *Repository) RollbackVisitedGuestsByPurchaseIDTx(tx *gorm.DB, purchaseId uuid.UUID) error {
+	// rollback list entries
+	repo.db.Model(&models.Guest{}).Where("purchase_id = ?", purchaseId.String()).Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil})
+
+	return nil
 }

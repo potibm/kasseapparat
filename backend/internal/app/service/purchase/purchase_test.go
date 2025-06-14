@@ -88,6 +88,23 @@ func (m *MockRepository) GetPurchaseByIDTx(tx *gorm.DB, id uuid.UUID) (*models.P
 	return m.StoredPurchase, nil
 }
 
+func (m *MockRepository) RollbackVisitedGuestsByPurchaseIDTx(tx *gorm.DB, purchaseId uuid.UUID) error {
+	if m.UpdatedGuests == nil {
+		return nil
+	}
+
+	for _, guest := range m.UpdatedGuests {
+		if guest.PurchaseID != nil && *guest.PurchaseID == purchaseId {
+			// Reset the guest's fields to their original values
+			guest.AttendedGuests = 0
+			guest.PurchaseID = nil
+			guest.ArrivedAt = nil
+		}
+	}
+
+	return nil
+}
+
 func testDB() *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {

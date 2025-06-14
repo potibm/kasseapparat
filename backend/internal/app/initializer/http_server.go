@@ -115,7 +115,7 @@ func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocke
 		registerGuestRoutes(protectedApiRouter, httpHandler)
 		protectedApiRouter.POST("/guestsUpload", httpHandler.ImportGuestsFromDeineTicketsCsv)
 
-		registerPurchaseRoutes(protectedApiRouter, httpHandler)
+		registerPurchaseRoutes(protectedApiRouter, httpHandler, websockeHandler)
 		registerUserRoutes(protectedApiRouter, httpHandler)
 
 		registerSumupReadersRoutes(protectedApiRouter, httpHandler)
@@ -129,17 +129,7 @@ func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocke
 
 		unprotectedApiRouter.POST("/auth/changePasswordToken", httpHandler.RequestChangePasswordToken)
 		unprotectedApiRouter.POST("/auth/changePassword", httpHandler.UpdateUserPassword)
-
-		// @TODO: mmve to protected route
-		unprotectedApiRouter.GET("/purchases/:id/ws", websockeHandler.HandleTransactionWebSocket)
-		unprotectedApiRouter.GET("/purchases/test", testHandler)
 	}
-}
-
-func testHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Test handler is working",
-	})
 }
 
 func registerProductRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
@@ -176,14 +166,16 @@ func registerGuestRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	}
 }
 
-func registerPurchaseRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
+func registerPurchaseRoutes(rg *gin.RouterGroup, handler httpHandler.Handler, websockeHandler websocket.HandlerInterface) {
 	purchases := rg.Group("/purchases")
 	{
 		purchases.GET("", handler.GetPurchases)
-		purchases.GET("/:id", handler.GetPurchaseByID)
+		purchases.GET(":id", handler.GetPurchaseByID)
 		purchases.POST("", handler.PostPurchases)
-		purchases.DELETE("/:id", handler.DeletePurchase)
-		purchases.GET("/export", handler.ExportPurchases)
+		purchases.DELETE(":id", handler.DeletePurchase)
+		purchases.GET("export", handler.ExportPurchases)
+		purchases.POST(":id/refund", handler.RefundPurchase)
+		purchases.GET(":id/ws", websockeHandler.HandleTransactionWebSocket)
 	}
 }
 

@@ -12,12 +12,15 @@ import (
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	sumupRepo "github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
+	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
 //go:embed assets
 var staticFiles embed.FS
 
 func main() {
+	db := utils.ConnectToDatabase()
+
 	initializer.InitializeDotenv()
 	initializer.InitializeVersion()
 	initializer.InitializeSentry()
@@ -29,7 +32,7 @@ func main() {
 		port = ":" + os.Args[1] // Use the provided port number if available
 	}
 
-	sqliteRepository := sqliteRepo.NewRepository(initializer.GetCurrencyDecimalPlaces())
+	sqliteRepository := sqliteRepo.NewRepository(db, initializer.GetCurrencyDecimalPlaces())
 	sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
 	mailer := initializer.InitializeMailer()
 

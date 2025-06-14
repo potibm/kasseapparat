@@ -31,7 +31,34 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 
 	handler.repo.DeletePurchaseByID(id, *executingUserObj)
 
+	_ = handler.repo.RollbackVisitedGuestsByPurchaseIDTx(handler.repo.GetDB(), id)
+
 	c.Status(http.StatusNoContent)
+}
+
+func (handler *Handler) RefundPurchase(c *gin.Context) {
+	/*executingUserObj, err := handler.getUserFromContext(c)
+	if err != nil {
+		_ = c.Error(UnableToRetrieveExecutingUser)
+
+		return
+	}*/
+	// @todo only allow admins to refund purchases, perhaps?
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
+		return
+	}
+
+	purchase, err := handler.purchaseService.RefundPurchase(c.Request.Context(), id)
+	if err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		return
+	}
+
+	purchaseResponse := response.ToPurchaseResponse(*purchase, handler.decimalPlaces)
+
+	c.JSON(http.StatusOK, purchaseResponse)
 }
 
 func (handler *Handler) PostPurchases(c *gin.Context) {

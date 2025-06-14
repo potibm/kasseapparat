@@ -74,9 +74,6 @@ func (repo *Repository) StorePurchasesTx(tx *gorm.DB, purchase models.Purchase) 
 }
 
 func (repo *Repository) DeletePurchaseByID(id uuid.UUID, deletedBy models.User) {
-	// rollback list entries
-	repo.db.Model(&models.Guest{}).Where("purchase_id = ?", id).Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil})
-
 	repo.db.Model(&models.Purchase{}).Where(whereIDEquals, id).Update("DeletedByID", deletedBy.ID)
 	repo.db.Where(whereIDEquals, id).Delete(&models.Purchase{})
 

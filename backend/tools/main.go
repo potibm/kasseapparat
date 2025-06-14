@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/initializer"
+	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/potibm/kasseapparat/internal/app/utils"
@@ -37,11 +38,19 @@ func init() {
 	flag.Parse()
 }
 
+var (
+	Repo   *sqliteRepo.Repository
+	Mailer mailer.Mailer
+)
+
 func main() {
 	initializer.InitializeVersion()
 	initializer.OutputVersion()
 
 	db := utils.ConnectToDatabase()
+
+	Repo = sqliteRepo.NewRepository(db, 2)
+	Mailer = initializer.InitializeMailer()
 
 	if userImportCsvFile != "" {
 		log.Println("Importing users from CSV file...")
@@ -139,9 +148,6 @@ func importUsers(filename string) {
 }
 
 func createUser(username string, email string, isAdmin bool) error {
-	repo := sqliteRepo.NewRepository(2)
-	mailer := initializer.InitializeMailer()
-
 	user := models.User{
 		Username: username,
 		Email:    email,
@@ -153,12 +159,12 @@ func createUser(username string, email string, isAdmin bool) error {
 	validity := 24 * time.Hour
 	user.GenerateChangePasswordToken(&validity)
 
-	user, err := repo.CreateUser(user)
+	user, err := Repo.CreateUser(user)
 	if err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
 	}
 
-	err = mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken)
+	err = Mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken)
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
