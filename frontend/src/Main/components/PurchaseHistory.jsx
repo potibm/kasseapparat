@@ -16,7 +16,7 @@ import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
 import MyButton from "./MyButton";
 
-function PurchaseHistory({ history, removeFromPurchaseHistory }) {
+const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
   const [openModal, setOpenModal] = useState({ show: false, purchase: null });
   const [processing, setProcessing] = useState(false);
 
@@ -191,7 +191,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
       </Table>
     </div>
   );
-}
+};
 
 PurchaseHistory.propTypes = {
   history: PropTypes.array,

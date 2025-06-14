@@ -42,7 +42,7 @@ export const fetchGuestlistByProductId = async (
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.error || "Network response was not ok");
+            throw new Error(errorBody.details || "Network response was not ok");
           });
         }
 
@@ -58,6 +58,7 @@ export const storePurchase = async (
   jwtToken,
   cart,
   paymentMethodCode,
+  paymentMethodData = {},
 ) => {
   return new Promise((resolve, reject) => {
     // null the cart items list property to avoid unnecessary data transfer
@@ -66,29 +67,36 @@ export const storePurchase = async (
       item.lists = null;
     });
 
+    let payloadData = {
+      paymentMethod: paymentMethodCode,
+      cart: cartPayload,
+      totalGrossPrice: cart.reduce(
+        (total, item) => total.add(item.totalGrossPrice),
+        new Decimal(0),
+      ),
+      totalNetPrice: cart.reduce(
+        (total, item) => total.add(item.totalNetPrice),
+        new Decimal(0),
+      ),
+    };
+
+    // merge additional payment method data if provided
+    if (Object.keys(paymentMethodData).length > 0) {
+      payloadData = { ...payloadData, ...paymentMethodData };
+    }
+
     fetch(`${apiHost}/api/v2/purchases`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${jwtToken}`,
       },
-      body: JSON.stringify({
-        paymentMethod: paymentMethodCode,
-        cart: cartPayload,
-        totalGrossPrice: cart.reduce(
-          (total, item) => total.add(item.totalGrossPrice),
-          new Decimal(0),
-        ),
-        totalNetPrice: cart.reduce(
-          (total, item) => total.add(item.totalNetPrice),
-          new Decimal(0),
-        ),
-      }), // : )
+      body: JSON.stringify(payloadData),
     })
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.error || "Network response was not ok");
+            throw new Error(errorBody.details || "Network response was not ok");
           });
         }
         return response.json();
@@ -113,7 +121,7 @@ export const fetchPurchases = async (apiHost, jwtToken, userId) => {
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.error || "Network response was not ok");
+            throw new Error(errorBody.details || "Network response was not ok");
           });
         }
         return response.json();
@@ -135,7 +143,7 @@ export const deletePurchaseById = async (apiHost, jwtToken, purchaseId) => {
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.error || "Network response was not ok");
+            throw new Error(errorBody.details || "Network response was not ok");
           });
         }
         return response.json();

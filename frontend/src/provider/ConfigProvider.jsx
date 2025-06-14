@@ -51,6 +51,14 @@ const ConfigProvider = ({ children }) => {
           data.vatRates = {};
         }
 
+        data.sumupEnabled = false;
+        // when code == "SUMUP" in the array of paymentMethods, set sumupEnabled to true
+        if (data.paymentMethods && Array.isArray(data.paymentMethods)) {
+          data.sumupEnabled = data.paymentMethods.some(
+            (method) => method.code === "SUMUP",
+          );
+        }
+
         setConfig(data);
         setLoading(false);
       })
