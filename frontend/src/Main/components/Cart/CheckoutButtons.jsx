@@ -10,9 +10,14 @@ const CheckoutButtons = ({ cart, checkoutProcessing, handleCheckoutCart }) => {
   const { currency, paymentMethods } = useConfig();
   const sumUpReaderId = getCurrentReaderId();
 
-  const paymentMethodIsActive = (paymentMethodCode) => {
+  const cartValue = cart.reduce(
+    (total, item) => total.add(item.totalGrossPrice),
+    new Decimal(0),
+  );
+
+  const paymentMethodIsActive = (paymentMethodCode, cartValue) => {
     if (paymentMethodCode == "SUMUP") {
-      return sumUpReaderId !== undefined;
+      return sumUpReaderId !== undefined && cartValue.greaterThan(0);
     }
 
     return true;
@@ -35,7 +40,9 @@ const CheckoutButtons = ({ cart, checkoutProcessing, handleCheckoutCart }) => {
           key={paymentMethod.code}
           {...((cart.length === 0 ||
             checkoutProcessing ||
-            !paymentMethodIsActive(paymentMethod.code)) && { disabled: true })}
+            !paymentMethodIsActive(paymentMethod.code, cartValue)) && {
+            disabled: true,
+          })}
           className="w-full mt-2 uppercase"
           onClick={() =>
             handleCheckoutCart(
@@ -45,13 +52,7 @@ const CheckoutButtons = ({ cart, checkoutProcessing, handleCheckoutCart }) => {
           }
         >
           {paymentMethod.name}&nbsp;
-          {cart.length > 0 &&
-            currency.format(
-              cart.reduce(
-                (total, item) => total.add(item.totalGrossPrice),
-                new Decimal(0),
-              ),
-            )}
+          {cart.length > 0 && currency.format(cartValue)}
           {checkoutProcessing && <Spinner color="gray" className="ml-3" />}
         </MyButton>
       ))}
