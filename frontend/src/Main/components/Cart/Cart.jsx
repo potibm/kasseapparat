@@ -20,7 +20,7 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
   const currency = useConfig().currency;
 
   const [flash, setFlash] = useState(false);
-  const [checkoutProcessing, setCheckoutProcessing] = useState(false);
+  const [checkoutProcessing, setCheckoutProcessing] = useState(null);
   const flashCount = useRef(0);
 
   const triggerFlash = () => {
@@ -34,13 +34,9 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
     if (checkoutProcessing) {
       return;
     }
-    setCheckoutProcessing(true);
-    console.log(
-      `Checkout with payment method: ${paymentMethodCode}, data: ${JSON.stringify(paymentMethodData)}`,
-    );
-
+    setCheckoutProcessing(paymentMethodCode);
     checkoutCart(paymentMethodCode, paymentMethodData).then(() => {
-      setCheckoutProcessing(false);
+      setCheckoutProcessing(null);
     });
   };
 

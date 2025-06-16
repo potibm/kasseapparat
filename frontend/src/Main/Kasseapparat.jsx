@@ -124,7 +124,9 @@ const Kasseapparat = () => {
           );
       })
       .catch((error) => {
-        showError("There was an error deleting the purchase: " + error.message);
+        showError(
+          "There was an error refunding the purchase: " + error.message,
+        );
       });
   };
 

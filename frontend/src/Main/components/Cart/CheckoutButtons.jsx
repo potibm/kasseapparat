@@ -53,7 +53,9 @@ const CheckoutButtons = ({ cart, checkoutProcessing, handleCheckoutCart }) => {
         >
           {paymentMethod.name}&nbsp;
           {cart.length > 0 && currency.format(cartValue)}
-          {checkoutProcessing && <Spinner color="gray" className="ml-3" />}
+          {checkoutProcessing === paymentMethod.code && (
+            <Spinner color="gray" className="ml-3" />
+          )}
         </MyButton>
       ))}
     </>
@@ -62,7 +64,7 @@ const CheckoutButtons = ({ cart, checkoutProcessing, handleCheckoutCart }) => {
 
 CheckoutButtons.propTypes = {
   cart: PropTypes.array.isRequired,
-  checkoutProcessing: PropTypes.bool.isRequired,
+  checkoutProcessing: PropTypes.string.isRequired,
   handleCheckoutCart: PropTypes.func.isRequired,
 };
 

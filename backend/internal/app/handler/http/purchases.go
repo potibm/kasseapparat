@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -37,20 +38,37 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 }
 
 func (handler *Handler) RefundPurchase(c *gin.Context) {
-	/*executingUserObj, err := handler.getUserFromContext(c)
+	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
 		_ = c.Error(UnableToRetrieveExecutingUser)
 
 		return
-	}*/
-	// @todo only allow admins to refund purchases, perhaps?
+	}
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
 		return
 	}
 
-	purchase, err := handler.purchaseService.RefundPurchase(c.Request.Context(), id)
+	purchase, err := handler.repo.GetPurchaseByID(id)
+	if err != nil {
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, "Purchase not found"))
+		return
+	}
+
+	isCreator := purchase.CreatedByID != nil && *purchase.CreatedByID == uint(executingUserObj.ID)
+	if !executingUserObj.Admin && !isCreator {
+		_ = c.Error(ExtendHttpErrorWithDetails(Forbidden, "You are not allowed to refund this purchase"))
+		return
+	}
+
+	if !executingUserObj.Admin && time.Since(purchase.CreatedAt) > 15*time.Minute {
+		_ = c.Error(ExtendHttpErrorWithDetails(Forbidden, "You can only refund purchases within 15 minutes of creation"))
+		return
+	}
+
+	purchase, err = handler.purchaseService.RefundPurchase(c.Request.Context(), id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
 		return

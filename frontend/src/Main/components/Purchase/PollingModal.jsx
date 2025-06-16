@@ -138,7 +138,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
 
   return (
     <Modal show={show} size="md" popup dismissible={false}>
-      <ModalBody>
+      <ModalBody className="m-5">
         <div className="text-center">
           <h3 className="text-lg font-semibold mb-8">Purchase Status</h3>
           <div
