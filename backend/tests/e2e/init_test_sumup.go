@@ -86,12 +86,12 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 		},
 		GetTransactionsFunc: func(oldestFrom *time.Time) ([]sumup.Transaction, error) {
 			return []sumup.Transaction{
-				{ID: uuid.New(), Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"},
+				{ID: uuid.New().String(), Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"},
 			}, nil
 		},
 		GetTransactionByIdFunc: func(transactionId uuid.UUID) (*sumup.Transaction, error) {
 			if transactionId.String() == "00000000-0000-4000-8000-000000000000" {
-				return &sumup.Transaction{ID: transactionId, Currency: "EUR", Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"}, nil
+				return &sumup.Transaction{ID: transactionId.String(), Currency: "EUR", Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"}, nil
 			}
 			return nil, nil
 		},

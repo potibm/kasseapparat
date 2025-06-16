@@ -25,9 +25,12 @@ func (repo *Repository) GetProductStats() ([]response.ProductStats, error) {
 		var purchaseItems []models.PurchaseItem
 
 		purchaseQuery := repo.db.Table("purchase_items").
-			Select("quantity, net_price, vat_rate").
-			Where("product_id = ?", products[i].ID).
-			Where("deleted_at IS NULL")
+			Select("purchase_items.quantity, purchase_items.net_price, purchase_items.vat_rate").
+			Joins("JOIN purchases ON purchases.id = purchase_items.purchase_id").
+			Where("purchase_items.product_id = ?", products[i].ID).
+			Where("purchases.deleted_at IS NULL").
+			Where("purchases.status = ?", string(models.PurchaseStatusConfirmed)).
+			Where("purchase_items.deleted_at IS NULL")
 
 		if err := purchaseQuery.Scan(&purchaseItems).Error; err != nil {
 			return nil, errors.New("unable to retrieve the purchases for this product")

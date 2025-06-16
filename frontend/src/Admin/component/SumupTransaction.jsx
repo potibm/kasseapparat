@@ -11,6 +11,7 @@ import {
   ShowActions,
   Filter,
   SelectInput,
+  ArrayField,
 } from "react-admin";
 import { useConfig } from "../../provider/ConfigProvider";
 import { Box } from "@mui/material";
@@ -66,7 +67,7 @@ export const SumupTransactionList = (props) => {
   if (!sumupEnabled) {
     return (
       <div>
-        <h2>SumUp Readers</h2>
+        <h2>SumUp Transactions</h2>
         <p>
           SumUp integration is not enabled. Please enable it in the
           configuration.
@@ -138,11 +139,11 @@ export const SumupTransactionShow = (props) => {
   return (
     <Show {...props}>
       <SimpleShowLayout>
-        <TextField source="id" sortable={false} />
-        <TextField source="transactionCode" sortable={false} />
+        <TextField source="transactionId" />
+        <TextField source="transactionCode" />
         <SimpleShowLayout direction="row">
           <NumberField source="amount" locales={locale} options={currency} />
-          <TextField source="currency" sortable={false} />
+          <TextField source="currency" />
         </SimpleShowLayout>
         <DateField
           source="createdAt"
@@ -159,7 +160,30 @@ export const SumupTransactionShow = (props) => {
             second: "2-digit",
           }}
         />
+        <TextField source="cardType" />
         <FunctionField label="Status" render={renderStatus} />
+        <ArrayField source="events">
+          <Datagrid bulkActionButtons={false}>
+            <TextField source="id" />
+            <TextField source="type" />
+            <TextField source="status" />
+            <DateField
+              source="timestamp"
+              showDate={true}
+              showTime={true}
+              locales={locale}
+              options={{
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              }}
+            />
+          </Datagrid>
+        </ArrayField>
       </SimpleShowLayout>
     </Show>
   );

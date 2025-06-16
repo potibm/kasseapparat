@@ -60,20 +60,20 @@ func queryTime(c *gin.Context, field string, defaultValue *time.Time) *time.Time
 	}
 }
 
-func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods map[string]string) []string {
+func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods map[models.PaymentMethod]string) []models.PaymentMethod {
 	paymentMethods := c.DefaultQuery(field, "")
 
-	result := make([]string, 0)
+	result := make([]models.PaymentMethod, 0)
 
 	paymentMethodsArray := strings.Split(paymentMethods, ",")
 	for _, code := range paymentMethodsArray {
-		code = strings.TrimSpace(code)
+		code = strings.TrimSpace(string(code))
 		if code == "" {
 			continue
 		}
 
-		if _, ok := validPaymentMethods[code]; ok {
-			result = append(result, code)
+		if _, ok := validPaymentMethods[models.PaymentMethod(code)]; ok {
+			result = append(result, models.PaymentMethod(code))
 		}
 	}
 
@@ -92,6 +92,7 @@ func queryPurchaseStatus(c *gin.Context, field string) *models.PurchaseStatus {
 		"confirmed": models.PurchaseStatusConfirmed,
 		"failed":    models.PurchaseStatusFailed,
 		"cancelled": models.PurchaseStatusCancelled,
+		"refunded":  models.PurchaseStatusRefunded,
 	}
 
 	if purchaseStatus, ok := statusMapper[strings.ToLower(status)]; ok {
@@ -101,7 +102,7 @@ func queryPurchaseStatus(c *gin.Context, field string) *models.PurchaseStatus {
 	return nil
 }
 
-func (handler *Handler) IsValidPaymentMethod(code string) bool {
+func (handler *Handler) IsValidPaymentMethod(code models.PaymentMethod) bool {
 	// Check if the payment method code is valid
 	if _, ok := handler.paymentMethods[code]; !ok {
 		return false
@@ -110,14 +111,14 @@ func (handler *Handler) IsValidPaymentMethod(code string) bool {
 	return true
 }
 
-func (handler *Handler) ValidatePaymentMethodPayload(code string, sumupReaderId string) error {
+func (handler *Handler) ValidatePaymentMethodPayload(code models.PaymentMethod, sumupReaderId string) error {
 	// Check if the payment method code is valid
 	if !handler.IsValidPaymentMethod(code) {
 		return errors.New("invalid payment method")
 	}
 
 	// If payment method is SUMUP, sumupReaderId must be provided
-	if code == "SUMUP" && sumupReaderId == "" {
+	if code == models.PaymentMethodSumUp && sumupReaderId == "" {
 		return errors.New("the SumUp reader ID is required for SumUp payments")
 	}
 

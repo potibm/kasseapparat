@@ -59,6 +59,7 @@ const renderStatus = (record) => {
       );
     case "failed":
     case "cancelled":
+    case "refunded":
     default:
       return (
         <Box

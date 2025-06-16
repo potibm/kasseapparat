@@ -20,6 +20,7 @@ export const PurchaseListToolbar = (props) => {
     { id: "confirmed", name: "Confirmed" },
     { id: "cancelled", name: "Cancelled" },
     { id: "failed", name: "Failed" },
+    { id: "refunded", name: "Refunded" },
   ];
 
   const paymentMethodChoices =

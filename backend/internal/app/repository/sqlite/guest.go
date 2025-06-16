@@ -176,7 +176,9 @@ func (repo *Repository) DeleteGuest(guest models.Guest, deletedBy models.User) {
 
 func (repo *Repository) RollbackVisitedGuestsByPurchaseIDTx(tx *gorm.DB, purchaseId uuid.UUID) error {
 	// rollback list entries
-	repo.db.Model(&models.Guest{}).Where("purchase_id = ?", purchaseId.String()).Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil})
+	tx.Model(&models.Guest{}).
+		Where("purchase_id = ?", purchaseId.String()).
+		Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil})
 
 	return nil
 }

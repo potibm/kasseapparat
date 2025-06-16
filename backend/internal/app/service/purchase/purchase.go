@@ -53,7 +53,7 @@ type PurchaseInput struct {
 	Cart            []PurchaseCartItem
 	TotalNetPrice   decimal.Decimal
 	TotalGrossPrice decimal.Decimal
-	PaymentMethod   string
+	PaymentMethod   models.PaymentMethod
 }
 
 type ListItemInput struct {
@@ -299,8 +299,10 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 	}
 
 	// refund the purchase via sumup
-	if purchase.PaymentMethod == "sumup" && purchase.SumupTransactionID != nil {
-		if err := s.sumupRepo.RefundTransaction(purchaseId); err != nil {
+	if purchase.PaymentMethod == models.PaymentMethodSumUp && purchase.SumupTransactionID != nil {
+		fmt.Println("Refunding transaction via SumUp for transaction ID:", *purchase.SumupTransactionID)
+
+		if err := s.sumupRepo.RefundTransaction(*purchase.SumupTransactionID); err != nil {
 			return nil, errors.New("failed to refund purchase via sumup: " + err.Error())
 		}
 	}
@@ -344,7 +346,12 @@ func (s *PurchaseService) setPurchaseStatus(ctx context.Context, purchaseId uuid
 	onStatusChanged func(tx *gorm.DB, purchaseId uuid.UUID) error) (*models.Purchase, error) {
 	var purchase *models.Purchase
 
+	fmt.Println("Setting purchase status to:", status, "for purchase ID:", purchaseId)
+
+	s.DB = s.DB.Debug()
 	err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		fmt.Println("Starting transaction to update purchase status")
+
 		p, err := s.sqliteRepo.UpdatePurchaseStatusByIDTx(tx, purchaseId, status)
 
 		if err != nil {

@@ -7,7 +7,7 @@ import ErrorModal from "./components/ErrorModal";
 import MainMenu from "./components/MainMenu/MainMenu";
 import PollingModal from "./components/Purchase/PollingModal";
 import {
-  deletePurchaseById,
+  refundPurchaseById,
   fetchProducts,
   fetchPurchases,
   storePurchase,
@@ -103,7 +103,7 @@ const Kasseapparat = () => {
   };
 
   const handleRemoveFromPurchaseHistory = async (purchase) => {
-    return deletePurchaseById(apiHost, token, purchase.id)
+    return refundPurchaseById(apiHost, token, purchase.id)
       .then(() => {
         fetchPurchases(apiHost, token, userId)
           .then((history) => setPurchaseHistory(history))

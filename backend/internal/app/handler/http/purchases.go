@@ -91,7 +91,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	// create a variable purchase that is a nil pointer to models.Purchase
 	var purchase *models.Purchase
 
-	if req.PaymentMethod == "SUMUP" {
+	if req.PaymentMethod == models.PaymentMethodSumUp {
 		purchase, err = handler.purchaseService.CreatePendingPurchase(c.Request.Context(), input, int(executingUserObj.ID))
 	} else {
 		purchase, err = handler.purchaseService.CreateConfirmedPurchase(c.Request.Context(), input, int(executingUserObj.ID))
@@ -120,7 +120,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		reloadedPurchase = purchase // Fallback to the created purchase if reloading fails
 	}
 
-	if req.PaymentMethod == "SUMUP" {
+	if req.PaymentMethod == models.PaymentMethodSumUp {
 		clientTransactionId, err := handler.sumupRepository.CreateReaderCheckout(
 			req.SumupReaderID,
 			purchase.TotalGrossPrice,

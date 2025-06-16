@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,10 +14,9 @@ func TestQueryPaymentMethods(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	// Erstelle gültige Zahlungsmethoden
-	validPaymentMethods := map[string]string{
-		"CASH": "Cash",
-		"CC":   "Credit Card",
-		"EC":   "EC Card",
+	validPaymentMethods := map[models.PaymentMethod]string{
+		models.PaymentMethodCash: "Cash",
+		models.PaymentMethodCC:   "Credit Card",
 	}
 
 	// Erstelle einen Request mit passenden Query-Parametern
@@ -29,5 +29,5 @@ func TestQueryPaymentMethods(t *testing.T) {
 	// Teste die Funktion
 	result := queryPaymentMethods(c, "paymentMethods", validPaymentMethods)
 
-	assert.ElementsMatch(t, []string{"CASH", "CC"}, result)
+	assert.ElementsMatch(t, []models.PaymentMethod{models.PaymentMethodCash, models.PaymentMethodCC}, result)
 }

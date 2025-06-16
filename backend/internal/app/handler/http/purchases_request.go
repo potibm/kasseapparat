@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 
+	"github.com/potibm/kasseapparat/internal/app/models"
 	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 	"github.com/shopspring/decimal"
 )
@@ -23,7 +24,7 @@ type PurchaseRequest struct {
 	TotalNetPrice   decimal.Decimal       `binding:"required"      form:"totalNetPrice"`
 	TotalGrossPrice decimal.Decimal       `binding:"required"      form:"totalGrossPrice"`
 	Cart            []PurchaseCartRequest `binding:"required,dive" form:"cart"`
-	PaymentMethod   string                `binding:"required"      form:"paymentMethod"`
+	PaymentMethod   models.PaymentMethod  `binding:"required"      form:"paymentMethod"`
 	SumupReaderID   string                `binding:"omitempty"     form:"sumupReaderId"`
 }
 

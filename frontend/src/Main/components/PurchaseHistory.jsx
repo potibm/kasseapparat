@@ -1,4 +1,4 @@
-import { HiXCircle, HiOutlineExclamationCircle } from "react-icons/hi";
+import { HiOutlineExclamationCircle, HiReceiptRefund } from "react-icons/hi";
 import React, { useState, useEffect, useRef } from "react";
 import {
   Modal,
@@ -31,7 +31,7 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
     }
   };
 
-  const confirmDelete = (purchase) => {
+  const confirmRefund = (purchase) => {
     if (processing) {
       return;
     }
@@ -95,7 +95,7 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
           <div className="text-center">
             <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
             <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-200">
-              Are you sure you want to delete this purchase?
+              Are you sure you want to refund this purchase?
             </h3>
 
             <Table className="mb-5">
@@ -123,7 +123,7 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
               <MyButton
                 color="failure"
                 disabled={processing}
-                onClick={() => confirmDelete(openModal.purchase)}
+                onClick={() => confirmRefund(openModal.purchase)}
               >
                 Yes, I&apos;m sure
                 {processing && <Spinner color="gray" className="ml-2" />}
@@ -150,7 +150,7 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
             <TableHeadCell className="w-[15%] text-right">
               Total Price
             </TableHeadCell>
-            <TableHeadCell className="w-[30%] text-right">Remove</TableHeadCell>
+            <TableHeadCell className="w-[30%] text-right">Refund</TableHeadCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -182,7 +182,7 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
                     color="failure"
                     onClick={() => setOpenModal({ show: true, purchase })}
                   >
-                    <HiXCircle />
+                    <HiReceiptRefund />
                   </MyButton>
                 </TableCell>
               </TableRow>

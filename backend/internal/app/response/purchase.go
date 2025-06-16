@@ -13,7 +13,7 @@ type PurchaseResponse struct {
 	CreatedAt                time.Time              `json:"createdAt"`
 	CreatedByID              *uint                  `json:"createdById"`
 	CreatedBy                *models.User           `json:"createdBy"`
-	PaymentMethod            string                 `json:"paymentMethod"`
+	PaymentMethod            models.PaymentMethod   `json:"paymentMethod"`
 	TotalNetPrice            decimal.Decimal        `json:"totalNetPrice"`
 	SumupTransactionID       uuid.UUID              `json:"sumupTransactionId,omitempty"`
 	SumupClientTransactionID uuid.UUID              `json:"sumupClientTransactionId,omitempty"`

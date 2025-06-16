@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/utils"
+	"github.com/shopspring/decimal"
 	"github.com/sumup/sumup-go/transactions"
 )
 
@@ -227,50 +228,108 @@ func (r *Repository) RefundTransaction(transactionId uuid.UUID) error {
 
 	_, err := r.service.Client.Transactions.Refund(context.Background(), transactionId.String(), body)
 	if err != nil {
-		log.Printf("Error retrieving checkout with ID %s: %v", transactionId, err)
+		if err.Error() == "decode response: EOF" {
+			// until https://github.com/sumup/sumup-go/issues/82 is fixed, we handle this specific error
+			return nil
+		}
 
-		return err
+		log.Printf("Error refunding transaction with ID %s: %v", transactionId, err)
+
+		return normalizeSumupError(err)
 	}
 
 	return nil
 }
 
 func fromSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transaction {
-	var id uuid.UUID
+	var transactionId uuid.UUID
 
-	if sdkCheckout.Id != nil {
-		parsedId, err := uuid.Parse(*sdkCheckout.Id)
+	if sdkCheckout.TransactionId != nil {
+		id := *sdkCheckout.Id
+		if sdkCheckout.TransactionId != nil {
+			id = string(*sdkCheckout.TransactionId)
+		}
+		// Try to parse the TransactionId as a UUID
+
+		parsedId, err := uuid.Parse(id)
 		if err == nil {
-			id = parsedId
+			transactionId = parsedId
 		}
 	}
 
 	return &Transaction{
-		ID:              id,
+		ID:              string(*sdkCheckout.Id),
 		TransactionCode: string(*sdkCheckout.TransactionCode),
+		TransactionID:   transactionId,
 		Amount:          utils.F64PtrToDecimal(sdkCheckout.Amount),
 		Currency:        string(*sdkCheckout.Currency),
+		CardType:        string(*sdkCheckout.CardType),
 		CreatedAt:       utils.TimePtr(sdkCheckout.Timestamp),
 		Status:          string(*sdkCheckout.Status),
 	}
 }
 
 func fromSDKTransactionFull(sdkCheckout *transactions.TransactionFull) *Transaction {
-	var id uuid.UUID
+	var transactionId uuid.UUID
 
 	if sdkCheckout.Id != nil {
 		parsedId, err := uuid.Parse(*sdkCheckout.Id)
 		if err == nil {
-			id = parsedId
+			transactionId = parsedId
 		}
 	}
 
+	var events []TransactionEvent
+	if sdkCheckout.Events != nil {
+		events = make([]TransactionEvent, 0, len(*sdkCheckout.Events))
+		for _, sdkEvent := range *sdkCheckout.Events {
+			events = append(events, fromSDKTransactionEvent(&sdkEvent))
+		}
+	} else {
+		events = make([]TransactionEvent, 0)
+	}
+
+	var cardType string
+	if sdkCheckout.Card != nil && sdkCheckout.Card.Type != nil {
+		cardType = string(*sdkCheckout.Card.Type)
+	}
+
 	return &Transaction{
-		ID:              id,
+		ID:              transactionId.String(),
 		TransactionCode: string(*sdkCheckout.TransactionCode),
+		TransactionID:   transactionId,
 		Amount:          utils.F64PtrToDecimal(sdkCheckout.Amount),
 		Currency:        string(*sdkCheckout.Currency),
+		CardType:        cardType,
 		CreatedAt:       utils.TimePtr(sdkCheckout.Timestamp),
+		Events:          events,
 		Status:          string(*sdkCheckout.Status),
+	}
+}
+
+func fromSDKTransactionEvent(sdkEvent *transactions.Event) TransactionEvent {
+	timestamp := time.Time{}
+
+	if sdkEvent.Timestamp != nil {
+		var err error
+		if sdkEvent.Timestamp != nil {
+			timestamp, err = time.Parse(time.RFC3339, string(*sdkEvent.Timestamp))
+			if err != nil {
+				log.Printf("Error parsing timestamp %s: %v", *sdkEvent.Timestamp, err)
+			}
+		}
+	}
+
+	amount := float64(0)
+	if sdkEvent.Amount != nil {
+		amount = float64(*sdkEvent.Amount)
+	}
+
+	return TransactionEvent{
+		ID:        int(*sdkEvent.Id),
+		Timestamp: timestamp,
+		Type:      string(*sdkEvent.Type),
+		Amount:    decimal.NewFromFloat(amount),
+		Status:    string(*sdkEvent.Status),
 	}
 }

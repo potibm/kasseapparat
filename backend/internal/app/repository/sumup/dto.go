@@ -18,10 +18,21 @@ type Reader struct {
 }
 
 type Transaction struct {
-	ID              uuid.UUID
+	ID              string
+	TransactionID   uuid.UUID
 	TransactionCode string
 	Amount          decimal.Decimal
 	Currency        string
+	CardType        string
 	CreatedAt       time.Time
+	Events          []TransactionEvent
 	Status          string
+}
+
+type TransactionEvent struct {
+	ID        int
+	Timestamp time.Time
+	Type      string
+	Amount    decimal.Decimal
+	Status    string
 }

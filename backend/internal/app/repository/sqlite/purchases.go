@@ -19,7 +19,7 @@ type ProductPurchaseStats struct {
 
 type PurchaseFilters struct {
 	CreatedByID        int
-	PaymentMethods     []string
+	PaymentMethods     []models.PaymentMethod
 	Status             *models.PurchaseStatus
 	TotalGrossPriceLte *decimal.Decimal
 	TotalGrossPriceGte *decimal.Decimal
@@ -122,6 +122,7 @@ func (repo *Repository) updatePurchaseFieldByIDTx(tx *gorm.DB, id uuid.UUID, fie
 		Where(whereIDEquals, id.String()).
 		Updates(fields).
 		Error; err != nil {
+		fmt.Printf("failed to update purchase with ID %s: %v", id.String(), err)
 		return nil, fmt.Errorf("failed to update purchase fields: %v", fields)
 	}
 
@@ -187,25 +188,19 @@ func (repo *Repository) GetTotalPurchases(filters PurchaseFilters) (int64, error
 }
 
 func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
-	rows, err := repo.db.Raw("SELECT pu.product_id, SUM(pu.quantity) as quantity, p.name " +
-		"FROM purchase_items AS pu " +
-		"JOIN products as p ON p.id = pu.product_id " +
-		"WHERE pu.deleted_at IS NULL AND p.api_export = 1 " +
-		"GROUP BY pu.product_id").Rows()
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
 	var purchases []ProductPurchaseStats
 
-	for rows.Next() {
-		var purchase ProductPurchaseStats
-		if err := rows.Scan(&purchase.ProductID, &purchase.Quantity, &purchase.Name); err != nil {
-			return nil, err
-		}
+	err := repo.db.
+		Model(&models.PurchaseItem{}).
+		Select("purchase_items.product_id, SUM(purchase_items.quantity) AS quantity, products.name").
+		Joins("JOIN purchases ON purchases.id = purchase_items.purchase_id AND purchases.status = ? ", models.PurchaseStatusConfirmed).
+		Joins("JOIN products ON products.id = purchase_items.product_id AND products.api_export = ?", 1).
+		Where("purchase_items.deleted_at IS NULL").
+		Group("purchase_items.product_id, products.name").
+		Scan(&purchases).Error
 
-		purchases = append(purchases, purchase)
+	if err != nil {
+		return nil, err
 	}
 
 	return purchases, nil
@@ -216,8 +211,8 @@ func (repo *Repository) GetPurchasedQuantitiesByProductID(productID uint) (int, 
 
 	err := repo.db.Table("purchase_items").
 		Select("SUM(quantity)").
-		Joins("JOIN purchases ON purchase_items.purchase_id = purchases.id").
-		Where("purchase_items.product_id = ? AND purchase_items.deleted_at IS NULL AND purchases.deleted_at IS NULL", productID).
+		Joins("JOIN purchases ON (purchase_items.purchase_id = purchases.id AND purchase_items.deleted_at IS NULL)").
+		Where("purchase_items.product_id = ? AND purchases.deleted_at IS NULL AND purchases.status = ?", productID, models.PurchaseStatusConfirmed).
 		Scan(&sum).Error
 	if err != nil {
 		return 0, err

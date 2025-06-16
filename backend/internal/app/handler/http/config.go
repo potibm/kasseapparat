@@ -33,7 +33,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 	paymentMethods := make([]PaymentMethodsConfig, 0, len(handler.paymentMethods))
 	for code, name := range handler.paymentMethods {
 		paymentMethods = append(paymentMethods, PaymentMethodsConfig{
-			Code: code,
+			Code: string(code),
 			Name: name,
 		})
 	}

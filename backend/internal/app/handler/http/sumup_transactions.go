@@ -12,12 +12,24 @@ import (
 )
 
 type SumupTransactionReponse struct {
-	ID              uuid.UUID       `json:"id"`
-	TransactionCode string          `json:"transactionCode"`
-	Amount          decimal.Decimal `json:"amount"`
-	Currency        string          `json:"currency"`
-	CreatedAt       time.Time       `json:"createdAt"`
-	Status          string          `json:"status"`
+	ID              uuid.UUID                       `json:"id"`
+	TransactionID   uuid.UUID                       `json:"transactionId"`
+	PublicID        string                          `json:"publicId"`
+	TransactionCode string                          `json:"transactionCode"`
+	Amount          decimal.Decimal                 `json:"amount"`
+	CardType        string                          `json:"cardType,omitempty"`
+	Currency        string                          `json:"currency"`
+	Events          []SumupTransactionEventResponse `json:"events,omitempty"`
+	CreatedAt       time.Time                       `json:"createdAt"`
+	Status          string                          `json:"status"`
+}
+
+type SumupTransactionEventResponse struct {
+	ID        int             `json:"id"`
+	Timestamp time.Time       `json:"timestamp"`
+	Type      string          `json:"type"`
+	Amount    decimal.Decimal `json:"amount"`
+	Status    string          `json:"status,omitempty"`
 }
 
 func (handler *Handler) GetSumupTransactions(c *gin.Context) {
@@ -72,12 +84,35 @@ func (handler *Handler) GetSumupTransactionByID(c *gin.Context) {
 
 func toSumupTransactionResponse(c sumup.Transaction) SumupTransactionReponse {
 	return SumupTransactionReponse{
-		ID:              c.ID,
+		ID:              c.TransactionID,
+		TransactionID:   c.TransactionID,
+		PublicID:        c.ID,
 		TransactionCode: c.TransactionCode,
 		Amount:          c.Amount,
 		Currency:        c.Currency,
 		CreatedAt:       c.CreatedAt,
 		Status:          c.Status,
+		CardType:        c.CardType,
+		Events:          toSumupTransactionEventResponses(c.Events),
+	}
+}
+
+func toSumupTransactionEventResponses(events []sumup.TransactionEvent) []SumupTransactionEventResponse {
+	responses := make([]SumupTransactionEventResponse, len(events))
+	for i, event := range events {
+		responses[i] = toSumupTransactionEventResponse(event)
+	}
+
+	return responses
+}
+
+func toSumupTransactionEventResponse(e sumup.TransactionEvent) SumupTransactionEventResponse {
+	return SumupTransactionEventResponse{
+		ID:        e.ID,
+		Timestamp: e.Timestamp,
+		Type:      e.Type,
+		Amount:    e.Amount,
+		Status:    e.Status,
 	}
 }
 

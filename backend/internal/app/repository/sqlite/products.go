@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"database/sql"
 	"errors"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -102,4 +103,26 @@ func (repo *Repository) DeleteProduct(product models.Product, deletedBy models.U
 	repo.db.Model(&models.Product{}).Where(whereIDEquals, product.ID).Update("DeletedByID", deletedBy.ID)
 
 	repo.db.Delete(&product)
+}
+
+func (repo *Repository) GetAttendedGuestSumByProductID(productID uint) (int, error) {
+	var sum sql.NullInt64
+
+	err := repo.db.
+		Model(&models.Guest{}).
+		Select("SUM(guests.attended_guests)").
+		Joins("JOIN guestlists ON guests.guestlist_id = guestlists.id AND guestlists.product_id = ?", productID).
+		Joins("JOIN purchases ON guests.purchase_id = purchases.id AND purchases.deleted_at IS NULL AND purchases.status = ?", models.PurchaseStatusConfirmed).
+		Where("guests.deleted_at IS NULL").
+		Scan(&sum).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	if !sum.Valid {
+		return 0, nil
+	}
+
+	return int(sum.Int64), nil
 }

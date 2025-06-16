@@ -71,7 +71,7 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 				continue
 			}
 
-			if purchase.PaymentMethod != "SUMUP" {
+			if purchase.PaymentMethod != models.PaymentMethodSumUp {
 				log.Printf("Skipping polling for %s, not a SumUp transaction", transactionID)
 				return
 			}
@@ -94,7 +94,7 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 			log.Printf("Transaction %s status: %s", purchase.SumupTransactionID, transaction.Status)
 
 			if purchase.SumupTransactionID == nil {
-				_, err = n.SqliteRepository.UpdatePurchaseSumupTransactionIDByIDTx(n.SqliteRepository.GetDB(), transactionID, transaction.ID)
+				_, err = n.SqliteRepository.UpdatePurchaseSumupTransactionIDByIDTx(n.SqliteRepository.GetDB(), transactionID, transaction.TransactionID)
 				if err != nil {
 					log.Printf("Error updating purchase %s with SumUp transaction ID: %v", transactionID, err)
 				}

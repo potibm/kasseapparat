@@ -12,6 +12,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
+	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/monitor"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
@@ -47,10 +48,10 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 	t.Setenv("JWT_SECRET", "test")
 
 	currencyDecimalPlaces := int32(2)
-	paymentMethods := map[string]string{
-		"CASH":  "💶 Cash",
-		"CC":    "💳 Creditcard",
-		"SUMUP": "💳 SumUp",
+	paymentMethods := map[models.PaymentMethod]string{
+		models.PaymentMethodCash:  "💶 Cash",
+		models.PaymentMethodCC:    "💳 Creditcard",
+		models.PaymentMethodSumUp: "💳 SumUp",
 	}
 
 	sqliteRepo := sqliteRepo.NewRepository(db, currencyDecimalPlaces)

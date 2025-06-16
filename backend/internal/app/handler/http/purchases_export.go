@@ -3,7 +3,6 @@ package http
 import (
 	"encoding/csv"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -14,12 +13,13 @@ import (
 )
 
 func (handler *Handler) ExportPurchases(c *gin.Context) {
+	confirmed := models.PurchaseStatusConfirmed
+
 	filters := sqliteRepo.PurchaseFilters{}
 	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethods", handler.paymentMethods)
+	filters.Status = &confirmed
 	status := models.PurchaseStatusConfirmed
 	filters.Status = &status
-
-	log.Println("Payment methods filter: ", filters)
 
 	purchases, err := handler.repo.GetFilteredPurchases(filters)
 	if err != nil {
@@ -29,8 +29,14 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 	}
 
 	paymentMethodsString := "all"
+
 	if len(filters.PaymentMethods) > 0 {
-		paymentMethodsString = strings.ToLower(strings.Join(filters.PaymentMethods, "_"))
+		methods := make([]string, len(filters.PaymentMethods))
+		for i, m := range filters.PaymentMethods {
+			methods[i] = string(m)
+		}
+
+		paymentMethodsString = strings.ToLower(strings.Join(methods, "_"))
 	}
 
 	time := time.Now().Format("20060102150405")
@@ -68,7 +74,7 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 			p.Purchase.TotalGrossPrice.StringFixed(handler.decimalPlaces),
 			p.Purchase.TotalNetPrice.StringFixed(handler.decimalPlaces),
 			Vat.StringFixed(handler.decimalPlaces),
-			p.Purchase.PaymentMethod,
+			string(p.Purchase.PaymentMethod),
 		})
 
 		if err != nil {
