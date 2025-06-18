@@ -2,11 +2,8 @@ package sumup
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"net/url"
 	"sort"
 	"time"
@@ -181,58 +178,25 @@ func (r *Repository) getTransaction(params transactions.GetTransactionV21Params)
 	return fromSDKTransactionFull(transactionResp), nil
 }
 
-func (r *Repository) GetTransactionByClientTransactionId(transactionId uuid.UUID) (*Transaction, error) {
-	client := &http.Client{
-		Timeout: 10 * time.Second,
+func (r *Repository) GetTransactionByClientTransactionId(clientTransactionId uuid.UUID) (*Transaction, error) {
+	clientTransactionIdStr := clientTransactionId.String()
+	params := transactions.GetTransactionV21Params{
+		ClientTransactionId: &clientTransactionIdStr,
 	}
 
-	// URL mit query-params korrekt zusammensetzen
-	baseURL := fmt.Sprintf("https://api.sumup.com/v2.1/merchants/%s/transactions", r.service.MerchantCode)
-	params := url.Values{}
-	params.Set("client_transaction_id", transactionId.String())
-
-	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
-	log.Println("Fetching transaction from URL:", fullURL)
-
-	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
+	transaction, err := r.getTransaction(params)
 	if err != nil {
-		return nil, fmt.Errorf("failed to build request: %w", err)
+		return nil, fmt.Errorf("failed to get transaction by ClientTransactionID %s: %w", clientTransactionIdStr, err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+r.service.ApiKey)
-
-	resp, err := client.Do(req)
-	log.Println("Response status:", resp.Status)
-
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("unexpected status: %d – %s", resp.StatusCode, string(bodyBytes))
-	}
-
-	var transactionResp transactions.TransactionFull
-	if err := json.NewDecoder(resp.Body).Decode(&transactionResp); err != nil {
-		return nil, fmt.Errorf("decode response: %s", err.Error())
-	}
-
-	return fromSDKTransactionFull(&transactionResp), nil
+	return transaction, nil
 }
 
 func (r *Repository) RefundTransaction(transactionId uuid.UUID) error {
 	body := transactions.RefundTransactionBody{}
 
-	_, err := r.service.Client.Transactions.Refund(context.Background(), transactionId.String(), body)
+	err := r.service.Client.Transactions.Refund(context.Background(), transactionId.String(), body)
 	if err != nil {
-		if err.Error() == "decode response: EOF" {
-			// until https://github.com/sumup/sumup-go/issues/82 is fixed, we handle this specific error
-			return nil
-		}
-
 		log.Printf("Error refunding transaction with ID %s: %v", transactionId, err)
 
 		return normalizeSumupError(err)

@@ -24,12 +24,10 @@ func InitializeSumup() *sumupSevice.Service {
 		affiliateKey := getEnv("SUMUP_AFFILIATE_KEY", "")
 		applicationId := getEnv("SUMUP_APPLICATION_ID", "")
 
-		options := client.New()
-		clientOptions := options.WithAPIKey(apiKey)
-
+		clientOptions := client.WithAPIKey(apiKey)
 		client := sumup.NewClient(clientOptions)
 
-		instance = sumupSevice.NewService(client, merchantCode, applicationId, affiliateKey, paymentCurrency, uint(paymentMinorUnit), apiKey)
+		instance = sumupSevice.NewService(client, merchantCode, applicationId, affiliateKey, paymentCurrency, uint(paymentMinorUnit))
 	})
 
 	return instance
