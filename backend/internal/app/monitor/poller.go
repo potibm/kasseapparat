@@ -94,7 +94,7 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 			log.Printf("Transaction %s status: %s", purchase.SumupTransactionID, transaction.Status)
 
 			if purchase.SumupTransactionID == nil {
-				_, err = n.SqliteRepository.UpdatePurchaseSumupTransactionIDByIDTx(n.SqliteRepository.GetDB(), transactionID, transaction.TransactionID)
+				_, err = n.SqliteRepository.UpdatePurchaseSumupTransactionIDByID(transactionID, transaction.TransactionID)
 				if err != nil {
 					log.Printf("Error updating purchase %s with SumUp transaction ID: %v", transactionID, err)
 				}

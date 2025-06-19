@@ -65,11 +65,7 @@ var purchaseSortFieldMappings = map[string]string{
 }
 
 func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchase, error) {
-	return repo.StorePurchasesTx(repo.db, purchase)
-}
-
-func (repo *Repository) StorePurchasesTx(tx *gorm.DB, purchase models.Purchase) (models.Purchase, error) {
-	result := tx.Create(&purchase)
+	result := repo.db.Create(&purchase)
 	return purchase, result.Error
 }
 
@@ -81,12 +77,8 @@ func (repo *Repository) DeletePurchaseByID(id uuid.UUID, deletedBy models.User) 
 }
 
 func (repo *Repository) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error) {
-	return repo.GetPurchaseByIDTx(repo.db, id)
-}
-
-func (repo *Repository) GetPurchaseByIDTx(tx *gorm.DB, id uuid.UUID) (*models.Purchase, error) {
 	var purchase models.Purchase
-	if err := tx.Model(&models.Purchase{}).
+	if err := repo.db.Model(&models.Purchase{}).
 		Preload("PurchaseItems").
 		Preload("PurchaseItems.Product").
 		Where(whereIDEquals, id.String()).
@@ -98,27 +90,26 @@ func (repo *Repository) GetPurchaseByIDTx(tx *gorm.DB, id uuid.UUID) (*models.Pu
 	return &purchase, nil
 }
 
-func (repo *Repository) UpdatePurchaseStatusByIDTx(tx *gorm.DB, id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
-	return repo.updatePurchaseFieldByIDTx(tx, id, map[string]interface{}{
+func (repo *Repository) UpdatePurchaseStatusByID(id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
+	return repo.updatePurchaseFieldByID(id, map[string]interface{}{
 		"status": string(status),
 	})
 }
-
-func (repo *Repository) UpdatePurchaseSumupTransactionIDByIDTx(tx *gorm.DB, id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error) {
-	return repo.updatePurchaseFieldByIDTx(tx, id, map[string]interface{}{
-		"sumup_transaction_id": sumupTransactionID.String(),
-	})
-}
-
-func (repo *Repository) UpdatePurchaseSumupClientTransactionIDByIDTx(tx *gorm.DB, id uuid.UUID, sumupClientTransactionID uuid.UUID) (*models.Purchase, error) {
-	return repo.updatePurchaseFieldByIDTx(tx, id, map[string]interface{}{
+func (repo *Repository) UpdatePurchaseSumupClientTransactionIDByID(id uuid.UUID, sumupClientTransactionID uuid.UUID) (*models.Purchase, error) {
+	return repo.updatePurchaseFieldByID(id, map[string]interface{}{
 		"sumup_client_transaction_id": sumupClientTransactionID.String(),
 	})
 }
 
-func (repo *Repository) updatePurchaseFieldByIDTx(tx *gorm.DB, id uuid.UUID, fields map[string]interface{}) (*models.Purchase, error) {
+func (repo *Repository) UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error) {
+	return repo.updatePurchaseFieldByID(id, map[string]interface{}{
+		"sumup_transaction_id": sumupTransactionID.String(),
+	})
+}
+
+func (repo *Repository) updatePurchaseFieldByID(id uuid.UUID, fields map[string]interface{}) (*models.Purchase, error) {
 	var purchase models.Purchase
-	if err := tx.Model(&purchase).
+	if err := repo.db.Model(&purchase).
 		Where(whereIDEquals, id.String()).
 		Updates(fields).
 		Error; err != nil {
@@ -126,7 +117,7 @@ func (repo *Repository) updatePurchaseFieldByIDTx(tx *gorm.DB, id uuid.UUID, fie
 		return nil, fmt.Errorf("failed to update purchase fields: %v", fields)
 	}
 
-	return repo.GetPurchaseByIDTx(tx, id)
+	return repo.GetPurchaseByID(id)
 }
 
 func (repo *Repository) GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error) {

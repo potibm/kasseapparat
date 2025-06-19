@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/shopspring/decimal"
-	"gorm.io/gorm"
 )
 
 type Service interface {
@@ -22,16 +22,7 @@ type Service interface {
 
 var _ Service = (*PurchaseService)(nil)
 
-type sqliteRepository interface {
-	GetProductByID(id int) (*models.Product, error)
-	GetFullGuestByID(id int) (*models.Guest, error)
-	UpdateGuestByIDTx(tx *gorm.DB, id int, updatedGuest models.Guest) (*models.Guest, error)
-	StorePurchasesTx(tx *gorm.DB, purchase models.Purchase) (models.Purchase, error)
-	GetPurchaseByIDTx(tx *gorm.DB, id uuid.UUID) (*models.Purchase, error)
-	UpdatePurchaseStatusByIDTx(tx *gorm.DB, id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error)
-	RollbackVisitedGuestsByPurchaseIDTx(tx *gorm.DB, purchaseId uuid.UUID) error
-	GetDB() *gorm.DB
-}
+var _ sqlite.RepositoryInterface = (*sqlite.Repository)(nil)
 
 type sumupRepository interface {
 	RefundTransaction(purchaseId uuid.UUID) error
@@ -42,9 +33,8 @@ type Mailer interface {
 }
 
 type PurchaseService struct {
-	sqliteRepo    sqliteRepository
+	sqliteRepo    sqlite.RepositoryInterface
 	sumupRepo     sumupRepository
-	DB            *gorm.DB
 	Mailer        Mailer
 	DecimalPlaces int32
 }
@@ -83,10 +73,9 @@ func uintPtr(v uint) *uint {
 	return &v
 }
 
-func NewPurchaseService(sqliteRepo sqliteRepository, sumupRepo sumupRepository, mailer Mailer, decimalPlaces int32) *PurchaseService {
+func NewPurchaseService(sqliteRepo sqlite.RepositoryInterface, sumupRepo sumupRepository, mailer Mailer, decimalPlaces int32) *PurchaseService {
 	return &PurchaseService{
 		sqliteRepo:    sqliteRepo,
-		DB:            sqliteRepo.GetDB(),
 		sumupRepo:     sumupRepo,
 		Mailer:        mailer,
 		DecimalPlaces: decimalPlaces,
@@ -209,7 +198,7 @@ func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input Pu
 
 	var savedPurchase *models.Purchase
 
-	err = s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	err = s.sqliteRepo.WithTransaction(ctx, func(txRepo sqlite.RepositoryInterface) error {
 		purchase := &models.Purchase{
 			TotalNetPrice:   net,
 			TotalGrossPrice: gross,
@@ -219,7 +208,7 @@ func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input Pu
 		purchase.CreatedByID = uintPtr(uint(userID))
 
 		for _, item := range input.Cart {
-			product, err := s.sqliteRepo.GetProductByID(item.ID)
+			product, err := txRepo.GetProductByID(item.ID)
 			if err != nil {
 				return err
 			}
@@ -234,7 +223,7 @@ func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input Pu
 			purchase.PurchaseItems = append(purchase.PurchaseItems, pi)
 		}
 
-		stored, err := s.sqliteRepo.StorePurchasesTx(tx, *purchase)
+		stored, err := txRepo.StorePurchases(*purchase)
 		if err != nil {
 			return err
 		}
@@ -243,7 +232,7 @@ func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input Pu
 
 		for _, guest := range guests {
 			guest.PurchaseID = &stored.ID
-			if _, err := s.sqliteRepo.UpdateGuestByIDTx(tx, int(guest.ID), guest); err != nil {
+			if _, err := txRepo.UpdateGuestByID(int(guest.ID), guest); err != nil {
 				return err
 			}
 		}
@@ -260,7 +249,7 @@ func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input Pu
 
 func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
 	// update status of purchase to confirmed
-	purchase, err := s.setPurchaseStatus(ctx, purchaseId, models.PurchaseStatusConfirmed, nil)
+	purchase, err := s.setPurchaseStatus(ctx, purchaseId, models.PurchaseStatusConfirmed, false)
 	if err != nil {
 		return nil, errors.New("failed to finalize purchase: " + err.Error())
 	}
@@ -272,7 +261,7 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.
 }
 
 func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
-	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusCancelled, nil)
+	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusCancelled)
 
 	if err != nil {
 		return nil, errors.New("failed to cancel purchase: " + err.Error())
@@ -282,7 +271,7 @@ func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseId uuid.UU
 }
 
 func (s *PurchaseService) FailPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
-	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusFailed, nil)
+	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusFailed)
 
 	if err != nil {
 		return nil, errors.New("failed to set the purchase to failed: " + err.Error())
@@ -292,7 +281,7 @@ func (s *PurchaseService) FailPurchase(ctx context.Context, purchaseId uuid.UUID
 }
 
 func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
-	purchase, err := s.sqliteRepo.GetPurchaseByIDTx(s.DB, purchaseId)
+	purchase, err := s.sqliteRepo.GetPurchaseByID(purchaseId)
 
 	if err != nil {
 		return nil, errors.New("failed to get purchase by ID: " + err.Error())
@@ -308,7 +297,7 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 	}
 
 	// update status of purchase to refunded
-	purchase, err = s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusRefunded, nil)
+	purchase, err = s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusRefunded)
 	if err != nil {
 		return nil, errors.New("failed to set the purchase to refunded: " + err.Error())
 	}
@@ -316,9 +305,8 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 	return purchase, nil
 }
 
-func (s *PurchaseService) rollbackPurchase(ctx context.Context, purchaseId uuid.UUID, status models.PurchaseStatus,
-	onStatusChanged func(tx *gorm.DB, purchaseId uuid.UUID) error) (*models.Purchase, error) {
-	purchase, err := s.setPurchaseStatus(ctx, purchaseId, status, s.withRollbackGuests(onStatusChanged))
+func (s *PurchaseService) rollbackPurchase(ctx context.Context, purchaseId uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
+	purchase, err := s.setPurchaseStatus(ctx, purchaseId, status, true)
 	if err != nil {
 		return nil, errors.New("failed to rollback purchase: " + err.Error())
 	}
@@ -326,43 +314,20 @@ func (s *PurchaseService) rollbackPurchase(ctx context.Context, purchaseId uuid.
 	return purchase, err
 }
 
-func (s *PurchaseService) withRollbackGuests(callback func(tx *gorm.DB, purchaseId uuid.UUID) error) func(tx *gorm.DB, purchaseId uuid.UUID) error {
-	return func(tx *gorm.DB, purchaseId uuid.UUID) error {
-		if callback != nil {
-			if err := callback(tx, purchaseId); err != nil {
-				return err
-			}
-		}
-
-		if err := s.sqliteRepo.RollbackVisitedGuestsByPurchaseIDTx(tx, purchaseId); err != nil {
-			return fmt.Errorf("failed to rollback visited guests: %w", err)
-		}
-
-		return nil
-	}
-}
-
-func (s *PurchaseService) setPurchaseStatus(ctx context.Context, purchaseId uuid.UUID, status models.PurchaseStatus,
-	onStatusChanged func(tx *gorm.DB, purchaseId uuid.UUID) error) (*models.Purchase, error) {
+func (s *PurchaseService) setPurchaseStatus(ctx context.Context, purchaseId uuid.UUID, status models.PurchaseStatus, rollbackGuests bool) (*models.Purchase, error) {
 	var purchase *models.Purchase
 
-	fmt.Println("Setting purchase status to:", status, "for purchase ID:", purchaseId)
-
-	s.DB = s.DB.Debug()
-	err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		fmt.Println("Starting transaction to update purchase status")
-
-		p, err := s.sqliteRepo.UpdatePurchaseStatusByIDTx(tx, purchaseId, status)
-
+	err := s.sqliteRepo.WithTransaction(ctx, func(txRepo sqlite.RepositoryInterface) error {
+		p, err := txRepo.UpdatePurchaseStatusByID(purchaseId, status)
 		if err != nil {
 			return err
 		}
 
 		purchase = p
 
-		if onStatusChanged != nil {
-			if err := onStatusChanged(tx, purchaseId); err != nil {
-				return errors.New("failed to execute callback: " + err.Error())
+		if rollbackGuests {
+			if err := txRepo.RollbackVisitedGuestsByPurchaseID(purchaseId); err != nil {
+				return fmt.Errorf("failed to rollback visited guests: %w", err)
 			}
 		}
 

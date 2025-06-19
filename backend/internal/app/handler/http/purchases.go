@@ -32,7 +32,7 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 
 	handler.repo.DeletePurchaseByID(id, *executingUserObj)
 
-	_ = handler.repo.RollbackVisitedGuestsByPurchaseIDTx(handler.repo.GetDB(), id)
+	_ = handler.repo.RollbackVisitedGuestsByPurchaseID(id)
 
 	c.Status(http.StatusNoContent)
 }
@@ -156,7 +156,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 		log.Printf("Created SumUp reader checkout: %s", *clientTransactionId)
 
-		_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByIDTx(handler.repo.GetDB(), reloadedPurchase.ID, *clientTransactionId)
+		_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(reloadedPurchase.ID, *clientTransactionId)
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to update purchase with SumUp transaction ID"))
 			return

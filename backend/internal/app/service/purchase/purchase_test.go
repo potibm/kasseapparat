@@ -8,8 +8,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/repository/sqlite"
+	"github.com/potibm/kasseapparat/internal/app/response"
 	"github.com/shopspring/decimal"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -22,11 +23,15 @@ type MockRepository struct {
 	UpdatedGuests  map[int]*models.Guest
 }
 
-func (m *MockRepository) GetDB() *gorm.DB {
-	return nil
+const errNotImplemented = "not implemented"
+
+var _ sqlite.RepositoryInterface = (*MockRepository)(nil)
+
+func (m *MockRepository) WithTransaction(ctx context.Context, fn func(repo sqlite.RepositoryInterface) error) error {
+	return fn(m)
 }
 
-func (m *MockRepository) UpdatePurchaseStatusByIDTx(tx *gorm.DB, id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
+func (m *MockRepository) UpdatePurchaseStatusByID(id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
 	if m.StoredPurchase == nil || m.StoredPurchase.ID.String() != id.String() {
 		return nil, fmt.Errorf("purchase %s not found in mock", id)
 	}
@@ -54,14 +59,14 @@ func (m *MockRepository) GetFullGuestByID(id int) (*models.Guest, error) {
 	return g, nil
 }
 
-func (m *MockRepository) StorePurchasesTx(tx *gorm.DB, purchase models.Purchase) (models.Purchase, error) {
+func (m *MockRepository) StorePurchases(purchase models.Purchase) (models.Purchase, error) {
 	purchase.ID = uuid.New()
 	m.StoredPurchase = &purchase
 
 	return purchase, nil
 }
 
-func (m *MockRepository) UpdateGuestByIDTx(tx *gorm.DB, id int, guest models.Guest) (*models.Guest, error) {
+func (m *MockRepository) UpdateGuestByID(id int, guest models.Guest) (*models.Guest, error) {
 	g, ok := m.Guests[id]
 	if !ok || g == nil {
 		return nil, fmt.Errorf("guest %d not found in mock", id)
@@ -80,7 +85,7 @@ func (m *MockRepository) UpdateGuestByIDTx(tx *gorm.DB, id int, guest models.Gue
 	return g, nil
 }
 
-func (m *MockRepository) GetPurchaseByIDTx(tx *gorm.DB, id uuid.UUID) (*models.Purchase, error) {
+func (m *MockRepository) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error) {
 	if m.StoredPurchase == nil || m.StoredPurchase.ID.String() != id.String() {
 		return nil, fmt.Errorf("purchase %s not found in mock", id)
 	}
@@ -88,7 +93,7 @@ func (m *MockRepository) GetPurchaseByIDTx(tx *gorm.DB, id uuid.UUID) (*models.P
 	return m.StoredPurchase, nil
 }
 
-func (m *MockRepository) RollbackVisitedGuestsByPurchaseIDTx(tx *gorm.DB, purchaseId uuid.UUID) error {
+func (m *MockRepository) RollbackVisitedGuestsByPurchaseID(purchaseId uuid.UUID) error {
 	if m.UpdatedGuests == nil {
 		return nil
 	}
@@ -105,13 +110,120 @@ func (m *MockRepository) RollbackVisitedGuestsByPurchaseIDTx(tx *gorm.DB, purcha
 	return nil
 }
 
-func testDB() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect database")
-	}
+func (m *MockRepository) GetDB() *gorm.DB {
+	panic(errNotImplemented)
+}
 
-	return db
+func (m *MockRepository) GetGuests(limit int, offset int, sort string, order string, filters sqlite.GuestFilters) ([]models.Guest, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetTotalGuests(filters *sqlite.GuestFilters) (int64, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetUnattendedGuestsByProductID(productId int, q string) (models.GuestSummarySlice, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetGuestByID(id int) (*models.Guest, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetGuestByCode(code string) (*models.Guest, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) CreateGuest(guest models.Guest) (models.Guest, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) DeleteGuest(guest models.Guest, deletedBy models.User) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) GetGuestlists(limit int, offset int, sort string, order string, filters sqlite.GuestlistFilters) ([]models.Guestlist, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetTotalGuestlists() (int64, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetGuestlistByID(id int) (*models.Guestlist, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetGuestlistWithTypeCode() (*models.Guestlist, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) UpdateGuestlistByID(id int, updatedGuestlist models.Guestlist) (*models.Guestlist, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) CreateGuestlist(guestlist models.Guestlist) (models.Guestlist, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) DeleteGuestlist(guestlist models.Guestlist, deletedBy models.User) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetProductInterests(limit int, offset int, ids []int) ([]models.ProductInterest, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetTotalProductInterests() (int64, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetProductInterestByID(id int) (*models.ProductInterest, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) DeleteProductInterest(productInterest models.ProductInterest, deletedBy models.User) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) CreateProductInterest(productInterest models.ProductInterest, createdBy models.User) (models.ProductInterest, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetProductInterestCountByProductID(productID uint) (int, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetProductStats() ([]response.ProductStats, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetTotalProducts() (int64, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) CreateProduct(product models.Product) (models.Product, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) DeleteProduct(product models.Product, deletedBy models.User) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetAttendedGuestSumByProductID(productID uint) (int, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) DeletePurchaseByID(id uuid.UUID, deletedBy models.User) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) UpdatePurchaseSumupClientTransactionIDByID(id uuid.UUID, sumupClientTransactionID uuid.UUID) (*models.Purchase, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) GetPurchases(limit int, offset int, sort string, order string, filters sqlite.PurchaseFilters) ([]models.Purchase, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetFilteredPurchases(filters sqlite.PurchaseFilters) ([]models.PurchaseItem, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetTotalPurchases(filters sqlite.PurchaseFilters) (int64, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetPurchaseStats() ([]sqlite.ProductPurchaseStats, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetPurchasedQuantitiesByProductID(productID uint) (int, error) {
+	panic(errNotImplemented)
 }
 
 type MockMailer struct {
@@ -406,7 +518,6 @@ func TestCreatePurchaseWithSuccess(t *testing.T) {
 
 	service := &PurchaseService{
 		sqliteRepo:    mockRepo,
-		DB:            testDB(),
 		DecimalPlaces: 2,
 	}
 
