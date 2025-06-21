@@ -20,6 +20,26 @@ type Handler struct {
 	paymentMethods  map[models.PaymentMethod]string
 }
 
-func NewHandler(repo *sqliteRepo.Repository, sumupRepository sumupRepo.RepositoryInterface, purchaseService purchaseService.Service, monitor monitor.Poller, mailer mailer.Mailer, version string, decimalPlaces int32, paymentMethods map[models.PaymentMethod]string) *Handler {
-	return &Handler{repo: repo, sumupRepository: sumupRepository, purchaseService: purchaseService, monitor: monitor, mailer: mailer, version: version, decimalPlaces: decimalPlaces, paymentMethods: paymentMethods}
+type HandlerConfig struct {
+	Repo            *sqliteRepo.Repository
+	SumupRepository sumupRepo.RepositoryInterface
+	PurchaseService purchaseService.Service
+	Monitor         monitor.Poller
+	Mailer          mailer.Mailer
+	Version         string
+	DecimalPlaces   int32
+	PaymentMethods  map[models.PaymentMethod]string
+}
+
+func NewHandler(config HandlerConfig) *Handler {
+	return &Handler{
+		repo:            config.Repo,
+		sumupRepository: config.SumupRepository,
+		purchaseService: config.PurchaseService,
+		monitor:         config.Monitor,
+		mailer:          config.Mailer,
+		version:         config.Version,
+		decimalPlaces:   config.DecimalPlaces,
+		paymentMethods:  config.PaymentMethods,
+	}
 }
