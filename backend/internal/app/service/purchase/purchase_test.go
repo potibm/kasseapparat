@@ -256,6 +256,9 @@ func (m *MockRepository) GetUserByUsernameOrEmail(usernameOrEmail string) (*mode
 func (m *MockRepository) GetPurchaseBySumupClientTransactionID(sumupTransactionID uuid.UUID) (*models.Purchase, error) {
 	panic(errNotImplemented)
 }
+func (m *MockRepository) GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.Guest, error) {
+	panic(errNotImplemented)
+}
 
 type MockMailer struct {
 	Sent []string

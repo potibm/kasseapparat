@@ -75,6 +75,16 @@ func (repo *Repository) GetGuests(limit int, offset int, sort string, order stri
 	return guests, nil
 }
 
+func (repo *Repository) GetGuestsByPurchaseID(purchaseId uuid.UUID) ([]models.Guest, error) {
+	var guests []models.Guest
+
+	if err := repo.db.Preload("Guestlist").Where("purchase_id = ?", purchaseId).Find(&guests).Error; err != nil {
+		return nil, ErrGuestsNotFound
+	}
+
+	return guests, nil
+}
+
 func getGuestsValidSortFieldName(input string) (string, error) {
 	if field, exists := guestSortFieldMappings[input]; exists {
 		return field, nil

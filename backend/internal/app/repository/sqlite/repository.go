@@ -20,6 +20,7 @@ type RepositoryInterface interface {
 	GetDB() *gorm.DB
 	WithTransaction(ctx context.Context, fn func(repo RepositoryInterface) error) error
 	GetGuests(limit int, offset int, sort string, order string, filters GuestFilters) ([]models.Guest, error)
+	GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.Guest, error)
 	GetTotalGuests(filters *GuestFilters) (int64, error)
 	GetUnattendedGuestsByProductID(productId int, q string) (models.GuestSummarySlice, error)
 	GetGuestByID(id int) (*models.Guest, error)

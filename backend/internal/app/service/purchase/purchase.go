@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -254,8 +255,13 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.
 		return nil, errors.New("failed to finalize purchase: " + err.Error())
 	}
 
-	// @TODO: notify about arrival of guests
-	// 	s.notifyGuests(guests)
+	// notfiy guests
+	guests, err := s.sqliteRepo.GetGuestsByPurchaseID(purchaseId)
+	if guests == nil || err != nil {
+		log.Println("no guests found for purchase, skipping notification")
+	} else {
+		s.notifyGuests(guests)
+	}
 
 	return purchase, nil
 }
