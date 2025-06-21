@@ -18,8 +18,6 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 	filters := sqliteRepo.PurchaseFilters{}
 	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethods", handler.paymentMethods)
 	filters.Status = &confirmed
-	status := models.PurchaseStatusConfirmed
-	filters.Status = &status
 
 	purchases, err := handler.repo.GetFilteredPurchases(filters)
 	if err != nil {
@@ -39,8 +37,8 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 		paymentMethodsString = strings.ToLower(strings.Join(methods, "_"))
 	}
 
-	time := time.Now().Format("20060102150405")
-	filename := fmt.Sprintf("purchases_%s_%s.csv", time, paymentMethodsString)
+	timestamp := time.Now().Format("20060102150405")
+	filename := fmt.Sprintf("purchases_%s_%s.csv", timestamp, paymentMethodsString)
 
 	c.Header("Content-Type", "text/csv")
 	c.Header("Content-Disposition", "attachment; filename=\""+filename+"\"")
