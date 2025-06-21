@@ -77,25 +77,19 @@ func (repo *Repository) DeletePurchaseByID(id uuid.UUID, deletedBy models.User) 
 }
 
 func (repo *Repository) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error) {
-	var purchase models.Purchase
-	if err := repo.db.Model(&models.Purchase{}).
-		Preload("PurchaseItems").
-		Preload("PurchaseItems.Product").
-		Where(whereIDEquals, id.String()).
-		First(&purchase).
-		Error; err != nil {
-		return nil, errors.New("purchase not found")
-	}
-
-	return &purchase, nil
+	return repo.getPurchaseByQueryAndValue(whereIDEquals, id.String())
 }
 
 func (repo *Repository) GetPurchaseBySumupClientTransactionID(sumupClientTransactionID uuid.UUID) (*models.Purchase, error) {
+	return repo.getPurchaseByQueryAndValue("sumup_client_transaction_id = ?", sumupClientTransactionID.String())
+}
+
+func (repo *Repository) getPurchaseByQueryAndValue(query string, value string) (*models.Purchase, error) {
 	var purchase models.Purchase
 	if err := repo.db.Model(&models.Purchase{}).
 		Preload("PurchaseItems").
 		Preload("PurchaseItems.Product").
-		Where("sumup_client_transaction_id = ?", sumupClientTransactionID.String()).
+		Where(query, value).
 		First(&purchase).
 		Error; err != nil {
 		return nil, errors.New("purchase not found")
