@@ -145,7 +145,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			purchase.TotalGrossPrice,
 			"Purchase from Kasseapparat",
 			purchase.ID.String(),
-			"https://evk.li/logreturn_8fk2.php",
+			handler.sumupRepository.GetWebhookUrl(),
 		)
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create SumUp reader checkout"))

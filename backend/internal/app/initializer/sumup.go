@@ -24,10 +24,18 @@ func InitializeSumup() *sumupSevice.Service {
 		affiliateKey := getEnv("SUMUP_AFFILIATE_KEY", "")
 		applicationId := getEnv("SUMUP_APPLICATION_ID", "")
 
+		var webhookUrl *string
+
+		publicUrl := getEnv("SUMUP_PUBLIC_URL", "")
+		if publicUrl != "" {
+			webhookUrl = &publicUrl
+			*webhookUrl += "/api/sumup/webhook"
+		}
+
 		clientOptions := client.WithAPIKey(apiKey)
 		client := sumup.NewClient(clientOptions)
 
-		instance = sumupSevice.NewService(client, merchantCode, applicationId, affiliateKey, paymentCurrency, uint(paymentMinorUnit))
+		instance = sumupSevice.NewService(client, merchantCode, applicationId, affiliateKey, paymentCurrency, uint(paymentMinorUnit), webhookUrl)
 	})
 
 	return instance
