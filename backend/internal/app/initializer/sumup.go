@@ -5,17 +5,17 @@ import (
 	"strconv"
 	"sync"
 
-	sumupSevice "github.com/potibm/kasseapparat/internal/app/service/sumup"
+	sumupService "github.com/potibm/kasseapparat/internal/app/service/sumup"
 	"github.com/sumup/sumup-go"
 	"github.com/sumup/sumup-go/client"
 )
 
 var (
-	instance *sumupSevice.Service
+	instance *sumupService.Service
 	once     sync.Once
 )
 
-func InitializeSumup() *sumupSevice.Service {
+func InitializeSumup() *sumupService.Service {
 	once.Do(func() {
 		apiKey := getEnv("SUMUP_API_KEY", "")
 		merchantCode := getEnv("SUMUP_MERCHANT_CODE", "")
@@ -35,13 +35,13 @@ func InitializeSumup() *sumupSevice.Service {
 		clientOptions := client.WithAPIKey(apiKey)
 		client := sumup.NewClient(clientOptions)
 
-		instance = sumupSevice.NewService(client, merchantCode, applicationId, affiliateKey, paymentCurrency, uint(paymentMinorUnit), webhookUrl)
+		instance = sumupService.NewService(client, merchantCode, applicationId, affiliateKey, paymentCurrency, uint(paymentMinorUnit), webhookUrl)
 	})
 
 	return instance
 }
 
-func GetSumupService() *sumupSevice.Service {
+func GetSumupService() *sumupService.Service {
 	if instance == nil {
 		panic("SumUp service is not initialized. Call InitializeSumup first.")
 	}
