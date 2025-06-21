@@ -1,7 +1,6 @@
 package tests_e2e
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 )
@@ -430,9 +429,6 @@ func createPurchase() string {
 		Expect().
 		// Status(http.StatusCreated).
 		JSON().Object()
-
-	// output the purchase response for debugging
-	fmt.Printf("Purchase response: %s\n", purchaseResponse.Raw())
 
 	purchase := purchaseResponse
 	purchaseId := purchase.Value("id").String().Raw()
