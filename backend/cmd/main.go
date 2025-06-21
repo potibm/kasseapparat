@@ -8,6 +8,7 @@ import (
 	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
+	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/monitor"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	sumupRepo "github.com/potibm/kasseapparat/internal/app/repository/sumup"
@@ -56,12 +57,31 @@ func main() {
 
 	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles)
 
-	// @TODO we should restart the poller for active transactions
+	startPollerForPendingPurchases(poller, sqliteRepository)
 
 	log.Println("Listening on " + port + "...")
 
 	err := router.Run(port)
 	if err != nil {
 		panic("[Error] failed to start Gin server due to: " + err.Error())
+	}
+}
+
+func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sqliteRepo.Repository) {
+	pendingStatus := models.PurchaseStatusPending
+
+	filters := sqliteRepo.PurchaseFilters{
+		Status: &pendingStatus,
+	}
+
+	activeTransactions, err := sqliteRepository.GetPurchases(1000, 0, "createdAt", "ASC", filters)
+	if err != nil {
+		log.Printf("[Error] failed to get active purchases: %v", err)
+		return
+	}
+
+	for _, tx := range activeTransactions {
+		log.Println("Starting poller for active transaction:", tx.ID)
+		poller.Start(tx.ID)
 	}
 }

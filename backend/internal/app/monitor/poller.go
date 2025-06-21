@@ -99,6 +99,11 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 		return true
 	}
 
+	if purchase.SumupClientTransactionID == nil {
+		log.Printf("No SumUp client transaction ID for %s, skipping polling", transactionID)
+		return true
+	}
+
 	// Fetch current status from SumUp
 	transaction, err := n.SumupRepository.GetTransactionByClientTransactionId(*purchase.SumupClientTransactionID)
 	if err != nil {
