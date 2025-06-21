@@ -226,6 +226,37 @@ func (m *MockRepository) GetPurchasedQuantitiesByProductID(productID uint) (int,
 	panic(errNotImplemented)
 }
 
+func (m *MockRepository) GetUserByID(id int) (*models.User, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetUsers(limit int, offset int, sort string, order string, filters sqlite.UserFilters) ([]models.User, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetTotalUsers(filters *sqlite.UserFilters) (int64, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) CreateUser(user models.User) (models.User, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) UpdateUserByID(id int, updatedUser models.User) (*models.User, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) DeleteUser(user models.User) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetUserByEmail(email string) (*models.User, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetUserByUsername(username string) (*models.User, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetUserByUsernameOrEmail(usernameOrEmail string) (*models.User, error) {
+	panic(errNotImplemented)
+}
+func (m *MockRepository) GetPurchaseBySumupClientTransactionID(sumupTransactionID uuid.UUID) (*models.Purchase, error) {
+	panic(errNotImplemented)
+}
+
 type MockMailer struct {
 	Sent []string
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type StatusPublisher interface {
-	PushUpdate(purchaseID uuid.UUID, status string)
+	PushUpdate(purchaseID uuid.UUID, status models.PurchaseStatus)
 }
 
 var _ HandlerInterface = (*Handler)(nil)
@@ -20,7 +20,7 @@ type HandlerInterface interface {
 
 type WebsocketPublisher struct{}
 
-func (w *WebsocketPublisher) PushUpdate(purchaseID uuid.UUID, status string) {
+func (w *WebsocketPublisher) PushUpdate(purchaseID uuid.UUID, status models.PurchaseStatus) {
 	PushUpdate(purchaseID, status)
 }
 

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/shopspring/decimal"
 )
@@ -113,9 +114,9 @@ type MockStatusPublisher struct {
 	}
 }
 
-func (m *MockStatusPublisher) PushUpdate(purchaseID uuid.UUID, status string) {
+func (m *MockStatusPublisher) PushUpdate(purchaseID uuid.UUID, status models.PurchaseStatus) {
 	m.Calls = append(m.Calls, struct {
 		PurchaseID uuid.UUID
 		Status     string
-	}{purchaseID, status})
+	}{purchaseID, string(status)})
 }

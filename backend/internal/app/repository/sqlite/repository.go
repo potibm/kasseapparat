@@ -53,6 +53,7 @@ type RepositoryInterface interface {
 	StorePurchases(purchase models.Purchase) (models.Purchase, error)
 	DeletePurchaseByID(id uuid.UUID, deletedBy models.User)
 	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
+	GetPurchaseBySumupClientTransactionID(sumupTransactionID uuid.UUID) (*models.Purchase, error)
 	UpdatePurchaseStatusByID(id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error)
 	UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error)
 	UpdatePurchaseSumupClientTransactionIDByID(id uuid.UUID, sumupClientTransactionID uuid.UUID) (*models.Purchase, error)
@@ -61,6 +62,15 @@ type RepositoryInterface interface {
 	GetTotalPurchases(filters PurchaseFilters) (int64, error)
 	GetPurchaseStats() ([]ProductPurchaseStats, error)
 	GetPurchasedQuantitiesByProductID(productID uint) (int, error)
+	GetUserByID(id int) (*models.User, error)
+	GetUsers(limit int, offset int, sort string, order string, filters UserFilters) ([]models.User, error)
+	GetTotalUsers(filters *UserFilters) (int64, error)
+	CreateUser(user models.User) (models.User, error)
+	UpdateUserByID(id int, updatedUser models.User) (*models.User, error)
+	DeleteUser(user models.User)
+	GetUserByEmail(email string) (*models.User, error)
+	GetUserByUsername(username string) (*models.User, error)
+	GetUserByUsernameOrEmail(usernameOrEmail string) (*models.User, error)
 }
 
 var _ RepositoryInterface = (*Repository)(nil)

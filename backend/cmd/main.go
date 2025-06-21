@@ -48,6 +48,7 @@ func main() {
 		SumupRepository: sumupRepository,
 		PurchaseService: purchaseService,
 		Monitor:         poller,
+		StatusPublisher: publisher,
 		Mailer:          mailer,
 		Version:         initializer.GetVersion(),
 		DecimalPlaces:   initializer.GetCurrencyDecimalPlaces(),

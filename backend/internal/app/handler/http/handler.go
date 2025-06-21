@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/monitor"
@@ -9,11 +10,16 @@ import (
 	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 )
 
+type StatusPublisher interface {
+	PushUpdate(purchaseID uuid.UUID, status models.PurchaseStatus)
+}
+
 type Handler struct {
-	repo            *sqliteRepo.Repository
+	repo            sqliteRepo.RepositoryInterface
 	sumupRepository sumupRepo.RepositoryInterface
 	purchaseService purchaseService.Service
 	monitor         monitor.Poller
+	statusPublisher StatusPublisher
 	mailer          mailer.Mailer
 	version         string
 	decimalPlaces   int32
@@ -21,10 +27,11 @@ type Handler struct {
 }
 
 type HandlerConfig struct {
-	Repo            *sqliteRepo.Repository
+	Repo            sqliteRepo.RepositoryInterface
 	SumupRepository sumupRepo.RepositoryInterface
 	PurchaseService purchaseService.Service
 	Monitor         monitor.Poller
+	StatusPublisher StatusPublisher
 	Mailer          mailer.Mailer
 	Version         string
 	DecimalPlaces   int32
@@ -37,6 +44,7 @@ func NewHandler(config HandlerConfig) *Handler {
 		sumupRepository: config.SumupRepository,
 		purchaseService: config.PurchaseService,
 		monitor:         config.Monitor,
+		statusPublisher: config.StatusPublisher,
 		mailer:          config.Mailer,
 		version:         config.Version,
 		decimalPlaces:   config.DecimalPlaces,

@@ -85,7 +85,7 @@ func filterHiddenProducts(products []models.Product) []models.Product {
 	return filteredProducts
 }
 
-func createExtendedProductResponse(repo *sqliteRepo.Repository, products []models.Product, decimalPlaces int32) []response.ExtendedProductResponse {
+func createExtendedProductResponse(repo sqliteRepo.RepositoryInterface, products []models.Product, decimalPlaces int32) []response.ExtendedProductResponse {
 	var productsResponse = []response.ExtendedProductResponse{}
 
 	for _, product := range products {

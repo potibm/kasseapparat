@@ -60,7 +60,7 @@ func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 		return
 	}
 
-	user, err := handler.repo.GetUserByUserameOrEmail(request.Login)
+	user, err := handler.repo.GetUserByUsernameOrEmail(request.Login)
 	if err != nil {
 		c.JSON(http.StatusOK, "OK")
 

@@ -129,6 +129,8 @@ func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocke
 
 		unprotectedApiRouter.POST("/auth/changePasswordToken", httpHandler.RequestChangePasswordToken)
 		unprotectedApiRouter.POST("/auth/changePassword", httpHandler.UpdateUserPassword)
+
+		unprotectedApiRouter.POST("/sumup/webhook", httpHandler.GetSumupTransactionWebhook)
 	}
 }
 

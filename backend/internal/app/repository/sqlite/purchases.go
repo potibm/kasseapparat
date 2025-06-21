@@ -90,6 +90,20 @@ func (repo *Repository) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error) 
 	return &purchase, nil
 }
 
+func (repo *Repository) GetPurchaseBySumupClientTransactionID(sumupClientTransactionID uuid.UUID) (*models.Purchase, error) {
+	var purchase models.Purchase
+	if err := repo.db.Model(&models.Purchase{}).
+		Preload("PurchaseItems").
+		Preload("PurchaseItems.Product").
+		Where("sumup_client_transaction_id = ?", sumupClientTransactionID.String()).
+		First(&purchase).
+		Error; err != nil {
+		return nil, errors.New("purchase not found")
+	}
+
+	return &purchase, nil
+}
+
 func (repo *Repository) UpdatePurchaseStatusByID(id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
 	return repo.updatePurchaseFieldByID(id, map[string]interface{}{
 		"status": string(status),

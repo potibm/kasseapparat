@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
 type wsConnection struct {
@@ -34,7 +35,7 @@ func unregisterConnection(transactionID uuid.UUID) {
 	delete(connections.clients, transactionID.String())
 }
 
-func PushUpdate(transactionID uuid.UUID, status string) {
+func PushUpdate(transactionID uuid.UUID, status models.PurchaseStatus) {
 	connections.RLock()
 	client, ok := connections.clients[transactionID.String()]
 	connections.RUnlock()
@@ -49,7 +50,7 @@ func PushUpdate(transactionID uuid.UUID, status string) {
 
 	err := client.Conn.WriteJSON(map[string]interface{}{
 		"type":   "status_update",
-		"status": status,
+		"status": string(status),
 	})
 	if err != nil {
 		log.Printf("Failed to send WebSocket message to %s: %v", transactionID, err)

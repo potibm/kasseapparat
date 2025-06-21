@@ -71,7 +71,7 @@ func (repo *Repository) GetUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-func (repo *Repository) GetUserByUserameOrEmail(login string) (*models.User, error) {
+func (repo *Repository) GetUserByUsernameOrEmail(login string) (*models.User, error) {
 	var user models.User
 	if err := repo.db.Model(&models.User{}).Where("LOWER(Username) = ? OR LOWER(Email) = ?", strings.ToLower(login), strings.ToLower(login)).First(&user).Error; err != nil {
 		return nil, ErrUserNotFound
@@ -81,7 +81,7 @@ func (repo *Repository) GetUserByUserameOrEmail(login string) (*models.User, err
 }
 
 func (repo *Repository) GetUserByLoginAndPassword(login string, password string) (*models.User, error) {
-	user, err := repo.GetUserByUserameOrEmail(login)
+	user, err := repo.GetUserByUsernameOrEmail(login)
 	if err != nil {
 		return nil, err
 	}

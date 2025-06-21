@@ -1,12 +1,15 @@
 package http
 
 import (
+	"database/sql"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	model "github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/shopspring/decimal"
 )
@@ -82,6 +85,61 @@ func (handler *Handler) GetSumupTransactionByID(c *gin.Context) {
 	c.JSON(http.StatusOK, toSumupTransactionResponse(*transaction))
 }
 
+func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
+	var payload sumup.SumupTransactionWebhookPayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request payload"})
+		return
+	}
+
+	if payload.EventType != "solo.transaction.updated" {
+		log.Println("unsupported event type:", payload.EventType)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported event type"})
+
+		return
+	}
+
+	purchase, err := handler.repo.GetPurchaseBySumupClientTransactionID(payload.Payload.ClientTransactionID)
+	if (err != nil && err != sql.ErrNoRows) || purchase == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "purchase not found"})
+		return
+	}
+
+	if purchase.Status != model.PurchaseStatusPending {
+		c.JSON(http.StatusConflict, gin.H{"error": "purchase is not in pending status"})
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	switch payload.Payload.Status {
+	case sumup.StatusSuccessful:
+		// Update purchase status to confirmed
+		log.Println("updating purchase status to confirmed for transaction ID:", payload.Payload.ClientTransactionID)
+		handler.statusPublisher.PushUpdate(purchase.ID, model.PurchaseStatusConfirmed)
+
+		_, err = handler.purchaseService.FinalizePurchase(ctx, purchase.ID)
+	case sumup.StatusFailed:
+		// Update purchase status to failed
+		log.Println("updating purchase status to failed for transaction ID:", payload.Payload.ClientTransactionID)
+		handler.statusPublisher.PushUpdate(purchase.ID, model.PurchaseStatusFailed)
+
+		_, err = handler.purchaseService.FailPurchase(ctx, purchase.ID)
+	default:
+		log.Println("unsupported status:", payload.Payload.Status)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported status"})
+	}
+
+	if err != nil {
+		log.Println("failed to update purchase status:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update purchase status"})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
+}
+
 func toSumupTransactionResponse(c sumup.Transaction) SumupTransactionReponse {
 	return SumupTransactionReponse{
 		ID:              c.TransactionID,
@@ -124,5 +182,3 @@ func toSumupTransactionResponses(transactions []sumup.Transaction) []SumupTransa
 
 	return responses
 }
-
-// @TODO add a method to receive a sumup webhook and update the transaction status
