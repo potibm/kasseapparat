@@ -5,6 +5,7 @@ import { getCurrentReaderId } from "../../../helper/ReaderCookie";
 import PropTypes from "prop-types";
 import MyButton from "../MyButton";
 import { useAuth } from "../../../Auth/provider/AuthProvider";
+import { useConfig } from "../../../provider/ConfigProvider";
 
 const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   const [status, setStatus] = useState(purchase.status);
@@ -15,10 +16,16 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   const [processing, setProcessing] = useState(false);
   const wsRef = useRef(null);
   const { token: jwtToken } = useAuth();
+  const { websocketHost } = useConfig();
 
   const sumUpReaderId = getCurrentReaderId();
-  const closeModalTimeout = 2000;
+  const closeModalTimeout = 3000;
   const ageInSeconds = Math.max(0, Math.round((now - lastUpdate) / 1000));
+
+  const statusRef = useRef(status);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   const cancelPayment = () => {
     // disable the button to prevent multiple clicks
@@ -34,7 +41,8 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
     } else {
       console.error("WebSocket is not open, cannot send cancel message");
       setError("WebSocket is not open, cannot cancel payment");
-      setProcessing(false);
+      onComplete(false);
+      setTimeout(onClose, closeModalTimeout);
     }
   };
 
@@ -50,31 +58,46 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
       color: "text-yellow-600",
       icon: <HiClock className="inline mr-1 h-5 w-5" />,
       spinnerColor: "warning",
+      fontSize: "text-lg",
     },
     confirmed: {
       color: "text-green-600",
-      icon: <HiCheckCircle className="inline mr-1 h-5 w-5" />,
+      icon: <HiCheckCircle className="inline mr-1 h-8 w-8" />,
       spinnerColor: null,
+      fontSize: "text-3xl",
     },
     failed: {
       color: "text-red-600",
-      icon: <HiXCircle className="inline mr-1 h-5 w-5" />,
+      icon: <HiXCircle className="inline mr-1 h-8 w-8" />,
       spinnerColor: null,
+      fontSize: "text-3xl",
     },
   };
   const current = statusInfo[status] || {
     color: "text-gray-600",
     icon: null,
     spinnerColor: "info",
+    fontSize: "text-lg",
   };
 
   useEffect(() => {
     const ws = new WebSocket(
-      `ws://localhost:3001/api/v2/purchases/${purchase.id}/ws?token=${jwtToken}`,
+      `${websocketHost}/api/v2/purchases/${purchase.id}/ws?token=${jwtToken}`,
     );
     wsRef.current = ws;
 
+    const connectionTimeout = setTimeout(() => {
+      if (ws.readyState !== WebSocket.OPEN) {
+        console.warn("WebSocket did not connect in time.");
+        setError("Could not fetch the status of the payment terminal.");
+        setProcessing(false);
+        onComplete(false);
+        onClose();
+      }
+    }, 3000); // 3 Sekunden
+
     ws.onopen = () => {
+      clearTimeout(connectionTimeout);
       console.log("WebSocket connected");
     };
 
@@ -110,7 +133,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
           onComplete(false);
         }
       } catch (err) {
-        console.error("WebSocket parsing error:", err);
+        console.error("WebSocket parsing error:", err, event.data);
       }
     };
 
@@ -121,14 +144,23 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
 
     ws.onclose = () => {
       console.log("WebSocket closed");
+      if (statusRef === "pending") {
+        setError("Connection lost.");
+        setProcessing(false);
+        onComplete(false);
+        setTimeout(onClose, closeModalTimeout);
+      }
     };
 
     return () => {
+      clearTimeout(connectionTimeout);
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.close();
       }
     };
-  }, [purchase.id, onConfirmed, onClose, onComplete, jwtToken]);
+  }, [purchase.id, onConfirmed, onClose, onComplete, jwtToken, websocketHost]);
+
+  if (!purchase?.id) return null;
 
   return (
     <Modal show={show} size="md" popup dismissible={false}>
@@ -136,32 +168,40 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
         <div className="text-center">
           <h3 className="text-lg font-semibold mb-8">Purchase Status</h3>
           <div
+            key={status}
             className={`text-center space-y-4 ${flash ? "animate__animated animate__headShake" : ""}`}
           >
             {status === "pending" && (
-              <Spinner color={current.spinnerColor} size="xl" />
+              <Spinner
+                color={current.spinnerColor}
+                size="xl"
+                className="mb-3"
+              />
             )}
             <div
               className={`text-lg font-medium flex items-center justify-center gap-2 ${current.color}`}
             >
               {current.icon}
               <span>
-                {status} ({ageInSeconds} sec ago)
+                {status}
+                {status === "pending" && <> ({ageInSeconds} sec ago)</>}
               </span>
             </div>
+            {error && <p className="text-red-600 font-medium">{error}</p>}
           </div>
-          {error && <p className="text-red-600 font-medium">{error}</p>}
         </div>
       </ModalBody>
       <ModalFooter>
-        <MyButton
-          color="failure"
-          disabled={processing}
-          onClick={() => cancelPayment()}
-        >
-          Abort Purchase
-          {processing && <Spinner color="gray" className="ml-2" />}
-        </MyButton>
+        {status === "pending" && (
+          <MyButton
+            color="failure"
+            disabled={processing}
+            onClick={() => cancelPayment()}
+          >
+            {processing ? "Cancelling..." : "Abort Purchase"}
+            {processing && <Spinner color="gray" className="ml-2" />}
+          </MyButton>
+        )}
       </ModalFooter>
     </Modal>
   );

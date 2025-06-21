@@ -23,6 +23,7 @@ const ConfigProvider = ({ children }) => {
       })
       .then((data) => {
         data.apiHost = API_HOST;
+        data.websocketHost = API_HOST.replace(/^http/, "ws");
 
         data.currencyOptions = {
           style: "currency",
