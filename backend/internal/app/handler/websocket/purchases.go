@@ -16,24 +16,43 @@ var upgrader = websocket.Upgrader{
 }
 
 func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
+	transactionID, conn, ok := h.upgradeAndRegister(c)
+	if !ok {
+		return
+	}
+
+	defer conn.Close()
+	defer unregisterConnection(transactionID)
+
+	if err := h.sendInitialStatus(conn, transactionID); err != nil {
+		log.Println("Sending initial status failed:", err)
+		return
+	}
+
+	h.listenAndHandleMessages(conn, transactionID)
+}
+
+func (h *Handler) upgradeAndRegister(c *gin.Context) (uuid.UUID, *websocket.Conn, bool) {
 	transactionID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
-		return
+		return uuid.Nil, nil, false
 	}
 
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println("WebSocket upgrade failed:", err)
-		return
+		return uuid.Nil, nil, false
 	}
-	defer conn.Close()
 
 	log.Printf("WebSocket connected for transaction: %s", transactionID)
 
 	registerConnection(transactionID, conn)
-	defer unregisterConnection(transactionID)
 
+	return transactionID, conn, true
+}
+
+func (h *Handler) sendInitialStatus(conn *websocket.Conn, transactionID uuid.UUID) error {
 	purchase, err := h.sqliteRepository.GetPurchaseByID(transactionID)
 	if err != nil {
 		log.Println("Failed to get purchase by ID:", err)
@@ -43,14 +62,16 @@ func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 			"message": "failed to retrieve purchase",
 		})
 
-		return
+		return err
 	}
 
-	_ = conn.WriteJSON(map[string]interface{}{
+	return conn.WriteJSON(map[string]interface{}{
 		"type":   "status_update",
 		"status": purchase.Status,
 	})
+}
 
+func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uuid.UUID) {
 	for {
 		var msg map[string]interface{}
 		if err := conn.ReadJSON(&msg); err != nil {
@@ -63,28 +84,7 @@ func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 
 		switch msgType {
 		case "cancel_payment":
-			readerID, ok := msg["reader_id"].(string)
-			if !ok || readerID == "" {
-				_ = conn.WriteJSON(map[string]interface{}{
-					"type":    "error",
-					"message": "reader_id missing or invalid",
-				})
-
-				break
-			}
-
-			err = h.sumupRepository.CreateReaderTerminateAction(readerID)
-			if err != nil {
-				_ = conn.WriteJSON(map[string]interface{}{
-					"type":    "error",
-					"messahe": "failed to cancel payment",
-				})
-			} else {
-				_ = conn.WriteJSON(map[string]interface{}{
-					"type":           "cancel_ack",
-					"transaction_id": transactionID,
-				})
-			}
+			h.handleCancelPayment(conn, msg, transactionID)
 		case "ping":
 			_ = conn.WriteJSON(map[string]interface{}{
 				"type": "pong",
@@ -97,5 +97,30 @@ func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 				"transaction_id": transactionID,
 			})
 		}
+	}
+}
+
+func (h *Handler) handleCancelPayment(conn *websocket.Conn, msg map[string]interface{}, transactionID uuid.UUID) {
+	readerID, ok := msg["reader_id"].(string)
+	if !ok || readerID == "" {
+		_ = conn.WriteJSON(map[string]interface{}{
+			"type":    "error",
+			"message": "reader_id missing or invalid",
+		})
+
+		return
+	}
+
+	err := h.sumupRepository.CreateReaderTerminateAction(readerID)
+	if err != nil {
+		_ = conn.WriteJSON(map[string]interface{}{
+			"type":    "error",
+			"message": "failed to cancel payment",
+		})
+	} else {
+		_ = conn.WriteJSON(map[string]interface{}{
+			"type":           "cancel_ack",
+			"transaction_id": transactionID,
+		})
 	}
 }
