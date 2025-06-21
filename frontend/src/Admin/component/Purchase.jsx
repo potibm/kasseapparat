@@ -79,6 +79,8 @@ export const PurchaseList = () => {
     paymentMethods,
   } = useConfig();
 
+  // @TODO add a refund / delte button for admins
+
   return (
     <List sort={{ field: "createdAt", order: "DESC" }} actions={false}>
       <PurchaseListToolbar />

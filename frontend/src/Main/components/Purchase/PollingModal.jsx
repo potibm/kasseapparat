@@ -1,11 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Spinner,
-} from "flowbite-react";
+import { Modal, ModalBody, ModalFooter, Spinner } from "flowbite-react";
 import { HiClock, HiCheckCircle, HiXCircle } from "react-icons/hi";
 import { getCurrentReaderId } from "../../../helper/ReaderCookie";
 import PropTypes from "prop-types";

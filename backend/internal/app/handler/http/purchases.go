@@ -16,6 +16,8 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/utils"
 )
 
+const invalidPurchaseIDMsg = "Invalid purchase ID"
+
 func (handler *Handler) DeletePurchase(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
@@ -26,7 +28,7 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg))
 		return
 	}
 
@@ -47,7 +49,7 @@ func (handler *Handler) RefundPurchase(c *gin.Context) {
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg))
 		return
 	}
 
@@ -216,7 +218,7 @@ func (handler *Handler) GetPurchaseByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid purchase ID"))
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg))
 		return
 	}
 

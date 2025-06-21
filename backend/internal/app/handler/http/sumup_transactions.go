@@ -124,3 +124,5 @@ func toSumupTransactionResponses(transactions []sumup.Transaction) []SumupTransa
 
 	return responses
 }
+
+// @TODO add a method to receive a sumup webhook and update the transaction status

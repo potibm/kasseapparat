@@ -8,7 +8,6 @@ import {
   DateField,
   Show,
   SimpleShowLayout,
-  ShowActions,
   Filter,
   SelectInput,
   ArrayField,

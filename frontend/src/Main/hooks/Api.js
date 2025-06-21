@@ -131,29 +131,6 @@ export const fetchPurchases = async (apiHost, jwtToken, userId) => {
   });
 };
 
-/*
-export const deletePurchaseById = async (apiHost, jwtToken, purchaseId) => {
-  return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v2/purchases/${purchaseId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwtToken}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((errorBody) => {
-            throw new Error(errorBody.details || "Network response was not ok");
-          });
-        }
-        return response.json();
-      })
-      .then((data) => resolve(data))
-      .catch((error) => reject(error));
-  });
-};*/
-
 export const refundPurchaseById = async (apiHost, jwtToken, purchaseId) => {
   return new Promise((resolve, reject) => {
     fetch(`${apiHost}/api/v2/purchases/${purchaseId}/refund`, {
