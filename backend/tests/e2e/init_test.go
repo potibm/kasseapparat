@@ -8,11 +8,16 @@ import (
 	"testing"
 
 	"github.com/gavv/httpexpect/v2"
-	"github.com/potibm/kasseapparat/internal/app/handler"
+	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
+	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/monitor"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
+	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 	"github.com/potibm/kasseapparat/internal/app/utils"
+	"gorm.io/gorm"
 )
 
 var (
@@ -20,6 +25,7 @@ var (
 	demoJwt          string
 	adminJwt         string
 	totalCountHeader = "X-Total-Count"
+	db               *gorm.DB
 )
 
 func TestMain(m *testing.M) {
@@ -31,7 +37,7 @@ func TestMain(m *testing.M) {
 }
 
 func setup() {
-	db := utils.ConnectToLocalDatabase()
+	db = utils.ConnectToLocalDatabase()
 	utils.PurgeDatabase(db)
 	utils.MigrateDatabase(db)
 	utils.SeedDatabase(db, true)
@@ -42,17 +48,36 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 	t.Setenv("JWT_SECRET", "test")
 
 	currencyDecimalPlaces := int32(2)
-	paymentMethods := map[string]string{
-		"CASH": "💶 Cash",
-		"CC":   "💳 Creditcard",
+	paymentMethods := map[models.PaymentMethod]string{
+		models.PaymentMethodCash:  "💶 Cash",
+		models.PaymentMethodCC:    "💳 Creditcard",
+		models.PaymentMethodSumUp: "💳 SumUp",
 	}
 
-	repo := repository.NewLocalRepository(currencyDecimalPlaces)
+	sqliteRepo := sqliteRepo.NewRepository(db, currencyDecimalPlaces)
+	sumupRepo := NewMockSumUpRepository()
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)
-	handler := handler.NewHandler(repo, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
 
-	router := initializer.InitializeHttpServer(*handler, *repo, embed.FS{})
+	purchaseService := purchaseService.NewPurchaseService(sqliteRepo, sumupRepo, mailer, currencyDecimalPlaces)
+
+	statusPublisher := MockStatusPublisher{}
+	poller := monitor.NewPoller(sumupRepo, sqliteRepo, purchaseService, &statusPublisher)
+
+	httpHandlerConfig := handlerHttp.HandlerConfig{
+		Repo:            sqliteRepo,
+		SumupRepository: sumupRepo,
+		PurchaseService: purchaseService,
+		Monitor:         poller,
+		Mailer:          *mailer,
+		Version:         initializer.GetVersion(),
+		DecimalPlaces:   currencyDecimalPlaces,
+		PaymentMethods:  paymentMethods,
+	}
+	handlerHttp := handlerHttp.NewHandler(httpHandlerConfig)
+	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService)
+
+	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{})
 
 	ts := httptest.NewServer(router)
 
@@ -75,7 +100,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 }
 
 func getJwtForUser(username, password string) string {
-	// Login durchführen
+	// Perform login request
 	login := e.POST("/login").
 		WithJSON(map[string]string{
 			"login":    username,
@@ -85,7 +110,7 @@ func getJwtForUser(username, password string) string {
 		Status(http.StatusOK).
 		JSON().Object()
 
-	// JWT auslesen
+	// Read the JWT token from the response
 	jwt := login.Value("token").String().Raw()
 
 	return jwt

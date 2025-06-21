@@ -6,15 +6,17 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
+	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-var allAvailablePaymentMethods = map[string]string{
-	"CASH":    "💶 Cash",
-	"CC":      "💳 Creditcard",
-	"VOUCHER": "🎟️ Voucher",
+var allAvailablePaymentMethods = map[models.PaymentMethod]string{
+	models.PaymentMethodCash:    "💶 Cash",
+	models.PaymentMethodCC:      "💳 Creditcard",
+	models.PaymentMethodVoucher: "🎟️ Voucher",
+	models.PaymentMethodSumUp:   "💳 Sumup",
 }
 
-const defaultPaymentMethod = "CASH"
+const defaultPaymentMethod = models.PaymentMethodCash
 
 func InitializeDotenv() {
 	_ = godotenv.Load()
@@ -31,19 +33,19 @@ func GetCurrencyDecimalPlaces() int32 {
 
 	return int32(fractionDigitsMax)
 }
-func GetEnabledPaymentMethods() map[string]string {
-	enabled := make(map[string]string)
+func GetEnabledPaymentMethods() map[models.PaymentMethod]string {
+	enabled := make(map[models.PaymentMethod]string)
 
 	raw := os.Getenv("PAYMENT_METHODS")
 	if raw == "" {
 		// fallback: default to only CASH if not set
-		raw = defaultPaymentMethod
+		raw = string(defaultPaymentMethod)
 	}
 
 	for _, code := range strings.Split(raw, ",") {
-		code = strings.TrimSpace(code)
-		if label, ok := allAvailablePaymentMethods[code]; ok {
-			enabled[code] = label
+		pm := models.PaymentMethod(strings.TrimSpace(code))
+		if label, ok := allAvailablePaymentMethods[pm]; ok {
+			enabled[pm] = label
 		}
 	}
 

@@ -1,4 +1,4 @@
-import { HiXCircle, HiOutlineExclamationCircle } from "react-icons/hi";
+import { HiOutlineExclamationCircle, HiReceiptRefund } from "react-icons/hi";
 import React, { useState, useEffect, useRef } from "react";
 import {
   Modal,
@@ -16,7 +16,7 @@ import { useConfig } from "../../provider/ConfigProvider";
 import "animate.css";
 import MyButton from "./MyButton";
 
-function PurchaseHistory({ history, removeFromPurchaseHistory }) {
+const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
   const [openModal, setOpenModal] = useState({ show: false, purchase: null });
   const [processing, setProcessing] = useState(false);
 
@@ -31,7 +31,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
     }
   };
 
-  const confirmDelete = (purchase) => {
+  const confirmRefund = (purchase) => {
     if (processing) {
       return;
     }
@@ -92,10 +92,10 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
         dismissible
       >
         <ModalBody>
-          <div className="text-center">
+          <div className="text-center m-5">
             <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
             <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-200">
-              Are you sure you want to delete this purchase?
+              Are you sure you want to refund this purchase?
             </h3>
 
             <Table className="mb-5">
@@ -123,7 +123,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
               <MyButton
                 color="failure"
                 disabled={processing}
-                onClick={() => confirmDelete(openModal.purchase)}
+                onClick={() => confirmRefund(openModal.purchase)}
               >
                 Yes, I&apos;m sure
                 {processing && <Spinner color="gray" className="ml-2" />}
@@ -150,7 +150,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
             <TableHeadCell className="w-[15%] text-right">
               Total Price
             </TableHeadCell>
-            <TableHeadCell className="w-[30%] text-right">Remove</TableHeadCell>
+            <TableHeadCell className="w-[30%] text-right">Refund</TableHeadCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -182,7 +182,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
                     color="failure"
                     onClick={() => setOpenModal({ show: true, purchase })}
                   >
-                    <HiXCircle />
+                    <HiReceiptRefund />
                   </MyButton>
                 </TableCell>
               </TableRow>
@@ -191,7 +191,7 @@ function PurchaseHistory({ history, removeFromPurchaseHistory }) {
       </Table>
     </div>
   );
-}
+};
 
 PurchaseHistory.propTypes = {
   history: PropTypes.array,

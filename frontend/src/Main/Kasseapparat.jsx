@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Alert, Spinner } from "flowbite-react";
-import Cart from "./components/Cart";
+import Cart from "./components/Cart/Cart";
 import ProductList from "./components/ProductList";
 import PurchaseHistory from "./components/PurchaseHistory";
 import ErrorModal from "./components/ErrorModal";
 import MainMenu from "./components/MainMenu/MainMenu";
+import PollingModal from "./components/Purchase/PollingModal";
 import {
-  deletePurchaseById,
+  refundPurchaseById,
   fetchProducts,
   fetchPurchases,
   storePurchase,
@@ -25,12 +26,15 @@ import { useConfig } from "../provider/ConfigProvider";
 import Version from "../components/Version";
 import Decimal from "decimal.js";
 
-function Kasseapparat() {
+const Kasseapparat = () => {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState(null);
   const [purchaseHistory, setPurchaseHistory] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const { username, token, id: userId } = useAuth();
+  const [pollingModalOpen, setPollingModalOpen] = useState(false);
+  const [onPollingComplete, setOnPollingComplete] = useState(() => () => {});
+  const [pendingPurchase, setPendingPurchase] = useState(null);
   const apiHost = useConfig().apiHost;
   const envMessage = useConfig().environmentMessage;
 
@@ -94,11 +98,12 @@ function Kasseapparat() {
     if (purchaseHistory === null) {
       return;
     }
+    console.log("Adding purchase to history: ", purchase);
     setPurchaseHistory([purchase, ...purchaseHistory]);
   };
 
   const handleRemoveFromPurchaseHistory = async (purchase) => {
-    return deletePurchaseById(apiHost, token, purchase.id)
+    return refundPurchaseById(apiHost, token, purchase.id)
       .then(() => {
         fetchPurchases(apiHost, token, userId)
           .then((history) => setPurchaseHistory(history))
@@ -119,7 +124,9 @@ function Kasseapparat() {
           );
       })
       .catch((error) => {
-        showError("There was an error deleting the purchase: " + error.message);
+        showError(
+          "There was an error refunding the purchase: " + error.message,
+        );
       });
   };
 
@@ -127,24 +134,52 @@ function Kasseapparat() {
     return getCartProductQuantity(cart, product);
   };
 
-  const handleCheckoutCart = async (paymentMethodCode) => {
-    return storePurchase(apiHost, token, cart, paymentMethodCode)
-      .then((createdPurchase) => {
-        setCart(checkoutCart());
-        handleAddToPurchaseHistory(createdPurchase.purchase);
-        fetchProducts(apiHost, token)
-          .then((products) =>
-            setProducts(convertProductsWithDecimals(products)),
-          )
-          .catch((error) =>
-            showError(
-              "There was an error fetching the products: " + error.message,
-            ),
-          );
-      })
-      .catch((error) => {
-        showError("There was an error storing the purchase: " + error.message);
-      });
+  const handleCheckoutCart = async (paymentMethodCode, paymentMethodData) => {
+    try {
+      const createdPurchase = await storePurchase(
+        apiHost,
+        token,
+        cart,
+        paymentMethodCode,
+        paymentMethodData,
+      );
+
+      // probably we need to wait for pending purchases to be processed
+      console.log("Purchase created: ", createdPurchase);
+
+      if (createdPurchase.status === "pending") {
+        // open modal and wait
+        const purchaseSucceeded = await new Promise((resolve) => {
+          setPollingModalOpen(true);
+          setPendingPurchase(createdPurchase);
+          setOnPollingComplete(() => resolve);
+
+          // optional: timeout after X seconds?
+          // setTimeout(() => reject(new Error("Polling timed out")), 60000);
+        });
+
+        if (purchaseSucceeded === false) {
+          return;
+        }
+      } else if (createdPurchase.status !== "confirmed") {
+        throw new Error(
+          "Purchase status is not confirmed: " + createdPurchase.status,
+        );
+      }
+      console.log("Checkout successful, purchase: ", createdPurchase);
+
+      setCart(checkoutCart());
+      handleAddToPurchaseHistory(createdPurchase);
+      fetchProducts(apiHost, token)
+        .then((products) => setProducts(convertProductsWithDecimals(products)))
+        .catch((error) =>
+          showError(
+            "There was an error fetching the products: " + error.message,
+          ),
+        );
+    } catch (error) {
+      showError("There was an error during checkout: " + error.message);
+    }
   };
 
   const handleAddProductInterest = (product) => {
@@ -219,8 +254,19 @@ function Kasseapparat() {
         </div>
       </div>
       <ErrorModal message={errorMessage} onClose={handleCloseError} />
+      {pollingModalOpen && pendingPurchase && (
+        <PollingModal
+          purchase={pendingPurchase}
+          show={pollingModalOpen}
+          onClose={() => setPollingModalOpen(false)}
+          onComplete={onPollingComplete}
+          onConfirmed={() => {
+            setPollingModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
-}
+};
 
 export default Kasseapparat;

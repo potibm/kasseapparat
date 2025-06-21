@@ -20,7 +20,7 @@ prepare-buildx:
 
 run:
 	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001 &
-	docker run -d -p 8025:8025 -p 1025:1025 mailhog/mailhog
+	docker run -d -p 8025:8025 -p 2025:1025 --platform "linux/amd64" mailhog/mailhog
 	cd $(FRONTEND_DIR) && yarn start &
 
 stop:
@@ -38,7 +38,7 @@ run-fe:
 	cd $(FRONTEND_DIR) && yarn dev
 
 run-mailhog:
-	docker run -d -p 8025:8025 -p 1025:1025 --platform "linux/amd64" mailhog/mailhog
+	docker run -d -p 8025:8025 -p 2025:1025 --platform "linux/amd64" mailhog/mailhog
 
 deps-be:
 	cd $(BACKEND_DIR) && go get -u -t ./...

@@ -241,6 +241,8 @@ Only a small set of **critical or security-sensitive actions** are restricted to
 - Deleting a product
 - Deleting a guestlist created by another user
 - Deleting a guest added by someone else
+- Deleting a purchase
+- Refunding a SumUp purchase
 
 This minimal restriction model allows flexibility for everyone while ensuring that core system integrity is maintained.
 

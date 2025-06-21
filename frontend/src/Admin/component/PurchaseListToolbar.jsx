@@ -15,6 +15,14 @@ import { PurchaseExportButton } from "./PurchaseExportButton";
 export const PurchaseListToolbar = (props) => {
   const { paymentMethods } = useConfig();
 
+  const statusChoices = [
+    { id: "pending", name: "Pending" },
+    { id: "confirmed", name: "Confirmed" },
+    { id: "cancelled", name: "Cancelled" },
+    { id: "failed", name: "Failed" },
+    { id: "refunded", name: "Refunded" },
+  ];
+
   const paymentMethodChoices =
     paymentMethods?.map((pm) => ({
       id: pm.code,
@@ -30,6 +38,7 @@ export const PurchaseListToolbar = (props) => {
       source="paymentMethod"
       choices={paymentMethodChoices}
     />,
+    <SelectInput key="status" source="status" choices={statusChoices} />,
     <NumberInput
       key="total-gross-price-gte"
       source="totalGrossPrice_gte"
