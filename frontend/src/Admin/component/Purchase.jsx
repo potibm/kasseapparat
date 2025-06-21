@@ -1,9 +1,10 @@
 import React from "react";
 import {
+  usePermissions,
+  useRecordContext,
   List,
   Datagrid,
   TextField,
-  DeleteButton,
   NumberField,
   DateField,
   Show,
@@ -11,6 +12,7 @@ import {
   ArrayField,
   FunctionField,
   ReferenceField,
+  DeleteWithConfirmButton,
 } from "react-admin";
 import { useConfig } from "../../provider/ConfigProvider";
 import { Box } from "@mui/material";
@@ -19,6 +21,8 @@ import ListIcon from "@mui/icons-material/List";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import ErrorIcon from "@mui/icons-material/Error";
+
+import RefundWithConfirmButton from "./RefundWithConfirmButton";
 
 const renderPaymentMethod = (record, paymentMethods) => {
   if (!paymentMethods) {
@@ -72,6 +76,29 @@ const renderStatus = (record) => {
   }
 };
 
+const ConditionalDeleteButton = (props) => {
+  const { permissions } = usePermissions();
+
+  if (permissions === "admin") {
+    return <DeleteWithConfirmButton {...props} />;
+  }
+  return null;
+};
+
+const ConditionalRefundButton = (props) => {
+  const { permissions } = usePermissions();
+  const record = useRecordContext(props);
+
+  if (
+    permissions === "admin" &&
+    record.status === "confirmed" &&
+    record.paymentMethod === "SUMUP"
+  ) {
+    return <RefundWithConfirmButton />;
+  }
+  return null;
+};
+
 export const PurchaseList = () => {
   const {
     currencyOptions: currency,
@@ -113,7 +140,8 @@ export const PurchaseList = () => {
           render={(record) => renderPaymentMethod(record, paymentMethods)}
         />
         <FunctionField label="Status" render={renderStatus} />
-        <DeleteButton mutationMode="pessimistic" />
+        <ConditionalDeleteButton mutationMode="pessimistic" />
+        <ConditionalRefundButton />
       </Datagrid>
     </List>
   );

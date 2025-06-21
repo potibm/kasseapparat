@@ -73,6 +73,24 @@ const dataProvider = {
       data: json,
     }));
   },
+
+  refund: (resource, params) => {
+    if (!["purchases"].includes(resource)) {
+      throw new Error(`Refund is not supported for resource: ${resource}`);
+    }
+    if (!params.id) {
+      throw new Error("Refund requires an id");
+    }
+
+    const url = `${API_HOST}/api/v2/${resolveResource(resource)}/${params.id}/refund`;
+    const options = {
+      method: "POST",
+      body: JSON.stringify(params.data),
+    };
+    return httpClient(url, options).then(({ json }) => ({
+      data: json,
+    }));
+  },
 };
 
 export default dataProvider;
