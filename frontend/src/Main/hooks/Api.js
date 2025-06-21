@@ -65,6 +65,7 @@ export const storePurchase = async (
     const cartPayload = cart;
     cartPayload.forEach((item) => {
       item.lists = null;
+      item.guestlists = null;
     });
 
     let payloadData = {

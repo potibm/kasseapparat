@@ -8,8 +8,6 @@ import (
 
 var purchaseBaseUrl = "/api/v2/purchases"
 
-// @TODO: test a purchase with only a free product, currently leads to an error
-
 func TestGetPurchasesList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -147,6 +145,48 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	withDemoUserAuthToken(e.GET(purchaseUrl)).
 		Expect().
 		Status(http.StatusNotFound)
+}
+
+func TestCreatePurchaseWithWithFreeProduct(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// Create a purchase with a free product
+	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+		WithJSON(map[string]interface{}{
+			"paymentMethod":   "CASH",
+			"totalNetPrice":   "0",
+			"totalGrossPrice": "0",
+			"cart": []map[string]interface{}{
+				{
+					"id":        3, // free product
+					"quantity":  1,
+					"netPrice":  "0",
+					"listItems": []map[string]interface{}{},
+				},
+			},
+		}).
+		Expect().
+		Status(http.StatusCreated).JSON().Object()
+
+	purchase := purchaseResponse
+	purchase.Value("id").String()
+	purchase.Value("totalGrossPrice").String().IsEqual("0")
+	purchase.Value("totalNetPrice").String().IsEqual("0")
+
+	purchaseId := purchase.Value("id").String().Raw()
+	purchaseUrl := purchaseBaseUrl + "/" + purchaseId
+
+	// Get the purchase
+	purchase = withDemoUserAuthToken(e.GET(purchaseUrl)).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	purchase.Value("id").String().IsEqual(purchaseId)
+	purchase.Value("totalGrossPrice").String().IsEqual("0")
+	purchase.Value("totalNetPrice").String().IsEqual("0")
+
+	deletePurchase(purchaseUrl)
 }
 
 func TestCreatePurchaseWithWrongTotalGrossPrice(t *testing.T) {
