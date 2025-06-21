@@ -8,10 +8,20 @@ import (
 	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 )
 
+type StatusPublisher interface {
+	PushUpdate(purchaseID uuid.UUID, status string)
+}
+
 var _ HandlerInterface = (*Handler)(nil)
 
 type HandlerInterface interface {
 	HandleTransactionWebSocket(c *gin.Context)
+}
+
+type WebsocketPublisher struct{}
+
+func (w *WebsocketPublisher) PushUpdate(purchaseID uuid.UUID, status string) {
+	PushUpdate(purchaseID, status)
 }
 
 type Handler struct {

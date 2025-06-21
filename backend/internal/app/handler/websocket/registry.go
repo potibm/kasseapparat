@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"log"
 	"sync"
 
 	"github.com/google/uuid"
@@ -39,14 +40,18 @@ func PushUpdate(transactionID uuid.UUID, status string) {
 	connections.RUnlock()
 
 	if !ok {
+		log.Printf("No WebSocket client for %s", transactionID)
 		return
 	}
 
 	client.mu.Lock()
 	defer client.mu.Unlock()
 
-	_ = client.Conn.WriteJSON(map[string]interface{}{
+	err := client.Conn.WriteJSON(map[string]interface{}{
 		"type":   "status_update",
 		"status": status,
 	})
+	if err != nil {
+		log.Printf("Failed to send WebSocket message to %s: %v", transactionID, err)
+	}
 }

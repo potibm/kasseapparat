@@ -105,3 +105,17 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 		},
 	}
 }
+
+type MockStatusPublisher struct {
+	Calls []struct {
+		PurchaseID uuid.UUID
+		Status     string
+	}
+}
+
+func (m *MockStatusPublisher) PushUpdate(purchaseID uuid.UUID, status string) {
+	m.Calls = append(m.Calls, struct {
+		PurchaseID uuid.UUID
+		Status     string
+	}{purchaseID, status})
+}

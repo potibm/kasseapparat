@@ -61,7 +61,8 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 
 	purchaseService := purchaseService.NewPurchaseService(sqliteRepo, sumupRepo, mailer, currencyDecimalPlaces)
 
-	poller := monitor.NewPoller(sumupRepo, sqliteRepo, purchaseService)
+	statusPublisher := MockStatusPublisher{}
+	poller := monitor.NewPoller(sumupRepo, sqliteRepo, purchaseService, &statusPublisher)
 
 	handlerHttp := handlerHttp.NewHandler(sqliteRepo, sumupRepo, purchaseService, poller, *mailer, "v1", currencyDecimalPlaces, paymentMethods)
 	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService)

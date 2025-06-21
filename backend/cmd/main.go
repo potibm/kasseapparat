@@ -38,10 +38,11 @@ func main() {
 
 	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, initializer.GetCurrencyDecimalPlaces())
 
-	poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseService)
+	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService)
+	publisher := &websocket.WebsocketPublisher{}
+	poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseService, publisher)
 
 	httpHandler := handlerHttp.NewHandler(sqliteRepository, sumupRepository, purchaseService, poller, mailer, initializer.GetVersion(), initializer.GetCurrencyDecimalPlaces(), initializer.GetEnabledPaymentMethods())
-	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService)
 
 	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles)
 
