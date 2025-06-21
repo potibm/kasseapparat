@@ -16,7 +16,7 @@ const CheckoutButtons = ({ cart, checkoutProcessing, handleCheckoutCart }) => {
   );
 
   const paymentMethodIsActive = (paymentMethodCode, cartValue) => {
-    if (paymentMethodCode == "SUMUP") {
+    if (paymentMethodCode === "SUMUP") {
       return sumUpReaderId !== undefined && cartValue.greaterThan(0);
     }
 
