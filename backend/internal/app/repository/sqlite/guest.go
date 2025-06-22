@@ -181,9 +181,10 @@ func (repo *Repository) DeleteGuest(guest models.Guest, deletedBy models.User) {
 }
 
 func (repo *Repository) RollbackVisitedGuestsByPurchaseID(purchaseId uuid.UUID) error {
-	repo.db.Model(&models.Guest{}).
+	err := repo.db.Model(&models.Guest{}).
 		Where("purchase_id = ?", purchaseId.String()).
-		Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil})
+		Updates(map[string]interface{}{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil}).
+		Error
 
-	return nil
+	return err
 }
