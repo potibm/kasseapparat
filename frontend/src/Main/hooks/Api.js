@@ -62,11 +62,11 @@ export const storePurchase = async (
 ) => {
   return new Promise((resolve, reject) => {
     // null the cart items list property to avoid unnecessary data transfer
-    const cartPayload = cart;
-    cartPayload.forEach((item) => {
-      item.lists = null;
-      item.guestlists = null;
-    });
+    const cartPayload = cart.map((item) => ({
+      ...item,
+      lists: null,
+      guestlists: null,
+    }));
 
     let payloadData = {
       paymentMethod: paymentMethodCode,
