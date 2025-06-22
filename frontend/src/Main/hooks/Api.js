@@ -15,7 +15,7 @@ export const fetchProducts = async (apiHost, jwtToken) => {
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.error || "Network response was not ok");
+            throw new Error(errorBody.details || errorBody.error || "Network response was not ok");
           });
         }
         return response.json();
@@ -42,7 +42,7 @@ export const fetchGuestlistByProductId = async (
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.details || "Network response was not ok");
+            throw new Error(errorBody.details || errorBody.error || "Network response was not ok");
           });
         }
 
@@ -97,7 +97,7 @@ export const storePurchase = async (
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.details || "Network response was not ok");
+            throw new Error(errorBody.details || errorBody.error || "Network response was not ok");
           });
         }
         return response.json();
@@ -122,7 +122,7 @@ export const fetchPurchases = async (apiHost, jwtToken, userId) => {
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.details || "Network response was not ok");
+            throw new Error(errorBody.details || errorBody.error || "Network response was not ok");
           });
         }
         return response.json();
@@ -144,7 +144,7 @@ export const refundPurchaseById = async (apiHost, jwtToken, purchaseId) => {
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.details || "Network response was not ok");
+            throw new Error(errorBody.details || errorBody.error || "Network response was not ok");
           });
         }
         return response.json();
@@ -169,7 +169,7 @@ export const addProductInterest = async (apiHost, jwtToken, productId) => {
       .then((response) => {
         if (!response.ok) {
           return response.json().then((errorBody) => {
-            throw new Error(errorBody.error || "Network response was not ok");
+            throw new Error(errorBody.details || errorBody.error || "Network response was not ok");
           });
         }
         return response.json();
