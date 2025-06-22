@@ -74,7 +74,7 @@ func TestFindNextHref(t *testing.T) {
 	assert.Equal(t, "https://example.com/next", nextHref)
 }
 
-func TestFromSDKTransaction_WithUUIDId(t *testing.T) {
+func TestFromSDKTransactionWithUUIDId(t *testing.T) {
 	id := "2b5cd782-0733-4fb2-bf22-5a12345bd94f"
 	tid := shared.TransactionId(id)
 	tc := "TAAAABCP2SA"
@@ -107,7 +107,7 @@ func TestFromSDKTransaction_WithUUIDId(t *testing.T) {
 	assert.WithinDuration(t, timestamp, tx.CreatedAt, time.Second)
 }
 
-func TestFromSDKTransaction_WithNonUUIDId(t *testing.T) {
+func TestFromSDKTransactionWithNonUUIDId(t *testing.T) {
 	id := "8119994131" // not a UUID
 	tc := "TAAAABCP2SA"
 	tid := shared.TransactionId("2b5cd782-0733-4fb2-bf22-5a12345bd94f")
