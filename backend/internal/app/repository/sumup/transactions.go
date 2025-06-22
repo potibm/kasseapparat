@@ -208,15 +208,9 @@ func (r *Repository) RefundTransaction(transactionId uuid.UUID) error {
 func fromSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transaction {
 	var transactionId uuid.UUID
 
+	// Prefer parsing TransactionId if present
 	if sdkCheckout.TransactionId != nil {
-		id := *sdkCheckout.Id
-		if sdkCheckout.TransactionId != nil {
-			id = string(*sdkCheckout.TransactionId)
-		}
-		// Try to parse the TransactionId as a UUID
-
-		parsedId, err := uuid.Parse(id)
-		if err == nil {
+		if parsedId, err := uuid.Parse(string(*sdkCheckout.TransactionId)); err == nil {
 			transactionId = parsedId
 		}
 	}
