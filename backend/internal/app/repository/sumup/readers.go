@@ -43,7 +43,7 @@ func (r *Repository) GetReader(readerId string) (*Reader, error) {
 }
 
 func isReaderNotFoundError(err error) bool {
-    return err != nil && err.Error() == "The requested Reader resource does not exists."
+	return err != nil && err.Error() == "The requested Reader resource does not exists."
 }
 
 func (r *Repository) CreateReader(pairingCode string, name string) (*Reader, error) {

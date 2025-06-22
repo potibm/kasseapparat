@@ -57,18 +57,14 @@ func (h *Handler) sendInitialStatus(conn *websocket.Conn, transactionID uuid.UUI
 	if err != nil {
 		log.Println("Failed to get purchase by ID:", err)
 
-		_ = conn.WriteJSON(map[string]interface{}{
-			"type":    "error",
-			"message": "failed to retrieve purchase",
-		})
+		sendWSMessage(conn, "error", gin.H{"message": "failed to retrieve purchase"}, &uuid.Nil)
 
 		return err
 	}
 
-	return conn.WriteJSON(map[string]interface{}{
-		"type":   "status_update",
-		"status": purchase.Status,
-	})
+	sendWSMessage(conn, "status_update", gin.H{"status": purchase.Status}, &transactionID)
+
+	return nil
 }
 
 func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uuid.UUID) {
@@ -86,16 +82,10 @@ func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uu
 		case "cancel_payment":
 			h.handleCancelPayment(conn, msg, transactionID)
 		case "ping":
-			_ = conn.WriteJSON(map[string]interface{}{
-				"type": "pong",
-			})
+			sendWSMessage(conn, "ping_ack", gin.H{}, &uuid.Nil)
 
 		default:
-			_ = conn.WriteJSON(map[string]interface{}{
-				"type":           "error",
-				"message":        "unknown command",
-				"transaction_id": transactionID,
-			})
+			sendWSMessage(conn, "error", gin.H{"message": "unknown command"}, &uuid.Nil)
 		}
 	}
 }
@@ -103,24 +93,15 @@ func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uu
 func (h *Handler) handleCancelPayment(conn *websocket.Conn, msg map[string]interface{}, transactionID uuid.UUID) {
 	readerID, ok := msg["reader_id"].(string)
 	if !ok || readerID == "" {
-		_ = conn.WriteJSON(map[string]interface{}{
-			"type":    "error",
-			"message": "reader_id missing or invalid",
-		})
+		sendWSMessage(conn, "error", gin.H{"message": "reader_id missing or invalid"}, &transactionID)
 
 		return
 	}
 
 	err := h.sumupRepository.CreateReaderTerminateAction(readerID)
 	if err != nil {
-		_ = conn.WriteJSON(map[string]interface{}{
-			"type":    "error",
-			"message": "failed to cancel payment",
-		})
+		sendWSMessage(conn, "error", gin.H{"message": "failed to cancel payment"}, &transactionID)
 	} else {
-		_ = conn.WriteJSON(map[string]interface{}{
-			"type":           "cancel_ack",
-			"transaction_id": transactionID,
-		})
+		sendWSMessage(conn, "cancel_ack", gin.H{"transaction_id": transactionID}, &transactionID)
 	}
 }

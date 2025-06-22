@@ -4,6 +4,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -48,11 +49,22 @@ func PushUpdate(transactionID uuid.UUID, status models.PurchaseStatus) {
 	client.mu.Lock()
 	defer client.mu.Unlock()
 
-	err := client.Conn.WriteJSON(map[string]interface{}{
-		"type":   "status_update",
-		"status": string(status),
-	})
-	if err != nil {
-		log.Printf("Failed to send WebSocket message to %s: %v", transactionID, err)
+	sendWSMessage(client.Conn, "status_update", gin.H{"status": string(status)}, &transactionID)
+}
+
+func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transactionID *uuid.UUID) {
+	payload := gin.H{
+		"type": msgType,
+	}
+	for k, v := range data {
+		payload[k] = v
+	}
+
+	if transactionID != nil {
+		payload["transaction_id"] = transactionID.String()
+	}
+
+	if err := conn.WriteJSON(payload); err != nil {
+		log.Printf("WebSocket send error [%s]: %v", msgType, err)
 	}
 }
