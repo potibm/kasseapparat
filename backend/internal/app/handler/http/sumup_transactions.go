@@ -15,7 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type SumupTransactionReponse struct {
+type SumupTransactionResponse struct {
 	ID              uuid.UUID                       `json:"id"`
 	TransactionID   uuid.UUID                       `json:"transactionId"`
 	PublicID        string                          `json:"publicId"`
@@ -42,7 +42,11 @@ func (handler *Handler) GetSumupTransactions(c *gin.Context) {
 	defaultOldestTime := time.Now().Add(-10 * time.Minute)
 	oldestTime := queryTime(c, "oldest_time", &defaultOldestTime)
 
-	transactions, _ := handler.sumupRepository.GetTransactions(oldestTime)
+	transactions, err := handler.sumupRepository.GetTransactions(oldestTime)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve transactions"})
+		return
+	}
 
 	transactionsLen := len(transactions)
 
@@ -53,7 +57,7 @@ func (handler *Handler) GetSumupTransactions(c *gin.Context) {
 	// limit the results based on start and end parameters
 	if start < 0 || start >= end {
 		c.Header("X-Total-Count", "0")
-		c.JSON(http.StatusOK, []SumupTransactionReponse{})
+		c.JSON(http.StatusOK, []SumupTransactionResponse{})
 
 		return
 	}
@@ -145,8 +149,8 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
-func toSumupTransactionResponse(c sumup.Transaction) SumupTransactionReponse {
-	return SumupTransactionReponse{
+func toSumupTransactionResponse(c sumup.Transaction) SumupTransactionResponse {
+	return SumupTransactionResponse{
 		ID:              c.TransactionID,
 		TransactionID:   c.TransactionID,
 		PublicID:        c.ID,
@@ -179,8 +183,8 @@ func toSumupTransactionEventResponse(e sumup.TransactionEvent) SumupTransactionE
 	}
 }
 
-func toSumupTransactionResponses(transactions []sumup.Transaction) []SumupTransactionReponse {
-	responses := make([]SumupTransactionReponse, len(transactions))
+func toSumupTransactionResponses(transactions []sumup.Transaction) []SumupTransactionResponse {
+	responses := make([]SumupTransactionResponse, len(transactions))
 	for i, transaction := range transactions {
 		responses[i] = toSumupTransactionResponse(transaction)
 	}
