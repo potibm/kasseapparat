@@ -121,8 +121,7 @@ func (repo *Repository) updatePurchaseFieldByID(id uuid.UUID, fields map[string]
 		Where(whereIDEquals, id.String()).
 		Updates(fields).
 		Error; err != nil {
-		fmt.Printf("failed to update purchase with ID %s: %v", id.String(), err)
-		return nil, fmt.Errorf("failed to update purchase fields: %v", fields)
+		return nil, fmt.Errorf("failed to update purchase %s: %w", id, err)
 	}
 
 	return repo.GetPurchaseByID(id)
