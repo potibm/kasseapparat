@@ -158,12 +158,16 @@ func (s *PurchaseService) validateGuest(listInput ListItemInput, productID int) 
 
 func (s *PurchaseService) notifyGuests(guests []models.Guest) {
 	if s.Mailer == nil {
+		log.Println("Mailer is not configured, skipping guest notifications")
 		return
 	}
 
 	for _, guest := range guests {
 		if guest.NotifyOnArrivalEmail != nil {
-			_ = s.Mailer.SendNotificationOnArrival(*guest.NotifyOnArrivalEmail, guest.Name)
+			err := s.Mailer.SendNotificationOnArrival(*guest.NotifyOnArrivalEmail, guest.Name)
+			if err != nil {
+				log.Printf("Failed to send notification email to guest %s: %v", *guest.NotifyOnArrivalEmail, err)
+			} 
 		}
 	}
 }
