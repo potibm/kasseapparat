@@ -1,7 +1,7 @@
 package http
 
 import (
-	"database/sql"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,6 +12,7 @@ import (
 	model "github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 )
 
 type SumupTransactionReponse struct {
@@ -100,11 +101,15 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 	}
 
 	purchase, err := handler.repo.GetPurchaseBySumupClientTransactionID(payload.Payload.ClientTransactionID)
-	if (err != nil && err != sql.ErrNoRows) || purchase == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "purchase not found"})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "purchase not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-
+	
 	if purchase.Status != model.PurchaseStatusPending {
 		c.JSON(http.StatusConflict, gin.H{"error": "purchase is not in pending status"})
 		return

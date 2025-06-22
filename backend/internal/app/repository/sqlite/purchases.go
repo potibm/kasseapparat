@@ -92,7 +92,7 @@ func (repo *Repository) getPurchaseByQueryAndValue(query string, value string) (
 		Where(query, value).
 		First(&purchase).
 		Error; err != nil {
-		return nil, errors.New("purchase not found")
+		return nil, err
 	}
 
 	return &purchase, nil
