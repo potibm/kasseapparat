@@ -172,12 +172,12 @@ func registerPurchaseRoutes(rg *gin.RouterGroup, handler httpHandler.Handler, we
 	purchases := rg.Group("/purchases")
 	{
 		purchases.GET("", handler.GetPurchases)
-		purchases.GET(":id", handler.GetPurchaseByID)
+		purchases.GET("/:id", handler.GetPurchaseByID)
 		purchases.POST("", handler.PostPurchases)
-		purchases.DELETE(":id", handler.DeletePurchase)
-		purchases.GET("export", handler.ExportPurchases)
-		purchases.POST(":id/refund", handler.RefundPurchase)
-		purchases.GET(":id/ws", websockeHandler.HandleTransactionWebSocket)
+		purchases.DELETE("/:id", handler.DeletePurchase)
+		purchases.GET("/export", handler.ExportPurchases)
+		purchases.POST("/:id/refund", handler.RefundPurchase)
+		purchases.GET("/:id/ws", websockeHandler.HandleTransactionWebSocket)
 	}
 }
 
