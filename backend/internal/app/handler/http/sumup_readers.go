@@ -21,7 +21,11 @@ type SumupReaderReponse struct {
 }
 
 func (handler *Handler) GetSumupReaders(c *gin.Context) {
-	readers, _ := handler.sumupRepository.GetReaders()
+	readers, err := handler.sumupRepository.GetReaders()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve readers"})
+		return
+	}
 
 	c.Header("X-Total-Count", strconv.Itoa(len(readers)))
 	c.JSON(http.StatusOK, toSumupReaderResponses(readers))
