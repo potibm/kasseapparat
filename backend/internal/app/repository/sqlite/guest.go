@@ -75,16 +75,6 @@ func (repo *Repository) GetGuests(limit int, offset int, sort string, order stri
 	return guests, nil
 }
 
-func (repo *Repository) GetGuestsByPurchaseID(purchaseId uuid.UUID) ([]models.Guest, error) {
-	var guests []models.Guest
-
-	if err := repo.db.Preload("Guestlist").Where("purchase_id = ?", purchaseId).Find(&guests).Error; err != nil {
-		return nil, ErrGuestsNotFound
-	}
-
-	return guests, nil
-}
-
 func getGuestsValidSortFieldName(input string) (string, error) {
 	if field, exists := guestSortFieldMappings[input]; exists {
 		return field, nil
@@ -104,6 +94,20 @@ func (repo *Repository) GetTotalGuests(filters *GuestFilters) (int64, error) {
 	query.Count(&totalRows)
 
 	return totalRows, nil
+}
+
+func (repo *Repository) GetGuestsByPurchaseID(purchaseId uuid.UUID) ([]models.Guest, error) {
+	var guests []models.Guest
+
+	if err := repo.db.Preload("Guestlist").Where("purchase_id = ?", purchaseId).Find(&guests).Error; err != nil {
+		return nil, err
+	}
+
+	if len(guests) == 0 {
+		return nil, ErrGuestsNotFound
+	}
+
+	return guests, nil
 }
 
 func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) (models.GuestSummarySlice, error) {
@@ -127,36 +131,46 @@ func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) 
 }
 
 func (repo *Repository) GetGuestByID(id int) (*models.Guest, error) {
-	var guest models.Guest
-	if err := repo.db.First(&guest, id).Error; err != nil {
-		return nil, ErrGuestNotFound
-	}
-
-	return &guest, nil
+	return repo.findOneGuest(func(db *gorm.DB) *gorm.DB {
+		return db.Where("id = ?", id)
+	}, false)
 }
 
 func (repo *Repository) GetGuestByCode(code string) (*models.Guest, error) {
-	var guest models.Guest
-	if err := repo.db.Where("code = ?", code).First(&guest).Error; err != nil {
-		return nil, ErrGuestNotFound
-	}
-
-	return &guest, nil
+	return repo.findOneGuest(func(db *gorm.DB) *gorm.DB {
+		return db.Where("code = ?", code)
+	}, false)
 }
 
 func (repo *Repository) GetFullGuestByID(id int) (*models.Guest, error) {
+	return repo.findOneGuest(func(db *gorm.DB) *gorm.DB {
+		return db.Where("id = ?", id)
+	}, true)
+}
+
+func (repo *Repository) findOneGuest(query func(*gorm.DB) *gorm.DB, preload bool) (*models.Guest, error) {
 	var guest models.Guest
-	if err := repo.db.Preload("Guestlist").Preload("Guestlist.Product").First(&guest, id).Error; err != nil {
-		return nil, ErrGuestNotFound
+	db := repo.db
+	if preload {
+		db = db.Preload("Guestlist").Preload("Guestlist.Product")
 	}
 
+	if err := query(db).First(&guest).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrGuestsNotFound
+		}
+		return nil, err
+	}
 	return &guest, nil
 }
 
 func (repo *Repository) UpdateGuestByID(id int, updatedGuest models.Guest) (*models.Guest, error) {
 	var guest models.Guest
 	if err := repo.db.First(&guest, id).Error; err != nil {
-		return nil, ErrGuestNotFound
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrGuestsNotFound
+		}
+		return nil, err
 	}
 
 	updatedGuest.ID = guest.ID
