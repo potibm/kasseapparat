@@ -144,7 +144,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
 
     ws.onclose = () => {
       console.log("WebSocket closed");
-      if (statusRef === "pending") {
+      if (statusRef.current === "pending") {
         setError("Connection lost.");
         setProcessing(false);
         onComplete(false);
