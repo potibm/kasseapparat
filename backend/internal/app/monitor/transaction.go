@@ -77,7 +77,7 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 		}
 	}
 
-	log.Printf("Transaction %s status: %s", purchase.SumupTransactionID, transaction.Status)
+	log.Printf("Transaction %s status: %s", transactionID, transaction.Status)
 
 	return n.handleStatusUpdate(ctx, transactionID, transaction.Status, purchase)
 }
