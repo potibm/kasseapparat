@@ -427,7 +427,7 @@ func createPurchase() string {
 			},
 		}).
 		Expect().
-		// Status(http.StatusCreated).
+		Status(http.StatusCreated).
 		JSON().Object()
 
 	purchase := purchaseResponse
