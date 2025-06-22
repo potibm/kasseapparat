@@ -293,6 +293,11 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 		return nil, errors.New("failed to get purchase by ID: " + err.Error())
 	}
 
+	// Validate current status
+    if purchase.Status != models.PurchaseStatusConfirmed {
+        return nil, fmt.Errorf("cannot refund purchase with status: %s", purchase.Status)
+    }
+
 	// refund the purchase via sumup
 	if purchase.PaymentMethod == models.PaymentMethodSumUp && purchase.SumupTransactionID != nil {
 		fmt.Println("Refunding transaction via SumUp for transaction ID:", *purchase.SumupTransactionID)
