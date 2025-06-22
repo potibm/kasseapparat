@@ -167,7 +167,7 @@ func (s *PurchaseService) notifyGuests(guests []models.Guest) {
 			err := s.Mailer.SendNotificationOnArrival(*guest.NotifyOnArrivalEmail, guest.Name)
 			if err != nil {
 				log.Printf("Failed to send notification email to guest %s: %v", *guest.NotifyOnArrivalEmail, err)
-			} 
+			}
 		}
 	}
 }
@@ -298,9 +298,9 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 	}
 
 	// Validate current status
-    if purchase.Status != models.PurchaseStatusConfirmed {
-        return nil, fmt.Errorf("cannot refund purchase with status: %s", purchase.Status)
-    }
+	if purchase.Status != models.PurchaseStatusConfirmed {
+		return nil, fmt.Errorf("cannot refund purchase with status: %s", purchase.Status)
+	}
 
 	// refund the purchase via sumup
 	if purchase.PaymentMethod == models.PaymentMethodSumUp && purchase.SumupTransactionID != nil {

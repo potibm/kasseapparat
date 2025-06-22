@@ -150,6 +150,7 @@ func (repo *Repository) GetFullGuestByID(id int) (*models.Guest, error) {
 
 func (repo *Repository) findOneGuest(query func(*gorm.DB) *gorm.DB, preload bool) (*models.Guest, error) {
 	var guest models.Guest
+
 	db := repo.db
 	if preload {
 		db = db.Preload("Guestlist").Preload("Guestlist.Product")
@@ -159,8 +160,10 @@ func (repo *Repository) findOneGuest(query func(*gorm.DB) *gorm.DB, preload bool
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrGuestsNotFound
 		}
+
 		return nil, err
 	}
+
 	return &guest, nil
 }
 
@@ -170,6 +173,7 @@ func (repo *Repository) UpdateGuestByID(id int, updatedGuest models.Guest) (*mod
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrGuestsNotFound
 		}
+
 		return nil, err
 	}
 
