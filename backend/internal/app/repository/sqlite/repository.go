@@ -87,7 +87,7 @@ func (r *Repository) GetDB() *gorm.DB {
 func (r *Repository) WithTransaction(ctx context.Context, fn func(repo RepositoryInterface) error) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		txRepo := r.cloneWithDB(tx)
-		
+
 		return fn(txRepo)
 	})
 }

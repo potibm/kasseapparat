@@ -110,10 +110,12 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "purchase not found"})
 			return
 		}
+
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+
 		return
 	}
-	
+
 	if purchase.Status != model.PurchaseStatusPending {
 		c.JSON(http.StatusConflict, gin.H{"error": "purchase is not in pending status"})
 		return
