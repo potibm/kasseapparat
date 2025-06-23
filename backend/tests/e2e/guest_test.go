@@ -227,7 +227,7 @@ func TestCreateUpdateAndDeleteGuest(t *testing.T) {
 
 	withDemoUserAuthToken(e.DELETE(guestUrl)).
 		Expect().
-		Status(http.StatusOK)
+		Status(http.StatusNoContent)
 
 	withDemoUserAuthToken(e.GET(guestUrl)).
 		Expect().

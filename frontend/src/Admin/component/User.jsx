@@ -6,7 +6,7 @@ import {
   List,
   Datagrid,
   TextField,
-  DeleteButton,
+  DeleteWithConfirmButton,
   NumberField,
   NumberInput,
   Edit,
@@ -33,7 +33,7 @@ const ConditionalDeleteButton = (props) => {
 
   const isCurrentUser = record && record.id === identity.id;
   if (permissions === "admin" && !isCurrentUser) {
-    return <DeleteButton {...props} />;
+    return <DeleteWithConfirmButton {...props} />;
   }
   return null;
 };
@@ -46,7 +46,7 @@ export const UserList = (props) => {
         <TextField source="username" />
         <EmailField source="email" />
         <BooleanField source="admin" />
-        <ConditionalDeleteButton />
+        <ConditionalDeleteButton mutationMode="pessimistic" />
       </Datagrid>
     </List>
   );

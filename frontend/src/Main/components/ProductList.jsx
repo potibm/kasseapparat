@@ -2,13 +2,13 @@ import React from "react";
 import Product from "./Product";
 import PropTypes from "prop-types";
 
-function ProductList({
+const ProductList = ({
   products,
   addToCart,
   hasListItem,
   quantityByProductInCart,
   addProductInterest,
-}) {
+}) => {
   return (
     <div className="flex flex-wrap -m-1.5">
       {products.map((product) => (
@@ -23,7 +23,7 @@ function ProductList({
       ))}
     </div>
   );
-}
+};
 
 ProductList.propTypes = {
   products: PropTypes.array.isRequired,

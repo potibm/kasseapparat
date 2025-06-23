@@ -156,7 +156,8 @@ func (ds *DatabaseSeed) seedPurchases(purchaseCount int) {
 	_ = ds.db.Transaction(func(tx *gorm.DB) error {
 		for i := 1; i < purchaseCount; i++ {
 			purchase := models.Purchase{
-				PaymentMethod:   gofakeit.RandomString([]string{"CASH", "CC"}),
+				// generate a random PaymentMethod from models.PaymentMethodCash and models.PaymentMethodCC
+				PaymentMethod:   models.PaymentMethod(gofakeit.RandomString([]string{string(models.PaymentMethodCash), string(models.PaymentMethodCC)})),
 				TotalGrossPrice: decimal.NewFromInt(0),
 				TotalNetPrice:   decimal.NewFromInt(0),
 			}

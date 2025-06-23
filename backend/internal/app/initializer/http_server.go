@@ -14,10 +14,11 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
-	"github.com/potibm/kasseapparat/internal/app/handler"
+	httpHandler "github.com/potibm/kasseapparat/internal/app/handler/http"
+	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
 
 var (
@@ -25,13 +26,13 @@ var (
 	authMiddleware *jwt.GinJWTMiddleware
 )
 
-func InitializeHttpServer(myhandler handler.Handler, repository repository.Repository, staticFiles embed.FS) *gin.Engine {
+func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler websocket.HandlerInterface, repository sqliteRepo.Repository, staticFiles embed.FS) *gin.Engine {
 	gin.SetMode(os.Getenv("GIN_MODE"))
 	r = gin.Default()
 	r.Use(sentrygin.New(sentrygin.Options{}))
 	r.Use(middleware.ErrorHandlingMiddleware())
 
-	r.GET("/api/v2/purchases/stats", myhandler.GetPurchaseStats)
+	r.GET("/api/v2/purchases/stats", httpHandler.GetPurchaseStats)
 
 	r.Use(CreateCorsMiddleware())
 
@@ -43,7 +44,7 @@ func InitializeHttpServer(myhandler handler.Handler, repository repository.Repos
 	r.Use(static.Serve("/", folder))
 
 	authMiddleware := registerAuthMiddleware(repository)
-	registerApiRoutes(myhandler, authMiddleware)
+	registerApiRoutes(httpHandler, websocketHandler, authMiddleware)
 
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
@@ -76,7 +77,7 @@ func CreateCorsMiddleware() gin.HandlerFunc {
 	return cors.New(corsConfig)
 }
 
-func registerAuthMiddleware(repository repository.Repository) *jwt.GinJWTMiddleware {
+func registerAuthMiddleware(repository sqliteRepo.Repository) *jwt.GinJWTMiddleware {
 	authMiddleware, _ = jwt.New(middleware.InitParams(repository, os.Getenv("JWT_REALM"), os.Getenv("JWT_SECRET"), 10))
 	r.Use(middleware.HandlerMiddleWare(authMiddleware))
 
@@ -102,33 +103,38 @@ func SentryMiddleware() gin.HandlerFunc {
 	}
 }
 
-func registerApiRoutes(myhandler handler.Handler, authMiddleware *jwt.GinJWTMiddleware) {
+func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocket.HandlerInterface, authMiddleware *jwt.GinJWTMiddleware) {
 	protectedApiRouter := r.Group("/api/v2")
 	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
 	{
-		registerProductRoutes(protectedApiRouter, myhandler)
-		registerProductInterestRoutes(protectedApiRouter, myhandler)
-		protectedApiRouter.GET("/productStats", myhandler.GetProductStats)
+		registerProductRoutes(protectedApiRouter, httpHandler)
+		registerProductInterestRoutes(protectedApiRouter, httpHandler)
+		protectedApiRouter.GET("/productStats", httpHandler.GetProductStats)
 
-		registerGuestlistRoutes(protectedApiRouter, myhandler)
-		registerGuestRoutes(protectedApiRouter, myhandler)
-		protectedApiRouter.POST("/guestsUpload", myhandler.ImportGuestsFromDeineTicketsCsv)
+		registerGuestlistRoutes(protectedApiRouter, httpHandler)
+		registerGuestRoutes(protectedApiRouter, httpHandler)
+		protectedApiRouter.POST("/guestsUpload", httpHandler.ImportGuestsFromDeineTicketsCsv)
 
-		registerPurchaseRoutes(protectedApiRouter, myhandler)
-		registerUserRoutes(protectedApiRouter, myhandler)
+		registerPurchaseRoutes(protectedApiRouter, httpHandler, websockeHandler)
+		registerUserRoutes(protectedApiRouter, httpHandler)
+
+		registerSumupReadersRoutes(protectedApiRouter, httpHandler)
+		registerSumupTransactionRoutes(protectedApiRouter, httpHandler)
 	}
 
 	// unprotected routes
 	unprotectedApiRouter := r.Group("/api/v2")
 	{
-		unprotectedApiRouter.GET("/config", myhandler.GetConfig)
+		unprotectedApiRouter.GET("/config", httpHandler.GetConfig)
 
-		unprotectedApiRouter.POST("/auth/changePasswordToken", myhandler.RequestChangePasswordToken)
-		unprotectedApiRouter.POST("/auth/changePassword", myhandler.UpdateUserPassword)
+		unprotectedApiRouter.POST("/auth/changePasswordToken", httpHandler.RequestChangePasswordToken)
+		unprotectedApiRouter.POST("/auth/changePassword", httpHandler.UpdateUserPassword)
+
+		unprotectedApiRouter.POST("/sumup/webhook", httpHandler.GetSumupTransactionWebhook)
 	}
 }
 
-func registerProductRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerProductRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	products := rg.Group("/products")
 	{
 		products.GET("", handler.GetProducts)
@@ -140,7 +146,7 @@ func registerProductRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	}
 }
 
-func registerGuestlistRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerGuestlistRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	guestlist := rg.Group("/guestlists")
 	{
 		guestlist.GET("", handler.GetGuestlists)
@@ -151,7 +157,7 @@ func registerGuestlistRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	}
 }
 
-func registerGuestRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerGuestRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	guests := rg.Group("/guests")
 	{
 		guests.GET("", handler.GetGuests)
@@ -162,7 +168,7 @@ func registerGuestRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	}
 }
 
-func registerPurchaseRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerPurchaseRoutes(rg *gin.RouterGroup, handler httpHandler.Handler, websockeHandler websocket.HandlerInterface) {
 	purchases := rg.Group("/purchases")
 	{
 		purchases.GET("", handler.GetPurchases)
@@ -170,10 +176,12 @@ func registerPurchaseRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 		purchases.POST("", handler.PostPurchases)
 		purchases.DELETE("/:id", handler.DeletePurchase)
 		purchases.GET("/export", handler.ExportPurchases)
+		purchases.POST("/:id/refund", handler.RefundPurchase)
+		purchases.GET("/:id/ws", websockeHandler.HandleTransactionWebSocket)
 	}
 }
 
-func registerUserRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerUserRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	users := rg.Group("/users")
 	{
 		users.GET("", handler.GetUsers)
@@ -184,11 +192,28 @@ func registerUserRoutes(rg *gin.RouterGroup, handler handler.Handler) {
 	}
 }
 
-func registerProductInterestRoutes(rg *gin.RouterGroup, handler handler.Handler) {
+func registerProductInterestRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	productInterests := rg.Group("/productInterests")
 	{
 		productInterests.GET("", handler.GetProductInterests)
 		productInterests.DELETE("/:id", handler.DeleteProductInterestByID)
 		productInterests.POST("", handler.CreateProductInterest)
+	}
+}
+
+func registerSumupReadersRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
+	sumupReaders := rg.Group("/sumup/readers")
+	{
+		sumupReaders.GET("", handler.GetSumupReaders)
+		sumupReaders.GET("/:id", handler.GetSumupReaderByID)
+		sumupReaders.DELETE("/:id", handler.DeleteSumupReader)
+		sumupReaders.POST("", handler.CreateSumupReader)
+	}
+}
+func registerSumupTransactionRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
+	sumupTransactions := rg.Group("/sumup/transactions")
+	{
+		sumupTransactions.GET("", handler.GetSumupTransactions)
+		sumupTransactions.GET("/:id", handler.GetSumupTransactionByID)
 	}
 }

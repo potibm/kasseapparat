@@ -7,13 +7,13 @@ import GuestlistModal from "./GuestlistModal/GuestlistModal";
 import MyButton from "./MyButton";
 import ProductInterestModal from "./ProductInterestModal";
 
-function Product({
+const Product = ({
   product,
   addToCart,
   hasListItem,
   quantityByProductInCart,
   addProductInterest,
-}) {
+}) => {
   const [isGuestListModalOpen, setIsGuestListModalOpen] = useState(false);
   const [isPIModalOpen, setIsPIModalOpen] = useState(false);
 
@@ -129,7 +129,7 @@ function Product({
       )}
     </>
   );
-}
+};
 
 Product.propTypes = {
   product: PropTypes.object.isRequired,

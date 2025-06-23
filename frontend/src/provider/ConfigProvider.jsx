@@ -23,6 +23,7 @@ const ConfigProvider = ({ children }) => {
       })
       .then((data) => {
         data.apiHost = API_HOST;
+        data.websocketHost = API_HOST.replace(/^http/, "ws");
 
         data.currencyOptions = {
           style: "currency",
@@ -49,6 +50,14 @@ const ConfigProvider = ({ children }) => {
         } catch (error) {
           console.error("Error parsing vatRates:", error);
           data.vatRates = {};
+        }
+
+        data.sumupEnabled = false;
+        // when code == "SUMUP" in the array of paymentMethods, set sumupEnabled to true
+        if (data.paymentMethods && Array.isArray(data.paymentMethods)) {
+          data.sumupEnabled = data.paymentMethods.some(
+            (method) => method.code === "SUMUP",
+          );
         }
 
         setConfig(data);

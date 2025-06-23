@@ -1,19 +1,103 @@
 import React from "react";
 import {
+  usePermissions,
+  useRecordContext,
   List,
   Datagrid,
   TextField,
-  DeleteButton,
   NumberField,
   DateField,
   Show,
   SimpleShowLayout,
   ArrayField,
   FunctionField,
+  ReferenceField,
+  DeleteWithConfirmButton,
 } from "react-admin";
-import InventoryIcon from "@mui/icons-material/Inventory";
 import { useConfig } from "../../provider/ConfigProvider";
+import { Box } from "@mui/material";
 import { PurchaseListToolbar } from "./PurchaseListToolbar";
+import ListIcon from "@mui/icons-material/List";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import ErrorIcon from "@mui/icons-material/Error";
+
+import RefundWithConfirmButton from "./RefundWithConfirmButton";
+
+const renderPaymentMethod = (record, paymentMethods) => {
+  if (!paymentMethods) {
+    return record.paymentMethod;
+  }
+  if (Array.isArray(paymentMethods)) {
+    const paymentMethod = paymentMethods.find(
+      (pm) => pm.code === record.paymentMethod,
+    );
+    if (paymentMethod) {
+      return paymentMethod.name;
+    }
+  }
+
+  return record.paymentMethod;
+};
+
+const renderStatus = (record) => {
+  const status = record.status;
+  switch (status) {
+    case "confirmed":
+      return (
+        <Box
+          sx={{ display: "flex", alignItems: "center", color: "success.main" }}
+        >
+          <CheckCircleIcon sx={{ mr: 1 }} />
+          CONFIRMED
+        </Box>
+      );
+    case "pending":
+      return (
+        <Box
+          sx={{ display: "flex", alignItems: "center", color: "warning.main" }}
+        >
+          <HourglassEmptyIcon sx={{ mr: 1 }} />
+          PENDING
+        </Box>
+      );
+    case "failed":
+    case "cancelled":
+    case "refunded":
+    default:
+      return (
+        <Box
+          sx={{ display: "flex", alignItems: "center", color: "error.main" }}
+        >
+          <ErrorIcon sx={{ mr: 1 }} />
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Box>
+      );
+  }
+};
+
+const ConditionalDeleteButton = (props) => {
+  const { permissions } = usePermissions();
+
+  if (permissions === "admin") {
+    return <DeleteWithConfirmButton {...props} />;
+  }
+  return null;
+};
+
+const ConditionalRefundButton = (props) => {
+  const { permissions } = usePermissions();
+  const record = useRecordContext(props);
+
+  if (
+    permissions === "admin" &&
+    record.status === "confirmed" &&
+    record.paymentMethod === "SUMUP"
+  ) {
+    return <RefundWithConfirmButton />;
+  }
+  return null;
+};
 
 export const PurchaseList = () => {
   const {
@@ -51,38 +135,29 @@ export const PurchaseList = () => {
         <TextField source="createdBy.username" />
         <FunctionField
           source="paymentMethod"
-          render={(record) => {
-            if (!paymentMethods) {
-              return record.paymentMethod;
-            }
-            if (Array.isArray(paymentMethods)) {
-              const paymentMethod = paymentMethods.find(
-                (pm) => pm.code === record.paymentMethod,
-              );
-              if (paymentMethod) {
-                return paymentMethod.name;
-              }
-            }
-
-            return record.paymentMethod;
-          }}
+          render={(record) => renderPaymentMethod(record, paymentMethods)}
         />
-        <DeleteButton mutationMode="pessimistic" />
+        <FunctionField label="Status" render={renderStatus} />
+        <ConditionalDeleteButton mutationMode="pessimistic" />
+        <ConditionalRefundButton />
       </Datagrid>
     </List>
   );
 };
 
 export const PurchaseShow = (props) => {
-  const currency = useConfig().currencyOptions;
-  const locale = useConfig().Locale;
+  const { currencyOptions: currency, locale, paymentMethods } = useConfig();
 
   return (
     <Show {...props}>
       <SimpleShowLayout>
         <TextField source="id" />
         <DateField source="createdAt" showTime={true} />
-        <TextField source="paymentMethod" />
+        <FunctionField label="Status" render={renderStatus} />
+        <FunctionField
+          source="paymentMethod"
+          render={(record) => renderPaymentMethod(record, paymentMethods)}
+        />
         <NumberField
           source="totalNetPrice"
           locales={locale}
@@ -98,6 +173,15 @@ export const PurchaseShow = (props) => {
           locales={locale}
           options={currency}
         />
+        <ReferenceField
+          label="SumUp Transaction"
+          source="sumupTransactionId"
+          reference="sumupTransactions"
+          link="show"
+        >
+          <TextField source="id" />
+        </ReferenceField>
+        <TextField source="sumupClientTransactionId" />
         <ArrayField source="purchaseItems">
           <Datagrid bulkActionButtons={false}>
             <NumberField source="quantity" />
@@ -119,4 +203,4 @@ export const PurchaseShow = (props) => {
   );
 };
 
-export const ProductIcon = () => <InventoryIcon />;
+export const PurchaseIcon = () => <ListIcon />;

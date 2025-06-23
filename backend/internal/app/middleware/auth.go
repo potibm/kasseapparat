@@ -9,7 +9,7 @@ import (
 	ginjwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"github.com/potibm/kasseapparat/internal/app/repository"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
 
 var IdentityKey = "ID"
@@ -44,7 +44,7 @@ func RegisterRoute(r *gin.Engine, handle *ginjwt.GinJWTMiddleware) {
 	auth.GET("/refresh_token", handle.RefreshHandler)
 }
 
-func InitParams(repo repository.Repository, realm string, secret string, timeout int) *ginjwt.GinJWTMiddleware {
+func InitParams(repo sqliteRepo.Repository, realm string, secret string, timeout int) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		log.Println("JWT_SECRET is not set, using default value")
 
@@ -80,7 +80,7 @@ func InitParams(repo repository.Repository, realm string, secret string, timeout
 	}
 }
 
-func authenticator(repo *repository.Repository) func(c *gin.Context) (interface{}, error) {
+func authenticator(repo *sqliteRepo.Repository) func(c *gin.Context) (interface{}, error) {
 	return func(c *gin.Context) (interface{}, error) {
 		var loginVals login
 		if err := c.ShouldBind(&loginVals); err != nil {
