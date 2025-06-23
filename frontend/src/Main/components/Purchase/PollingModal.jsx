@@ -23,6 +23,8 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   const ageInSeconds = Math.max(0, Math.round((now - lastUpdate) / 1000));
 
   const statusRef = useRef(status);
+  const wasHandledRef = useRef(false);
+
   useEffect(() => {
     statusRef.current = status;
   }, [status]);
@@ -41,8 +43,6 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
     } else {
       console.error("WebSocket is not open, cannot send cancel message");
       setError("WebSocket is not open, cannot cancel payment");
-      onComplete(false);
-      setTimeout(onClose, closeModalTimeout);
     }
   };
 
@@ -81,6 +81,29 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   };
 
   useEffect(() => {
+    const handleFailure = (message) => {
+      wasHandledRef.current = true;
+      setStatus("failed");
+      setError(message);
+      setProcessing(false);
+      onComplete(false);
+      setTimeout(onClose, closeModalTimeout);
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+      }
+    };
+
+    const handleSuccess = (data) => {
+      wasHandledRef.current = true;
+      setStatus("confirmed");
+      setError(null);
+      setProcessing(false);
+      onComplete(true);
+      setTimeout(() => onConfirmed(data), closeModalTimeout);
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+      }
+    };
     const ws = new WebSocket(
       `${websocketHost}/api/v2/purchases/${purchase.id}/ws?token=${jwtToken}`,
     );
@@ -89,12 +112,9 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
     const connectionTimeout = setTimeout(() => {
       if (ws.readyState !== WebSocket.OPEN) {
         console.warn("WebSocket did not connect in time.");
-        setError("Could not fetch the status of the payment terminal.");
-        setProcessing(false);
-        onComplete(false);
-        onClose();
+        handleFailure("Could not fetch the status of the payment terminal.");
       }
-    }, 3000); // 3 Sekunden
+    }, 3000); // 3 seconds
 
     ws.onopen = () => {
       clearTimeout(connectionTimeout);
@@ -105,32 +125,21 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === "status_update") {
+          console.log("WebSocket message received:", data);
           setFlash(true);
           setTimeout(() => setFlash(false), 500);
-          setStatus(data.status);
           setLastUpdate(Date.now());
 
           if (data.status === "confirmed") {
-            ws.close();
-            onComplete(true);
-            setTimeout(() => onConfirmed(data), closeModalTimeout);
+            handleSuccess(data);
           } else if (data.status === "failed") {
-            ws.close();
-            setError("Purchase failed.");
-            onComplete(false);
-            setTimeout(onClose, closeModalTimeout);
+            handleFailure("Purchase failed.");
           } else {
             console.log("Purchase status update:", data.status);
           }
         } else if (data.type === "cancel_ack") {
           // close the WebSocket connection after cancel acknowledgment
-          ws.close();
-
-          setProcessing(false);
-          setStatus("failed");
-          setError("Purchase cancelled by user.");
-          setTimeout(onClose, closeModalTimeout);
-          onComplete(false);
+          handleFailure("Purchase cancelled by user.");
         }
       } catch (err) {
         console.error("WebSocket parsing error:", err, event.data);
@@ -144,11 +153,8 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
 
     ws.onclose = () => {
       console.log("WebSocket closed");
-      if (statusRef.current === "pending") {
-        setError("Connection lost.");
-        setProcessing(false);
-        onComplete(false);
-        setTimeout(onClose, closeModalTimeout);
+      if (!wasHandledRef.current && statusRef.current === "pending") {
+        handleFailure("Connection lost.");
       }
     };
 
