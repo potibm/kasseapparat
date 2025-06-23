@@ -17,10 +17,7 @@ func getEnv(key, defaultValue string) string {
 }
 
 func getEnvAsInt(key string, defaultValue int) int {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
+	value := getEnv(key, strconv.Itoa(defaultValue))
 
 	intValue, err := strconv.Atoi(value)
 	if err != nil {
@@ -31,10 +28,7 @@ func getEnvAsInt(key string, defaultValue int) int {
 }
 
 func getEnvAsFloat(key string, defaultValue float64) float64 {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
+	value := getEnv(key, strconv.FormatFloat(defaultValue, 'f', -1, 64))
 
 	floatValue, err := strconv.ParseFloat(value, 32)
 	if err != nil {
