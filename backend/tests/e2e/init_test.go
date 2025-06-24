@@ -45,7 +45,7 @@ func setup() {
 }
 
 func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
-	config := config.Config{
+	cfg := config.Config{
 		AppConfig: config.AppConfig{
 			Version: "0.1.2",
 			GinMode: "test",
@@ -72,12 +72,12 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		},
 	}
 
-	sqliteRepo := sqliteRepo.NewRepository(db, int32(config.FormatConfig.FractionDigitsMax))
+	sqliteRepo := sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
 	sumupRepo := NewMockSumUpRepository()
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)
 
-	purchaseService := purchaseService.NewPurchaseService(sqliteRepo, sumupRepo, mailer, int32(config.FormatConfig.FractionDigitsMax))
+	purchaseService := purchaseService.NewPurchaseService(sqliteRepo, sumupRepo, mailer, int32(cfg.FormatConfig.FractionDigitsMax))
 
 	statusPublisher := MockStatusPublisher{}
 	poller := monitor.NewPoller(sumupRepo, sqliteRepo, purchaseService, &statusPublisher)
@@ -88,12 +88,12 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		PurchaseService: purchaseService,
 		Monitor:         poller,
 		Mailer:          *mailer,
-		AppConfig:       config,
+		AppConfig:       cfg,
 	}
 	handlerHttp := handlerHttp.NewHandler(httpHandlerConfig)
 	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService)
 
-	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{}, config)
+	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{}, cfg)
 
 	ts := httptest.NewServer(router)
 

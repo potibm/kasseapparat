@@ -45,13 +45,13 @@ var (
 )
 
 func main() {
-	config := config.Load()
-	config.OutputVersion()
+	cfg := config.Load()
+	cfg.OutputVersion()
 
 	db := utils.ConnectToDatabase()
 
-	Repo = sqliteRepo.NewRepository(db, int32(config.FormatConfig.FractionDigitsMax))
-	Mailer = initializer.InitializeMailer(config.MailerConfig)
+	Repo = sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
+	Mailer = initializer.InitializeMailer(cfg.MailerConfig)
 
 	if userImportCsvFile != "" {
 		log.Println("Importing users from CSV file...")

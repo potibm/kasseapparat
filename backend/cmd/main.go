@@ -21,19 +21,19 @@ import (
 var staticFiles embed.FS
 
 func main() {
-	config := config.Load()
-	config.OutputVersion()
+	cfg := config.Load()
+	cfg.OutputVersion()
 
 	db := utils.ConnectToDatabase()
 
-	initializer.InitializeSentry(config.SentryConfig)
-	initializer.InitializeSumup(config.SumupConfig)
+	initializer.InitializeSentry(cfg.SentryConfig)
+	initializer.InitializeSumup(cfg.SumupConfig)
 
-	sqliteRepository := sqliteRepo.NewRepository(db, int32(config.FormatConfig.FractionDigitsMax))
+	sqliteRepository := sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
 	sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
-	mailer := initializer.InitializeMailer(config.MailerConfig)
+	mailer := initializer.InitializeMailer(cfg.MailerConfig)
 
-	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, int32(config.FormatConfig.FractionDigitsMax))
+	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, int32(cfg.FormatConfig.FractionDigitsMax))
 
 	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService)
 	publisher := &websocket.WebsocketPublisher{}
@@ -46,11 +46,11 @@ func main() {
 		Monitor:         poller,
 		StatusPublisher: publisher,
 		Mailer:          mailer,
-		AppConfig:       config,
+		AppConfig:       cfg,
 	}
 	httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
-	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles, config)
+	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles, cfg)
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
 
