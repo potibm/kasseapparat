@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/shopspring/decimal"
 )
@@ -61,7 +62,7 @@ func queryTime(c *gin.Context, field string, defaultValue *time.Time) *time.Time
 	}
 }
 
-func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods map[models.PaymentMethod]string) []models.PaymentMethod {
+func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods config.PaymentMethods) []models.PaymentMethod {
 	paymentMethods := c.DefaultQuery(field, "")
 
 	result := make([]models.PaymentMethod, 0)
@@ -73,9 +74,14 @@ func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods map[m
 			continue
 		}
 
-		if _, ok := validPaymentMethods[models.PaymentMethod(code)]; ok {
+		if validPaymentMethods.Contains(models.PaymentMethod(code)) {
 			result = append(result, models.PaymentMethod(code))
 		}
+		/*
+			if _, ok := validPaymentMethods[models.PaymentMethod(code)]; ok {
+				result = append(result, models.PaymentMethod(code))
+			}
+		*/
 	}
 
 	return result
@@ -105,11 +111,12 @@ func queryPurchaseStatus(c *gin.Context, field string) *models.PurchaseStatus {
 
 func (handler *Handler) IsValidPaymentMethod(code models.PaymentMethod) bool {
 	// Check if the payment method code is valid
-	if _, ok := handler.paymentMethods[code]; !ok {
+	return handler.config.PaymentMethods.Contains(code)
+	/*if _, ok := handler.paymentMethods[code]; !ok {
 		return false
 	}
 
-	return true
+	return true*/
 }
 
 func (handler *Handler) ValidatePaymentMethodPayload(code models.PaymentMethod, sumupReaderId string) error {

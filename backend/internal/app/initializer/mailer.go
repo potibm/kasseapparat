@@ -1,33 +1,23 @@
 package initializer
 
 import (
-	"os"
-
+	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
 )
 
-func InitializeMailer() mailer.Mailer {
-	mailDsn := os.Getenv("MAIL_DSN")
-	if mailDsn == "" {
-		mailDsn = "smtp://user:password@localhost:1025"
+func InitializeMailer(mailerConfig config.MailerConfig) mailer.Mailer {
+	mailer := mailer.NewMailer(mailerConfig.DSN)
+
+	if mailerConfig.FromEmail != "" {
+		mailer.SetFrom(mailerConfig.FromEmail)
 	}
 
-	mailFrom := os.Getenv("MAIL_FROM")
-	mailSubjectPrefix := os.Getenv("MAIL_SUBJECT_PREFIX")
-	frontendBaseUrl := os.Getenv("FRONTEND_URL")
-
-	mailer := mailer.NewMailer(mailDsn)
-
-	if mailFrom != "" {
-		mailer.SetFrom(mailFrom)
+	if mailerConfig.MailSubjectPrefix != "" {
+		mailer.SetSubjectPrefix(mailerConfig.MailSubjectPrefix)
 	}
 
-	if mailSubjectPrefix != "" {
-		mailer.SetSubjectPrefix(mailSubjectPrefix)
-	}
-
-	if frontendBaseUrl != "" {
-		mailer.SetFrontendBaseUrl(frontendBaseUrl)
+	if mailerConfig.FrontendURL != "" {
+		mailer.SetFrontendBaseUrl(mailerConfig.FrontendURL)
 	}
 
 	return *mailer

@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/google/uuid"
+	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/monitor"
@@ -21,9 +22,8 @@ type Handler struct {
 	monitor         monitor.Poller
 	statusPublisher StatusPublisher
 	mailer          mailer.Mailer
-	version         string
+	config          config.Config
 	decimalPlaces   int32
-	paymentMethods  map[models.PaymentMethod]string
 }
 
 type HandlerConfig struct {
@@ -33,9 +33,7 @@ type HandlerConfig struct {
 	Monitor         monitor.Poller
 	StatusPublisher StatusPublisher
 	Mailer          mailer.Mailer
-	Version         string
-	DecimalPlaces   int32
-	PaymentMethods  map[models.PaymentMethod]string
+	AppConfig       config.Config
 }
 
 func NewHandler(config HandlerConfig) *Handler {
@@ -46,8 +44,7 @@ func NewHandler(config HandlerConfig) *Handler {
 		monitor:         config.Monitor,
 		statusPublisher: config.StatusPublisher,
 		mailer:          config.Mailer,
-		version:         config.Version,
-		decimalPlaces:   config.DecimalPlaces,
-		paymentMethods:  config.PaymentMethods,
+		config:          config.AppConfig,
+		decimalPlaces:   int32(config.AppConfig.FormatConfig.FractionDigitsMax),
 	}
 }

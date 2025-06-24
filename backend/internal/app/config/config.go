@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 type SentryConfig struct {
@@ -12,6 +14,7 @@ type SentryConfig struct {
 	ReplaySessionSampleRate float64
 	ReplayErrorSampleRate   float64
 	Environment             string
+	Version                 string
 }
 
 type JwtConfig struct {
@@ -19,10 +22,11 @@ type JwtConfig struct {
 	Realm  string
 }
 
-type MailConfig struct {
+type MailerConfig struct {
 	DSN               string
 	FromEmail         string
 	MailSubjectPrefix string
+	FrontendURL       string
 }
 
 type AppConfig struct {
@@ -49,10 +53,20 @@ type Config struct {
 	JwtConfig          JwtConfig
 	CorsAllowOrigins   []string
 	FrontendURL        string
-	MailConfig         MailConfig
+	MailerConfig       MailerConfig
+	SumupConfig        SumupConfig
+}
+
+func (cfg Config) OutputVersion() {
+	log.Printf("Kasseapparat %s\n", cfg.AppConfig.Version)
 }
 
 func Load() Config {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file, using environment variables")
+	}
+
 	return Config{
 		AppConfig:          loadAppConfig(),
 		FormatConfig:       loadFormatConfig(),
@@ -62,8 +76,8 @@ func Load() Config {
 		SentryConfig:       loadSentryConfig(),
 		JwtConfig:          loadJwtConfig(),
 		CorsAllowOrigins:   loadCorsAllowOrigins(),
-		FrontendURL:        getEnv("FRONTEND_URL", ""),
-		MailConfig:         loadMailConfig(),
+		MailerConfig:       loadMailerConfig(),
+		SumupConfig:        loadSumupConfig(),
 	}
 }
 
@@ -99,11 +113,11 @@ func loadCorsAllowOrigins() []string {
 func loadFormatConfig() FormatConfig {
 	return FormatConfig{
 		CurrencyLocale:    getEnv("CURRENCY_LOCALE", "dk-DK"),
-		CurrencyCode:      getEnv("CURRENCY_CODE", "DKK"),
+		CurrencyCode:      getCurrencyCode(),
 		DateLocale:        getEnv("DATE_LOCALE", "dk-DK"),
 		DateOptions:       getEnvWithJSONValidation("DATE_OPTIONS", "{\"weekday\":\"long\",\"hour\":\"2-digit\",\"minute\":\"2-digit\"}"),
 		FractionDigitsMin: getEnvAsInt("FRACTION_DIGITS_MIN", 0),
-		FractionDigitsMax: getEnvAsInt("FRACTION_DIGITS_MAX", 2),
+		FractionDigitsMax: getCurrencyMinorUnit(),
 	}
 }
 
@@ -113,6 +127,7 @@ func loadSentryConfig() SentryConfig {
 		TraceSampleRate:         getEnvAsFloat("SENTRY_TRACE_SAMPLE_RATE", 0.1),
 		ReplaySessionSampleRate: getEnvAsFloat("SENTRY_REPLAY_SESSION_SAMPLE_RATE", 0.1),
 		ReplayErrorSampleRate:   getEnvAsFloat("SENTRY_REPLAY_ERROR_SAMPLE_RATE", 0.1),
+		Version:                 readVersionFromFile(),
 	}
 }
 
@@ -123,10 +138,19 @@ func loadJwtConfig() JwtConfig {
 	}
 }
 
-func loadMailConfig() MailConfig {
-	return MailConfig{
-		DSN:               getEnv("MAIL_DSN", ""),
+func loadMailerConfig() MailerConfig {
+	return MailerConfig{
+		DSN:               getEnv("MAIL_DSN", "smtp://user:password@localhost:1025"),
 		FromEmail:         getEnv("MAIL_FROM", ""),
 		MailSubjectPrefix: getEnv("MAIL_SUBJECT_PREFIX", "[Kasseapparat]"),
+		FrontendURL:       getEnv("FRONTEND_URL", ""),
 	}
+}
+
+func getCurrencyCode() string {
+	return getEnv("CURRENCY_CODE", "DKK")
+}
+
+func getCurrencyMinorUnit() int {
+	return getEnvAsInt("FRACTION_DIGITS_MAX", 2)
 }

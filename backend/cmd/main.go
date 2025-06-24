@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	config "github.com/potibm/kasseapparat/internal/app/config"
 	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
@@ -20,24 +21,19 @@ import (
 var staticFiles embed.FS
 
 func main() {
+	config := config.Load()
+	config.OutputVersion()
+
 	db := utils.ConnectToDatabase()
 
-	initializer.InitializeDotenv()
-	initializer.InitializeVersion()
-	initializer.InitializeSentry()
-	initializer.OutputVersion()
-	initializer.InitializeSumup()
+	initializer.InitializeSentry(config.SentryConfig)
+	initializer.InitializeSumup(config.SumupConfig)
 
-	port := ":3000" // Default port number
-	if len(os.Args) > 1 {
-		port = ":" + os.Args[1] // Use the provided port number if available
-	}
-
-	sqliteRepository := sqliteRepo.NewRepository(db, initializer.GetCurrencyDecimalPlaces())
+	sqliteRepository := sqliteRepo.NewRepository(db, int32(config.FormatConfig.FractionDigitsMax))
 	sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
-	mailer := initializer.InitializeMailer()
+	mailer := initializer.InitializeMailer(config.MailerConfig)
 
-	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, initializer.GetCurrencyDecimalPlaces())
+	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, int32(config.FormatConfig.FractionDigitsMax))
 
 	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService)
 	publisher := &websocket.WebsocketPublisher{}
@@ -50,15 +46,18 @@ func main() {
 		Monitor:         poller,
 		StatusPublisher: publisher,
 		Mailer:          mailer,
-		Version:         initializer.GetVersion(),
-		DecimalPlaces:   initializer.GetCurrencyDecimalPlaces(),
-		PaymentMethods:  initializer.GetEnabledPaymentMethods(),
+		AppConfig:       config,
 	}
 	httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
-	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles)
+	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles, config)
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
+
+	port := ":3000" // Default port number
+	if len(os.Args) > 1 {
+		port = ":" + os.Args[1] // Use the provided port number if available
+	}
 
 	log.Println("Listening on " + port + "...")
 
