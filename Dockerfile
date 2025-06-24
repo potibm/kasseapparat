@@ -29,6 +29,8 @@ COPY --from=frontend-build /app/frontend/build ./cmd/assets
 RUN --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=1 go build -o kasseapparat ./cmd/main.go && \
     CGO_ENABLED=1 go build -o kasseapparat-tool ./tools/main.go
+RUN strip kasseapparat-tool && \
+    strip kasseapparat
 
 # Create the final image
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS runtime
