@@ -36,14 +36,14 @@ RUN apt-get update && \
     useradd -m -s /bin/bash appuser && \
     rm -rf /var/lib/apt/lists/* 
 
-# Copy frontend build
-COPY --chown=appuser:appuser --from=backend-build /app/backend/kasseapparat ./kasseapparat
-COPY --chown=appuser:appuser --from=backend-build /app/backend/kasseapparat-tool ./kasseapparat-tool
-
 # Copy backend build
 RUN echo "${VERSION}" > /app/VERSION && \
     mkdir -p /app/data && \
-    chown -R appuser:appuser /app/data /app/VERSION
+    chown -R appuser:appuser /app
+
+# Copy frontend build
+COPY --chown=appuser:appuser --from=backend-build /app/backend/kasseapparat ./kasseapparat
+COPY --chown=appuser:appuser --from=backend-build /app/backend/kasseapparat-tool ./kasseapparat-tool
 
 USER appuser
 
