@@ -45,9 +45,6 @@ func setup() {
 }
 
 func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
-	t.Setenv("CORS_ALLOW_ORIGINS", "http://localhost:3000")
-	t.Setenv("JWT_SECRET", "test")
-
 	config := config.Config{
 		AppConfig: config.AppConfig{
 			Version: "0.1.2",
@@ -58,14 +55,14 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 			CurrencyCode:      "DKK",
 			CurrencyLocale:    "dk-DK",
 			DateLocale:        "dk-DK",
-			DateOptions:       "{\"weekday\":\"long\",\"hour\":\"2-digit\",\"minute\":\"2-digit\"}",
+			DateOptions:       config.DefaultDateOptions,
 			FractionDigitsMin: 0,
 		},
 		JwtConfig: config.JwtConfig{
 			Realm:  "",
 			Secret: "test",
 		},
-		VATRates:           "[{\"rate\":25,\"name\":\"Standard\"},{\"rate\":0,\"name\":\"Zero rate\"}]",
+		VATRates:           config.DefaultVatRates,
 		EnvironmentMessage: "Test environment",
 		CorsAllowOrigins:   []string{"http://localhost:3000"},
 		PaymentMethods: config.PaymentMethods{

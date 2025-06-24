@@ -8,6 +8,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const (
+	DefaultVatRates    = "[{\"rate\":25,\"name\":\"Standard\"},{\"rate\":0,\"name\":\"Zero rate\"}]"
+	DefaultDateOptions = "{\"weekday\":\"long\",\"hour\":\"2-digit\",\"minute\":\"2-digit\"}"
+)
+
 type SentryConfig struct {
 	DSN                     string
 	TraceSampleRate         float64
@@ -67,10 +72,14 @@ func Load() Config {
 		log.Println("Error loading .env file, using environment variables")
 	}
 
+	return loadConfig()
+}
+
+func loadConfig() Config {
 	return Config{
 		AppConfig:          loadAppConfig(),
 		FormatConfig:       loadFormatConfig(),
-		VATRates:           getEnvWithJSONValidation("VAT_RATES", "[{\"rate\":25,\"name\":\"Standard\"},{\"rate\":0,\"name\":\"Zero rate\"}]"),
+		VATRates:           getEnvWithJSONValidation("VAT_RATES", DefaultVatRates),
 		EnvironmentMessage: getEnv("ENV_MESSAGE", ""),
 		PaymentMethods:     loadPaymentMethods(),
 		SentryConfig:       loadSentryConfig(),
@@ -115,7 +124,7 @@ func loadFormatConfig() FormatConfig {
 		CurrencyLocale:    getEnv("CURRENCY_LOCALE", "dk-DK"),
 		CurrencyCode:      getCurrencyCode(),
 		DateLocale:        getEnv("DATE_LOCALE", "dk-DK"),
-		DateOptions:       getEnvWithJSONValidation("DATE_OPTIONS", "{\"weekday\":\"long\",\"hour\":\"2-digit\",\"minute\":\"2-digit\"}"),
+		DateOptions:       getEnvWithJSONValidation("DATE_OPTIONS", DefaultDateOptions),
 		FractionDigitsMin: getEnvAsInt("FRACTION_DIGITS_MIN", 0),
 		FractionDigitsMax: getCurrencyMinorUnit(),
 	}
