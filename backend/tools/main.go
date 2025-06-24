@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -44,13 +45,13 @@ var (
 )
 
 func main() {
-	initializer.InitializeVersion()
-	initializer.OutputVersion()
+	cfg := config.Load()
+	cfg.OutputVersion()
 
 	db := utils.ConnectToDatabase()
 
-	Repo = sqliteRepo.NewRepository(db, 2)
-	Mailer = initializer.InitializeMailer()
+	Repo = sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
+	Mailer = initializer.InitializeMailer(cfg.MailerConfig)
 
 	if userImportCsvFile != "" {
 		log.Println("Importing users from CSV file...")

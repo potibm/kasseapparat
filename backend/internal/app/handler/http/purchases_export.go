@@ -16,7 +16,7 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 	confirmed := models.PurchaseStatusConfirmed
 
 	filters := sqliteRepo.PurchaseFilters{}
-	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethods", handler.paymentMethods)
+	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethods", handler.config.PaymentMethods)
 	filters.Status = &confirmed
 
 	purchases, err := handler.repo.GetFilteredPurchases(filters)

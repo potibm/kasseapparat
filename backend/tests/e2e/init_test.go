@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gavv/httpexpect/v2"
+	"github.com/potibm/kasseapparat/internal/app/config"
 	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
@@ -44,22 +45,39 @@ func setup() {
 }
 
 func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
-	t.Setenv("CORS_ALLOW_ORIGINS", "http://localhost:3000")
-	t.Setenv("JWT_SECRET", "test")
-
-	currencyDecimalPlaces := int32(2)
-	paymentMethods := map[models.PaymentMethod]string{
-		models.PaymentMethodCash:  "💶 Cash",
-		models.PaymentMethodCC:    "💳 Creditcard",
-		models.PaymentMethodSumUp: "💳 SumUp",
+	cfg := config.Config{
+		AppConfig: config.AppConfig{
+			Version: "0.1.2",
+			GinMode: "test",
+		},
+		FormatConfig: config.FormatConfig{
+			FractionDigitsMax: 2,
+			CurrencyCode:      "DKK",
+			CurrencyLocale:    "dk-DK",
+			DateLocale:        "dk-DK",
+			DateOptions:       config.DefaultDateOptions,
+			FractionDigitsMin: 0,
+		},
+		JwtConfig: config.JwtConfig{
+			Realm:  "",
+			Secret: "test",
+		},
+		VATRates:           config.DefaultVatRates,
+		EnvironmentMessage: "Test environment",
+		CorsAllowOrigins:   []string{"http://localhost:3000"},
+		PaymentMethods: config.PaymentMethods{
+			{Code: models.PaymentMethodCash, Name: "Cash"},
+			{Code: models.PaymentMethodCC, Name: "Creditcard"},
+			{Code: models.PaymentMethodSumUp, Name: "SumUp"},
+		},
 	}
 
-	sqliteRepo := sqliteRepo.NewRepository(db, currencyDecimalPlaces)
+	sqliteRepo := sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
 	sumupRepo := NewMockSumUpRepository()
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)
 
-	purchaseService := purchaseService.NewPurchaseService(sqliteRepo, sumupRepo, mailer, currencyDecimalPlaces)
+	purchaseService := purchaseService.NewPurchaseService(sqliteRepo, sumupRepo, mailer, int32(cfg.FormatConfig.FractionDigitsMax))
 
 	statusPublisher := MockStatusPublisher{}
 	poller := monitor.NewPoller(sumupRepo, sqliteRepo, purchaseService, &statusPublisher)
@@ -70,14 +88,12 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		PurchaseService: purchaseService,
 		Monitor:         poller,
 		Mailer:          *mailer,
-		Version:         initializer.GetVersion(),
-		DecimalPlaces:   currencyDecimalPlaces,
-		PaymentMethods:  paymentMethods,
+		AppConfig:       cfg,
 	}
 	handlerHttp := handlerHttp.NewHandler(httpHandlerConfig)
 	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService)
 
-	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{})
+	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{}, cfg)
 
 	ts := httptest.NewServer(router)
 

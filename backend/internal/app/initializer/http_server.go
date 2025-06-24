@@ -4,7 +4,6 @@ import (
 	"embed"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/config"
 	httpHandler "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
@@ -26,15 +26,15 @@ var (
 	authMiddleware *jwt.GinJWTMiddleware
 )
 
-func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler websocket.HandlerInterface, repository sqliteRepo.Repository, staticFiles embed.FS) *gin.Engine {
-	gin.SetMode(os.Getenv("GIN_MODE"))
+func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler websocket.HandlerInterface, repository sqliteRepo.Repository, staticFiles embed.FS, config config.Config) *gin.Engine {
+	gin.SetMode(config.AppConfig.GinMode)
 	r = gin.Default()
 	r.Use(sentrygin.New(sentrygin.Options{}))
 	r.Use(middleware.ErrorHandlingMiddleware())
 
 	r.GET("/api/v2/purchases/stats", httpHandler.GetPurchaseStats)
 
-	r.Use(CreateCorsMiddleware())
+	r.Use(CreateCorsMiddleware(config.CorsAllowOrigins))
 
 	folder, err := static.EmbedFolder(staticFiles, "assets")
 	if err != nil {
@@ -43,7 +43,7 @@ func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler webs
 
 	r.Use(static.Serve("/", folder))
 
-	authMiddleware := registerAuthMiddleware(repository)
+	authMiddleware := registerAuthMiddleware(repository, config.JwtConfig)
 	registerApiRoutes(httpHandler, websocketHandler, authMiddleware)
 
 	r.NoRoute(func(c *gin.Context) {
@@ -60,15 +60,9 @@ func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler webs
 	return r
 }
 
-func CreateCorsMiddleware() gin.HandlerFunc {
+func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
-
-	corsAllowOrigins := os.Getenv("CORS_ALLOW_ORIGINS")
-	if corsAllowOrigins == "" {
-		log.Fatalf("CORS_ALLOW_ORIGINS is not set in env")
-	}
-
-	corsConfig.AllowOrigins = strings.Split(corsAllowOrigins, ",")
+	corsConfig.AllowOrigins = allowedOrigins
 	corsConfig.AllowAllOrigins = false
 	corsConfig.AllowCredentials = true
 	corsConfig.AddAllowHeaders("Authorization", "Credentials")
@@ -77,8 +71,8 @@ func CreateCorsMiddleware() gin.HandlerFunc {
 	return cors.New(corsConfig)
 }
 
-func registerAuthMiddleware(repository sqliteRepo.Repository) *jwt.GinJWTMiddleware {
-	authMiddleware, _ = jwt.New(middleware.InitParams(repository, os.Getenv("JWT_REALM"), os.Getenv("JWT_SECRET"), 10))
+func registerAuthMiddleware(repository sqliteRepo.Repository, jwtConfig config.JwtConfig) *jwt.GinJWTMiddleware {
+	authMiddleware, _ = jwt.New(middleware.InitParams(repository, jwtConfig.Realm, jwtConfig.Secret, 10))
 	r.Use(middleware.HandlerMiddleWare(authMiddleware))
 
 	middleware.RegisterRoute(r, authMiddleware)

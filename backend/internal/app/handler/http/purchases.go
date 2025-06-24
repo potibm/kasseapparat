@@ -182,7 +182,7 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 	order := c.DefaultQuery("_order", "DESC")
 
 	filters := sqliteRepo.PurchaseFilters{}
-	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethod", handler.paymentMethods)
+	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethod", handler.config.PaymentMethods)
 	filters.CreatedByID, _ = strconv.Atoi(c.DefaultQuery("createdById", "0"))
 	filters.TotalGrossPriceGte = queryDecimal(c, "totalGrossPrice_gte")
 	filters.TotalGrossPriceLte = queryDecimal(c, "totalGrossPrice_lte")

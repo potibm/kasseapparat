@@ -1,10 +1,9 @@
 package initializer
 
 import (
-	"os"
-	"strconv"
 	"sync"
 
+	"github.com/potibm/kasseapparat/internal/app/config"
 	sumupService "github.com/potibm/kasseapparat/internal/app/service/sumup"
 	"github.com/sumup/sumup-go"
 	"github.com/sumup/sumup-go/client"
@@ -15,18 +14,18 @@ var (
 	once     sync.Once
 )
 
-func InitializeSumup() *sumupService.Service {
+func InitializeSumup(sumupConfig config.SumupConfig) *sumupService.Service {
 	once.Do(func() {
-		apiKey := getEnv("SUMUP_API_KEY", "")
-		merchantCode := getEnv("SUMUP_MERCHANT_CODE", "")
-		paymentCurrency := getEnv("CURRENCY_CODE", "DKK")
-		paymentMinorUnit := getEnvAsInt("FRACTION_DIGITS_MAX", 2)
-		affiliateKey := getEnv("SUMUP_AFFILIATE_KEY", "")
-		applicationId := getEnv("SUMUP_APPLICATION_ID", "")
+		apiKey := sumupConfig.ApiKey
+		merchantCode := sumupConfig.MerchantCode
+		paymentCurrency := sumupConfig.CurrencyCode
+		paymentMinorUnit := sumupConfig.CurrencyMinorUnit
+		affiliateKey := sumupConfig.AffiliateKey
+		applicationId := sumupConfig.ApplicationId
 
 		var webhookUrl *string
 
-		publicUrl := getEnv("SUMUP_PUBLIC_URL", "")
+		publicUrl := sumupConfig.PublicUrl
 		if publicUrl != "" {
 			webhookUrl = &publicUrl
 			*webhookUrl += "/api/sumup/webhook"
@@ -47,27 +46,4 @@ func GetSumupService() *sumupService.Service {
 	}
 
 	return instance
-}
-
-func getEnv(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-
-	return value
-}
-
-func getEnvAsInt(key string, defaultValue int) int {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-
-	intValue, err := strconv.Atoi(value)
-	if err != nil {
-		return defaultValue
-	}
-
-	return intValue
 }
