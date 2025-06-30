@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@sentry/react": "^9.30.0",
-    "@tailwindcss/vite": "^4.1.10",
+    "@tailwindcss/vite": "^4.1.11",
     "animate.css": "^4.1.1",
     "decimal.js": "^10.5.0",
     "flowbite-react": "^0.11.8",
