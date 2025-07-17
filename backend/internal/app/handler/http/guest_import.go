@@ -20,6 +20,7 @@ type deineTicketsRecord struct {
 	FirstName string `json:"first_name"`
 	Subject   string `json:"subject"`
 	Blocked   string `json:"blocked"`
+	Note	  string `json:"note"`
 }
 
 func (r *deineTicketsRecord) validateCode() bool {
@@ -56,6 +57,7 @@ func (r *deineTicketsRecord) GetGuest(listId uint) models.Guest {
 		Code:             &r.Code,
 		AdditionalGuests: 0,
 		AttendedGuests:   0,
+		ArrivalNote:      &r.Note,
 	}
 }
 
@@ -112,7 +114,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 		}
 
 		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Error reading CSV file"))
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Error reading CSV file:"))
 
 			return
 		}
@@ -123,6 +125,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 			FirstName: line[2],
 			Subject:   line[3],
 			Blocked:   line[4],
+			Note:      line[5],
 		}
 
 		valid, warningMessage := record.Validate(handler.repo)
