@@ -20,7 +20,7 @@ type deineTicketsRecord struct {
 	FirstName string `json:"first_name"`
 	Subject   string `json:"subject"`
 	Blocked   string `json:"blocked"`
-	Note	  string `json:"note"`
+	Note      string `json:"note"`
 }
 
 func (r *deineTicketsRecord) validateCode() bool {
