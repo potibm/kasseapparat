@@ -114,9 +114,15 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 		}
 
 		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Error reading CSV file:"))
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Error reading CSV file"))
 
 			return
+		}
+
+		if len(line) < 6 {
+			warnings = append(warnings, "Invalid CSV row length ("+strconv.Itoa(lineNumber)+")")
+
+			continue
 		}
 
 		record := deineTicketsRecord{
