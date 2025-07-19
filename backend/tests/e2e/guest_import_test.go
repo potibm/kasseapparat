@@ -12,7 +12,7 @@ import (
 
 var (
 	guestsImportUrl       = "/api/v2/guestsUpload"
-	guestsImportCsvHeader = "Code;LastName;FirstName;Subject;Blocked\n"
+	guestsImportCsvHeader = "Code;LastName;FirstName;Subject;Blocked;Notiz;\n"
 	deineTicketProductId  = 4
 )
 
@@ -21,7 +21,7 @@ func TestGuestImport(t *testing.T) {
 	defer cleanup()
 
 	fileContent := guestsImportCsvHeader +
-		"123456789;XYZTEST Lastname;Firstname;EV123;\n"
+		"123456789;XYZTEST Lastname;Firstname;EV123;;T-shirt size XL;\n"
 
 	guestImportResponse := uploadGuestImport(fileContent).
 		Status(http.StatusOK).
@@ -62,7 +62,7 @@ func TestGuestImportWithWarningMessages(t *testing.T) {
 	defer cleanup()
 
 	fileContent := guestsImportCsvHeader +
-		"12345678A;XYZTEST Lastname;Firstname;EV123;\n"
+		"12345678A;XYZTEST Lastname;Firstname;EV123;;;\n"
 
 	guestImportResponse := uploadGuestImport(fileContent).
 		Status(http.StatusOK).
@@ -73,9 +73,9 @@ func TestGuestImportWithWarningMessages(t *testing.T) {
 	guestImportResponse.Value("warnings").Array().IsEmpty()
 
 	fileContent = guestsImportCsvHeader +
-		"12345678A;XYZTEST Dupe;Dupesten;EV123;\n" +
-		"123;XYZTEST Invalid;Codesten;EV123;\n" +
-		"ABCABCABC;XYZTEST Blocked;Dupesten;EV123;blocked\n"
+		"12345678A;XYZTEST Dupe;Dupesten;EV123;;;\n" +
+		"123;XYZTEST Invalid;Codesten;EV123;;T-shirt size M;\n" +
+		"ABCABCABC;XYZTEST Blocked;Dupesten;EV123;blocked;;\n"
 
 	guestImportResponse = uploadGuestImport(fileContent).
 		Status(http.StatusOK).

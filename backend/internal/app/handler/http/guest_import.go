@@ -20,7 +20,10 @@ type deineTicketsRecord struct {
 	FirstName string `json:"first_name"`
 	Subject   string `json:"subject"`
 	Blocked   string `json:"blocked"`
+	Note      string `json:"note"`
 }
+
+const expectedCsvColumns = 6
 
 func (r *deineTicketsRecord) validateCode() bool {
 	matched, _ := regexp.MatchString(`^[0-9A-Z]{9}$`, r.Code)
@@ -56,6 +59,7 @@ func (r *deineTicketsRecord) GetGuest(listId uint) models.Guest {
 		Code:             &r.Code,
 		AdditionalGuests: 0,
 		AttendedGuests:   0,
+		ArrivalNote:      &r.Note,
 	}
 }
 
@@ -117,12 +121,19 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 			return
 		}
 
+		if len(line) < expectedCsvColumns {
+			warnings = append(warnings, "Invalid CSV row length at line "+strconv.Itoa(lineNumber)+": expected "+strconv.Itoa(expectedCsvColumns)+" columns, got "+strconv.Itoa(len(line)))
+
+			continue
+		}
+
 		record := deineTicketsRecord{
 			Code:      line[0],
 			LastName:  line[1],
 			FirstName: line[2],
 			Subject:   line[3],
 			Blocked:   line[4],
+			Note:      line[5],
 		}
 
 		valid, warningMessage := record.Validate(handler.repo)
