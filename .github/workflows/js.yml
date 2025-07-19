@@ -23,7 +23,7 @@ jobs:
       - name: Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "23"
+          node-version: "24"
       - name: Cache node_modules
         uses: actions/cache@v4
         with:
@@ -57,7 +57,7 @@ jobs:
       - name: Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "23"
+          node-version: "24"
 
       - name: install
         run: yarn install
