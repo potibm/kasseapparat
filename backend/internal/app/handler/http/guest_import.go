@@ -23,6 +23,8 @@ type deineTicketsRecord struct {
 	Note      string `json:"note"`
 }
 
+const expectedCsvColumns = 6
+
 func (r *deineTicketsRecord) validateCode() bool {
 	matched, _ := regexp.MatchString(`^[0-9A-Z]{9}$`, r.Code)
 
@@ -119,8 +121,8 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 			return
 		}
 
-		if len(line) < 6 {
-			warnings = append(warnings, "Invalid CSV row length ("+strconv.Itoa(lineNumber)+")")
+		if len(line) < expectedCsvColumns {
+			warnings = append(warnings, "Invalid CSV row length at line "+strconv.Itoa(lineNumber)+": expected "+strconv.Itoa(expectedCsvColumns)+" columns, got "+strconv.Itoa(len(line)))
 
 			continue
 		}
