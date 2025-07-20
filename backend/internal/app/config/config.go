@@ -48,6 +48,8 @@ type FormatConfig struct {
 	FractionDigitsMax int
 }
 
+type CorsAllowOriginsConfig []string
+
 type Config struct {
 	AppConfig          AppConfig
 	FormatConfig       FormatConfig
@@ -56,7 +58,7 @@ type Config struct {
 	PaymentMethods     PaymentMethods
 	SentryConfig       SentryConfig
 	JwtConfig          JwtConfig
-	CorsAllowOrigins   []string
+	CorsAllowOrigins   CorsAllowOriginsConfig
 	FrontendURL        string
 	MailerConfig       MailerConfig
 	SumupConfig        SumupConfig
