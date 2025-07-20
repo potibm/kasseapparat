@@ -172,7 +172,9 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
     <Modal show={show} size="md" popup dismissible={false}>
       <ModalBody className="m-5">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-8">Purchase Status</h3>
+          <h3 className="text-lg font-semibold mb-8 dark:text-gray-200">
+            Purchase Status
+          </h3>
           <div
             key={status}
             className={`text-center space-y-4 ${flash ? "animate__animated animate__headShake" : ""}`}

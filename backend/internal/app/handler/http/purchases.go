@@ -148,7 +148,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			handler.sumupRepository.GetWebhookUrl(),
 		)
 		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create SumUp reader checkout"))
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create SumUp reader checkout: "+err.Error()))
 
 			log.Printf("Error creating SumUp reader checkout: %v", err)
 
