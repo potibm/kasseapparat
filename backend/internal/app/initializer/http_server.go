@@ -125,6 +125,8 @@ func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocke
 		unprotectedApiRouter.POST("/auth/changePassword", httpHandler.UpdateUserPassword)
 
 		unprotectedApiRouter.POST("/sumup/webhook", httpHandler.GetSumupTransactionWebhook)
+
+		unprotectedApiRouter.GET("/purchases/:id/ws", websockeHandler.HandleTransactionWebSocket)
 	}
 }
 
@@ -171,7 +173,6 @@ func registerPurchaseRoutes(rg *gin.RouterGroup, handler httpHandler.Handler, we
 		purchases.DELETE("/:id", handler.DeletePurchase)
 		purchases.GET("/export", handler.ExportPurchases)
 		purchases.POST("/:id/refund", handler.RefundPurchase)
-		purchases.GET("/:id/ws", websockeHandler.HandleTransactionWebSocket)
 	}
 }
 

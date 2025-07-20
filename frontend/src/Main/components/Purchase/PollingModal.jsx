@@ -105,7 +105,8 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
       }
     };
     const ws = new WebSocket(
-      `${websocketHost}/api/v2/purchases/${purchase.id}/ws?token=${jwtToken}`,
+      `${websocketHost}/api/v2/purchases/${purchase.id}/ws`,
+      [jwtToken],
     );
     wsRef.current = ws;
 
