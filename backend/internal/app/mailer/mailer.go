@@ -77,6 +77,7 @@ func (m *Mailer) SetDisabled(disabled bool) {
 func (m *Mailer) SendMail(to string, subject string, body string) error {
 	if m.disabled {
 		log.Println("Mailer is disabled, not sending email")
+
 		return nil
 	}
 

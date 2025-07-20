@@ -14,6 +14,7 @@ func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 	protocols := websocket.Subprotocols(c.Request)
 	if len(protocols) == 0 {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+
 		return
 	}
 
@@ -22,6 +23,7 @@ func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 	token, err := h.jwtMiddleware.ParseTokenString(tokenStr)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+
 		return
 	}
 
@@ -39,6 +41,7 @@ func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 
 	if err := h.sendInitialStatus(conn, transactionID); err != nil {
 		log.Println("Sending initial status failed:", err)
+
 		return
 	}
 
@@ -49,12 +52,14 @@ func (h *Handler) upgradeAndRegister(c *gin.Context) (uuid.UUID, *websocket.Conn
 	transactionID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
+
 		return uuid.Nil, nil, false
 	}
 
 	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println("WebSocket upgrade failed:", err)
+
 		return uuid.Nil, nil, false
 	}
 
@@ -85,6 +90,7 @@ func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uu
 		var msg map[string]interface{}
 		if err := conn.ReadJSON(&msg); err != nil {
 			log.Println("WS read error:", err)
+
 			break
 		}
 

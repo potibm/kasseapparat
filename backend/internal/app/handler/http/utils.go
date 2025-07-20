@@ -22,6 +22,7 @@ func queryArrayInt(c *gin.Context, field string) []int {
 		id, err := strconv.Atoi(s)
 		if err != nil {
 			log.Printf("Error converting %s to int: %v", s, err)
+
 			continue // skip invalid integers
 		}
 

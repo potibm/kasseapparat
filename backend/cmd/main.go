@@ -78,6 +78,7 @@ func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sql
 	activeTransactions, err := sqliteRepository.GetPurchases(1000, 0, "createdAt", "ASC", filters)
 	if err != nil {
 		log.Printf("[Error] failed to get active purchases: %v", err)
+
 		return
 	}
 

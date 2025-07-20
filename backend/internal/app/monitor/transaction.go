@@ -10,12 +10,13 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-// Starts a polling loop for a given transaction ID
+// Starts a polling loop for a given transaction ID.
 func (n *transactionPoller) Start(transactionID uuid.UUID) {
 	log.Println("Starting polling for transaction:", transactionID)
 
 	if !registerPoller(transactionID) {
 		log.Println("Polling already running for transaction:", transactionID)
+
 		return // already running
 	}
 
@@ -30,6 +31,7 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 		for range ticker.C {
 			if done := n.handleTransactionPolling(transactionID); done {
 				log.Printf("Polling ended for %s", transactionID)
+
 				return
 			}
 		}
@@ -42,11 +44,13 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 	purchase, err := n.SqliteRepository.GetPurchaseByID(transactionID)
 	if err != nil {
 		log.Printf("DB error for %s: %v", transactionID, err)
+
 		return false
 	}
 
 	if purchase.PaymentMethod != models.PaymentMethodSumUp {
 		log.Printf("Skipping polling for %s, not a SumUp transaction", transactionID)
+
 		return true
 	}
 
@@ -60,6 +64,7 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 
 	if purchase.SumupClientTransactionID == nil {
 		log.Printf("No SumUp client transaction ID for %s, skipping polling", transactionID)
+
 		return true
 	}
 
@@ -67,6 +72,7 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 	transaction, err := n.SumupRepository.GetTransactionByClientTransactionId(*purchase.SumupClientTransactionID)
 	if err != nil {
 		log.Printf("Error fetching transaction %s from SumUp: %v", purchase.SumupClientTransactionID, err)
+
 		return false
 	}
 
@@ -102,11 +108,13 @@ func (n *transactionPoller) handleStatusUpdate(ctx context.Context, transactionI
 		updatedPurchase, err = n.PurchaseService.CancelPurchase(ctx, transactionID)
 	default:
 		log.Printf("Unknown transaction status %s for %s, skipping update", status, transactionID)
+
 		return false
 	}
 
 	if err != nil {
 		log.Printf("Error updating purchase %s status: %v", transactionID, err)
+
 		return false
 	}
 

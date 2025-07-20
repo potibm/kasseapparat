@@ -116,6 +116,7 @@ func importUsers(filename string) {
 	records, err := reader.ReadAll()
 	if err != nil {
 		log.Printf("Failed to read CSV file: %v", err)
+
 		return
 	}
 
@@ -137,12 +138,14 @@ func importUsers(filename string) {
 
 		if !validEmail(record[1]) {
 			log.Printf("Invalid email format for user %s, skipping", record[0])
+
 			continue
 		}
 
 		err := createUser(record[0], record[1], isAdmin)
 		if err != nil {
 			log.Println("Failed to create user:", err)
+
 			continue
 		}
 	}

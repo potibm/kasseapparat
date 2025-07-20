@@ -112,6 +112,7 @@ func (r *Repository) CreateReaderTerminateAction(readerId string) error {
 
 func (r *Repository) DeleteReader(readerId string) error {
 	id := readers.ReaderId(readerId)
+
 	return r.service.Client.Readers.DeleteReader(context.Background(), r.service.MerchantCode, id)
 }
 

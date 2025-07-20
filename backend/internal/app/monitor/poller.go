@@ -8,7 +8,7 @@ import (
 	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 )
 
-// List of final states where we can stop polling
+// List of final states where we can stop polling.
 var finalStates = map[string]bool{
 	"confirmed": true,
 	"canceled":  true,

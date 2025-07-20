@@ -44,6 +44,7 @@ func getEnvWithJSONValidation(key, fallback string) string {
 	var tmp any
 	if err := json.Unmarshal([]byte(val), &tmp); err != nil {
 		log.Printf("Invalid JSON in %s: %v", key, err)
+
 		return fallback
 	}
 

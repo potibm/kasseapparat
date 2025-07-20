@@ -29,15 +29,15 @@ const (
 
 type Purchase struct {
 	ID        uuid.UUID `gorm:"type:text;primaryKey" json:"id"`
-	CreatedAt time.Time `gorm:"index" json:"createdAt"`
+	CreatedAt time.Time `gorm:"index"                json:"createdAt"`
 	GormOwnedModel
-	TotalNetPrice            decimal.Decimal `gorm:"type:TEXT"             json:"totalNetPrice"`
-	TotalGrossPrice          decimal.Decimal `gorm:"type:TEXT"             json:"totalGrossPrice"`
-	PurchaseItems            []PurchaseItem  `gorm:"foreignKey:PurchaseID" json:"purchaseItems"`
-	PaymentMethod            PaymentMethod   `gorm:"type:TEXT"             json:"paymentMethod"`
-	SumupTransactionID       *uuid.UUID      `gorm:"type:TEXT"             json:"sumupTransactionId"`
-	SumupClientTransactionID *uuid.UUID      `gorm:"type:TEXT"             json:"sumupClientTransactionId"`
-	Status                   PurchaseStatus  `gorm:"type:TEXT;default:'confirmed'"             json:"status"`
+	TotalNetPrice            decimal.Decimal `gorm:"type:TEXT"                     json:"totalNetPrice"`
+	TotalGrossPrice          decimal.Decimal `gorm:"type:TEXT"                     json:"totalGrossPrice"`
+	PurchaseItems            []PurchaseItem  `gorm:"foreignKey:PurchaseID"         json:"purchaseItems"`
+	PaymentMethod            PaymentMethod   `gorm:"type:TEXT"                     json:"paymentMethod"`
+	SumupTransactionID       *uuid.UUID      `gorm:"type:TEXT"                     json:"sumupTransactionId"`
+	SumupClientTransactionID *uuid.UUID      `gorm:"type:TEXT"                     json:"sumupClientTransactionId"`
+	Status                   PurchaseStatus  `gorm:"type:TEXT;default:'confirmed'" json:"status"`
 }
 
 func (p *Purchase) BeforeCreate(tx *gorm.DB) (err error) {

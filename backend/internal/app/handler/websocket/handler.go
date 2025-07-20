@@ -61,6 +61,7 @@ func makeCheckOrigin(allowedOrigins *config.CorsAllowOriginsConfig) func(r *http
 
 		if origin == "" {
 			log.Printf("WebSocket connection attempt failed: missing origin header")
+
 			return false
 		}
 

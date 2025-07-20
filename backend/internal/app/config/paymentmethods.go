@@ -70,6 +70,7 @@ func loadPaymentMethods() PaymentMethods {
 
 func isValidPaymentMethod(code models.PaymentMethod) bool {
 	_, exists := allAvailablePaymentMethods[code]
+
 	return exists
 }
 
@@ -81,6 +82,7 @@ func createPaymentMethodConfig(method models.PaymentMethod) PaymentMethodConfig 
 		}
 	} else {
 		log.Fatalf("Payment method %s is not supported", method)
+
 		return PaymentMethodConfig{}
 	}
 }

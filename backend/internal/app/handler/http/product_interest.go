@@ -44,8 +44,8 @@ func (handler *Handler) DeleteProductInterestByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	productInterest, err := handler.repo.GetProductInterestByID(id)
 
+	productInterest, err := handler.repo.GetProductInterestByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 

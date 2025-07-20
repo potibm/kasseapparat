@@ -87,6 +87,7 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 		},
 		CreateReaderCheckoutFunc: func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl *string) (*uuid.UUID, error) {
 			checkoutId, _ := uuid.Parse(mockCheckoutUUID)
+
 			return &checkoutId, nil
 		},
 		CreateReaderTerminateActionFunc: func(readerId string) error {
@@ -101,16 +102,19 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 			if transactionId.String() == mockCheckoutUUID {
 				return &sumup.Transaction{ID: transactionId.String(), Currency: "EUR", Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"}, nil
 			}
+
 			return nil, nil
 		},
 		RefundTransactionFunc: func(transactionId uuid.UUID) error {
 			if transactionId.String() == mockCheckoutUUID {
 				return nil
 			}
+
 			return fmt.Errorf("transaction not found")
 		},
 		GetWebhookUrlFunc: func() *string {
 			url := "https://mock-webhook-url.example.com"
+
 			return &url
 		},
 	}

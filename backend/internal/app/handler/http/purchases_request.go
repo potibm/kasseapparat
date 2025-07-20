@@ -16,7 +16,7 @@ type PurchaseListItemRequest struct {
 type PurchaseCartRequest struct {
 	ID        int                       `binding:"required"      form:"ID"`
 	Quantity  int                       `binding:"required"      form:"quantity"`
-	NetPrice  decimal.Decimal           `binding:"required" form:"netPrice"`
+	NetPrice  decimal.Decimal           `binding:"required"      form:"netPrice"`
 	ListItems []PurchaseListItemRequest `binding:"required,dive" form:"listItems"`
 }
 

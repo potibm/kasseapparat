@@ -2,13 +2,17 @@ version: "2"
 run:
   concurrency: 4
 linters:
+  default: "fast"
   enable:
-    - gocritic
-    - whitespace
-    - wsl
+    - wsl_v5
   disable:
-    - dupl
-    - funlen
+   - wsl
+   - testpackage
+  settings:
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
   exclusions:
     generated: lax
     presets:

@@ -266,6 +266,7 @@ type MockMailer struct {
 
 func (m *MockMailer) SendNotificationOnArrival(email, name string) error {
 	m.Sent = append(m.Sent, email+"|"+name)
+
 	return nil
 }
 

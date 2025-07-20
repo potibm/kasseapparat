@@ -7,13 +7,14 @@ import (
 
 type PurchaseItem struct {
 	GormModel
-	PurchaseID uuid.UUID       `gorm:"type:text" json:"purchaseID"` // Foreign key to Purchase
+
+	PurchaseID uuid.UUID       `gorm:"type:text"             json:"purchaseID"` // Foreign key to Purchase
 	Purchase   Purchase        `gorm:"foreignKey:PurchaseID" json:"-"`
 	ProductID  uint            `json:"productID"` // Foreign key to Product
-	Product    Product         `gorm:"foreignKey:ProductID" json:"product"`
+	Product    Product         `gorm:"foreignKey:ProductID"  json:"product"`
 	Quantity   int             `json:"quantity"`
-	NetPrice   decimal.Decimal `gorm:"type:TEXT"  json:"netPrice"`
-	VATRate    decimal.Decimal `gorm:"type:TEXT"  json:"vatRate"`
+	NetPrice   decimal.Decimal `gorm:"type:TEXT"             json:"netPrice"`
+	VATRate    decimal.Decimal `gorm:"type:TEXT"             json:"vatRate"`
 }
 
 func (pi PurchaseItem) GrossPrice(decimalPlaces int32) decimal.Decimal {
