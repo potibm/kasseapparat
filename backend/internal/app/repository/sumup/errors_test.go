@@ -69,7 +69,7 @@ func TestExtractCreateCheckoutErrorDetails(t *testing.T) {
 	actual = extractCreateCheckoutErrorDetails(err2)
 	expected = "errors="
 
-	if actual.Error()[:len(expected)] != expected {
+	if !strings.HasPrefix(actual.Error(), expected) {
 		t.Errorf("Expected %q but got %q", expected, actual.Error())
 	}
 }
