@@ -56,13 +56,16 @@ func makeCheckOrigin(allowedOrigins *config.CorsAllowOriginsConfig) func(r *http
 
 	return func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
-		log.Printf("WebSocket connection attempt from origin: %s", origin)
 
 		if origin == "" {
+			log.Printf("WebSocket connection attempt failed: missing origin header")
 			return false
 		}
 
 		_, ok := allowed[origin]
+		if !ok {
+			log.Printf("WebSocket connection attempt failed: origin not allowed: %s", origin)
+		}
 
 		return ok
 	}
