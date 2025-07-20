@@ -36,7 +36,7 @@ func TestGetPurchaseWebsocketWithInvalidOrigin(t *testing.T) {
 	conn, resp, err := connectWS(t, wsURL, token, "http://example.com:3000")
 	require.Error(t, err)
 	require.NotNil(t, resp)
-	require.Equal(t, http.StatusForbidden, resp.StatusCode) // oder 400, je nach Upgrader-Fehler
+	require.Equal(t, http.StatusForbidden, resp.StatusCode)
 
 	if conn != nil {
 		conn.Close()

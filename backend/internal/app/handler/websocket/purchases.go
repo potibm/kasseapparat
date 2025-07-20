@@ -18,7 +18,6 @@ func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 	}
 
 	tokenStr := protocols[0]
-	log.Println("WebSocket connection attempt with token:", tokenStr)
 
 	token, err := h.jwtMiddleware.ParseTokenString(tokenStr)
 	if err != nil {
