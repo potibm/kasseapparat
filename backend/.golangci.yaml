@@ -8,11 +8,29 @@ linters:
   disable:
    - wsl
    - testpackage
+   - mnd 
+   - lll
+   - interfacebloat
+   - funlen
+   - cyclop
+   - embeddedstructfieldcheck
+   - funcorder
   settings:
     wsl_v5:
       allow-first-in-block: true
       allow-whole-block: false
       branch-max-lines: 2
+    depguard:
+      rules:
+        main:
+          list-mode: lax
+          deny:
+            - pkg: "math/rand$"
+              desc: use math/rand/v2
+            - pkg: "github.com/sirupsen/logrus"
+              desc: not allowed
+            - pkg: "github.com/pkg/errors"
+              desc: Should be replaced by standard lib errors package
   exclusions:
     generated: lax
     presets:
@@ -23,7 +41,14 @@ linters:
     paths:
       - third_party$
       - builtin$
-      - examples$
+      - examples
+    rules:
+      - path: tests/e2e/init_test_sumup.go
+        linters:
+         - mnd
+      - path: internal/app/utils/seed.go
+        linters:
+         - mnd
 formatters:
   exclusions:
     generated: lax

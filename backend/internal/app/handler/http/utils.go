@@ -16,7 +16,7 @@ import (
 func queryArrayInt(c *gin.Context, field string) []int {
 	idStrings := c.QueryArray(field)
 
-	var ids []int
+	ids := make([]int, 0, len(idStrings))
 
 	for _, s := range idStrings {
 		id, err := strconv.Atoi(s)
