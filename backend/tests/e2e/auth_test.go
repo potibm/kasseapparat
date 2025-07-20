@@ -37,7 +37,7 @@ func TestInvalidLogin(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	error := e.POST("/login").
+	e := e.POST("/login").
 		WithJSON(map[string]string{
 			"login":    "demo",
 			"password": "wrooong",
@@ -46,8 +46,8 @@ func TestInvalidLogin(t *testing.T) {
 		Status(http.StatusUnauthorized).
 		JSON().Object()
 
-	error.Value("code").Number().IsEqual(401)
-	error.Value("message").String().IsEqual("incorrect Username or Password")
+	e.Value("code").Number().IsEqual(401)
+	e.Value("message").String().IsEqual("incorrect Username or Password")
 }
 
 func TestRefreshToken(t *testing.T) {

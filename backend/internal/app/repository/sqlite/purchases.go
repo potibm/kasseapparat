@@ -66,6 +66,7 @@ var purchaseSortFieldMappings = map[string]string{
 
 func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchase, error) {
 	result := repo.db.Create(&purchase)
+
 	return purchase, result.Error
 }
 
@@ -196,7 +197,6 @@ func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
 		Where("purchase_items.deleted_at IS NULL").
 		Group("purchase_items.product_id, products.name").
 		Scan(&purchases).Error
-
 	if err != nil {
 		return nil, err
 	}

@@ -42,8 +42,8 @@ func (handler *Handler) GetUsers(c *gin.Context) {
 
 func (handler *Handler) GetUserByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	product, err := handler.repo.GetUserByID(id)
 
+	product, err := handler.repo.GetUserByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 
@@ -75,8 +75,8 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	user, err := handler.repo.GetUserByID(id)
 
+	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 
@@ -172,8 +172,8 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	user, err := handler.repo.GetUserByID(id)
 
+	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 

@@ -15,8 +15,8 @@ func TestExtractSumup422ErrorDetail(t *testing.T) {
 		},
 	}
 	expected := "The device is offline (READER_OFFLINE)"
-	actual := extractSumup422ErrorDetail(*err)
 
+	actual := extractSumup422ErrorDetail(*err)
 	if actual.Error() != expected {
 		t.Errorf("Expected %q but got %q", expected, actual.Error())
 	}
@@ -28,8 +28,8 @@ func TestExtractSumup422ErrorDetail(t *testing.T) {
 		},
 	}
 	expected = "The device is offline"
-	actual = extractSumup422ErrorDetail(*err)
 
+	actual = extractSumup422ErrorDetail(*err)
 	if actual.Error() != expected {
 		t.Errorf("Expected %q but got %q", expected, actual.Error())
 	}
@@ -40,8 +40,8 @@ func TestExtractSumup422ErrorDetail(t *testing.T) {
 		},
 	}
 	expected = "errors=&map[foo:bar]"
-	actual = extractSumup422ErrorDetail(*err)
 
+	actual = extractSumup422ErrorDetail(*err)
 	if actual.Error() != expected {
 		t.Errorf("Expected %q but got %q", expected, actual.Error())
 	}
@@ -55,8 +55,8 @@ func TestExtractCreateCheckoutErrorDetails(t *testing.T) {
 		},
 	}
 	expected := "The device is offline (READER_OFFLINE)"
-	actual := extractCreateCheckoutErrorDetails(err)
 
+	actual := extractCreateCheckoutErrorDetails(err)
 	if actual.Error() != expected {
 		t.Errorf("Expected %q but got %q", expected, actual.Error())
 	}

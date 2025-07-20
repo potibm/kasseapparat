@@ -42,10 +42,10 @@ func NewHttpError(code int, message string, detail string) middleware.HttpError 
 	}
 }
 
-func ExtendHttpErrorWithDetails(error middleware.HttpError, message string) middleware.HttpError {
+func ExtendHttpErrorWithDetails(httpError middleware.HttpError, message string) middleware.HttpError {
 	return &BasicError{
-		Code:    error.StatusCode(),
-		Message: error.Error(),
+		Code:    httpError.StatusCode(),
+		Message: httpError.Error(),
 		Detail:  message,
 	}
 }

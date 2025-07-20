@@ -17,6 +17,7 @@ type wsConnection struct {
 
 var connections = struct {
 	sync.RWMutex
+
 	clients map[string]*wsConnection // transactionID → conn
 }{
 	clients: make(map[string]*wsConnection),
@@ -43,6 +44,7 @@ func PushUpdate(transactionID uuid.UUID, status models.PurchaseStatus) {
 
 	if !ok {
 		log.Printf("No WebSocket client for %s", transactionID)
+
 		return
 	}
 

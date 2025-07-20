@@ -25,6 +25,7 @@ type ProductResponse struct {
 
 type ExtendedProductResponse struct {
 	ProductResponse
+
 	UnitsSold           int `json:"unitsSold"`
 	SoldOutRequestCount int `json:"soldOutRequestCount"`
 }

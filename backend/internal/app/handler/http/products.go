@@ -107,8 +107,8 @@ func createExtendedProductResponse(repo sqliteRepo.RepositoryInterface, products
 
 func (handler *Handler) GetProductByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	product, err := handler.repo.GetProductByID(id)
 
+	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 
@@ -137,8 +137,8 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	product, err := handler.repo.GetProductByID(id)
 
+	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 
@@ -217,8 +217,8 @@ func (handler *Handler) DeleteProductByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	product, err := handler.repo.GetProductByID(id)
 
+	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 

@@ -50,8 +50,8 @@ func (handler *Handler) GetGuestlists(c *gin.Context) {
 
 func (handler *Handler) GetGuestlistByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	list, err := handler.repo.GetGuestlistByID(id)
 
+	list, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 
@@ -70,8 +70,8 @@ func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	guestlist, err := handler.repo.GetGuestlistByID(id)
 
+	guestlist, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 
@@ -145,8 +145,8 @@ func (handler *Handler) DeleteGuestlistByID(c *gin.Context) {
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	guestlist, err := handler.repo.GetGuestlistByID(id)
 
+	guestlist, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 

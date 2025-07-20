@@ -18,12 +18,10 @@ func ErrorHandlingMiddleware() gin.HandlerFunc {
 
 		if len(c.Errors) > 0 {
 			err := c.Errors[0].Err
-
 			if httpErr, ok := err.(HttpError); ok {
 				response := gin.H{
 					"error": httpErr.Error(),
 				}
-
 				if detail := httpErr.Details(); detail != "" {
 					response["details"] = detail
 				}

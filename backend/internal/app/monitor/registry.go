@@ -27,5 +27,6 @@ func registerPoller(id uuid.UUID) bool {
 func unregisterPoller(id uuid.UUID) {
 	mu.Lock()
 	defer mu.Unlock()
+
 	delete(activePollers, id.String())
 }

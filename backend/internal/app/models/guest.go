@@ -11,6 +11,7 @@ import (
 // Guest represents a guest in a guestlist.
 type Guest struct {
 	GormOwnedModel
+
 	GuestlistID          uint       `json:"guestlistId"`
 	Guestlist            Guestlist  `json:"guestlist"`
 	Name                 string     `json:"name"`

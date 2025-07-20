@@ -21,7 +21,7 @@ func TestQueryPaymentMethods(t *testing.T) {
 	}
 
 	// Erstelle einen Request mit passenden Query-Parametern
-	req, _ := http.NewRequest("GET", "/?paymentMethods=CASH,CC,INVALID", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/?paymentMethods=CASH,CC,INVALID", nil)
 	w := httptest.NewRecorder()
 	engine := gin.New()
 	c := gin.CreateTestContextOnly(w, engine)

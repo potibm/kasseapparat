@@ -27,7 +27,12 @@ var (
 	createUserIsAdmin bool // Flag to indicate whether to create a user with admin rights
 )
 
-func init() {
+var (
+	Repo   *sqliteRepo.Repository
+	Mailer mailer.Mailer
+)
+
+func main() {
 	// Register command-line flags
 	flag.BoolVar(&purgeDB, "purge", false, "Purge the database before initializing")
 	flag.BoolVar(&seedData, "seed", false, "Seed initial data to the database")
@@ -37,14 +42,7 @@ func init() {
 	flag.StringVar(&createUserEmail, "create-user-email", "", "Email for the user to create")
 	flag.BoolVar(&createUserIsAdmin, "create-user-admin", false, "Create a user with admin rights")
 	flag.Parse()
-}
 
-var (
-	Repo   *sqliteRepo.Repository
-	Mailer mailer.Mailer
-)
-
-func main() {
 	cfg := config.Load()
 	cfg.OutputVersion()
 
@@ -116,11 +114,13 @@ func importUsers(filename string) {
 	records, err := reader.ReadAll()
 	if err != nil {
 		log.Printf("Failed to read CSV file: %v", err)
+
 		return
 	}
 
 	for _, record := range records {
-		if len(record) != 3 {
+		const expectedFields = 3
+		if len(record) != expectedFields {
 			log.Printf("Skipping malformed record: %v", record)
 
 			continue
@@ -137,12 +137,14 @@ func importUsers(filename string) {
 
 		if !validEmail(record[1]) {
 			log.Printf("Invalid email format for user %s, skipping", record[0])
+
 			continue
 		}
 
 		err := createUser(record[0], record[1], isAdmin)
 		if err != nil {
 			log.Println("Failed to create user:", err)
+
 			continue
 		}
 	}
@@ -157,7 +159,9 @@ func createUser(username string, email string, isAdmin bool) error {
 	}
 	user.GenerateRandomPassword()
 
-	validity := 24 * time.Hour
+	const tokenValidityHours = 24
+
+	validity := tokenValidityHours * time.Hour
 	user.GenerateChangePasswordToken(&validity)
 
 	user, err := Repo.CreateUser(user)

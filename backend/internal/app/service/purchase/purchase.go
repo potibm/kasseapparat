@@ -159,6 +159,7 @@ func (s *PurchaseService) validateGuest(listInput ListItemInput, productID int) 
 func (s *PurchaseService) notifyGuests(guests []models.Guest) {
 	if s.Mailer == nil {
 		log.Println("Mailer is not configured, skipping guest notifications")
+
 		return
 	}
 
@@ -174,7 +175,6 @@ func (s *PurchaseService) notifyGuests(guests []models.Guest) {
 
 func (s *PurchaseService) CreateConfirmedPurchase(ctx context.Context, input PurchaseInput, userID int) (*models.Purchase, error) {
 	savedPurchase, guests, err := s.createPurchaseWithStatus(ctx, input, userID, models.PurchaseStatusConfirmed)
-
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +244,6 @@ func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input Pu
 
 		return nil
 	})
-
 	if err != nil {
 		return nil, nil, err
 	}
@@ -272,7 +271,6 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.
 
 func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
 	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusCancelled)
-
 	if err != nil {
 		return nil, errors.New("failed to cancel purchase: " + err.Error())
 	}
@@ -282,7 +280,6 @@ func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseId uuid.UU
 
 func (s *PurchaseService) FailPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
 	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusFailed)
-
 	if err != nil {
 		return nil, errors.New("failed to set the purchase to failed: " + err.Error())
 	}
@@ -292,7 +289,6 @@ func (s *PurchaseService) FailPurchase(ctx context.Context, purchaseId uuid.UUID
 
 func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
 	purchase, err := s.sqliteRepo.GetPurchaseByID(purchaseId)
-
 	if err != nil {
 		return nil, errors.New("failed to get purchase by ID: " + err.Error())
 	}

@@ -2,6 +2,7 @@ package models
 
 type GormOwnedModel struct {
 	GormModel
+
 	CreatedByID *uint `json:"createdById"`
 	CreatedBy   *User `json:"createdBy"`
 	UpdatedByID *uint `json:"updatedById"`

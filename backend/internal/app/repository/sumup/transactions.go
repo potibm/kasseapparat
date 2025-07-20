@@ -74,6 +74,7 @@ func (r *Repository) fetchPagedTransactions(ctx context.Context, oldestFrom *tim
 		nextParams, err := parseHrefToListTransactionsParams(nextHref)
 		if err != nil {
 			log.Printf("Error parsing next page link: %v", err)
+
 			return allItems, nil
 		}
 

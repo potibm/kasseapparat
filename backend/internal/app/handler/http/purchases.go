@@ -28,6 +28,7 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg))
+
 		return
 	}
 
@@ -49,29 +50,34 @@ func (handler *Handler) RefundPurchase(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg))
+
 		return
 	}
 
 	purchase, err := handler.repo.GetPurchaseByID(id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, "Purchase not found"))
+
 		return
 	}
 
 	isCreator := purchase.CreatedByID != nil && *purchase.CreatedByID == uint(executingUserObj.ID)
 	if !executingUserObj.Admin && !isCreator {
 		_ = c.Error(ExtendHttpErrorWithDetails(Forbidden, "You are not allowed to refund this purchase"))
+
 		return
 	}
 
 	if !executingUserObj.Admin && time.Since(purchase.CreatedAt) > 15*time.Minute {
 		_ = c.Error(ExtendHttpErrorWithDetails(Forbidden, "You can only refund purchases within 15 minutes of creation"))
+
 		return
 	}
 
 	purchase, err = handler.purchaseService.RefundPurchase(c.Request.Context(), id)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+
 		return
 	}
 
@@ -91,17 +97,20 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	var req PurchaseRequest
 	if err := c.ShouldBind(&req); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
 	err = handler.ValidatePaymentMethodPayload(req.PaymentMethod, req.SumupReaderID)
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
 	if err := req.Validate(); err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+
 		return
 	}
 
@@ -127,9 +136,11 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			purchaseService.ErrTooManyAdditionalGuests,
 			purchaseService.ErrListItemWrongProduct:
 			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, utils.CapitalizeFirstRune(err.Error())))
+
 			return
 		default:
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+
 			return
 		}
 	}
@@ -160,6 +171,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(reloadedPurchase.ID, *clientTransactionId)
 		if err != nil {
 			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to update purchase with SumUp transaction ID"))
+
 			return
 		}
 
@@ -211,14 +223,13 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 
 func (handler *Handler) GetPurchaseByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
-
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg))
+
 		return
 	}
 
 	purchase, err := handler.repo.GetPurchaseByID(id)
-
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
 

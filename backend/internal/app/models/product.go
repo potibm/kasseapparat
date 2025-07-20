@@ -7,6 +7,7 @@ import (
 // Product represents a product model.
 type Product struct {
 	GormOwnedModel
+
 	Name                string          `json:"name"`
 	NetPrice            decimal.Decimal `gorm:"type:TEXT"               json:"netPrice"`
 	VATRate             decimal.Decimal `gorm:"type:TEXT;default:'0.0'" json:"vatRate"`

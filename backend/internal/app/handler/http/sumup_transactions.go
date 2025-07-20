@@ -45,6 +45,7 @@ func (handler *Handler) GetSumupTransactions(c *gin.Context) {
 	transactions, err := handler.sumupRepository.GetTransactions(oldestTime)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve transactions"})
+
 		return
 	}
 
@@ -70,20 +71,22 @@ func (handler *Handler) GetSumupTransactions(c *gin.Context) {
 
 func (handler *Handler) GetSumupTransactionByID(c *gin.Context) {
 	transactionID, err := uuid.Parse(c.Param("id"))
-
 	if err != nil {
 		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid ID"))
+
 		return
 	}
 
 	transaction, err := handler.sumupRepository.GetTransactionById(transactionID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve transaction"})
+
 		return
 	}
 
 	if transaction == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "transaction not found"})
+
 		return
 	}
 
@@ -94,6 +97,7 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 	var payload sumup.SumupTransactionWebhookPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request payload"})
+
 		return
 	}
 
@@ -108,6 +112,7 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "purchase not found"})
+
 			return
 		}
 
@@ -118,6 +123,7 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 
 	if purchase.Status != model.PurchaseStatusPending {
 		c.JSON(http.StatusConflict, gin.H{"error": "purchase is not in pending status"})
+
 		return
 	}
 
