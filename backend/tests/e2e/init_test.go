@@ -91,10 +91,9 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		Monitor:         poller,
 		Mailer:          *mailer,
 		AppConfig:       cfg,
-		JwtMiddleware:   jwtMiddleware,
 	}
 	handlerHttp := handlerHttp.NewHandler(httpHandlerConfig)
-	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService, &cfg.CorsAllowOrigins)
+	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService, jwtMiddleware, &cfg.CorsAllowOrigins)
 
 	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{}, jwtMiddleware, cfg)
 

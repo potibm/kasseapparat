@@ -36,7 +36,7 @@ func main() {
 
 	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, int32(cfg.FormatConfig.FractionDigitsMax))
 
-	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService, &cfg.CorsAllowOrigins)
+	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService, jwtMiddleware, &cfg.CorsAllowOrigins)
 	publisher := &websocket.WebsocketPublisher{}
 	poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseService, publisher)
 
@@ -48,7 +48,6 @@ func main() {
 		StatusPublisher: publisher,
 		Mailer:          mailer,
 		AppConfig:       cfg,
-		JwtMiddleware:   jwtMiddleware,
 	}
 	httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
