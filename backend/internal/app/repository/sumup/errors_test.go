@@ -1,6 +1,7 @@
 package sumup
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/sumup/sumup-go/readers"
