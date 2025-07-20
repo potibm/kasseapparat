@@ -6,7 +6,7 @@ const ErrorModal = ({ message, onClose }) => {
   return (
     <Modal show={message !== ""} onClose={onClose}>
       <ModalHeader>Error</ModalHeader>
-      <ModalBody>
+      <ModalBody className="dark:text-gray-200">
         <p>{message}</p>
       </ModalBody>
     </Modal>

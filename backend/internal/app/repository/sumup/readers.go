@@ -87,7 +87,11 @@ func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decima
 
 	response, err := r.service.Client.Readers.CreateCheckout(context.Background(), r.service.MerchantCode, readerId, body)
 	if err != nil {
-		return nil, err
+		log.Printf("Error creating SumUp reader checkout: %v", err)
+
+		errorString := extractCreateCheckoutErrorDetails(err)
+
+		return nil, errorString
 	}
 
 	clientTransactionId, err := uuid.Parse(*response.Data.ClientTransactionId)
