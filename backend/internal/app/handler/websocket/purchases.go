@@ -4,12 +4,31 @@ import (
 	"log"
 	"net/http"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
 func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
+	protocols := websocket.Subprotocols(c.Request)
+	if len(protocols) == 0 {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+		return
+	}
+
+	tokenStr := protocols[0]
+
+	token, err := h.jwtMiddleware.ParseTokenString(tokenStr)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+		return
+	}
+
+	claims := jwt.ExtractClaimsFromToken(token)
+	identity := claims[h.jwtMiddleware.IdentityKey]
+	c.Set("identity", identity)
+
 	transactionID, conn, ok := h.upgradeAndRegister(c)
 	if !ok {
 		return

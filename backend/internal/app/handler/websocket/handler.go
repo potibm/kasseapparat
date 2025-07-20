@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -34,18 +35,19 @@ type Handler struct {
 	sqliteRepository sqliteRepository
 	purchaseService  purchaseService.Service
 	upgrader         websocket.Upgrader
+	jwtMiddleware    *jwt.GinJWTMiddleware
 }
 
 type sqliteRepository interface {
 	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
 }
 
-func NewHandler(sqliteRepository sqliteRepository, sumupRepository sumupRepo.RepositoryInterface, purchaseService purchaseService.Service, corsAllowOrigins *config.CorsAllowOriginsConfig) *Handler {
+func NewHandler(sqliteRepository sqliteRepository, sumupRepository sumupRepo.RepositoryInterface, purchaseService purchaseService.Service, jwtMiddleware *jwt.GinJWTMiddleware, corsAllowOrigins *config.CorsAllowOriginsConfig) *Handler {
 	upgrader := websocket.Upgrader{
 		CheckOrigin: makeCheckOrigin(corsAllowOrigins),
 	}
 
-	return &Handler{sqliteRepository: sqliteRepository, sumupRepository: sumupRepository, purchaseService: purchaseService, upgrader: upgrader}
+	return &Handler{sqliteRepository: sqliteRepository, sumupRepository: sumupRepository, purchaseService: purchaseService, upgrader: upgrader, jwtMiddleware: jwtMiddleware}
 }
 
 func makeCheckOrigin(allowedOrigins *config.CorsAllowOriginsConfig) func(r *http.Request) bool {

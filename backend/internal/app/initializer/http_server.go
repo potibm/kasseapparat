@@ -22,11 +22,10 @@ import (
 )
 
 var (
-	r              *gin.Engine
-	authMiddleware *jwt.GinJWTMiddleware
+	r *gin.Engine
 )
 
-func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler websocket.HandlerInterface, repository sqliteRepo.Repository, staticFiles embed.FS, config config.Config) *gin.Engine {
+func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler websocket.HandlerInterface, repository sqliteRepo.Repository, staticFiles embed.FS, jwtMiddleware *jwt.GinJWTMiddleware, config config.Config) *gin.Engine {
 	gin.SetMode(config.AppConfig.GinMode)
 	r = gin.Default()
 	r.Use(sentrygin.New(sentrygin.Options{}))
@@ -43,8 +42,8 @@ func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler webs
 
 	r.Use(static.Serve("/", folder))
 
-	authMiddleware := registerAuthMiddleware(repository, config.JwtConfig)
-	registerApiRoutes(httpHandler, websocketHandler, authMiddleware)
+	registerAuthMiddleware(jwtMiddleware)
+	registerApiRoutes(httpHandler, websocketHandler, jwtMiddleware)
 
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
@@ -71,13 +70,10 @@ func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	return cors.New(corsConfig)
 }
 
-func registerAuthMiddleware(repository sqliteRepo.Repository, jwtConfig config.JwtConfig) *jwt.GinJWTMiddleware {
-	authMiddleware, _ = jwt.New(middleware.InitParams(repository, jwtConfig.Realm, jwtConfig.Secret, 10))
+func registerAuthMiddleware(authMiddleware *jwt.GinJWTMiddleware) {
 	r.Use(middleware.HandlerMiddleWare(authMiddleware))
 
 	middleware.RegisterRoute(r, authMiddleware)
-
-	return authMiddleware
 }
 
 func SentryMiddleware() gin.HandlerFunc {
@@ -125,6 +121,8 @@ func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocke
 		unprotectedApiRouter.POST("/auth/changePassword", httpHandler.UpdateUserPassword)
 
 		unprotectedApiRouter.POST("/sumup/webhook", httpHandler.GetSumupTransactionWebhook)
+
+		unprotectedApiRouter.GET("/purchases/:id/ws", websockeHandler.HandleTransactionWebSocket)
 	}
 }
 
@@ -171,7 +169,6 @@ func registerPurchaseRoutes(rg *gin.RouterGroup, handler httpHandler.Handler, we
 		purchases.DELETE("/:id", handler.DeletePurchase)
 		purchases.GET("/export", handler.ExportPurchases)
 		purchases.POST("/:id/refund", handler.RefundPurchase)
-		purchases.GET("/:id/ws", websockeHandler.HandleTransactionWebSocket)
 	}
 }
 

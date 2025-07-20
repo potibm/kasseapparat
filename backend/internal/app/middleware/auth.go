@@ -44,7 +44,7 @@ func RegisterRoute(r *gin.Engine, handle *ginjwt.GinJWTMiddleware) {
 	auth.GET("/refresh_token", handle.RefreshHandler)
 }
 
-func InitParams(repo sqliteRepo.Repository, realm string, secret string, timeout int) *ginjwt.GinJWTMiddleware {
+func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeout int) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		log.Println("JWT_SECRET is not set, using default value")
 
@@ -60,7 +60,7 @@ func InitParams(repo sqliteRepo.Repository, realm string, secret string, timeout
 		PayloadFunc: payloadFunc(),
 
 		IdentityHandler: identityHandler(),
-		Authenticator:   authenticator(&repo),
+		Authenticator:   authenticator(repo),
 		Authorizator:    authorizator(),
 		Unauthorized:    unauthorized(),
 		TokenLookup:     "header: Authorization, query: token, cookie: jwt",
