@@ -9,12 +9,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true // for dev only
-	},
-}
-
 func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 	transactionID, conn, ok := h.upgradeAndRegister(c)
 	if !ok {
@@ -39,7 +33,7 @@ func (h *Handler) upgradeAndRegister(c *gin.Context) (uuid.UUID, *websocket.Conn
 		return uuid.Nil, nil, false
 	}
 
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println("WebSocket upgrade failed:", err)
 		return uuid.Nil, nil, false

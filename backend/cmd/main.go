@@ -35,7 +35,7 @@ func main() {
 
 	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, int32(cfg.FormatConfig.FractionDigitsMax))
 
-	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService)
+	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService, &cfg.CorsAllowOrigins)
 	publisher := &websocket.WebsocketPublisher{}
 	poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseService, publisher)
 

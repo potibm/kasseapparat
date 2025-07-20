@@ -91,7 +91,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		AppConfig:       cfg,
 	}
 	handlerHttp := handlerHttp.NewHandler(httpHandlerConfig)
-	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService)
+	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService, &cfg.CorsAllowOrigins)
 
 	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{}, cfg)
 
