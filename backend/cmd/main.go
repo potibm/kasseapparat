@@ -32,6 +32,7 @@ func main() {
 	sqliteRepository := sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
 	sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
 	mailer := initializer.InitializeMailer(cfg.MailerConfig)
+	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, cfg.JwtConfig)
 
 	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, int32(cfg.FormatConfig.FractionDigitsMax))
 
@@ -47,10 +48,11 @@ func main() {
 		StatusPublisher: publisher,
 		Mailer:          mailer,
 		AppConfig:       cfg,
+		JwtMiddleware:   jwtMiddleware,
 	}
 	httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
-	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles, cfg)
+	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles, jwtMiddleware, cfg)
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
 

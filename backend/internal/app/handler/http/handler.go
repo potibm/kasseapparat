@@ -1,6 +1,7 @@
 package http
 
 import (
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
@@ -24,6 +25,7 @@ type Handler struct {
 	mailer          mailer.Mailer
 	config          config.Config
 	decimalPlaces   int32
+	jwtMiddleware   *jwt.GinJWTMiddleware
 }
 
 type HandlerConfig struct {
@@ -34,6 +36,7 @@ type HandlerConfig struct {
 	StatusPublisher StatusPublisher
 	Mailer          mailer.Mailer
 	AppConfig       config.Config
+	JwtMiddleware   *jwt.GinJWTMiddleware
 }
 
 func NewHandler(config HandlerConfig) *Handler {
@@ -46,5 +49,6 @@ func NewHandler(config HandlerConfig) *Handler {
 		mailer:          config.Mailer,
 		config:          config.AppConfig,
 		decimalPlaces:   int32(config.AppConfig.FormatConfig.FractionDigitsMax),
+		jwtMiddleware:   config.JwtMiddleware,
 	}
 }

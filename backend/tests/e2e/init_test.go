@@ -77,6 +77,8 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)
 
+	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepo, cfg.JwtConfig)
+
 	purchaseService := purchaseService.NewPurchaseService(sqliteRepo, sumupRepo, mailer, int32(cfg.FormatConfig.FractionDigitsMax))
 
 	statusPublisher := MockStatusPublisher{}
@@ -89,11 +91,12 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		Monitor:         poller,
 		Mailer:          *mailer,
 		AppConfig:       cfg,
+		JwtMiddleware:   jwtMiddleware,
 	}
 	handlerHttp := handlerHttp.NewHandler(httpHandlerConfig)
 	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService, &cfg.CorsAllowOrigins)
 
-	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{}, cfg)
+	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{}, jwtMiddleware, cfg)
 
 	ts := httptest.NewServer(router)
 

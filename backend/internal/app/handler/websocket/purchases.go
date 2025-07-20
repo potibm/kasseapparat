@@ -10,6 +10,15 @@ import (
 )
 
 func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
+	protocols := websocket.Subprotocols(c.Request)
+	if len(protocols) == 0 {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+		return
+	}
+
+	tokenStr := protocols[0]
+	log.Println("WebSocket connection attempt with token:", tokenStr)
+
 	transactionID, conn, ok := h.upgradeAndRegister(c)
 	if !ok {
 		return
