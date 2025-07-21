@@ -98,7 +98,7 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 
 func StartCleanupRoutine(timeout time.Duration) {
 	go func() {
-		ticker := time.NewTicker(1 * time.Minute)
+		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
 
 		for range ticker.C {
@@ -108,10 +108,16 @@ func StartCleanupRoutine(timeout time.Duration) {
 }
 
 func cleanupStaleConnections(timeout time.Duration) {
-	connections.Lock()
-	defer connections.Unlock()
+	log.Println("Starting cleanup of stale WebSocket connections...")
 
 	now := time.Now()
+
+	var (
+		staleIDs   []string
+		staleConns []*websocket.Conn
+	)
+
+	connections.Lock()
 
 	for id, conn := range connections.clients {
 		conn.mu.Lock()
@@ -119,9 +125,20 @@ func cleanupStaleConnections(timeout time.Duration) {
 		conn.mu.Unlock()
 
 		if inactive {
-			log.Printf("Cleaning up stale WebSocket connection: %s", id)
-			conn.Conn.Close()
-			delete(connections.clients, id)
+			staleIDs = append(staleIDs, id)
+			staleConns = append(staleConns, conn.Conn)
 		}
+	}
+	// Remove stale connections from the registry while holding the lock
+	for _, id := range staleIDs {
+		delete(connections.clients, id)
+	}
+
+	connections.Unlock()
+
+	// Close WebSocket connections outside the lock to avoid blocking other operations
+	for i, ws := range staleConns {
+		log.Printf("Cleaning up stale WebSocket connection: %s", staleIDs[i])
+		ws.Close()
 	}
 }

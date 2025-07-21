@@ -172,13 +172,12 @@ const Kasseapparat = () => {
             return;
           }
         } catch (error) {
+          setPollingModalOpen(false);
           if (error.message === "Polling timed out") {
             showError("Payment processing timed out. Please try again.");
           } else {
             showError("An unexpected error occurred: " + error.message);
           }
-        } finally {
-          setPollingModalOpen(false);
         }
       } else if (createdPurchase.status !== "confirmed") {
         throw new Error(
