@@ -65,7 +65,11 @@ func (h *Handler) upgradeAndRegister(c *gin.Context) (uuid.UUID, *websocket.Conn
 
 	log.Printf("WebSocket connected for transaction: %s", transactionID)
 
-	registerConnection(transactionID, conn)
+	if !registerConnection(transactionID, conn) {
+		conn.Close()
+
+		return uuid.Nil, nil, false
+	}
 
 	return transactionID, conn, true
 }
