@@ -3,6 +3,7 @@ package websocket
 import (
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -10,9 +11,12 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
+const maxConnections = 100
+
 type wsConnection struct {
-	Conn *websocket.Conn
-	mu   sync.Mutex
+	Conn     *websocket.Conn
+	mu       sync.Mutex
+	lastSeen time.Time
 }
 
 var connections = struct {
@@ -23,11 +27,24 @@ var connections = struct {
 	clients: make(map[string]*wsConnection),
 }
 
-func registerConnection(transactionID uuid.UUID, conn *websocket.Conn) {
+func registerConnection(transactionID uuid.UUID, conn *websocket.Conn) bool {
 	connections.Lock()
 	defer connections.Unlock()
 
-	connections.clients[transactionID.String()] = &wsConnection{Conn: conn}
+	log.Println("Current WebSocket connection number:", len(connections.clients))
+
+	if len(connections.clients) >= maxConnections {
+		log.Printf("WebSocket connection limit reached (%d)", maxConnections)
+
+		return false
+	}
+
+	connections.clients[transactionID.String()] = &wsConnection{
+		Conn:     conn,
+		lastSeen: time.Now(),
+	}
+
+	return true
 }
 
 func unregisterConnection(transactionID uuid.UUID) {
@@ -51,6 +68,7 @@ func PushUpdate(transactionID uuid.UUID, status models.PurchaseStatus) {
 	client.mu.Lock()
 	defer client.mu.Unlock()
 
+	client.lastSeen = time.Now()
 	sendWSMessage(client.Conn, "status_update", gin.H{"status": string(status)}, &transactionID)
 }
 
@@ -75,5 +93,35 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 		}
 
 		return
+	}
+}
+
+func StartCleanupRoutine(timeout time.Duration) {
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			cleanupStaleConnections(timeout)
+		}
+	}()
+}
+
+func cleanupStaleConnections(timeout time.Duration) {
+	connections.Lock()
+	defer connections.Unlock()
+
+	now := time.Now()
+
+	for id, conn := range connections.clients {
+		conn.mu.Lock()
+		inactive := now.Sub(conn.lastSeen) > timeout
+		conn.mu.Unlock()
+
+		if inactive {
+			log.Printf("Cleaning up stale WebSocket connection: %s", id)
+			conn.Conn.Close()
+			delete(connections.clients, id)
+		}
 	}
 }
