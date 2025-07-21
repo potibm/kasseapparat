@@ -160,7 +160,7 @@ const Kasseapparat = () => {
               setOnPollingComplete(() => resolve);
             }),
             new Promise((_, reject) => {
-              const timeoutDuration = 3 * 1000; // 3 minutes timeout
+              const timeoutDuration = 3 * 60 * 1000; // 3 minutes timeout
               setTimeout(
                 () => reject(new Error("Polling timed out")),
                 timeoutDuration,
