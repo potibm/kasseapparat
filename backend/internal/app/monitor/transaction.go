@@ -85,9 +85,9 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 			n.StatusPublisher.PushUpdate(transactionID, models.PurchaseStatusFailed)
 
 			return true
-		} else {
-			return false
 		}
+
+		return false
 	}
 
 	if purchase.SumupTransactionID == nil {
