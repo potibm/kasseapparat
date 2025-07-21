@@ -18,12 +18,13 @@ type ProductPurchaseStats struct {
 }
 
 type PurchaseFilters struct {
-	CreatedByID        int
-	PaymentMethods     []models.PaymentMethod
-	Status             *models.PurchaseStatus
-	TotalGrossPriceLte *decimal.Decimal
-	TotalGrossPriceGte *decimal.Decimal
-	IDs                []int
+	CreatedByID            int
+	PaymentMethods         []models.PaymentMethod
+	Status                 *models.PurchaseStatus
+	TotalGrossPriceLte     *decimal.Decimal
+	TotalGrossPriceGte     *decimal.Decimal
+	IDs                    []int
+	HasClientTransactionID *bool
 }
 
 func (filters PurchaseFilters) AddWhere(query *gorm.DB) *gorm.DB {
@@ -49,6 +50,14 @@ func (filters PurchaseFilters) AddWhere(query *gorm.DB) *gorm.DB {
 
 	if filters.Status != nil {
 		query = query.Where("purchases.status = ?", *filters.Status)
+	}
+
+	if filters.HasClientTransactionID != nil {
+		if *filters.HasClientTransactionID {
+			query = query.Where("purchases.sumup_client_transaction_id IS NOT NULL")
+		} else {
+			query = query.Where("purchases.sumup_client_transaction_id IS NULL")
+		}
 	}
 
 	return query

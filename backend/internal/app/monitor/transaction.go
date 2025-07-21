@@ -3,6 +3,7 @@ package monitor
 import (
 	"context"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -72,6 +73,19 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 	transaction, err := n.SumupRepository.GetTransactionByClientTransactionId(*purchase.SumupClientTransactionID)
 	if err != nil {
 		log.Printf("Error fetching transaction %s from SumUp: %v", purchase.SumupClientTransactionID, err)
+
+		if strings.Contains(err.Error(), "NOT_FOUND") {
+			log.Printf("Transaction %s not found in SumUp, stopping polling", purchase.SumupClientTransactionID)
+
+			_, err := n.PurchaseService.FailPurchase(ctx, transactionID)
+			if err != nil {
+				log.Printf("Error setting purchase to failed %s: %v", transactionID, err)
+			}
+
+			n.StatusPublisher.PushUpdate(transactionID, models.PurchaseStatusFailed)
+
+			return true
+		}
 
 		return false
 	}
