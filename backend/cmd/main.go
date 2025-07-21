@@ -70,9 +70,12 @@ func main() {
 
 func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sqliteRepo.Repository) {
 	pendingStatus := models.PurchaseStatusPending
+	hasClientTransactionID := true
 
 	filters := sqliteRepo.PurchaseFilters{
-		Status: &pendingStatus,
+		PaymentMethods:         []models.PaymentMethod{models.PaymentMethodSumUp},
+		Status:                 &pendingStatus,
+		HasClientTransactionID: &hasClientTransactionID,
 	}
 
 	activeTransactions, err := sqliteRepository.GetPurchases(1000, 0, "createdAt", "ASC", filters)

@@ -163,6 +163,11 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 			log.Printf("Error creating SumUp reader checkout: %v", err)
 
+			_, err = handler.purchaseService.CancelPurchase(c.Request.Context(), reloadedPurchase.ID)
+			if err != nil {
+				log.Printf("Error canceling purchase %s: %v", reloadedPurchase.ID, err)
+			}
+
 			return
 		}
 
