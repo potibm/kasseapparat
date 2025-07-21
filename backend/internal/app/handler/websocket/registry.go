@@ -68,5 +68,12 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 
 	if err := conn.WriteJSON(payload); err != nil {
 		log.Printf("WebSocket send error [%s]: %v", msgType, err)
+		conn.Close()
+
+		if transactionID != nil {
+			unregisterConnection(*transactionID)
+		}
+
+		return
 	}
 }
