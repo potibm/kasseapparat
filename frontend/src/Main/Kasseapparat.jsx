@@ -149,17 +149,36 @@ const Kasseapparat = () => {
 
       if (createdPurchase.status === "pending") {
         // open modal and wait
-        const purchaseSucceeded = await new Promise((resolve) => {
-          setPollingModalOpen(true);
-          setPendingPurchase(createdPurchase);
-          setOnPollingComplete(() => resolve);
 
-          // optional: timeout after X seconds?
-          // setTimeout(() => reject(new Error("Polling timed out")), 60000);
-        });
+        let purchaseSucceeded;
 
-        if (purchaseSucceeded === false) {
-          return;
+        try {
+          purchaseSucceeded = await Promise.race([
+            new Promise((resolve) => {
+              setPollingModalOpen(true);
+              setPendingPurchase(createdPurchase);
+              setOnPollingComplete(() => resolve);
+            }),
+            new Promise((_, reject) => {
+              const timeoutDuration = 3 * 1000; // 3 minutes timeout
+              setTimeout(
+                () => reject(new Error("Polling timed out")),
+                timeoutDuration,
+              );
+            }),
+          ]);
+
+          if (purchaseSucceeded === false) {
+            return;
+          }
+        } catch (error) {
+          if (error.message === "Polling timed out") {
+            showError("Payment processing timed out. Please try again.");
+          } else {
+            showError("An unexpected error occurred: " + error.message);
+          }
+        } finally {
+          setPollingModalOpen(false);
         }
       } else if (createdPurchase.status !== "confirmed") {
         throw new Error(
