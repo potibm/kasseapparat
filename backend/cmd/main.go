@@ -4,6 +4,7 @@ import (
 	"embed"
 	"log"
 	"os"
+	"time"
 
 	config "github.com/potibm/kasseapparat/internal/app/config"
 	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
@@ -54,6 +55,7 @@ func main() {
 	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles, jwtMiddleware, cfg)
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
+	startCleanupForWebsocketConnections()
 
 	port := ":3000" // Default port number
 	if len(os.Args) > 1 {
@@ -66,6 +68,10 @@ func main() {
 	if err != nil {
 		panic("[Error] failed to start Gin server due to: " + err.Error())
 	}
+}
+
+func startCleanupForWebsocketConnections() {
+	websocket.StartCleanupRoutine(5 * time.Minute)
 }
 
 func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sqliteRepo.Repository) {

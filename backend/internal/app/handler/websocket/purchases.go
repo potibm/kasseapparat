@@ -3,6 +3,7 @@ package websocket
 import (
 	"log"
 	"net/http"
+	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
@@ -65,7 +66,13 @@ func (h *Handler) upgradeAndRegister(c *gin.Context) (uuid.UUID, *websocket.Conn
 
 	log.Printf("WebSocket connected for transaction: %s", transactionID)
 
-	registerConnection(transactionID, conn)
+	if !registerConnection(transactionID, conn) {
+		msg := websocket.FormatCloseMessage(CloseTooManyConnections, "connection limit reached")
+		conn.WriteControl(websocket.CloseMessage, msg, time.Now().Add(time.Second))
+		conn.Close()
+
+		return uuid.Nil, nil, false
+	}
 
 	return transactionID, conn, true
 }
