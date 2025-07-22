@@ -17,6 +17,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   const wsRef = useRef(null);
   const { token: jwtToken } = useAuth();
   const { websocketHost } = useConfig();
+  const connectionRef = useRef(false);
 
   const sumUpReaderId = getCurrentReaderId();
   const closeModalTimeout = 3000;
@@ -81,6 +82,9 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   };
 
   useEffect(() => {
+    if (connectionRef.current) return;
+    connectionRef.current = true;
+
     const handleFailure = (message) => {
       wasHandledRef.current = true;
       setStatus("failed");
@@ -152,8 +156,8 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
       setError("WebSocket error occurred");
     };
 
-    ws.onclose = () => {
-      console.log("WebSocket closed");
+    ws.onclose = (event) => {
+      console.log("WebSocket closed", event);
       if (!wasHandledRef.current && statusRef.current === "pending") {
         handleFailure("Connection lost.");
       }

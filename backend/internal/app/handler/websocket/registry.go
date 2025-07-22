@@ -12,6 +12,8 @@ import (
 )
 
 const maxConnections = 100
+const CloseTooManyConnections = 4001
+const CloseStaleConnection = 4005
 
 type wsConnection struct {
 	Conn     *websocket.Conn
@@ -86,6 +88,13 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 
 	if err := conn.WriteJSON(payload); err != nil {
 		log.Printf("WebSocket send error [%s]: %v", msgType, err)
+
+		closeMsg := websocket.FormatCloseMessage(
+			websocket.CloseAbnormalClosure,
+			"failed to send message",
+		)
+
+		_ = conn.WriteControl(websocket.CloseMessage, closeMsg, time.Now().Add(time.Second))
 		conn.Close()
 
 		if transactionID != nil {
@@ -98,7 +107,7 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 
 func StartCleanupRoutine(timeout time.Duration) {
 	go func() {
-		ticker := time.NewTicker(10 * time.Second)
+		ticker := time.NewTicker(1 * time.Minute)
 		defer ticker.Stop()
 
 		for range ticker.C {
@@ -108,8 +117,6 @@ func StartCleanupRoutine(timeout time.Duration) {
 }
 
 func cleanupStaleConnections(timeout time.Duration) {
-	log.Println("Starting cleanup of stale WebSocket connections...")
-
 	now := time.Now()
 
 	var (
@@ -139,6 +146,10 @@ func cleanupStaleConnections(timeout time.Duration) {
 	// Close WebSocket connections outside the lock to avoid blocking other operations
 	for i, ws := range staleConns {
 		log.Printf("Cleaning up stale WebSocket connection: %s", staleIDs[i])
+
+		msg := websocket.FormatCloseMessage(CloseStaleConnection, "connection stale")
+		_ = ws.WriteControl(websocket.CloseMessage, msg, time.Now().Add(time.Second))
+
 		ws.Close()
 	}
 }

@@ -151,6 +151,7 @@ const Kasseapparat = () => {
         // open modal and wait
 
         let purchaseSucceeded;
+        let pollingTimeoutTimer;
 
         try {
           purchaseSucceeded = await Promise.race([
@@ -161,10 +162,9 @@ const Kasseapparat = () => {
             }),
             new Promise((_, reject) => {
               const timeoutDuration = 3 * 60 * 1000; // 3 minutes timeout
-              setTimeout(
-                () => reject(new Error("Polling timed out")),
-                timeoutDuration,
-              );
+              pollingTimeoutTimer = setTimeout(() => {
+                reject(new Error("Polling timed out"));
+              }, timeoutDuration);
             }),
           ]);
 
@@ -177,6 +177,10 @@ const Kasseapparat = () => {
             showError("Payment processing timed out. Please try again.");
           } else {
             showError("An unexpected error occurred: " + error.message);
+          }
+        } finally {
+          if (pollingTimeoutTimer) {
+            clearTimeout(pollingTimeoutTimer);
           }
         }
       } else if (createdPurchase.status !== "confirmed") {
