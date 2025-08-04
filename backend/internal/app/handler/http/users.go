@@ -2,11 +2,13 @@ package http
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -24,14 +26,14 @@ func (handler *Handler) GetUsers(c *gin.Context) {
 
 	products, err := handler.repo.GetUsers(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
 
 		return
 	}
 
 	total, err := handler.repo.GetTotalUsers(&filters)
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
@@ -45,7 +47,7 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 
 	product, err := handler.repo.GetUserByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
 
 		return
 	}
@@ -78,14 +80,14 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
 
 		return
 	}
 
 	var userRequest UserUpdateRequest
 	if err := c.ShouldBind(&userRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
 
 		return
 	}
@@ -109,7 +111,7 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 
 	user, err = handler.repo.UpdateUserByID(id, *user)
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
@@ -120,7 +122,7 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 func (handler *Handler) CreateUser(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
@@ -129,7 +131,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 
 	var userRequest UserCreateRequest
 	if err := c.ShouldBind(&userRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
 
 		return
 	}
@@ -150,13 +152,14 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 
 	user, err = handler.repo.CreateUser(user)
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
 
 	err = handler.mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken)
 	if err != nil {
+		sentrygin.GetHubFromContext(c).CaptureException(fmt.Errorf("error sending new user token email: %w", err))
 		log.Println("Error sending email", err)
 	}
 
@@ -166,7 +169,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 func (handler *Handler) DeleteUserByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
@@ -175,7 +178,7 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
 
 		return
 	}

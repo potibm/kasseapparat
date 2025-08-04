@@ -49,7 +49,7 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 	err = writer.Write([]string{"Time", "Purchase ID", "Quantity", "Product Name", "VAT Rate", "Gross Price", "Net Price", "VAT Amount", "Total Gross Price", "Total Net Price", "Total VAT Amount",
 		"Purchase Gross Price", "Purchase Net Price", "Purchase VAT", "Payment Method"})
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to write CSV header: "+err.Error()))
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to write CSV header: "+err.Error()).WithCause(err))
 
 		return
 	}
@@ -75,7 +75,7 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 			string(p.Purchase.PaymentMethod),
 		})
 		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to write CSV header: "+err.Error()))
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to write CSV: "+err.Error()).WithCause(err))
 
 			return
 		}

@@ -23,7 +23,7 @@ type SumupReaderReponse struct {
 func (handler *Handler) GetSumupReaders(c *gin.Context) {
 	readers, err := handler.sumupRepository.GetReaders()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve readers"})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to retrieve readers").WithCause(err))
 
 		return
 	}
@@ -37,13 +37,13 @@ func (handler *Handler) GetSumupReaderByID(c *gin.Context) {
 
 	reader, err := handler.sumupRepository.GetReader(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve reader"})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to retrieve reader").WithCause(err))
 
 		return
 	}
 
 	if reader == nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Reader not found"})
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, "Reader not found"))
 
 		return
 	}
@@ -58,14 +58,14 @@ func (handler *Handler) CreateSumupReader(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		_ = c.Error(InvalidRequest.WithCause(err))
 
 		return
 	}
 
 	reader, err := handler.sumupRepository.CreateReader(strings.ToUpper(request.PairingCode), request.Name)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to create reader"})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create reader").WithCause(err))
 
 		return
 	}
@@ -77,7 +77,7 @@ func (handler *Handler) DeleteSumupReader(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := handler.sumupRepository.DeleteReader(id); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete reader"})
+		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to delete reader").WithCause(err))
 
 		return
 	}

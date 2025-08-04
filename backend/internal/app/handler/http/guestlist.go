@@ -32,14 +32,14 @@ func (handler *Handler) GetGuestlists(c *gin.Context) {
 
 	lists, err := handler.repo.GetGuestlists(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
 
 		return
 	}
 
 	total, err := handler.repo.GetTotalGuestlists()
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
@@ -53,7 +53,7 @@ func (handler *Handler) GetGuestlistByID(c *gin.Context) {
 
 	list, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
 
 		return
 	}
@@ -64,7 +64,7 @@ func (handler *Handler) GetGuestlistByID(c *gin.Context) {
 func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
@@ -73,14 +73,14 @@ func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 
 	guestlist, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
 
 		return
 	}
 
 	var guestlistRequest GuestlistUpdateRequest
 	if err := c.ShouldBind(&guestlistRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
 
 		return
 	}
@@ -96,7 +96,7 @@ func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 
 	guestlist, err = handler.repo.UpdateGuestlistByID(id, *guestlist)
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
@@ -107,7 +107,7 @@ func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 func (handler *Handler) CreateGuestlist(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
@@ -116,7 +116,7 @@ func (handler *Handler) CreateGuestlist(c *gin.Context) {
 
 	var guestlistRequest GuestlistCreateRequest
 	if err := c.ShouldBind(&guestlistRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
 
 		return
 	}
@@ -139,7 +139,7 @@ func (handler *Handler) CreateGuestlist(c *gin.Context) {
 func (handler *Handler) DeleteGuestlistByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
@@ -148,7 +148,7 @@ func (handler *Handler) DeleteGuestlistByID(c *gin.Context) {
 
 	guestlist, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
 
 		return
 	}

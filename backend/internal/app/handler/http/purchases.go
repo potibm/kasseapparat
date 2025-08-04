@@ -20,14 +20,14 @@ const invalidPurchaseIDMsg = "Invalid purchase ID"
 func (handler *Handler) DeletePurchase(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg))
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg).WithCause(err))
 
 		return
 	}
@@ -42,21 +42,21 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 func (handler *Handler) RefundPurchase(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg))
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg).WithCause(err))
 
 		return
 	}
 
 	purchase, err := handler.repo.GetPurchaseByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, "Purchase not found"))
+		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, "Purchase not found").WithCause(err))
 
 		return
 	}
@@ -76,7 +76,7 @@ func (handler *Handler) RefundPurchase(c *gin.Context) {
 
 	purchase, err = handler.purchaseService.RefundPurchase(c.Request.Context(), id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
 
 		return
 	}
@@ -89,27 +89,27 @@ func (handler *Handler) RefundPurchase(c *gin.Context) {
 func (handler *Handler) PostPurchases(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
 
 	var req PurchaseRequest
 	if err := c.ShouldBind(&req); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
 
 		return
 	}
 
 	err = handler.ValidatePaymentMethodPayload(req.PaymentMethod, req.SumupReaderID)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
 
 		return
 	}
 
 	if err := req.Validate(); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
 
 		return
 	}
@@ -135,11 +135,11 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			purchaseService.ErrGuestAlreadyAttended,
 			purchaseService.ErrTooManyAdditionalGuests,
 			purchaseService.ErrListItemWrongProduct:
-			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, utils.CapitalizeFirstRune(err.Error())))
+			_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, utils.CapitalizeFirstRune(err.Error())).WithCause(err))
 
 			return
 		default:
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+			_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
 
 			return
 		}
@@ -159,7 +159,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			handler.sumupRepository.GetWebhookUrl(),
 		)
 		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create SumUp reader checkout: "+err.Error()))
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create SumUp reader checkout: "+err.Error()).WithCause(err))
 
 			log.Printf("Error creating SumUp reader checkout: %v", err)
 
@@ -175,7 +175,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 		_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(reloadedPurchase.ID, *clientTransactionId)
 		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to update purchase with SumUp transaction ID"))
+			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to update purchase with SumUp transaction ID").WithCause(err))
 
 			return
 		}
@@ -208,14 +208,14 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 
 	purchases, err := handler.repo.GetPurchases(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
 
 		return
 	}
 
 	total, err := handler.repo.GetTotalPurchases(filters)
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
@@ -229,14 +229,14 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 func (handler *Handler) GetPurchaseByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg))
+		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, invalidPurchaseIDMsg).WithCause(err))
 
 		return
 	}
 
 	purchase, err := handler.repo.GetPurchaseByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
 
 		return
 	}
@@ -249,7 +249,7 @@ func (handler *Handler) GetPurchaseByID(c *gin.Context) {
 func (handler *Handler) GetPurchaseStats(c *gin.Context) {
 	stats, err := handler.repo.GetPurchaseStats()
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
 
 		return
 	}

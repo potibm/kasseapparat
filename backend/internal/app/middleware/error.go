@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/getsentry/sentry-go"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 )
@@ -25,35 +26,46 @@ func ErrorHandlingMiddleware() gin.HandlerFunc {
 		err := c.Errors[0].Err
 		hub := sentrygin.GetHubFromContext(c)
 
-		// we have a detailed error (HttpError aka errors.BasicError)
-		if httpErr, ok := err.(HttpError); ok {
-			if hub != nil {
-				if cause := httpErr.Cause(); cause != nil {
-					hub.CaptureException(cause)
-				} else {
-					hub.CaptureException(httpErr)
-				}
-			}
+		// capture the error in Sentry
+		captureError(hub, err)
 
-			response := gin.H{
-				"error": httpErr.Error(),
-			}
-			if detail := httpErr.Details(); detail != "" {
-				response["details"] = detail
-			}
+		// return error response to the client
+		writeErrorResponse(c, err)
+	}
+}
 
-			c.JSON(httpErr.StatusCode(), response)
+func captureError(hub *sentry.Hub, err error) {
+	if hub == nil || err == nil {
+		return
+	}
+
+	// unwrap known HttpError
+	if httpErr, ok := err.(HttpError); ok {
+		if cause := httpErr.Cause(); cause != nil {
+			hub.CaptureException(cause)
 
 			return
 		}
+	}
 
-		// case of a generic error
-		if hub != nil {
-			hub.CaptureException(err)
+	hub.CaptureException(err)
+}
+
+func writeErrorResponse(c *gin.Context, err error) {
+	if httpErr, ok := err.(HttpError); ok {
+		response := gin.H{
+			"error": httpErr.Error(),
+		}
+		if detail := httpErr.Details(); detail != "" {
+			response["details"] = detail
 		}
 
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal Server Error",
-		})
+		c.JSON(httpErr.StatusCode(), response)
+
+		return
 	}
+
+	c.JSON(http.StatusInternalServerError, gin.H{
+		"error": "Internal Server Error",
+	})
 }

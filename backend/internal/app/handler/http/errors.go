@@ -33,7 +33,7 @@ func ExtendHttpErrorWithCause(httpError *errors.BasicError, cause error) *errors
 	}
 }
 
-// predefined HTTP errors
+// predefined HTTP errors.
 var (
 	InvalidRequest                = NewHttpError(http.StatusBadRequest, "Invalid Request", "The request could not be understood by the server.")
 	NotFound                      = NewHttpError(http.StatusNotFound, "Not Found", "The requested resource could not be found.")
