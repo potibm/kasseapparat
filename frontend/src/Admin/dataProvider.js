@@ -1,5 +1,6 @@
 import jsonServerProvider from "ra-data-json-server";
 import { fetchUtils } from "react-admin";
+import * as Sentry from "@sentry/react";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 
@@ -10,7 +11,7 @@ const resourceAlias = {
 
 const resolveResource = (resource) => resourceAlias[resource] || resource;
 
-const httpClient = (url, options = {}) => {
+const httpClient = async(url, options = {}) => {
   if (!options.headers) {
     options.headers = new Headers();
     options.headers.set("Accept", "application/json");
@@ -27,7 +28,23 @@ const httpClient = (url, options = {}) => {
     }
   }
 
-  return fetchUtils.fetchJson(url, options);
+  try {
+    return await fetchUtils.fetchJson(url, options);
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        url,
+        method: options.method || "GET",
+      },
+      extra: {
+        request: {
+          url,
+          options,
+        },
+      },
+    });
+    throw error;
+  }
 };
 
 const baseProvider = jsonServerProvider(`${API_HOST}/api/v2`, httpClient);

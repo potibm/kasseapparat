@@ -1,4 +1,5 @@
 import { jwtDecode } from "jwt-decode";
+import * as Sentry from "@sentry/react";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 const ADMIN_STORAGE_KEY = "admin";
@@ -46,11 +47,22 @@ const authProvider = {
       const decodedToken = jwtDecode(token);
       const expire = new Date(decodedToken.exp * 1000);
 
+      Sentry.setUser({
+        id: id?.toString(),
+        username,
+      });
+
       setAdminData({ ID: id, token, username, role, expire, gravatarUrl });
     } catch (error) {
       if (error instanceof AuthorizationError) {
         throw new Error(`There was an error logging you in: ${error.message}`);
       }
+
+      Sentry.captureException(error, {
+        tags: { auth: "login" },
+        extra: { username },
+      });
+
       throw new Error("Network error. Please try again.");
     }
   },
@@ -82,6 +94,11 @@ const authProvider = {
 
       updateAdminData({ token, expire });
     } catch (error) {
+      Sentry.captureException(error, {
+        tags: { auth: "refresh_token" },
+        extra: { token: adminData?.token },
+      });
+
       console.error("Token refresh error:", error);
       clearAdminData();
       throw new Error("Token refresh error. Please log in again.");
@@ -92,6 +109,7 @@ const authProvider = {
       clearInterval(updateTokenIntervalId);
       updateTokenIntervalId = null;
     }
+    Sentry.setUser(null);
     clearAdminData();
     return Promise.resolve();
   },

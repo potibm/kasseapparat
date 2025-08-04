@@ -1,94 +1,94 @@
+import * as Sentry from "@sentry/react";
+
+// 🔁 Shared error handler for failed fetch responses
+const handleFetchError = async (response) => {
+  let message = `HTTP ${response.status} ${response.statusText}`;
+  try {
+    const data = await response.json();
+    message = data?.message || data?.error || message;
+  } catch {
+    // Ignore JSON parse errors
+  }
+  const error = new Error(message);
+  Sentry.captureException(error, {
+    extra: {
+      url: response.url,
+      status: response.status,
+    },
+  });
+  throw error;
+};
+
+// 🔐 Authenticate user and retrieve JWT token
 export const getJwtToken = async (apiHost, login, password) => {
-  return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Credentials: "include",
-      },
-      body: JSON.stringify({ login, password }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((errorBody) => {
-            throw new Error(errorBody.message || "Network response was not ok");
-          });
-        }
-        return response.json();
-      })
-      .then((data) => resolve(data))
-      .catch((error) => reject(error));
+  const response = await fetch(`${apiHost}/login`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ login, password }),
   });
+
+  if (!response.ok) {
+    await handleFetchError(response);
+  }
+
+  return response.json();
 };
 
+// 🔄 Refresh JWT token using refresh endpoint
 export const refreshJwtToken = async (apiHost, refreshToken) => {
-  return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/auth/refresh_token`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${refreshToken}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((errorBody) => {
-            throw new Error(errorBody.message || "Network response was not ok");
-          });
-        }
-        return response.json();
-      })
-      .then((data) => resolve(data))
-      .catch((error) => reject(error));
+  const response = await fetch(`${apiHost}/auth/refresh_token`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${refreshToken}`,
+    },
   });
+
+  if (!response.ok) {
+    await handleFetchError(response);
+  }
+
+  return response.json();
 };
 
+// 🔑 Change password using reset token
 export const changePassword = async (apiHost, userId, token, newPassword) => {
-  return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v2/auth/changePassword`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: parseInt(userId),
-        token,
-        password: newPassword,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((errorBody) => {
-            throw new Error(errorBody.error || "Network response was not ok");
-          });
-        }
-        return response.json();
-      })
-      .then((data) => resolve(data))
-      .catch((error) => reject(error));
+  const response = await fetch(`${apiHost}/api/v2/auth/changePassword`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userId: parseInt(userId),
+      token,
+      password: newPassword,
+    }),
   });
+
+  if (!response.ok) {
+    await handleFetchError(response);
+  }
+
+  return response.json();
 };
 
+// 📧 Request password reset token for login name
 export const requestChangePasswordToken = async (apiHost, login) => {
-  return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/v2/auth/changePasswordToken`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        login,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((errorBody) => {
-            throw new Error(errorBody.error || "Network response was not ok");
-          });
-        }
-        return response.json();
-      })
-      .then((data) => resolve(data))
-      .catch((error) => reject(error));
+  const response = await fetch(`${apiHost}/api/v2/auth/changePasswordToken`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ login }),
   });
+
+  if (!response.ok) {
+    await handleFetchError(response);
+  }
+
+  return response.json();
 };
