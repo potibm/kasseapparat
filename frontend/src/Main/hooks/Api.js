@@ -54,14 +54,25 @@ export const fetchProducts = async (apiHost, jwtToken) => {
 };
 
 // Fetch guests for a specific product
-export const fetchGuestlistByProductId = async (apiHost, jwtToken, productId, query) => {
+export const fetchGuestlistByProductId = async (
+  apiHost,
+  jwtToken,
+  productId,
+  query,
+) => {
   const url = `${apiHost}/api/v2/products/${productId}/guests?q=${query}`;
   return get(url, jwtToken);
 };
 
 // Store a new purchase
-export const storePurchase = async (apiHost, jwtToken, cart, paymentMethodCode, paymentMethodData = {}) => {
-  const cartPayload = cart.map(item => ({
+export const storePurchase = async (
+  apiHost,
+  jwtToken,
+  cart,
+  paymentMethodCode,
+  paymentMethodData = {},
+) => {
+  const cartPayload = cart.map((item) => ({
     ...item,
     lists: null,
     guestlists: null,
@@ -70,8 +81,14 @@ export const storePurchase = async (apiHost, jwtToken, cart, paymentMethodCode, 
   const payload = {
     paymentMethod: paymentMethodCode,
     cart: cartPayload,
-    totalGrossPrice: cart.reduce((total, item) => total.add(item.totalGrossPrice), new Decimal(0)),
-    totalNetPrice: cart.reduce((total, item) => total.add(item.totalNetPrice), new Decimal(0)),
+    totalGrossPrice: cart.reduce(
+      (total, item) => total.add(item.totalGrossPrice),
+      new Decimal(0),
+    ),
+    totalNetPrice: cart.reduce(
+      (total, item) => total.add(item.totalNetPrice),
+      new Decimal(0),
+    ),
     ...paymentMethodData,
   };
 

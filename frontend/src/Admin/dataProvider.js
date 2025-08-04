@@ -11,7 +11,7 @@ const resourceAlias = {
 
 const resolveResource = (resource) => resourceAlias[resource] || resource;
 
-const httpClient = async(url, options = {}) => {
+const httpClient = async (url, options = {}) => {
   if (!options.headers) {
     options.headers = new Headers();
     options.headers.set("Accept", "application/json");
