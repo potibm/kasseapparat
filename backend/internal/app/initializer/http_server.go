@@ -28,7 +28,9 @@ var (
 func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler websocket.HandlerInterface, repository sqliteRepo.Repository, staticFiles embed.FS, jwtMiddleware *jwt.GinJWTMiddleware, config config.Config) *gin.Engine {
 	gin.SetMode(config.AppConfig.GinMode)
 	r = gin.Default()
-	r.Use(sentrygin.New(sentrygin.Options{}))
+	r.Use(sentrygin.New(sentrygin.Options{
+		Repanic: false,
+	}))
 	r.Use(middleware.ErrorHandlingMiddleware())
 
 	r.GET("/api/v2/purchases/stats", httpHandler.GetPurchaseStats)

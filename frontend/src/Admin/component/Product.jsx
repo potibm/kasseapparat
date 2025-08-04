@@ -58,7 +58,6 @@ const VatRateInput = () => {
       source="vatRate"
       row={false}
       choices={vatRates}
-      showEmptyOption={false}
       validate={[required()]}
       optionValue="rate"
       optionText={vatOptionRenderer}

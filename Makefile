@@ -35,7 +35,7 @@ run-tool:
 	cd $(BACKEND_DIR) && go run ./tools/main.go --seed --purge
 
 run-fe:
-	cd $(FRONTEND_DIR) && yarn dev
+	cd $(FRONTEND_DIR) && corepack yarn dev
 
 run-mailhog:
 	docker run -d -p 8025:8025 -p 2025:1025 --platform "linux/amd64" mailhog/mailhog
@@ -62,8 +62,8 @@ linter:
 linter-fix:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
 	touch $(BACKEND_DIR)/cmd/assets/index.html
-	cd $(FRONTEND_DIR) && yarn run prettier .. --write
-	cd $(FRONTEND_DIR) && yarn run eslint --fix
+	cd $(FRONTEND_DIR) && corepack yarn run prettier .. --write
+	cd $(FRONTEND_DIR) && corepack yarn run eslint --fix
 	cd $(BACKEND_DIR) && go fmt ./...
 	cd $(BACKEND_DIR) && golangci-lint run --fix
 

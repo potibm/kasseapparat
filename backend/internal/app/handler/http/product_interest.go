@@ -19,14 +19,14 @@ func (handler *Handler) GetProductInterests(c *gin.Context) {
 
 	lists, err := handler.repo.GetProductInterests(end-start, start, ids)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
 
 	total, err := handler.repo.GetTotalProductInterests()
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
@@ -38,7 +38,7 @@ func (handler *Handler) GetProductInterests(c *gin.Context) {
 func (handler *Handler) DeleteProductInterestByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
@@ -47,7 +47,7 @@ func (handler *Handler) DeleteProductInterestByID(c *gin.Context) {
 
 	productInterest, err := handler.repo.GetProductInterestByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}
@@ -60,7 +60,7 @@ func (handler *Handler) DeleteProductInterestByID(c *gin.Context) {
 func (handler *Handler) CreateProductInterest(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
@@ -69,7 +69,7 @@ func (handler *Handler) CreateProductInterest(c *gin.Context) {
 
 	var productInterestRequest ProductInterestCreateRequest
 	if err := c.ShouldBind(&productInterestRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
@@ -78,14 +78,14 @@ func (handler *Handler) CreateProductInterest(c *gin.Context) {
 
 	product, err := handler.repo.GetProductByID(int(productInterest.ProductID)) // check if product exists
 	if product == nil || err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(BadRequest, "Product not found"))
+		_ = c.Error(BadRequest.WithMsg("Product not found").WithCause(err))
 
 		return
 	}
 
 	productInterest, err = handler.repo.CreateProductInterest(productInterest, *executingUserObj)
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
