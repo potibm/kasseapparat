@@ -46,14 +46,14 @@ func (handler *Handler) GetGuests(c *gin.Context) {
 
 	guests, err := handler.repo.GetGuests(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
 
 		return
 	}
 
 	total, err := handler.repo.GetTotalGuests(&filters)
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
@@ -68,7 +68,7 @@ func (handler *Handler) GetGuestsByProductID(c *gin.Context) {
 
 	guests, err := handler.repo.GetUnattendedGuestsByProductID(productID, query)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
 
 		return
 	}
@@ -85,7 +85,7 @@ func (handler *Handler) GetGuestByID(c *gin.Context) {
 
 	guest, err := handler.repo.GetGuestByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
 
 		return
 	}
@@ -96,7 +96,7 @@ func (handler *Handler) GetGuestByID(c *gin.Context) {
 func (handler *Handler) UpdateGuestByID(c *gin.Context) {
 	executingUserObj, err := handler.getUserFromContext(c)
 	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser)
+		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
 
 		return
 	}
@@ -105,14 +105,14 @@ func (handler *Handler) UpdateGuestByID(c *gin.Context) {
 
 	guest, err := handler.repo.GetGuestByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
 
 		return
 	}
 
 	var guestRequest GuestUpdateRequest
 	if err := c.ShouldBind(&guestRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
 
 		return
 	}
@@ -137,7 +137,7 @@ func (handler *Handler) UpdateGuestByID(c *gin.Context) {
 
 	guest, err = handler.repo.UpdateGuestByID(id, *guest)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
 
 		return
 	}
@@ -157,7 +157,7 @@ func (handler *Handler) CreateGuest(c *gin.Context) {
 
 	var guestRequest GuestCreateRequest
 	if err := c.ShouldBind(&guestRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
 
 		return
 	}
@@ -177,14 +177,14 @@ func (handler *Handler) CreateGuest(c *gin.Context) {
 	guest.ArrivalNote = guestRequest.ArrivalNote
 	guest.NotifyOnArrivalEmail = guestRequest.NotifyOnArrivalEmail
 
-	product, err := handler.repo.CreateGuest(guest)
+	newGuest, err := handler.repo.CreateGuest(guest)
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
 
-	c.JSON(http.StatusCreated, product)
+	c.JSON(http.StatusCreated, newGuest)
 }
 
 func (handler *Handler) DeleteGuestByID(c *gin.Context) {
@@ -199,7 +199,7 @@ func (handler *Handler) DeleteGuestByID(c *gin.Context) {
 
 	guest, err := handler.repo.GetGuestByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, err.Error()))
+		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
 
 		return
 	}

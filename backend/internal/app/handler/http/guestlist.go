@@ -126,14 +126,14 @@ func (handler *Handler) CreateGuestlist(c *gin.Context) {
 	guestlist.ProductID = guestlistRequest.ProductID
 	guestlist.CreatedByID = &executingUserObj.ID
 
-	product, err := handler.repo.CreateGuestlist(guestlist)
+	newGuestlist, err := handler.repo.CreateGuestlist(guestlist)
 	if err != nil {
-		_ = c.Error(InternalServerError)
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
 
-	c.JSON(http.StatusCreated, product)
+	c.JSON(http.StatusCreated, newGuestlist)
 }
 
 func (handler *Handler) DeleteGuestlistByID(c *gin.Context) {
