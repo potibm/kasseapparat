@@ -42,7 +42,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 
 	products, err := handler.repo.GetProducts(end-start, start, sort, order, ids)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
@@ -53,7 +53,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 
 	total, err := handler.repo.GetTotalProducts()
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCause(err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
@@ -110,7 +110,7 @@ func (handler *Handler) GetProductByID(c *gin.Context) {
 
 	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCauseMsg(err))
 
 		return
 	}
@@ -140,14 +140,14 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 
 	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}
 
 	var productRequest ProductRequestUpdate
 	if err := c.ShouldBind(&productRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
@@ -185,7 +185,7 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 
 	var productRequest ProductRequestCreate
 	if err := c.ShouldBind(&productRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
@@ -220,7 +220,7 @@ func (handler *Handler) DeleteProductByID(c *gin.Context) {
 
 	product, err := handler.repo.GetProductByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}

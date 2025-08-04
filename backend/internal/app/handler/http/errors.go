@@ -15,24 +15,6 @@ func NewHttpError(code int, message string, detail string) *errors.BasicError {
 	}
 }
 
-func ExtendHttpErrorWithDetails(httpError *errors.BasicError, message string) *errors.BasicError {
-	return &errors.BasicError{
-		Code:     httpError.StatusCode(),
-		Message:  httpError.Error(),
-		Detail:   message,
-		CauseErr: httpError.Cause(),
-	}
-}
-
-func ExtendHttpErrorWithCause(httpError *errors.BasicError, cause error) *errors.BasicError {
-	return &errors.BasicError{
-		Code:     httpError.StatusCode(),
-		Message:  httpError.Error(),
-		Detail:   cause.Error(),
-		CauseErr: cause,
-	}
-}
-
 // predefined HTTP errors.
 var (
 	InvalidRequest                = NewHttpError(http.StatusBadRequest, "Invalid Request", "The request could not be understood by the server.")

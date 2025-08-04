@@ -32,7 +32,7 @@ func (handler *Handler) GetGuestlists(c *gin.Context) {
 
 	lists, err := handler.repo.GetGuestlists(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
@@ -53,7 +53,7 @@ func (handler *Handler) GetGuestlistByID(c *gin.Context) {
 
 	list, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}
@@ -73,14 +73,14 @@ func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 
 	guestlist, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}
 
 	var guestlistRequest GuestlistUpdateRequest
 	if err := c.ShouldBind(&guestlistRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
@@ -116,7 +116,7 @@ func (handler *Handler) CreateGuestlist(c *gin.Context) {
 
 	var guestlistRequest GuestlistCreateRequest
 	if err := c.ShouldBind(&guestlistRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
@@ -128,7 +128,7 @@ func (handler *Handler) CreateGuestlist(c *gin.Context) {
 
 	newGuestlist, err := handler.repo.CreateGuestlist(guestlist)
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCause(err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
@@ -148,7 +148,7 @@ func (handler *Handler) DeleteGuestlistByID(c *gin.Context) {
 
 	guestlist, err := handler.repo.GetGuestlistByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}

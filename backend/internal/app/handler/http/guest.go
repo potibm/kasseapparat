@@ -46,7 +46,7 @@ func (handler *Handler) GetGuests(c *gin.Context) {
 
 	guests, err := handler.repo.GetGuests(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
@@ -68,7 +68,7 @@ func (handler *Handler) GetGuestsByProductID(c *gin.Context) {
 
 	guests, err := handler.repo.GetUnattendedGuestsByProductID(productID, query)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
@@ -85,7 +85,7 @@ func (handler *Handler) GetGuestByID(c *gin.Context) {
 
 	guest, err := handler.repo.GetGuestByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}
@@ -105,14 +105,14 @@ func (handler *Handler) UpdateGuestByID(c *gin.Context) {
 
 	guest, err := handler.repo.GetGuestByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}
 
 	var guestRequest GuestUpdateRequest
 	if err := c.ShouldBind(&guestRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
@@ -137,7 +137,7 @@ func (handler *Handler) UpdateGuestByID(c *gin.Context) {
 
 	guest, err = handler.repo.UpdateGuestByID(id, *guest)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
@@ -157,7 +157,7 @@ func (handler *Handler) CreateGuest(c *gin.Context) {
 
 	var guestRequest GuestCreateRequest
 	if err := c.ShouldBind(&guestRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
@@ -179,7 +179,7 @@ func (handler *Handler) CreateGuest(c *gin.Context) {
 
 	newGuest, err := handler.repo.CreateGuest(guest)
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCause(err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
@@ -199,7 +199,7 @@ func (handler *Handler) DeleteGuestByID(c *gin.Context) {
 
 	guest, err := handler.repo.GetGuestByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}

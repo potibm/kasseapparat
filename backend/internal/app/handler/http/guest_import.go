@@ -75,7 +75,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	// open the file
 	fileContent, err := file.Open()
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Error opening file").WithCause(err))
+		_ = c.Error(InternalServerError.WithMsg("Error opening file").WithCause(err))
 
 		return
 	}
@@ -90,7 +90,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 
 	// Skip the header line
 	if _, err := reader.Read(); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(BadRequest, "Failed to read header").WithCause(err))
+		_ = c.Error(BadRequest.WithMsg("Failed to read header").WithCause(err))
 
 		return
 	}
@@ -98,7 +98,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	// find a list with Type Code
 	list, err := handler.repo.GetGuestlistWithTypeCode()
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Guestlist not found").WithCause(err))
+		_ = c.Error(InternalServerError.WithMsg("Guestlist not found").WithCause(err))
 
 		return
 	}
@@ -116,7 +116,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 		}
 
 		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Error reading CSV file").WithCause(err))
+			_ = c.Error(InternalServerError.WithMsg("Error reading CSV file").WithCause(err))
 
 			return
 		}
@@ -145,7 +145,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 
 		_, err = handler.repo.CreateGuest(record.GetGuest(list.ID))
 		if err != nil {
-			_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create guest").WithCause(err))
+			_ = c.Error(InternalServerError.WithMsg("Failed to create guest").WithCause(err))
 
 			return
 		}

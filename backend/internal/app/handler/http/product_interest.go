@@ -19,14 +19,14 @@ func (handler *Handler) GetProductInterests(c *gin.Context) {
 
 	lists, err := handler.repo.GetProductInterests(end-start, start, ids)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
 
 	total, err := handler.repo.GetTotalProductInterests()
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCause(err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
@@ -47,7 +47,7 @@ func (handler *Handler) DeleteProductInterestByID(c *gin.Context) {
 
 	productInterest, err := handler.repo.GetProductInterestByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}
@@ -69,7 +69,7 @@ func (handler *Handler) CreateProductInterest(c *gin.Context) {
 
 	var productInterestRequest ProductInterestCreateRequest
 	if err := c.ShouldBind(&productInterestRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
@@ -78,14 +78,14 @@ func (handler *Handler) CreateProductInterest(c *gin.Context) {
 
 	product, err := handler.repo.GetProductByID(int(productInterest.ProductID)) // check if product exists
 	if product == nil || err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(BadRequest, "Product not found").WithCause(err))
+		_ = c.Error(BadRequest.WithMsg("Product not found").WithCause(err))
 
 		return
 	}
 
 	productInterest, err = handler.repo.CreateProductInterest(productInterest, *executingUserObj)
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCause(err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}

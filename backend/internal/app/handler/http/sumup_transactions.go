@@ -44,7 +44,7 @@ func (handler *Handler) GetSumupTransactions(c *gin.Context) {
 
 	transactions, err := handler.sumupRepository.GetTransactions(oldestTime)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "failed to retrieve transactions").WithCause(err))
+		_ = c.Error(InternalServerError.WithMsg("failed to retrieve transactions").WithCause(err))
 
 		return
 	}
@@ -72,20 +72,20 @@ func (handler *Handler) GetSumupTransactions(c *gin.Context) {
 func (handler *Handler) GetSumupTransactionByID(c *gin.Context) {
 	transactionID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "Invalid ID").WithCause(err))
+		_ = c.Error(InvalidRequest.WithMsg("Invalid ID").WithCause(err))
 
 		return
 	}
 
 	transaction, err := handler.sumupRepository.GetTransactionById(transactionID)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "failed to retrieve transaction").WithCause(err))
+		_ = c.Error(InternalServerError.WithMsg("failed to retrieve transaction").WithCause(err))
 
 		return
 	}
 
 	if transaction == nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, "Transaction not found"))
+		_ = c.Error(NotFound.WithMsg("Transaction not found"))
 
 		return
 	}
@@ -104,7 +104,7 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 	if payload.EventType != "solo.transaction.updated" {
 		log.Println("unsupported event type:", payload.EventType)
 
-		_ = c.Error(ExtendHttpErrorWithDetails(InvalidRequest, "unsupported event type"))
+		_ = c.Error(InvalidRequest.WithMsg("unsupported event type"))
 
 		return
 	}
@@ -112,12 +112,12 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 	purchase, err := handler.repo.GetPurchaseBySumupClientTransactionID(payload.Payload.ClientTransactionID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			_ = c.Error(ExtendHttpErrorWithDetails(NotFound, "purchase not found"))
+			_ = c.Error(NotFound.WithMsg("purchase not found"))
 
 			return
 		}
 
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "internal error").WithCause(err))
+		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
@@ -150,7 +150,7 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 
 	if err != nil {
 		log.Println("failed to update purchase status:", err)
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "failed to update purchase status").WithCause(err))
+		_ = c.Error(InternalServerError.WithMsg("failed to update purchase status").WithCause(err))
 
 		return
 	}

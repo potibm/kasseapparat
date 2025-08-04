@@ -18,20 +18,20 @@ type UserUpdatePasswordRequest struct {
 func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 	var userPasswordChangeRequest UserUpdatePasswordRequest
 	if err := c.ShouldBind(&userPasswordChangeRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
 
 	user, err := handler.repo.GetUserByID(userPasswordChangeRequest.UserId)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(BadRequest, err))
+		_ = c.Error(BadRequest.WithCauseMsg(err))
 
 		return
 	}
 
 	if !user.ChangePasswordTokenIsValid(userPasswordChangeRequest.Token) {
-		_ = c.Error(ExtendHttpErrorWithDetails(BadRequest, "Token is invalid or has expired"))
+		_ = c.Error(BadRequest.WithMsg("Token is invalid or has expired"))
 
 		return
 	}
@@ -57,7 +57,7 @@ type RequestChangePasswordTokenRequest struct {
 func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 	var request RequestChangePasswordTokenRequest
 	if err := c.ShouldBind(&request); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}

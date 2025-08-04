@@ -23,7 +23,7 @@ type SumupReaderReponse struct {
 func (handler *Handler) GetSumupReaders(c *gin.Context) {
 	readers, err := handler.sumupRepository.GetReaders()
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to retrieve readers").WithCause(err))
+		_ = c.Error(InternalServerError.WithMsg("Failed to retrieve readers").WithCause(err))
 
 		return
 	}
@@ -37,13 +37,13 @@ func (handler *Handler) GetSumupReaderByID(c *gin.Context) {
 
 	reader, err := handler.sumupRepository.GetReader(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to retrieve reader").WithCause(err))
+		_ = c.Error(InternalServerError.WithMsg("Failed to retrieve reader").WithCause(err))
 
 		return
 	}
 
 	if reader == nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(NotFound, "Reader not found"))
+		_ = c.Error(NotFound.WithMsg("Reader not found"))
 
 		return
 	}
@@ -65,7 +65,7 @@ func (handler *Handler) CreateSumupReader(c *gin.Context) {
 
 	reader, err := handler.sumupRepository.CreateReader(strings.ToUpper(request.PairingCode), request.Name)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to create reader").WithCause(err))
+		_ = c.Error(InternalServerError.WithMsg("Failed to create reader").WithCause(err))
 
 		return
 	}
@@ -77,7 +77,7 @@ func (handler *Handler) DeleteSumupReader(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := handler.sumupRepository.DeleteReader(id); err != nil {
-		_ = c.Error(ExtendHttpErrorWithDetails(InternalServerError, "Failed to delete reader").WithCause(err))
+		_ = c.Error(InternalServerError.WithMsg("Failed to delete reader").WithCause(err))
 
 		return
 	}

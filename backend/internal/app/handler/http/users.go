@@ -26,7 +26,7 @@ func (handler *Handler) GetUsers(c *gin.Context) {
 
 	products, err := handler.repo.GetUsers(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InternalServerError, err))
+		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
 		return
 	}
@@ -47,7 +47,7 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 
 	product, err := handler.repo.GetUserByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}
@@ -80,14 +80,14 @@ func (handler *Handler) UpdateUserByID(c *gin.Context) {
 
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}
 
 	var userRequest UserUpdateRequest
 	if err := c.ShouldBind(&userRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
@@ -131,7 +131,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 
 	var userRequest UserCreateRequest
 	if err := c.ShouldBind(&userRequest); err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(InvalidRequest, err))
+		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
 		return
 	}
@@ -178,7 +178,7 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 
 	user, err := handler.repo.GetUserByID(id)
 	if err != nil {
-		_ = c.Error(ExtendHttpErrorWithCause(NotFound, err))
+		_ = c.Error(NotFound.WithCause(err))
 
 		return
 	}
