@@ -96,7 +96,7 @@ const authProvider = {
     } catch (error) {
       Sentry.captureException(error, {
         tags: { auth: "refresh_token" },
-        extra: { token: adminData?.token },
+        extra: { tokenPrefix: adminData?.token?.substring(0, 8) + "..." },
       });
 
       console.error("Token refresh error:", error);

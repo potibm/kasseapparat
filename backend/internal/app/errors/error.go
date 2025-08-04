@@ -18,7 +18,7 @@ func (e *BasicError) WithCauseMsg(err error) *BasicError {
 	return &BasicError{Code: e.Code, Message: e.Message, Detail: err.Error(), CauseErr: err}
 }
 func (e *BasicError) WithMsg(message string) *BasicError {
-	return &BasicError{Code: e.Code, Message: message, Detail: e.Detail, CauseErr: e.CauseErr}
+	return &BasicError{Code: e.Code, Message: e.Message, Detail: message, CauseErr: e.CauseErr}
 }
 
 func (e *BasicError) Unwrap() error { return e.CauseErr }

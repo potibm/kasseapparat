@@ -8,10 +8,9 @@ import (
 
 func NewHttpError(code int, message string, detail string) *errors.BasicError {
 	return &errors.BasicError{
-		Code:     code,
-		Message:  message,
-		Detail:   detail,
-		CauseErr: nil,
+		Code:    code,
+		Message: message,
+		Detail:  detail,
 	}
 }
 
