@@ -12,7 +12,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@sentry/react": "^9.40.0",
+    "@sentry/react": "^10.1.0",
     "@tailwindcss/vite": "^4.1.11",
     "animate.css": "^4.1.1",
     "decimal.js": "^10.6.0",
