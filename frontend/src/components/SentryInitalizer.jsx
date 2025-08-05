@@ -5,7 +5,7 @@ import { useAuth } from "../Auth/provider/AuthProvider";
 
 const SentryInitializer = ({ children }) => {
   const config = useConfig();
-  const { id, username } = useAuth();
+  const { id, username } = useAuth() || {};
 
   useEffect(() => {
     if (config?.sentryDSN) {
