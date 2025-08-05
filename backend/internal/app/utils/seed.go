@@ -49,9 +49,11 @@ func (ds *DatabaseSeed) Seed(includeTestData bool) {
 }
 
 func (ds *DatabaseSeed) seedUsers() {
-	ds.adminUser = &models.User{Username: "admin", Email: "admin@example.com", Password: "admin", Admin: true}
+	ds.adminUser = &models.User{Username: "admin", Email: "admin@example.com", Admin: true}
+	ds.adminUser.SetPassword("admin") // Ensure password is hashed
 
-	ds.demoUser = &models.User{Username: "demo", Email: "demo@example.com", Password: "demo", Admin: false}
+	ds.demoUser = &models.User{Username: "demo", Email: "demo@example.com", Admin: false}
+	ds.demoUser.SetPassword("demo") // Ensure password is hashed
 
 	ds.db.Create(ds.adminUser)
 	ds.db.Create(ds.demoUser)
