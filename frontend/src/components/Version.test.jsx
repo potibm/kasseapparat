@@ -53,7 +53,7 @@ describe("Version", () => {
   it("shows link for normal version", async () => {
     const link = await renderVersionWithMocks({});
     expect(screen.getByText(/Version 1\.2\.3/)).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", expect.stringContaining("v1.2.3"));
+    expect(link).toHaveAttribute("href", expect.stringContaining("1.2.3"));
   });
 
   it("marks version as outdated if GitHub version is newer", async () => {
