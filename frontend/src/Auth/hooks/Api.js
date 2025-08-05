@@ -6,7 +6,7 @@ const handleFetchError = async (response) => {
   let data = null;
 
   try {
-    const data = await response.json();
+    data = await response.json();
     message = data?.message || data?.error || message;
   } catch {
     // Ignore JSON parse errors

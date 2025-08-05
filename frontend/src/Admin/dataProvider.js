@@ -54,6 +54,8 @@ const httpClient = async (url, options = {}) => {
         },
       });
     }
+
+    throw error;
   }
 };
 
