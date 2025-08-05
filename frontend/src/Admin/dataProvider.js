@@ -31,19 +31,29 @@ const httpClient = async (url, options = {}) => {
   try {
     return await fetchUtils.fetchJson(url, options);
   } catch (error) {
-    Sentry.captureException(error, {
-      tags: {
-        url,
-        method: options.method || "GET",
-      },
-      extra: {
-        request: {
+    const normalizedMessage = error?.message?.toLowerCase() || "";
+
+    // 🧽 Filter known, non-critical messages
+    const knownNonCritical = ["cookie token is empty"];
+
+    const isExpected = knownNonCritical.some((msg) =>
+      normalizedMessage.includes(msg),
+    );
+
+    if (!isExpected) {
+      Sentry.captureException(error, {
+        tags: {
           url,
-          options,
+          method: options.method || "GET",
         },
-      },
-    });
-    throw error;
+        extra: {
+          request: {
+            url,
+            options,
+          },
+        },
+      });
+    }
   }
 };
 
