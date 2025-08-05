@@ -76,6 +76,7 @@ func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 	}
 
 	user.GenerateChangePasswordToken(nil)
+	user.Password = "" // Clear password so it is not saved in the database
 
 	user, err = handler.repo.UpdateUserByID(int(user.ID), *user)
 	if err != nil {

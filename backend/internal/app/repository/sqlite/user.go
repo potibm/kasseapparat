@@ -143,6 +143,7 @@ func (repo *Repository) GetTotalUsers(filters *UserFilters) (int64, error) {
 
 func (repo *Repository) CreateUser(user models.User) (models.User, error) {
 	user.Username = strings.ToLower(user.Username)
+	user.SetPassword(user.Password)
 
 	result := repo.db.Create(&user)
 
@@ -173,7 +174,7 @@ func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models
 	user.ChangePasswordTokenExpiry = updatedUser.ChangePasswordTokenExpiry
 
 	if updatedUser.Password != "" {
-		user.Password = updatedUser.Password
+		user.SetPassword(updatedUser.Password)
 	}
 
 	// Save the updated product to the database
