@@ -3,19 +3,40 @@ import * as Sentry from "@sentry/react";
 // 🔁 Shared error handler for failed fetch responses
 const handleFetchError = async (response) => {
   let message = `HTTP ${response.status} ${response.statusText}`;
+  let data = null;
+
   try {
-    const data = await response.json();
+    data = await response.json();
     message = data?.message || data?.error || message;
   } catch {
     // Ignore JSON parse errors
   }
+
+  // Normalize message for comparison
+  const normalizedMessage = message.toLowerCase();
+
+  // 🧽 Filter known, non-critical messages
+  const knownNonCritical = [
+    "token is expired",
+    "incorrect username or password",
+  ];
+
+  const isExpected = knownNonCritical.some((msg) =>
+    normalizedMessage.includes(msg),
+  );
+
   const error = new Error(message);
-  Sentry.captureException(error, {
-    extra: {
-      url: response.url,
-      status: response.status,
-    },
-  });
+
+  if (!isExpected) {
+    Sentry.captureException(error, {
+      extra: {
+        url: response.url,
+        status: response.status,
+        data,
+      },
+    });
+  }
+
   throw error;
 };
 

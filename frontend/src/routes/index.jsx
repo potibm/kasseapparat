@@ -13,7 +13,7 @@ import ForgotPassword from "../Auth/components/ForgotPassword";
 import { LoggedinErrorMessage } from "./LoggedinErrorMessage";
 
 const Routes = () => {
-  const { token } = useAuth();
+  const { token } = useAuth() || {};
 
   // Define public routes accessible to all users
   const routesForPublic = [
