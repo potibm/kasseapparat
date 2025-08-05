@@ -4009,9 +4009,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flowbite-react@npm:^0.11.9":
-  version: 0.11.9
-  resolution: "flowbite-react@npm:0.11.9"
+"flowbite-react@npm:^0.12.5":
+  version: 0.12.5
+  resolution: "flowbite-react@npm:0.12.5"
   dependencies:
     "@floating-ui/core": "npm:1.6.9"
     "@floating-ui/react": "npm:0.27.3"
@@ -4033,7 +4033,7 @@ __metadata:
     tailwindcss: ^3 || ^4
   bin:
     flowbite-react: dist/cli/bin.js
-  checksum: 10/6c311b8c6ebe5589b98de5e476917397141b998e8b90f6977678798cbf3b0f70718ffa0d64eb6babf36b5f2bbc02f5ac60cead08172d01d48f7b7ff9845bebc4
+  checksum: 10/ae825799ece33aa933eb743dc7dda002fcb9a470afb09e679ee908d9d52d1f7ca946596dce85d7d85fb5e40ff07ff1afa6b8de4980880126df214b796dba390a
   languageName: node
   linkType: hard
 
@@ -5032,7 +5032,7 @@ __metadata:
     eslint-plugin-react-compiler: "npm:^19.1.0-rc.2"
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.20"
-    flowbite-react: "npm:^0.11.9"
+    flowbite-react: "npm:^0.12.5"
     globals: "npm:^16.3.0"
     install: "npm:^0.13.0"
     jsdom: "npm:^26.1.0"

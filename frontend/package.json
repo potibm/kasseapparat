@@ -8,7 +8,6 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postinstall": "flowbite-react patch",
     "test": "vitest"
   },
   "dependencies": {
@@ -16,7 +15,7 @@
     "@tailwindcss/vite": "^4.1.11",
     "animate.css": "^4.1.1",
     "decimal.js": "^10.6.0",
-    "flowbite-react": "^0.11.9",
+    "flowbite-react": "^0.12.5",
     "install": "^0.13.0",
     "jwt-decode": "^4.0.0",
     "ra-data-json-server": "^5.10.1",
