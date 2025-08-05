@@ -143,7 +143,9 @@ func (repo *Repository) GetTotalUsers(filters *UserFilters) (int64, error) {
 
 func (repo *Repository) CreateUser(user models.User) (models.User, error) {
 	user.Username = strings.ToLower(user.Username)
-	user.SetPassword(user.Password)
+	if err := user.SetPassword(user.Password); err != nil {
+		return user, fmt.Errorf("failed to hash password: %w", err)
+	}
 
 	result := repo.db.Create(&user)
 
@@ -174,7 +176,9 @@ func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models
 	user.ChangePasswordTokenExpiry = updatedUser.ChangePasswordTokenExpiry
 
 	if updatedUser.Password != "" {
-		user.SetPassword(updatedUser.Password)
+		if err := user.SetPassword(updatedUser.Password); err != nil {
+			return nil, errors.New("failed to hash password")
+		}
 	}
 
 	// Save the updated product to the database
