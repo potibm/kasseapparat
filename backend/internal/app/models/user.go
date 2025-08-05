@@ -9,7 +9,6 @@ import (
 
 	"github.com/sethvargo/go-password/password"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 var bcryptCost = 14
@@ -40,16 +39,10 @@ func (u *User) GravatarURL() string {
 	return "https://www.gravatar.com/avatar/" + hash
 }
 
-func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	return u.hashAndSetPassword()
-}
+func (u *User) SetPassword(password string) error {
+	var err error
 
-func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
-	return u.hashAndSetPassword()
-}
-
-func (u *User) hashAndSetPassword() (err error) {
-	u.Password, err = hashPassword(u.Password)
+	u.Password, err = hashPassword(password)
 	if err != nil {
 		return err
 	}

@@ -76,9 +76,9 @@ const ChangePassword = () => {
       })
       .catch((error) => {
         setDisabled(false);
-        if (error.message === "Token is invalid or has expired.") {
+        if (error.details === "Token is invalid or has expired") {
           setValidationMessage({
-            message: "The password could not be changed. ",
+            message: "The password could not be changed.",
             details: error.message,
             link: "/forgot-password",
             linkText: "Request new token",
@@ -110,7 +110,7 @@ const ChangePassword = () => {
             )}
             {validationMessage.link && (
               <Button
-                color="failure"
+                color="red"
                 className="mt-2"
                 onClick={() => navigate(validationMessage.link)}
               >

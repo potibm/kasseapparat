@@ -37,7 +37,7 @@ const handleFetchError = async (response) => {
     });
   }
 
-  throw error;
+  throw data || error;
 };
 
 // 🔐 Authenticate user and retrieve JWT token
