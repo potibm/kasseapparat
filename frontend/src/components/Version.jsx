@@ -38,7 +38,7 @@ export const Version = () => {
 
   let versionLink = null;
   if (version && !version.startsWith("0")) {
-    versionLink = `https://github.com/potibm/kasseapparat/releases/tag/v${version}`;
+    versionLink = `https://github.com/potibm/kasseapparat/releases/tag/${version}`;
   }
 
   const isOutdated = latestVersion && latestVersion !== version;
