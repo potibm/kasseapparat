@@ -20,7 +20,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   const connectionRef = useRef(false);
 
   const sumUpReaderId = getCurrentReaderId();
-  const closeModalTimeout = 9000;
+  const closeModalTimeout = 3000;
   const ageInSeconds = Math.max(0, Math.round((now - lastUpdate) / 1000));
 
   const statusRef = useRef(status);
