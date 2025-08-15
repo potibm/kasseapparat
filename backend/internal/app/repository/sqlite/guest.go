@@ -120,7 +120,7 @@ func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) 
 		Where("Products.id = ? AND Guests.attended_guests = ?", productId, 0).
 		Order("guests.name ASC")
 	if q != "" {
-		query = query.Where("Guests.name LIKE ? OR Guests.code = ?", "%"+q+"%", q)
+		query = query.Where("Guests.name LIKE ? OR Guests.code LIKE ?", "%"+q+"%", q+"%")
 	}
 
 	if err := query.Scan(&guests).Error; err != nil {
