@@ -107,7 +107,7 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 
 func StartCleanupRoutine(timeout time.Duration) {
 	go func() {
-		ticker := time.NewTicker(1 * time.Minute)
+		ticker := time.NewTicker(5 * time.Minute)
 		defer ticker.Stop()
 
 		for range ticker.C {
