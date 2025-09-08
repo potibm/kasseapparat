@@ -22,7 +22,7 @@ jobs:
           mkdir -p backend/cmd/assets && \
           touch backend/cmd/assets/index.html
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           cache-dependency-path: backend/go.sum
           go-version-file: backend/go.mod
@@ -47,7 +47,7 @@ jobs:
           mkdir -p backend/cmd/assets && \
           touch backend/cmd/assets/index.html
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           cache-dependency-path: backend/go.sum
           go-version-file: backend/go.mod
