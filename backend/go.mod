@@ -6,7 +6,7 @@ toolchain go1.25.1
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.10.3
-	github.com/brianvoe/gofakeit/v7 v7.5.1
+	github.com/brianvoe/gofakeit/v7 v7.6.0
 	github.com/gavv/httpexpect/v2 v2.17.0
 	github.com/getsentry/sentry-go v0.35.1
 	github.com/getsentry/sentry-go/gin v0.35.1
