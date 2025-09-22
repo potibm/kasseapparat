@@ -91,7 +91,6 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
       setError(message);
       setProcessing(false);
       onComplete(false);
-      setTimeout(onClose, closeModalTimeout);
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.close();
       }
@@ -205,16 +204,17 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
         </div>
       </ModalBody>
       <ModalFooter>
-        {status === "pending" && (
-          <MyButton
-            color="failure"
-            disabled={processing}
-            onClick={() => cancelPayment()}
-          >
-            {processing ? "Cancelling..." : "Abort Purchase"}
-            {processing && <Spinner color="gray" className="ml-2" />}
-          </MyButton>
-        )}
+        <div className="w-full flex justify-center">
+          {status === "pending" && (
+            <MyButton disabled={processing} onClick={() => cancelPayment()}>
+              {processing ? "Cancelling..." : "Abort Purchase"}
+              {processing && <Spinner color="gray" className="ml-2" />}
+            </MyButton>
+          )}
+          {status === "failed" && (
+            <MyButton onClick={() => onClose()}>Close</MyButton>
+          )}
+        </div>
       </ModalFooter>
     </Modal>
   );
