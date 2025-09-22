@@ -6,6 +6,7 @@ node_modules/
 backend/data/
 backend/cmd/assets/
 backend/.env
+backend/.env.backup.*
 backend/VERSION
 backend/coverage.*
 VERSION
