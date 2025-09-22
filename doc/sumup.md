@@ -63,3 +63,9 @@ In the **SumUp > Readers** section of the admin interface, click **"Use this rea
 The selected reader will be marked as **"Selected"**.
 
 You can now start accepting purchases in the frontend using the selected reader.
+
+## Unpairing a Reader
+
+A reader stays paired to your account. You cannot unpair a reader from the device itself!
+
+So: do not forget to unpair the device after the party using the **Kasseapparat Admin**.
