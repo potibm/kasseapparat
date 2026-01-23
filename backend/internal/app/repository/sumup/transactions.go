@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/utils"
 	"github.com/shopspring/decimal"
+	"github.com/sumup/sumup-go/shared"
 	"github.com/sumup/sumup-go/transactions"
 )
 
@@ -40,7 +41,7 @@ func (r *Repository) fetchPagedTransactions(ctx context.Context, oldestFrom *tim
 
 	pageCount := 0
 
-	params := transactions.ListTransactionsV21Params{
+	params := transactions.ListParams{
 		Limit: &pageSize,
 	}
 	if oldestFrom != nil {
@@ -59,14 +60,14 @@ func (r *Repository) fetchPagedTransactions(ctx context.Context, oldestFrom *tim
 			return nil, err
 		}
 
-		if resp.Items == nil || len(*resp.Items) == 0 {
+		if resp.Items == nil || len(resp.Items) == 0 {
 			return allItems, nil
 		}
 
-		allItems = append(allItems, ptrSliceToSlice(resp.Items)...)
+		allItems = append(allItems, ptrSliceToSlice(&resp.Items)...)
 		sortTransactionsByCreatedAt(allItems)
 
-		nextHref := findNextHref(resp.Links)
+		nextHref := findNextHref(&resp.Links)
 		if nextHref == "" {
 			return allItems, nil
 		}
@@ -123,22 +124,30 @@ func findNextHref(links *[]transactions.Link) string {
 	return ""
 }
 
-func parseHrefToListTransactionsParams(href string) (*transactions.ListTransactionsV21Params, error) {
+func parseHrefToListTransactionsParams(href string) (*transactions.ListParams, error) {
 	values, err := url.ParseQuery(href)
 	if err != nil {
 		return nil, err
 	}
 
-	params := &transactions.ListTransactionsV21Params{
+	paymentTypes := []shared.PaymentType{}
+
+	if pts, exists := values["payment_types"]; exists {
+		for _, pt := range pts {
+			paymentTypes = append(paymentTypes, shared.PaymentType(pt))
+		}
+	}
+
+	params := &transactions.ListParams{
 		Limit:           getIntPtr(values, "limit"),
 		Order:           getStringPtr(values, "order"),
 		OldestRef:       getStringPtr(values, "oldest_ref"),
 		NewestRef:       getStringPtr(values, "newest_ref"),
 		TransactionCode: getStringPtr(values, "transaction_code"),
-		Users:           getStringSlicePtr(values, "users"),
-		Statuses:        getStringSlicePtr(values, "statuses"),
-		Types:           getStringSlicePtr(values, "types"),
-		PaymentTypes:    getStringSlicePtr(values, "payment_types"),
+		Users:           getStringSlice(values, "users"),
+		Statuses:        getStringSlice(values, "statuses"),
+		Types:           getStringSlice(values, "types"),
+		PaymentTypes:    paymentTypes,
 	}
 
 	if t := getTimePtr(values, "changes_since"); t != nil {
@@ -158,8 +167,8 @@ func parseHrefToListTransactionsParams(href string) (*transactions.ListTransacti
 
 func (r *Repository) GetTransactionById(transactionId uuid.UUID) (*Transaction, error) {
 	transactionIdStr := transactionId.String()
-	params := transactions.GetTransactionV21Params{
-		Id: &transactionIdStr,
+	params := transactions.GetParams{
+		ID: &transactionIdStr,
 	}
 
 	transaction, err := r.getTransaction(params)
@@ -170,7 +179,7 @@ func (r *Repository) GetTransactionById(transactionId uuid.UUID) (*Transaction, 
 	return transaction, nil
 }
 
-func (r *Repository) getTransaction(params transactions.GetTransactionV21Params) (*Transaction, error) {
+func (r *Repository) getTransaction(params transactions.GetParams) (*Transaction, error) {
 	transactionResp, err := r.service.Client.Transactions.Get(context.Background(), r.service.MerchantCode, params)
 	if err != nil {
 		return nil, normalizeSumupError(err)
@@ -181,8 +190,8 @@ func (r *Repository) getTransaction(params transactions.GetTransactionV21Params)
 
 func (r *Repository) GetTransactionByClientTransactionId(clientTransactionId uuid.UUID) (*Transaction, error) {
 	clientTransactionIdStr := clientTransactionId.String()
-	params := transactions.GetTransactionV21Params{
-		ClientTransactionId: &clientTransactionIdStr,
+	params := transactions.GetParams{
+		ClientTransactionID: &clientTransactionIdStr,
 	}
 
 	transaction, err := r.getTransaction(params)
@@ -194,7 +203,7 @@ func (r *Repository) GetTransactionByClientTransactionId(clientTransactionId uui
 }
 
 func (r *Repository) RefundTransaction(transactionId uuid.UUID) error {
-	body := transactions.RefundTransactionBody{}
+	body := transactions.Refund{}
 
 	err := r.service.Client.Transactions.Refund(context.Background(), transactionId.String(), body)
 	if err != nil {
@@ -210,17 +219,17 @@ func fromSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transacti
 	var transactionId uuid.UUID
 
 	// Prefer parsing TransactionId if present
-	if sdkCheckout.TransactionId != nil {
-		if parsedId, err := uuid.Parse(string(*sdkCheckout.TransactionId)); err == nil {
+	if sdkCheckout.TransactionID != nil {
+		if parsedId, err := uuid.Parse(string(*sdkCheckout.TransactionID)); err == nil {
 			transactionId = parsedId
 		}
 	}
 
 	return &Transaction{
-		ID:              string(*sdkCheckout.Id),
+		ID:              string(*sdkCheckout.ID),
 		TransactionCode: string(*sdkCheckout.TransactionCode),
 		TransactionID:   transactionId,
-		Amount:          utils.F64PtrToDecimal(sdkCheckout.Amount),
+		Amount:          utils.F32PtrToDecimal(sdkCheckout.Amount),
 		Currency:        string(*sdkCheckout.Currency),
 		CardType:        string(*sdkCheckout.CardType),
 		CreatedAt:       utils.TimePtr(sdkCheckout.Timestamp),
@@ -231,8 +240,8 @@ func fromSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transacti
 func fromSDKTransactionFull(sdkCheckout *transactions.TransactionFull) *Transaction {
 	var transactionId uuid.UUID
 
-	if sdkCheckout.Id != nil {
-		parsedId, err := uuid.Parse(*sdkCheckout.Id)
+	if sdkCheckout.ID != nil {
+		parsedId, err := uuid.Parse(*sdkCheckout.ID)
 		if err == nil {
 			transactionId = parsedId
 		}
@@ -240,8 +249,8 @@ func fromSDKTransactionFull(sdkCheckout *transactions.TransactionFull) *Transact
 
 	var events []TransactionEvent
 	if sdkCheckout.Events != nil {
-		events = make([]TransactionEvent, 0, len(*sdkCheckout.Events))
-		for _, sdkEvent := range *sdkCheckout.Events {
+		events = make([]TransactionEvent, 0, len(sdkCheckout.Events))
+		for _, sdkEvent := range sdkCheckout.Events {
 			events = append(events, fromSDKTransactionEvent(&sdkEvent))
 		}
 	} else {
@@ -257,7 +266,7 @@ func fromSDKTransactionFull(sdkCheckout *transactions.TransactionFull) *Transact
 		ID:              transactionId.String(),
 		TransactionCode: string(*sdkCheckout.TransactionCode),
 		TransactionID:   transactionId,
-		Amount:          utils.F64PtrToDecimal(sdkCheckout.Amount),
+		Amount:          utils.F32PtrToDecimal(sdkCheckout.Amount),
 		Currency:        string(*sdkCheckout.Currency),
 		CardType:        cardType,
 		CreatedAt:       utils.TimePtr(sdkCheckout.Timestamp),
@@ -285,7 +294,7 @@ func fromSDKTransactionEvent(sdkEvent *transactions.Event) TransactionEvent {
 	}
 
 	return TransactionEvent{
-		ID:        int(*sdkEvent.Id),
+		ID:        int(*sdkEvent.ID),
 		Timestamp: timestamp,
 		Type:      string(*sdkEvent.Type),
 		Amount:    decimal.NewFromFloat(amount),

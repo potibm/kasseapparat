@@ -14,6 +14,14 @@ func F64PtrToDecimal(p *float64) decimal.Decimal {
 	return decimal.Zero
 }
 
+func F32PtrToDecimal(p *float32) decimal.Decimal {
+	if p != nil {
+		return decimal.NewFromFloat(float64(*p))
+	}
+
+	return decimal.Zero
+}
+
 func StrPtr(p *string) string {
 	if p != nil {
 		return *p
