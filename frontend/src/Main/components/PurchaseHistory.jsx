@@ -58,6 +58,7 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
       flashCount.current++;
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     triggerFlash();
   }, [history]);
 

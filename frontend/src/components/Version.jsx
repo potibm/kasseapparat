@@ -10,6 +10,7 @@ export const Version = () => {
   useEffect(() => {
     const cached = sessionStorage.getItem("kasseapparat_latest_version");
     if (cached) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLatestVersion(cached);
       return;
     }

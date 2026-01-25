@@ -65,12 +65,14 @@ const GuestlistModal = ({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchGuestEntries(searchQuery);
     }
   }, [isOpen, searchQuery, fetchGuestEntries]);
 
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchQuery("");
     }
   }, [isOpen]);

@@ -46,6 +46,7 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
       flashCount.current++;
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     triggerFlash();
   }, [cart]);
 

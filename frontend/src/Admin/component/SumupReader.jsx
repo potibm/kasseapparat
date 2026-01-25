@@ -104,6 +104,7 @@ export const SumupReaderList = (props) => {
   const [selectedReaderId, setSelectedReaderId] = useState(undefined);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedReaderId(getCurrentReaderId());
   }, []);
 

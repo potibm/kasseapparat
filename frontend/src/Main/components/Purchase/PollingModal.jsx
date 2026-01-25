@@ -9,8 +9,8 @@ import { useConfig } from "../../../provider/ConfigProvider";
 
 const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   const [status, setStatus] = useState(purchase.status);
-  const [lastUpdate, setLastUpdate] = useState(Date.now());
-  const [now, setNow] = useState(Date.now()); // for age display
+  const [lastUpdate, setLastUpdate] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now()); // for age display
   const [error, setError] = useState(null);
   const [flash, setFlash] = useState(false);
   const [processing, setProcessing] = useState(false);
