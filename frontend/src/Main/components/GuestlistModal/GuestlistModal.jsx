@@ -37,14 +37,14 @@ const GuestlistModal = ({
   };
 
   const fetchGuestEntries = useCallback(
-    async (searchQuery = "") => {
+    async (query = "") => {
       setLoading(true);
       try {
         let response = await fetchGuestlistByProductId(
           apiHost,
           token,
           product.id,
-          searchQuery,
+          query,
         );
         if (response === null) {
           response = [];
@@ -52,7 +52,7 @@ const GuestlistModal = ({
         setGuestlistEntries(response);
         setError(null);
         setLoading(false);
-        setLoadedSearchQuery(searchQuery);
+        setLoadedSearchQuery(query);
       } catch (error) {
         setError("Error fetching list entries: " + error.message);
         setGuestlistEntries([]);
@@ -65,15 +65,19 @@ const GuestlistModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      fetchGuestEntries(searchQuery);
+      const handle = requestAnimationFrame(() => {
+        fetchGuestEntries(searchQuery);
+      });
+      return () => cancelAnimationFrame(handle);
     }
   }, [isOpen, searchQuery, fetchGuestEntries]);
 
   useEffect(() => {
     if (!isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSearchQuery("");
+      const handle = requestAnimationFrame(() => {
+        setSearchQuery("");
+      });
+      return () => cancelAnimationFrame(handle);
     }
   }, [isOpen]);
 
