@@ -43,23 +43,30 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
   };
 
   const [flash, setFlash] = useState(false);
-  const flashCount = useRef(0);
+  const isFirstRender = useRef(true);
+  const prevHistoryIds = useRef(history ? history.map((p) => p.id) : []);
 
   const triggerFlash = () => {
-    setFlash(true);
-    setTimeout(() => {
-      setFlash(false);
-    }, 500);
+    requestAnimationFrame(() => {
+      setFlash(true);
+      setTimeout(() => {
+        setFlash(false);
+      }, 500);
+    });
   };
 
   useEffect(() => {
-    // not 100% sure why this is called three times
-    if (flashCount.current < 3) {
-      flashCount.current++;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
       return;
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    triggerFlash();
+
+    const currentHistoryIds = history ? history.map((p) => p.id) : [];
+    if (currentHistoryIds.length !== prevHistoryIds.current.length) {
+      triggerFlash();
+    }
+
+    prevHistoryIds.current = currentHistoryIds;
   }, [history]);
 
   const currency = useConfig().currency;
