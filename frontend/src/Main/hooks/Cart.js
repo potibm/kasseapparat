@@ -80,6 +80,10 @@ export const checkoutCart = () => {
   return [];
 };
 
+export const getCartTotalQuantity = (cart) => {
+  return cart.reduce((total, item) => total + item.quantity, 0);
+};
+
 export const getCartProductQuantity = (cart, product) => {
   const existingProductIndex = cart.findIndex((item) => item.id === product.id);
   if (existingProductIndex !== -1) {

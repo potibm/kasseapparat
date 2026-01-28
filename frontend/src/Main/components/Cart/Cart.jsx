@@ -15,19 +15,24 @@ import "animate.css";
 import MyButton from "../MyButton";
 import Decimal from "decimal.js";
 import CheckoutButtons from "./CheckoutButtons";
+import { getCartTotalQuantity } from "../../hooks/Cart";
 
 const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
-  const currency = useConfig().currency;
+  const { currency } = useConfig();
 
   const [flash, setFlash] = useState(false);
   const [checkoutProcessing, setCheckoutProcessing] = useState(null);
-  const flashCount = useRef(0);
+
+  const prevCartLength = useRef(getCartTotalQuantity(cart));
+  const isFirstRender = useRef(true);
 
   const triggerFlash = () => {
-    setFlash(true);
-    setTimeout(() => {
-      setFlash(false);
-    }, 500);
+    requestAnimationFrame(() => {
+      setFlash(true);
+      setTimeout(() => {
+        setFlash(false);
+      }, 500);
+    });
   };
 
   const handleCheckoutCart = async (paymentMethodCode, paymentMethodData) => {
@@ -41,13 +46,16 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
   };
 
   useEffect(() => {
-    // not 100% sure why this is called twice
-    if (flashCount.current < 2) {
-      flashCount.current++;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
       return;
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    triggerFlash();
+
+    if (cart.length !== prevCartLength.current) {
+      triggerFlash();
+    }
+
+    prevCartLength.current = getCartTotalQuantity(cart);
   }, [cart]);
 
   const displayListItem = (listItem) => {
