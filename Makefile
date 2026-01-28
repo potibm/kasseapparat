@@ -145,7 +145,6 @@ check-node:
 
 check-go:
 	@CURRENT=$$(go version | awk '{print $$3}' | sed -E 's/go([0-9]+\.[0-9]+).*/\1/') ; \
-	echo "current $$CURRENT"; \
 	if [ "$$CURRENT" != "$(GO_VERSION)" ]; then \
 	  echo "❌ Go $(GO_VERSION).x required. Current: $$(go version)"; \
 	  exit 1; \
