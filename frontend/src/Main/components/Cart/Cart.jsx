@@ -23,7 +23,7 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
   const [flash, setFlash] = useState(false);
   const [checkoutProcessing, setCheckoutProcessing] = useState(null);
 
-  const prevCartLength = useRef(getCartTotalQuantity(cart));
+  const prevCartTotalQuantity = useRef(getCartTotalQuantity(cart));
   const isFirstRender = useRef(true);
 
   const triggerFlash = () => {
@@ -51,11 +51,11 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
       return;
     }
 
-    if (cart.length !== prevCartLength.current) {
+    if (getCartTotalQuantity(cart) !== prevCartTotalQuantity.current) {
       triggerFlash();
     }
 
-    prevCartLength.current = getCartTotalQuantity(cart);
+    prevCartTotalQuantity.current = getCartTotalQuantity(cart);
   }, [cart]);
 
   const displayListItem = (listItem) => {
