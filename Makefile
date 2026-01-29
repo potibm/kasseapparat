@@ -45,7 +45,8 @@ run-mailhog:
 deps-be: check-go
 	cd $(BACKEND_DIR) && go get -u -t ./...
 	cd $(BACKEND_DIR) && go mod tidy
-
+	cd $(BACKEND_DIR) && gomajor list
+	
 deps-fe: check-node
 	cd $(FRONTEND_DIR) && corepack yarn up
 	cd $(FRONTEND_DIR) && corepack yarn upgrade-interactive
