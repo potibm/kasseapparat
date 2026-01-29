@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   List,
   Datagrid,
@@ -101,11 +101,9 @@ const renderReaderSelection = (record, selectedReaderId, onSelect) => {
 
 export const SumupReaderList = (props) => {
   const sumupEnabled = useConfig().sumupEnabled;
-  const [selectedReaderId, setSelectedReaderId] = useState(undefined);
-
-  useEffect(() => {
-    setSelectedReaderId(getCurrentReaderId());
-  }, []);
+  const [selectedReaderId, setSelectedReaderId] = useState(() => {
+    return getCurrentReaderId() || undefined;
+  });
 
   const handleReaderSelect = (id) => {
     setCurrentReaderId(id);

@@ -71,10 +71,12 @@ func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeou
 
 		LoginResponse: func(c *gin.Context, code int, message string, time time.Time) {
 			user, err := c.Get(IdentityKey)
+
 			var userObj *models.User = nil
 			if err {
 				userObj = user.(*models.User)
 			}
+
 			loginReponse(c, code, message, time, userObj)
 		},
 	}

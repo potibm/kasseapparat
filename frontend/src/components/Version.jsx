@@ -5,12 +5,12 @@ import { Link } from "react-router-dom";
 export const Version = () => {
   const version = useConfig().version;
 
-  const [latestVersion, setLatestVersion] = useState(null);
+  const [latestVersion, setLatestVersion] = useState(() => {
+    return sessionStorage.getItem("kasseapparat_latest_version") || null;
+  });
 
   useEffect(() => {
-    const cached = sessionStorage.getItem("kasseapparat_latest_version");
-    if (cached) {
-      setLatestVersion(cached);
+    if (latestVersion) {
       return;
     }
 
@@ -24,6 +24,7 @@ export const Version = () => {
         if (data?.tag_name) {
           const cleanVersion = data.tag_name.replace(/^v/, "");
           sessionStorage.setItem("kasseapparat_latest_version", cleanVersion);
+
           setLatestVersion(cleanVersion);
         }
       })
@@ -34,7 +35,7 @@ export const Version = () => {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [latestVersion]);
 
   let versionLink = null;
   if (version && !version.startsWith("0")) {

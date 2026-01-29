@@ -43,22 +43,33 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
   };
 
   const [flash, setFlash] = useState(false);
-  const flashCount = useRef(0);
+  const isFirstRender = useRef(true);
+  const prevHistoryIds = useRef(history ? history.map((p) => p.id) : []);
 
   const triggerFlash = () => {
-    setFlash(true);
-    setTimeout(() => {
-      setFlash(false);
-    }, 500);
+    requestAnimationFrame(() => {
+      setFlash(true);
+      setTimeout(() => {
+        setFlash(false);
+      }, 500);
+    });
   };
 
   useEffect(() => {
-    // not 100% sure why this is called three times
-    if (flashCount.current < 3) {
-      flashCount.current++;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
       return;
     }
-    triggerFlash();
+
+    const currentHistoryIds = history ? history.map((p) => p.id) : [];
+    if (
+      currentHistoryIds !== prevHistoryIds.current &&
+      prevHistoryIds.current.length !== 0
+    ) {
+      triggerFlash();
+    }
+
+    prevHistoryIds.current = currentHistoryIds;
   }, [history]);
 
   const currency = useConfig().currency;

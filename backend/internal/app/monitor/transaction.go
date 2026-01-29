@@ -11,7 +11,6 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-// Starts a polling loop for a given transaction ID.
 func (n *transactionPoller) Start(transactionID uuid.UUID) {
 	log.Println("Starting polling for transaction:", transactionID)
 

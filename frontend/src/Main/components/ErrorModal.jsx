@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 const ErrorModal = ({ message, onClose }) => {
   return (
-    <Modal show={message !== ""} onClose={onClose}>
+    <Modal show={message !== ""} onClose={onClose} dismissible={true}>
       <ModalHeader>Error</ModalHeader>
       <ModalBody className="dark:text-gray-200">
         <p>{message}</p>

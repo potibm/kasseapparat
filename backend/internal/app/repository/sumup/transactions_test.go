@@ -32,7 +32,7 @@ func TestParseHrefToListTransactionsParams(t *testing.T) {
 	assert.True(t, params.ChangesSince.Equal(expectedTime))
 
 	assert.NotNil(t, params.Users)
-	assert.Equal(t, []string{"test1@example.com", "test2@example.com"}, *params.Users)
+	assert.Equal(t, []string{"test1@example.com", "test2@example.com"}, params.Users)
 
 	// real world example
 	href = "limit=1&oldest_ref=0dd170c7-d82a-4fec-b2c0-e6de01c631a8&order=ascending&skip_tx_result=true"
@@ -46,13 +46,13 @@ func TestParseHrefToListTransactionsParams(t *testing.T) {
 	assert.NotNil(t, params.Order)
 	assert.Equal(t, "ascending", *params.Order)
 	assert.Nil(t, params.ChangesSince)
-	assert.Nil(t, params.Users)
+	assert.Empty(t, params.Users)
 	assert.Nil(t, params.NewestRef)
 	assert.Nil(t, params.TransactionCode)
 	assert.Nil(t, params.OldestTime)
 	assert.Nil(t, params.NewestTime)
-	assert.Nil(t, params.Statuses)
-	assert.Nil(t, params.Types)
+	assert.Empty(t, params.Statuses)
+	assert.Empty(t, params.Types)
 }
 
 func TestFindNextHref(t *testing.T) {
@@ -76,19 +76,19 @@ func TestFindNextHref(t *testing.T) {
 
 func TestFromSDKTransactionWithUUIDId(t *testing.T) {
 	id := "2b5cd782-0733-4fb2-bf22-5a12345bd94f"
-	tid := shared.TransactionId(id)
+	tid := shared.TransactionID(id)
 	tc := "TAAAABCP2SA"
-	amount := 40.0
-	currency := shared.Currency("EUR")
-	cardType := transactions.TransactionHistoryCardType("MASTERCARD")
+	amount := float32(40.0)
+	currency := shared.CurrencyEUR
+	cardType := shared.CardTypeMastercard
 	status := transactions.TransactionHistoryStatus("SUCCESSFUL")
 
 	timestamp := parseTime(t, "2025-06-15T20:45:27.588Z")
 
 	sdk := &transactions.TransactionHistory{
-		Id:              &id,
+		ID:              &id,
 		TransactionCode: &tc,
-		TransactionId:   &tid,
+		TransactionID:   &tid,
 		Amount:          &amount,
 		Currency:        &currency,
 		CardType:        &cardType,
@@ -110,17 +110,17 @@ func TestFromSDKTransactionWithUUIDId(t *testing.T) {
 func TestFromSDKTransactionWithNonUUIDId(t *testing.T) {
 	id := "8119994131" // not a UUID
 	tc := "TAAAABCP2SA"
-	tid := shared.TransactionId("2b5cd782-0733-4fb2-bf22-5a12345bd94f")
-	amount := 40.0
-	currency := shared.Currency("EUR")
-	cardType := transactions.TransactionHistoryCardType("MASTERCARD")
+	tid := shared.TransactionID("2b5cd782-0733-4fb2-bf22-5a12345bd94f")
+	amount := float32(40.0)
+	currency := shared.CurrencyEUR
+	cardType := shared.CardTypeMastercard
 	status := transactions.TransactionHistoryStatus("REFUNDED")
 	timestamp := parseTime(t, "2025-06-15T21:00:13.536Z")
 
 	sdk := &transactions.TransactionHistory{
-		Id:              &id,
+		ID:              &id,
 		TransactionCode: &tc,
-		TransactionId:   &tid,
+		TransactionID:   &tid,
 		Amount:          &amount,
 		Currency:        &currency,
 		CardType:        &cardType,

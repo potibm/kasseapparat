@@ -2,6 +2,8 @@ FRONTEND_DIR = frontend
 BACKEND_DIR = backend
 DIST_DIR = dist
 BACKEND_BUILD_CMD = go build -o ../$(DIST_DIR)
+NODE_MAJOR := 24
+GO_VERSION := 1.25
 
 .PHONY: list run run-fe run-be deps-be deps-fe run-tool linter linter-fix test test-fe test-be build docker-build docker-run manual
 
@@ -18,7 +20,7 @@ prepare-buildx:
 		docker buildx inspect --bootstrap > /dev/null; \
 	fi
 
-run:
+run: check-go check-node
 	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001 &
 	docker run -d -p 8025:8025 -p 2025:1025 --platform "linux/amd64" mailhog/mailhog
 	cd $(FRONTEND_DIR) && yarn start &
@@ -28,23 +30,23 @@ stop:
 	lsof -t -i:3001 | xargs kill -9
 	docker ps -q --filter "ancestor=mailhog/mailhog" | xargs docker kill
 
-run-be:
+run-be: check-go
 	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001
 
-run-tool:
+run-tool: check-go
 	cd $(BACKEND_DIR) && go run ./tools/main.go --seed --purge
 
-run-fe:
+run-fe: check-node
 	cd $(FRONTEND_DIR) && corepack yarn dev
 
 run-mailhog:
 	docker run -d -p 8025:8025 -p 2025:1025 --platform "linux/amd64" mailhog/mailhog
 
-deps-be:
+deps-be: check-go
 	cd $(BACKEND_DIR) && go get -u -t ./...
 	cd $(BACKEND_DIR) && go mod tidy
 
-deps-fe:
+deps-fe: check-node
 	cd $(FRONTEND_DIR) && corepack yarn up
 	cd $(FRONTEND_DIR) && corepack yarn upgrade-interactive
 
@@ -71,10 +73,10 @@ test:
 	$(MAKE) test-fe
 	$(MAKE) test-be
 
-test-fe:
+test-fe: check-node
 	cd $(FRONTEND_DIR) && corepack yarn vitest run --coverage
 
-test-be:
+test-be: check-go
 	mkdir -p $(BACKEND_DIR)/cmd/assets
 	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(BACKEND_DIR) && go test -cover -coverprofile=coverage.out -coverpkg=./... -v ./...
@@ -136,3 +138,14 @@ manual: prepare-buildx
 	@echo "📁 Moving generated PDF to frontend..."
 	@mkdir -p "$(FRONTEND_DIR)/public"
 	@mv doc/manual.pdf "$(FRONTEND_DIR)/public/manual.pdf"
+
+check-node:
+	@node -v | grep -q "^v$(NODE_MAJOR)\." || \
+	(echo "❌ Node $(NODE_MAJOR).x required. Current: $$(node -v)"; exit 1)
+
+check-go:
+	@CURRENT=$$(go version | awk '{print $$3}' | sed -E 's/go([0-9]+\.[0-9]+).*/\1/') ; \
+	if [ "$$CURRENT" != "$(GO_VERSION)" ]; then \
+	  echo "❌ Go $(GO_VERSION).x required. Current: $$(go version)"; \
+	  exit 1; \
+	fi

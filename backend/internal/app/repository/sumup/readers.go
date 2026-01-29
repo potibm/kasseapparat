@@ -25,8 +25,8 @@ func (r *Repository) GetReaders() ([]Reader, error) {
 }
 
 func (r *Repository) GetReader(readerId string) (*Reader, error) {
-	params := readers.GetReaderParams{}
-	id := readers.ReaderId(readerId)
+	params := readers.GetParams{}
+	id := readers.ReaderID(readerId)
 
 	reader, err := r.service.Client.Readers.Get(context.Background(), r.service.MerchantCode, id, params)
 	if err != nil {
@@ -49,9 +49,9 @@ func isReaderNotFoundError(err error) bool {
 func (r *Repository) CreateReader(pairingCode string, name string) (*Reader, error) {
 	readerName := readers.ReaderName(name)
 
-	body := readers.CreateReaderBody{
+	body := readers.Create{
 		PairingCode: readers.ReaderPairingCode(pairingCode),
-		Name:        &readerName,
+		Name:        readerName,
 	}
 
 	createdReader, err := r.service.Client.Readers.Create(context.Background(), r.service.MerchantCode, body)
@@ -63,38 +63,36 @@ func (r *Repository) CreateReader(pairingCode string, name string) (*Reader, err
 }
 
 func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl *string) (*uuid.UUID, error) {
-	amountStruct := readers.CreateReaderCheckoutAmount{
+	amountStruct := readers.CreateCheckoutTotalAmount{
 		Currency:  r.service.PaymentCurrency,
 		Value:     getValueFromDecimal(amount, int(r.service.PaymentMinorUnit)), // Example amount in cents (10.00 EUR)
 		MinorUnit: int(r.service.PaymentMinorUnit),
 	}
 
-	var affiliate *readers.Affiliate
+	var affiliate *readers.CreateCheckoutAffiliate
 	if affiliateTransactionId != "" {
-		affiliate = &readers.Affiliate{
-			AppId:                r.service.ApplicationId,
+		affiliate = &readers.CreateCheckoutAffiliate{
+			AppID:                r.service.ApplicationId,
 			Key:                  r.service.AffiliateKey,
-			ForeignTransactionId: affiliateTransactionId,
+			ForeignTransactionID: affiliateTransactionId,
 		}
 	}
 
-	body := readers.CreateReaderCheckoutBody{
+	body := readers.CreateCheckout{
 		TotalAmount: amountStruct,
 		Description: &description,
 		Affiliate:   affiliate,
-		ReturnUrl:   returnUrl,
+		ReturnURL:   returnUrl,
 	}
 
 	response, err := r.service.Client.Readers.CreateCheckout(context.Background(), r.service.MerchantCode, readerId, body)
 	if err != nil {
 		log.Printf("Error creating SumUp reader checkout: %v", err)
 
-		errorString := extractCreateCheckoutErrorDetails(err)
-
-		return nil, errorString
+		return nil, err
 	}
 
-	clientTransactionId, err := uuid.Parse(*response.Data.ClientTransactionId)
+	clientTransactionId, err := uuid.Parse(response.Data.ClientTransactionID)
 	if err != nil {
 		return nil, err
 	}
@@ -111,14 +109,14 @@ func (r *Repository) CreateReaderTerminateAction(readerId string) error {
 }
 
 func (r *Repository) DeleteReader(readerId string) error {
-	id := readers.ReaderId(readerId)
+	id := readers.ReaderID(readerId)
 
-	return r.service.Client.Readers.DeleteReader(context.Background(), r.service.MerchantCode, id)
+	return r.service.Client.Readers.Delete(context.Background(), r.service.MerchantCode, id)
 }
 
 func fromSDKReader(sdkReader *readers.Reader) *Reader {
 	return &Reader{
-		ID:               string(sdkReader.Id),
+		ID:               string(sdkReader.ID),
 		Name:             string(sdkReader.Name),
 		Status:           string(sdkReader.Status),
 		DeviceIdentifier: string(sdkReader.Device.Identifier),
