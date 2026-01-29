@@ -62,7 +62,7 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
     }
 
     const currentHistoryIds = history ? history.map((p) => p.id) : [];
-    if (currentHistoryIds.length !== prevHistoryIds.current.length) {
+    if (currentHistoryIds !== prevHistoryIds.current && prevHistoryIds.current.length !== 0) {
       triggerFlash();
     }
 
