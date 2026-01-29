@@ -114,6 +114,8 @@ func (r *Repository) DeleteReader(readerId string) error {
 	return r.service.Client.Readers.Delete(context.Background(), r.service.MerchantCode, id)
 }
 
+// fromSDKReader converts an SDK readers.Reader into the package's Reader by copying its ID, Name, Status,
+// device identifier and model, CreatedAt, and UpdatedAt.
 func fromSDKReader(sdkReader *readers.Reader) *Reader {
 	return &Reader{
 		ID:               string(sdkReader.ID),

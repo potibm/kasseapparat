@@ -25,6 +25,8 @@ var (
 	r *gin.Engine
 )
 
+// InitializeHttpServer creates and configures the Gin HTTP server used by the application.
+// It sets Gin mode from config, attaches global middleware (Sentry, error handling, CORS), serves embedded static assets, registers authentication and API routes, and installs a catch-all that serves the SPA index.html for non-API requests; it returns the configured *gin.Engine.
 func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler websocket.HandlerInterface, repository sqliteRepo.Repository, staticFiles embed.FS, jwtMiddleware *jwt.GinJWTMiddleware, config config.Config) *gin.Engine {
 	gin.SetMode(config.AppConfig.GinMode)
 

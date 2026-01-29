@@ -110,6 +110,8 @@ func ptrSliceToSlice(ptrSlice *[]transactions.TransactionHistory) []*transaction
 	return out
 }
 
+// findNextHref extracts the Href of the link whose Rel is "next".
+// If links is nil or no such link is present, it returns an empty string.
 func findNextHref(links *[]transactions.Link) string {
 	if links == nil {
 		return ""
@@ -124,6 +126,14 @@ func findNextHref(links *[]transactions.Link) string {
 	return ""
 }
 
+// parseHrefToListTransactionsParams parses a URL query string into a transactions.ListParams.
+// 
+// The function reads common list query parameters (limit, order, oldest_ref, newest_ref,
+// transaction_code, users, statuses, types) and maps them to the corresponding ListParams
+// fields. The "payment_types" parameter is converted to a slice of shared.PaymentType.
+// Time-related parameters ("changes_since", "oldest_time", "newest_time") are parsed and
+// assigned as time pointers when present. It returns an error if the query string cannot
+// be parsed.
 func parseHrefToListTransactionsParams(href string) (*transactions.ListParams, error) {
 	values, err := url.ParseQuery(href)
 	if err != nil {
@@ -215,6 +225,11 @@ func (r *Repository) RefundTransaction(transactionId uuid.UUID) error {
 	return nil
 }
 
+// fromSDKTransaction converts an SDK TransactionHistory into a domain Transaction.
+// 
+// If the SDK TransactionID field is present and parses as a UUID, it is set on the returned Transaction;
+// otherwise the TransactionID field will be the zero UUID. All other returned fields are mapped directly
+// from the corresponding SDK fields.
 func fromSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transaction {
 	var transactionId uuid.UUID
 
@@ -237,6 +252,8 @@ func fromSDKTransaction(sdkCheckout *transactions.TransactionHistory) *Transacti
 	}
 }
 
+// fromSDKTransactionFull converts an SDK TransactionFull into a domain Transaction.
+// It parses the SDK ID into a UUID (zero UUID on parse failure or if missing), maps amount, currency, status, timestamp, and card type, and converts SDK events into domain TransactionEvent values; nil SDK slices and fields produce empty or zero-valued domain fields.
 func fromSDKTransactionFull(sdkCheckout *transactions.TransactionFull) *Transaction {
 	var transactionId uuid.UUID
 
@@ -275,6 +292,9 @@ func fromSDKTransactionFull(sdkCheckout *transactions.TransactionFull) *Transact
 	}
 }
 
+// fromSDKTransactionEvent converts an SDK transactions.Event into a domain TransactionEvent.
+// It parses the event Timestamp using RFC3339; on parse failure the error is logged and the zero time is used.
+// If Amount is nil it is treated as 0. ID, Type, and Status are extracted from the corresponding SDK fields.
 func fromSDKTransactionEvent(sdkEvent *transactions.Event) TransactionEvent {
 	timestamp := time.Time{}
 

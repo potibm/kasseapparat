@@ -44,6 +44,7 @@ func RegisterRoute(r *gin.Engine, handle *ginjwt.GinJWTMiddleware) {
 	auth.GET("/refresh_token", handle.RefreshHandler)
 }
 
+// when a *models.User is present in the Gin context under the IdentityKey.
 func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeout int) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		log.Println("JWT_SECRET is not set, using default value")
