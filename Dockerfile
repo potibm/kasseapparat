@@ -2,7 +2,7 @@ ARG VERSION
 ARG BUILD_DATE
 
 # Build the frontend
-FROM --platform=$BUILDPLATFORM node:24 AS frontend-build
+FROM --platform=$BUILDPLATFORM node:25 AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/yarn.lock frontend/.yarnrc.yml ./
 RUN corepack enable && \
