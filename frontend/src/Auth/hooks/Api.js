@@ -42,7 +42,7 @@ const handleFetchError = async (response) => {
 
 // 🔐 Authenticate user and retrieve JWT token
 export const getJwtToken = async (apiHost, login, password) => {
-  const response = await fetch(`${apiHost}/login`, {
+  const response = await fetch(`${apiHost}/api/v2/auth/login`, {
     method: "POST",
     credentials: "include",
     headers: {
@@ -59,13 +59,29 @@ export const getJwtToken = async (apiHost, login, password) => {
 };
 
 // 🔄 Refresh JWT token using refresh endpoint
-export const refreshJwtToken = async (apiHost, refreshToken) => {
-  const response = await fetch(`${apiHost}/auth/refresh_token`, {
-    method: "GET",
+export const refreshJwtToken = async (apiHost) => {
+  const response = await fetch(`${apiHost}/api/v2/auth/refresh`, {
+    method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${refreshToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    await handleFetchError(response);
+  }
+
+  return response.json();
+};
+
+// Logout user
+export const logout = async (apiHost) => {
+  const response = await fetch(`${apiHost}/api/v2/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
     },
   });
 

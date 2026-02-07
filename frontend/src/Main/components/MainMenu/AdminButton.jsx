@@ -5,9 +5,9 @@ import PropTypes from "prop-types";
 import { HiShieldCheck } from "react-icons/hi";
 
 const AdminButton = ({ className }) => {
-  const { token, expiryDate, userdata } = useAuth();
+  const { getToken, expiryDate, userdata } = useAuth();
 
-  const handleAdminClick = (e) => {
+  const handleAdminClick = async (e) => {
     e.preventDefault();
 
     const localstorageKey = "admin";
@@ -16,7 +16,7 @@ const AdminButton = ({ className }) => {
     if (!currentUserInAdmin) {
       currentUserInAdmin = JSON.stringify({
         ID: userdata.id,
-        token: token,
+        token: await getToken(),
         username: userdata.username,
         role: userdata.role,
         expire: expiryDate,

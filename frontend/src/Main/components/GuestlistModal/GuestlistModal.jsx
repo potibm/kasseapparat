@@ -22,7 +22,7 @@ const GuestlistModal = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [loadedSearchQuery, setLoadedSearchQuery] = useState("");
   const apiHost = useConfig().apiHost;
-  const { token } = useAuth();
+  const { getToken } = useAuth();
 
   const hasCodes = product.guestlists.some((list) => list.typeCode);
 
@@ -42,7 +42,7 @@ const GuestlistModal = ({
       try {
         let response = await fetchGuestlistByProductId(
           apiHost,
-          token,
+          await getToken(),
           product.id,
           query,
         );
@@ -60,7 +60,7 @@ const GuestlistModal = ({
         setLoadedSearchQuery("");
       }
     },
-    [product.id, apiHost, token],
+    [product.id, apiHost, getToken],
   );
 
   useEffect(() => {
