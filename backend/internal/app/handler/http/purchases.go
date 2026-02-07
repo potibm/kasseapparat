@@ -100,7 +100,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 		return
 	}
-
+	
 	err = handler.ValidatePaymentMethodPayload(req.PaymentMethod, req.SumupReaderID)
 	if err != nil {
 		_ = c.Error(InvalidRequest.WithCauseMsg(err))

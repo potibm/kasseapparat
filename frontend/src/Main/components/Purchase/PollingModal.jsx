@@ -15,7 +15,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   const [flash, setFlash] = useState(false);
   const [processing, setProcessing] = useState(false);
   const wsRef = useRef(null);
-  const { token: jwtToken } = useAuth();
+  const { getToken } = useAuth();
   const { websocketHost } = useConfig();
   const connectionRef = useRef(false);
 
@@ -107,68 +107,72 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
         wsRef.current.close();
       }
     };
-    const ws = new WebSocket(
-      `${websocketHost}/api/v2/purchases/${purchase.id}/ws`,
-      [jwtToken],
-    );
-    wsRef.current = ws;
 
-    const connectionTimeout = setTimeout(() => {
-      if (ws.readyState !== WebSocket.OPEN) {
-        console.warn("WebSocket did not connect in time.");
-        handleFailure("Could not fetch the status of the payment terminal.");
-      }
-    }, 3000); // 3 seconds
+    const initializeWebSocket = async () => {
+      const ws = new WebSocket(
+        `${websocketHost}/api/v2/purchases/${purchase.id}/ws`,
+        [await getToken()],
+      );
+      wsRef.current = ws;
 
-    ws.onopen = () => {
-      clearTimeout(connectionTimeout);
-      console.log("WebSocket connected");
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "status_update") {
-          console.log("WebSocket message received:", data);
-          setFlash(true);
-          setTimeout(() => setFlash(false), 500);
-          setLastUpdate(Date.now());
-
-          if (data.status === "confirmed") {
-            handleSuccess(data);
-          } else if (data.status === "failed") {
-            handleFailure("Purchase failed.");
-          } else {
-            console.log("Purchase status update:", data.status);
-          }
-        } else if (data.type === "cancel_ack") {
-          // close the WebSocket connection after cancel acknowledgment
-          handleFailure("Purchase cancelled by user.");
+      const connectionTimeout = setTimeout(() => {
+        if (ws.readyState !== WebSocket.OPEN) {
+          console.warn("WebSocket did not connect in time.");
+          handleFailure("Could not fetch the status of the payment terminal.");
         }
-      } catch (err) {
-        console.error("WebSocket parsing error:", err, event.data);
-      }
+      }, 3000); // 3 seconds
+
+      ws.onopen = () => {
+        clearTimeout(connectionTimeout);
+        console.log("WebSocket connected");
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "status_update") {
+            console.log("WebSocket message received:", data);
+            setFlash(true);
+            setTimeout(() => setFlash(false), 500);
+            setLastUpdate(Date.now());
+
+            if (data.status === "confirmed") {
+              handleSuccess(data);
+            } else if (data.status === "failed") {
+              handleFailure("Purchase failed.");
+            } else {
+              console.log("Purchase status update:", data.status);
+            }
+          } else if (data.type === "cancel_ack") {
+            // close the WebSocket connection after cancel acknowledgment
+            handleFailure("Purchase cancelled by user.");
+          }
+        } catch (err) {
+          console.error("WebSocket parsing error:", err, event.data);
+        }
+      };
+
+      ws.onerror = (err) => {
+        console.error("WebSocket error", err);
+        setError("WebSocket error occurred");
+      };
+
+      ws.onclose = (event) => {
+        console.log("WebSocket closed", event);
+        if (!wasHandledRef.current && statusRef.current === "pending") {
+          handleFailure("Connection lost.");
+        }
+      };
     };
 
-    ws.onerror = (err) => {
-      console.error("WebSocket error", err);
-      setError("WebSocket error occurred");
-    };
-
-    ws.onclose = (event) => {
-      console.log("WebSocket closed", event);
-      if (!wasHandledRef.current && statusRef.current === "pending") {
-        handleFailure("Connection lost.");
-      }
-    };
+    initializeWebSocket();
 
     return () => {
-      clearTimeout(connectionTimeout);
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.close();
       }
     };
-  }, [purchase.id, onConfirmed, onClose, onComplete, jwtToken, websocketHost]);
+  }, [purchase.id, onConfirmed, onClose, onComplete, getToken, websocketHost]);
 
   if (!purchase?.id) return null;
 

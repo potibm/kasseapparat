@@ -10,7 +10,7 @@ const Login = () => {
   const [error, setError] = useState(null);
   const [disabled, setDisabled] = useState(false);
 
-  const { setToken, setExpiryDate, setUserdata } = useAuth();
+  const { setSession, setUserdata } = useAuth();
   const navigate = useNavigate();
   const apiHost = useConfig().apiHost;
 
@@ -26,16 +26,17 @@ const Login = () => {
 
     getJwtToken(apiHost, login, password)
       .then((auth) => {
-        const token = auth.token;
-        const expiryDate = auth.expire;
-        setToken(token);
-        setExpiryDate(expiryDate);
+        const token = auth.access_token;
+        const expiresIn = auth.expires_in;
+        setSession(token, expiresIn);
 
         const userdata = auth;
         delete userdata.token;
         delete userdata.expire;
         delete userdata.code;
         setUserdata(userdata);
+        console.log("Logged in, expires in: " + expiresIn);
+        console.log("Userdata:", userdata);
 
         navigate("/", { replace: true });
       })

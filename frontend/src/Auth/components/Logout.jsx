@@ -3,23 +3,22 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../provider/AuthProvider";
 import BaseCard from "../../components/BaseCard";
 import { Spinner } from "flowbite-react";
+import { logout } from "../hooks/Api";
 
 const Logout = () => {
-  const { setToken } = useAuth();
+  const { removeSession, getToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleLogout = () => {
-      setToken();
-      navigate("/", { replace: true });
+    const handleLogout = async () => {
+      await logout(await getToken()).finally(() => {
+        removeSession();
+        navigate("/", { replace: true });
+      });
     };
 
-    const timer = setTimeout(() => {
-      handleLogout();
-    }, 3 * 1000);
-
-    return () => clearTimeout(timer);
-  }, [setToken, navigate]);
+    handleLogout();
+  }, [removeSession, navigate, getToken]);
 
   return (
     <BaseCard>
