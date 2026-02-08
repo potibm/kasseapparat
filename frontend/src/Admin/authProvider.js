@@ -1,7 +1,7 @@
 import { jwtDecode } from "jwt-decode";
 import * as Sentry from "@sentry/react";
 
-const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
+const API_HOST = import.meta.env.VITE_API_HOST ?? "https://localhost:3000";
 const ADMIN_STORAGE_KEY = "admin";
 
 let updateTokenIntervalId = null;

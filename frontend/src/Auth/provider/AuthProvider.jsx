@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useMemo, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { refreshJwtToken } from "../hooks/Api";
 import PropTypes from "prop-types";
 import { useConfig } from "../../provider/ConfigProvider";
@@ -12,6 +18,7 @@ const AuthProvider = ({ children }) => {
 
   const updateSession = (token, expiresIn) => {
     const expiryDate = new Date(
+      // eslint-disable-next-line react-hooks/purity
       Date.now() + (expiresIn - 10) * 1000,
     ).toISOString();
     console.log("Updating session with new expiry date: " + expiryDate);
@@ -56,9 +63,8 @@ const AuthProvider = ({ children }) => {
 
     refreshingPromise.current = refreshJwtToken(apiHost)
       .then((response) => {
-        // Hier nutzen wir die Felder, die dein Backend (v3) liefert
         const newToken = response.token || response.access_token;
-        const expiresIn = response.expire_in || 60; // Fallback falls Feld anders heißt
+        const expiresIn = response.expire_in || 60;
 
         updateSession(newToken, expiresIn);
 
@@ -71,7 +77,7 @@ const AuthProvider = ({ children }) => {
         throw error;
       })
       .finally(() => {
-        refreshingPromise.current = null; // Sperre wieder freigeben
+        refreshingPromise.current = null;
       });
 
     return refreshingPromise.current;

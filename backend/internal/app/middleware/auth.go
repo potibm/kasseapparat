@@ -22,14 +22,14 @@ type login struct {
 }
 
 type loginResponse struct {
-	AccessToken      string  `json:"access_token"`
+	AccessToken  string  `json:"access_token"`
 	TokenType    string  `json:"token_type"`
-	ExpiresIn      int64  `json:"expires_in"`
-	RefreshToken  string  `json:"refresh_token,omitempty"`
-	Role        *string `json:"role"`
-	Username    *string `json:"username"`
-	GravatarUrl *string `json:"gravatarUrl"`
-	Id          *uint   `json:"id"`
+	ExpiresIn    int64   `json:"expires_in"`
+	RefreshToken string  `json:"refresh_token,omitempty"`
+	Role         *string `json:"role"`
+	Username     *string `json:"username"`
+	GravatarUrl  *string `json:"gravatarUrl"`
+	Id           *uint   `json:"id"`
 }
 
 func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc {
@@ -44,7 +44,7 @@ func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc 
 func RegisterRoute(r *gin.RouterGroup, handle *ginjwt.GinJWTMiddleware) {
 	r.POST("/auth/login", handle.LoginHandler)
 	r.POST("/auth/refresh", handle.RefreshHandler)
-	r.POST("/auth/logout", handle.LogoutHandler) 
+	r.POST("/auth/logout", handle.LogoutHandler)
 }
 
 func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeout int) *ginjwt.GinJWTMiddleware {
@@ -55,33 +55,33 @@ func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeou
 	}
 
 	return &ginjwt.GinJWTMiddleware{
-		Realm:       realm,
-		Key:         []byte(secret),
-		Timeout:        time.Minute * 1,                // Short-lived access tokens
-   		MaxRefresh:     time.Hour * 24 * 7,    
-		
-		SecureCookie: false, /* @TODO only in dev! */
-		CookieHTTPOnly: true,                           // Prevent XSS
-   		CookieSameSite: http.SameSiteStrictMode,        // CSRF protection
-    	SendCookie:     true,                           // Enable secure cookies
+		Realm:      realm,
+		Key:        []byte(secret),
+		Timeout:    time.Minute * 1, // Short-lived access tokens
+		MaxRefresh: time.Hour * 24 * 7,
 
-	/*
-		
-		SendCookie: 	false,
-		CookieName: "refresh_token",
-		CookieHTTPOnly: true,
+		SecureCookie:   false,                   /* @TODO only in dev! */
+		CookieHTTPOnly: true,                    // Prevent XSS
+		CookieSameSite: http.SameSiteStrictMode, // CSRF protection
+		SendCookie:     true,                    // Enable secure cookies
 
-		//CookieSameSite: http.SameSiteStrictMode,
-		CookieSameSite: http.SameSiteLaxMode,
+		/*
 
-		TokenLookup:     "header: Authorization",
-		
+			SendCookie: 	false,
+			CookieName: "refresh_token",
+			CookieHTTPOnly: true,
+
+			//CookieSameSite: http.SameSiteStrictMode,
+			CookieSameSite: http.SameSiteLaxMode,
+
+			TokenLookup:     "header: Authorization",
+
 		*/
-		IdentityKey: 	IdentityKey,
-		PayloadFunc: payloadFunc(),
+		IdentityKey:     IdentityKey,
+		PayloadFunc:     payloadFunc(),
 		IdentityHandler: identityHandler(),
 		Authenticator:   authenticator(repo),
-		Authorizer:    authorizer(),
+		Authorizer:      authorizer(),
 		Unauthorized:    unauthorized(),
 
 		LoginResponse: func(c *gin.Context, token *ginjwtCore.Token) {
@@ -141,13 +141,13 @@ func identityHandler() func(c *gin.Context) interface{} {
 }
 
 func authorizer() func(c *gin.Context, data any) bool {
-  return func(c *gin.Context, data any) bool {
-	if _, ok := data.(*models.User); ok {
-		return true
-	}
+	return func(c *gin.Context, data any) bool {
+		if _, ok := data.(*models.User); ok {
+			return true
+		}
 
-	return false
-  }
+		return false
+	}
 }
 
 func unauthorized() func(c *gin.Context, code int, message string) {
@@ -169,7 +169,7 @@ func loginReponse(c *gin.Context, token *ginjwtCore.Token, user *models.User) {
 	// Include refresh token if present
 	if token.RefreshToken != "" {
 		//loginResponse.RefreshToken = token.RefreshToken
-	}	
+	}
 
 	if user != nil {
 		role := user.Role()

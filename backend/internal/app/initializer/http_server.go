@@ -36,7 +36,7 @@ func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler webs
 	}))
 	r.Use(middleware.ErrorHandlingMiddleware())
 
-	r.GET("/api/" + API_VERSION + "/purchases/stats", httpHandler.GetPurchaseStats)
+	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHandler.GetPurchaseStats)
 
 	r.Use(CreateCorsMiddleware(config.CorsAllowOrigins))
 
