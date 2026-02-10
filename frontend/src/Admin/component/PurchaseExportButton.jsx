@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { useConfig } from "../../provider/ConfigProvider";
-import { getAdminData } from "../authProvider";
+import { getAdminData } from "../authUtils";
 import PropTypes from "prop-types";
 
 export const PurchaseExportButton = ({ paymentMethods }) => {

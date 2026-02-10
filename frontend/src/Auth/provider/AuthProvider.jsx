@@ -25,7 +25,7 @@ const AuthProvider = ({ children }) => {
 
     setSession({ token: token, expiryDate: expiryDate });
     localStorage.setItem(LOCALSTORAGE_PREFIX + "token", token);
-    localStorage.setItem(LOCALSTORAGE_PREFIX + "expiryDate", expiryDate);
+    localStorage.setItem(LOCALSTORAGE_PREFIX + "expirydate", expiryDate);
 
     return token;
   };
@@ -33,7 +33,7 @@ const AuthProvider = ({ children }) => {
   const removeSession = () => {
     setSession({ token: null, expiryDate: null });
     localStorage.removeItem(LOCALSTORAGE_PREFIX + "token");
-    localStorage.removeItem(LOCALSTORAGE_PREFIX + "expiryDate");
+    localStorage.removeItem(LOCALSTORAGE_PREFIX + "expirydate");
   };
 
   const updateUser = (userdata) => {
@@ -63,7 +63,7 @@ const AuthProvider = ({ children }) => {
 
     refreshingPromise.current = refreshJwtToken(apiHost)
       .then((response) => {
-        const newToken = response.token || response.access_token;
+        const newToken = response.access_token;
         const expiresIn = response.expire_in || 60;
 
         updateSession(newToken, expiresIn);
