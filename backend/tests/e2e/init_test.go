@@ -119,7 +119,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 
 func getJwtForUser(username, password string) string {
 	// Perform login request
-	login := e.POST("/login").
+	login := e.POST("/api/v2/auth/login").
 		WithJSON(map[string]string{
 			"login":    username,
 			"password": password,
@@ -129,7 +129,7 @@ func getJwtForUser(username, password string) string {
 		JSON().Object()
 
 	// Read the JWT token from the response
-	jwt := login.Value("token").String().Raw()
+	jwt := login.Value("access_token").String().Raw()
 
 	return jwt
 }
