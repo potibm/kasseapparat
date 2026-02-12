@@ -47,7 +47,7 @@ func RegisterRoute(r *gin.RouterGroup, handle *ginjwt.GinJWTMiddleware) {
 	r.POST("/auth/logout", handle.LogoutHandler)
 }
 
-func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeout int) *ginjwt.GinJWTMiddleware {
+func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeout int, secureCookie bool) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		log.Println("JWT_SECRET is not set, using default value")
 
@@ -57,26 +57,14 @@ func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeou
 	return &ginjwt.GinJWTMiddleware{
 		Realm:      realm,
 		Key:        []byte(secret),
-		Timeout:    time.Minute * 1, // Short-lived access tokens
+		Timeout:    time.Minute * time.Duration(timeout), // Short-lived access tokens
 		MaxRefresh: time.Hour * 24 * 7,
 
-		SecureCookie:   false,                   /* @TODO only in dev! */
+		SecureCookie:   secureCookie,            // HTTPS only
 		CookieHTTPOnly: true,                    // Prevent XSS
 		CookieSameSite: http.SameSiteStrictMode, // CSRF protection
 		SendCookie:     true,                    // Enable secure cookies
 
-		/*
-
-			SendCookie: 	false,
-			CookieName: "refresh_token",
-			CookieHTTPOnly: true,
-
-			//CookieSameSite: http.SameSiteStrictMode,
-			CookieSameSite: http.SameSiteLaxMode,
-
-			TokenLookup:     "header: Authorization",
-
-		*/
 		IdentityKey:     IdentityKey,
 		PayloadFunc:     payloadFunc(),
 		IdentityHandler: identityHandler(),

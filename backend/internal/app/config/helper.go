@@ -27,6 +27,17 @@ func getEnvAsInt(key string, defaultValue int) int {
 	return intValue
 }
 
+func getEnvAsBool(key string, defaultValue bool) bool {
+	value := getEnv(key, strconv.FormatBool(defaultValue))
+
+	boolValue, err := strconv.ParseBool(value)
+	if err != nil {
+		return defaultValue
+	}
+
+	return boolValue
+}
+
 func getEnvAsFloat(key string, defaultValue float64) float64 {
 	value := getEnv(key, strconv.FormatFloat(defaultValue, 'f', -1, 64))
 

@@ -58,7 +58,7 @@ func TestLoadConfigWithDefaults(t *testing.T) {
 			DSN: "", TraceSampleRate: config.SentryConfig.TraceSampleRate, ReplaySessionSampleRate: config.SentryConfig.ReplaySessionSampleRate, ReplayErrorSampleRate: config.SentryConfig.ReplayErrorSampleRate, Environment: "", Version: "0.0.0",
 		},
 		JwtConfig: JwtConfig{
-			Secret: "", Realm: "kasseapparat",
+			Secret: "", Realm: "kasseapparat", SecureCookie: true,
 		},
 		CorsAllowOrigins: []string{"localhost:3000", "localhost:4000"},
 		FrontendURL:      "",
