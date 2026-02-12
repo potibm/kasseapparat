@@ -108,6 +108,12 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
       }
     };
 
+    const handleReceviedMessage = () => {
+      setFlash(true);
+      setTimeout(() => setFlash(false), 500);
+      setLastUpdate(Date.now());
+    };
+
     const initializeWebSocket = async () => {
       const ws = new WebSocket(
         `${websocketHost}/api/v2/purchases/${purchase.id}/ws`,
@@ -132,9 +138,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
           const data = JSON.parse(event.data);
           if (data.type === "status_update") {
             console.log("WebSocket message received:", data);
-            setFlash(true);
-            setTimeout(() => setFlash(false), 500);
-            setLastUpdate(Date.now());
+            handleReceviedMessage();
 
             if (data.status === "confirmed") {
               handleSuccess(data);
