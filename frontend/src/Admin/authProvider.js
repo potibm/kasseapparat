@@ -40,7 +40,9 @@ const authProvider = {
       updateAdminData({ ID: id, username, role, gravatarUrl });
     } catch (error) {
       if (error instanceof AuthorizationError) {
-        throw new Error(`There was an error logging you in: ${error.message}`);
+        throw new Error(`There was an error logging you in: ${error.message}`, {
+          cause: error,
+        });
       }
 
       Sentry.captureException(error, {
@@ -48,7 +50,7 @@ const authProvider = {
         extra: { username },
       });
 
-      throw new Error("Network error. Please try again.");
+      throw new Error("Network error. Please try again.", { cause: error });
     }
   },
   logout: async () => {
