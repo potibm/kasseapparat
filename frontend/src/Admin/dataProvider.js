@@ -1,6 +1,7 @@
 import jsonServerProvider from "ra-data-json-server";
-import { fetchUtils } from "react-admin";
+import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
 import * as Sentry from "@sentry/react";
+import { refreshToken } from "./refreshToken";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 
@@ -20,7 +21,7 @@ const httpClient = async (url, options = {}) => {
     options.headers.set("Content-Type", "application/json");
   }
   // add your own headers here
-  const adminData = localStorage.getItem("admin");
+  const adminData = localStorage.getItem("kasseapparat.admin.auth");
   if (adminData) {
     const parsedAdminData = JSON.parse(adminData);
     if (parsedAdminData?.token) {
@@ -122,4 +123,4 @@ const dataProvider = {
   },
 };
 
-export default dataProvider;
+export default addRefreshAuthToDataProvider(dataProvider, refreshToken);

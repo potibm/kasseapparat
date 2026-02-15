@@ -1,34 +1,20 @@
-import { jwtDecode } from "jwt-decode";
 import * as Sentry from "@sentry/react";
+import { refreshToken } from "./refreshToken";
+import { addRefreshAuthToAuthProvider } from "react-admin";
+import {
+  getAdminData,
+  updateAdminData,
+  clearAdminData,
+  updateSession,
+} from "./authUtils";
 
-const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
-const ADMIN_STORAGE_KEY = "admin";
-
-let updateTokenIntervalId = null;
+const API_HOST = import.meta.env.VITE_API_HOST ?? "https://localhost:3000";
 
 class AuthorizationError extends Error {}
 
-const setAdminData = (data) => {
-  localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(data));
-};
-
-const updateAdminData = (data) => {
-  const adminData = getAdminData();
-  setAdminData({ ...adminData, ...data });
-};
-
-const getAdminData = () => {
-  const adminData = localStorage.getItem(ADMIN_STORAGE_KEY);
-  return adminData ? JSON.parse(adminData) : null;
-};
-
-const clearAdminData = () => {
-  localStorage.removeItem(ADMIN_STORAGE_KEY);
-};
-
 const authProvider = {
   login: async ({ username, password }) => {
-    const request = new Request(`${API_HOST}/login`, {
+    const request = new Request(`${API_HOST}/api/v2/auth/login`, {
       method: "POST",
       body: JSON.stringify({ login: username, password }),
       headers: new Headers({ "Content-Type": "application/json" }),
@@ -43,16 +29,15 @@ const authProvider = {
       } else if (response.status < 200 || response.status >= 300) {
         throw new Error(response.statusText);
       }
-      const { id, token, role, username, gravatarUrl } = await response.json();
-      const decodedToken = jwtDecode(token);
-      const expire = new Date(decodedToken.exp * 1000);
+      const { id, access_token, expires_in, role, username, gravatarUrl } =
+        await response.json();
 
       Sentry.setUser({
         id: id?.toString(),
         username,
       });
-
-      setAdminData({ ID: id, token, username, role, expire, gravatarUrl });
+      updateSession(access_token, expires_in);
+      updateAdminData({ ID: id, username, role, gravatarUrl });
     } catch (error) {
       if (error instanceof AuthorizationError) {
         throw new Error(`There was an error logging you in: ${error.message}`);
@@ -66,17 +51,11 @@ const authProvider = {
       throw new Error("Network error. Please try again.");
     }
   },
-  updateToken: async () => {
-    const adminData = getAdminData();
-    if (!adminData?.token) {
-      return Promise.reject(new Error("No token found. Please log in."));
-    }
-
-    const request = new Request(`${API_HOST}/auth/refresh_token`, {
-      method: "GET",
+  logout: async () => {
+    const request = new Request(`${API_HOST}/api/v2/auth/logout`, {
+      method: "POST",
       headers: new Headers({
         "Content-Type": "application/json",
-        Authorization: `Bearer ${adminData.token}`,
       }),
       credentials: "include",
     });
@@ -86,39 +65,18 @@ const authProvider = {
       if (response.status < 200 || response.status >= 300) {
         throw new Error(response.statusText);
       }
-
-      const { token } = await response.json();
-
-      const decodedToken = jwtDecode(token);
-      const expire = new Date(decodedToken.exp * 1000);
-
-      updateAdminData({ token, expire });
     } catch (error) {
       Sentry.captureException(error, {
-        tags: { auth: "refresh_token" },
-        extra: { tokenPrefix: adminData?.token?.substring(0, 8) + "..." },
+        tags: { auth: "logout" },
       });
 
-      console.error("Token refresh error:", error);
+      console.error("Token logout error:", error);
+    } finally {
       clearAdminData();
-      throw new Error("Token refresh error. Please log in again.");
     }
-  },
-  logout: () => {
-    if (updateTokenIntervalId !== null) {
-      clearInterval(updateTokenIntervalId);
-      updateTokenIntervalId = null;
-    }
-    Sentry.setUser(null);
-    clearAdminData();
-    return Promise.resolve();
   },
   checkError: ({ status }) => {
     if (status === 401 || status === 403) {
-      if (updateTokenIntervalId !== null) {
-        clearInterval(updateTokenIntervalId);
-        updateTokenIntervalId = null;
-      }
       clearAdminData();
       return Promise.reject(
         new Error("Authentication error. Please log in again."),
@@ -127,25 +85,10 @@ const authProvider = {
     return Promise.resolve();
   },
   checkAuth: () => {
-    const adminData = getAdminData();
-    if (!adminData?.token) {
-      return Promise.reject(new Error("No token found. Please log in."));
-    }
-    // check if the token is expired
-    if (new Date(adminData.expire) <= new Date()) {
-      return Promise.reject(new Error("Token has expired. Please log in."));
-    }
+    const { token, expiryDate } = getAdminData();
 
-    if (!updateTokenIntervalId) {
-      updateTokenIntervalId = setInterval(
-        () => {
-          authProvider.updateToken().catch((error) => {
-            clearInterval(updateTokenIntervalId);
-            console.error("Token update error:", error);
-          });
-        },
-        2 * 60 * 1000,
-      );
+    if (!token || !expiryDate) {
+      return Promise.reject(new Error("No token found. Please log in."));
     }
 
     return Promise.resolve();
@@ -171,5 +114,4 @@ const authProvider = {
     }
   },
 };
-export default authProvider;
-export { getAdminData };
+export default addRefreshAuthToAuthProvider(authProvider, refreshToken);

@@ -6,8 +6,10 @@ import (
 	"strings"
 	"time"
 
-	ginjwt "github.com/appleboy/gin-jwt/v2"
+	ginjwt "github.com/appleboy/gin-jwt/v3"
+	ginjwtCore "github.com/appleboy/gin-jwt/v3/core"
 	"github.com/gin-gonic/gin"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
@@ -20,13 +22,14 @@ type login struct {
 }
 
 type loginResponse struct {
-	Code        int     `json:"code"`
-	Token       string  `json:"token"`
-	Expire      string  `json:"expire"`
-	Role        *string `json:"role"`
-	Username    *string `json:"username"`
-	GravatarUrl *string `json:"gravatarUrl"`
-	Id          *uint   `json:"id"`
+	AccessToken  string  `json:"access_token"`
+	TokenType    string  `json:"token_type"`
+	ExpiresIn    int64   `json:"expires_in"`
+	RefreshToken string  `json:"refresh_token,omitempty"`
+	Role         *string `json:"role"`
+	Username     *string `json:"username"`
+	GravatarUrl  *string `json:"gravatarUrl"`
+	Id           *uint   `json:"id"`
 }
 
 func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc {
@@ -38,13 +41,13 @@ func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc 
 	}
 }
 
-func RegisterRoute(r *gin.Engine, handle *ginjwt.GinJWTMiddleware) {
-	r.POST("/login", handle.LoginHandler)
-	auth := r.Group("/auth", handle.MiddlewareFunc())
-	auth.GET("/refresh_token", handle.RefreshHandler)
+func RegisterRoute(r *gin.RouterGroup, handle *ginjwt.GinJWTMiddleware) {
+	r.POST("/auth/login", handle.LoginHandler)
+	r.POST("/auth/refresh", handle.RefreshHandler)
+	r.POST("/auth/logout", handle.LogoutHandler)
 }
 
-func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeout int) *ginjwt.GinJWTMiddleware {
+func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeout int, secureCookie bool) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		log.Println("JWT_SECRET is not set, using default value")
 
@@ -52,24 +55,24 @@ func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeou
 	}
 
 	return &ginjwt.GinJWTMiddleware{
-		Realm:       realm,
-		Key:         []byte(secret),
-		Timeout:     time.Duration(timeout) * time.Minute,
-		MaxRefresh:  time.Hour,
-		IdentityKey: IdentityKey,
-		PayloadFunc: payloadFunc(),
+		Realm:      realm,
+		Key:        []byte(secret),
+		Timeout:    time.Minute * time.Duration(timeout), // Short-lived access tokens
+		MaxRefresh: time.Hour * 24 * 7,
 
+		SecureCookie:   secureCookie,            // HTTPS only
+		CookieHTTPOnly: true,                    // Prevent XSS
+		CookieSameSite: http.SameSiteStrictMode, // CSRF protection
+		SendCookie:     true,                    // Enable secure cookies
+
+		IdentityKey:     IdentityKey,
+		PayloadFunc:     payloadFunc(),
 		IdentityHandler: identityHandler(),
 		Authenticator:   authenticator(repo),
-		Authorizator:    authorizator(),
+		Authorizer:      authorizer(),
 		Unauthorized:    unauthorized(),
-		TokenLookup:     "header: Authorization, query: token, cookie: jwt",
-		// TokenLookup: "query:token",
-		// TokenLookup: "cookie:token",
-		TokenHeadName: "Bearer",
-		TimeFunc:      time.Now,
 
-		LoginResponse: func(c *gin.Context, code int, message string, time time.Time) {
+		LoginResponse: func(c *gin.Context, token *ginjwtCore.Token) {
 			user, err := c.Get(IdentityKey)
 
 			var userObj *models.User = nil
@@ -77,7 +80,7 @@ func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeou
 				userObj = user.(*models.User)
 			}
 
-			loginReponse(c, code, message, time, userObj)
+			loginReponse(c, token, userObj)
 		},
 	}
 }
@@ -103,15 +106,15 @@ func authenticator(repo *sqliteRepo.Repository) func(c *gin.Context) (interface{
 	}
 }
 
-func payloadFunc() func(data interface{}) ginjwt.MapClaims {
-	return func(data interface{}) ginjwt.MapClaims {
+func payloadFunc() func(data interface{}) jwt.MapClaims {
+	return func(data interface{}) jwt.MapClaims {
 		if v, ok := data.(*models.User); ok {
-			return ginjwt.MapClaims{
+			return jwt.MapClaims{
 				IdentityKey: v.ID,
 			}
 		}
 
-		return ginjwt.MapClaims{}
+		return jwt.MapClaims{}
 	}
 }
 
@@ -125,8 +128,8 @@ func identityHandler() func(c *gin.Context) interface{} {
 	}
 }
 
-func authorizator() func(data interface{}, c *gin.Context) bool {
-	return func(data interface{}, c *gin.Context) bool {
+func authorizer() func(c *gin.Context, data any) bool {
+	return func(c *gin.Context, data any) bool {
 		if _, ok := data.(*models.User); ok {
 			return true
 		}
@@ -144,11 +147,16 @@ func unauthorized() func(c *gin.Context, code int, message string) {
 	}
 }
 
-func loginReponse(c *gin.Context, code int, token string, expire time.Time, user *models.User) {
+func loginReponse(c *gin.Context, token *ginjwtCore.Token, user *models.User) {
 	loginResponse := loginResponse{
-		Code:   http.StatusOK,
-		Token:  token,
-		Expire: expire.Format(time.RFC3339),
+		AccessToken: token.AccessToken,
+		TokenType:   token.TokenType,
+		ExpiresIn:   token.ExpiresIn(),
+	}
+
+	// Include refresh token if present
+	if token.RefreshToken != "" {
+		//loginResponse.RefreshToken = token.RefreshToken
 	}
 
 	if user != nil {
@@ -165,5 +173,5 @@ func loginReponse(c *gin.Context, code int, token string, expire time.Time, user
 		loginResponse.Id = &id
 	}
 
-	c.JSON(code, loginResponse)
+	c.JSON(http.StatusOK, loginResponse)
 }

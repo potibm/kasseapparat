@@ -23,8 +23,9 @@ type SentryConfig struct {
 }
 
 type JwtConfig struct {
-	Secret string
-	Realm  string
+	Secret       string
+	Realm        string
+	SecureCookie bool
 }
 
 type MailerConfig struct {
@@ -144,8 +145,9 @@ func loadSentryConfig() SentryConfig {
 
 func loadJwtConfig() JwtConfig {
 	return JwtConfig{
-		Realm:  getEnv("JWT_REALM", "kasseapparat"),
-		Secret: getEnv("JWT_SECRET", ""),
+		Realm:        getEnv("JWT_REALM", "kasseapparat"),
+		Secret:       getEnv("JWT_SECRET", ""),
+		SecureCookie: getEnvAsBool("JWT_SECURE_COOKIE", true),
 	}
 }
 

@@ -58,3 +58,21 @@ func TestGetEnvWithJSONValidation(t *testing.T) {
 	assert.Equal(t, `[{"fallback":true}]`, getEnvWithJSONValidation("INVALID_JSON", `[{"fallback":true}]`))
 	assert.Equal(t, `[{"fallback":true}]`, getEnvWithJSONValidation("EMPTY", `[{"fallback":true}]`))
 }
+
+func TestGetEnvAsBool(t *testing.T) {
+	_ = os.Setenv("FOO_BOOL", "true")
+
+	assert.Equal(t, true, getEnvAsBool("FOO_BOOL", false))
+
+	_ = os.Setenv("FOO_BOOL", "false")
+
+	assert.Equal(t, false, getEnvAsBool("FOO_BOOL", true))
+
+	_ = os.Setenv("FOO_BOOL", "not-a-bool")
+
+	assert.Equal(t, false, getEnvAsBool("FOO_BOOL", false))
+
+	_ = os.Unsetenv("FOO_BOOL")
+
+	assert.Equal(t, false, getEnvAsBool("FOO_BOOL", false))
+}

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
+	jwt "github.com/appleboy/gin-jwt/v3"
 	"github.com/getsentry/sentry-go"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/cors"
@@ -25,6 +25,8 @@ var (
 	r *gin.Engine
 )
 
+const API_VERSION = "v2"
+
 func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler websocket.HandlerInterface, repository sqliteRepo.Repository, staticFiles embed.FS, jwtMiddleware *jwt.GinJWTMiddleware, config config.Config) *gin.Engine {
 	gin.SetMode(config.AppConfig.GinMode)
 
@@ -34,7 +36,7 @@ func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler webs
 	}))
 	r.Use(middleware.ErrorHandlingMiddleware())
 
-	r.GET("/api/v2/purchases/stats", httpHandler.GetPurchaseStats)
+	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHandler.GetPurchaseStats)
 
 	r.Use(CreateCorsMiddleware(config.CorsAllowOrigins))
 
@@ -76,7 +78,9 @@ func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 func registerAuthMiddleware(authMiddleware *jwt.GinJWTMiddleware) {
 	r.Use(middleware.HandlerMiddleWare(authMiddleware))
 
-	middleware.RegisterRoute(r, authMiddleware)
+	versionedGroup := r.Group("/api/" + API_VERSION)
+
+	middleware.RegisterRoute(versionedGroup, authMiddleware)
 }
 
 func SentryMiddleware() gin.HandlerFunc {
@@ -97,7 +101,7 @@ func SentryMiddleware() gin.HandlerFunc {
 }
 
 func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocket.HandlerInterface, authMiddleware *jwt.GinJWTMiddleware) {
-	protectedApiRouter := r.Group("/api/v2")
+	protectedApiRouter := r.Group("/api/" + API_VERSION)
 	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
 	{
 		registerProductRoutes(protectedApiRouter, httpHandler)
@@ -116,7 +120,7 @@ func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocke
 	}
 
 	// unprotected routes
-	unprotectedApiRouter := r.Group("/api/v2")
+	unprotectedApiRouter := r.Group("/api/" + API_VERSION)
 	{
 		unprotectedApiRouter.GET("/config", httpHandler.GetConfig)
 

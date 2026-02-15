@@ -31,7 +31,7 @@ const Kasseapparat = () => {
   const [products, setProducts] = useState(null);
   const [purchaseHistory, setPurchaseHistory] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const { username, token, id: userId } = useAuth();
+  const { username, getToken, id: userId } = useAuth();
   const [pollingModalOpen, setPollingModalOpen] = useState(false);
   const [onPollingComplete, setOnPollingComplete] = useState(() => () => {});
   const [pendingPurchase, setPendingPurchase] = useState(null);
@@ -51,7 +51,7 @@ const Kasseapparat = () => {
 
   useEffect(() => {
     const getProducts = async () => {
-      return fetchProducts(apiHost, token)
+      return fetchProducts(apiHost, await getToken())
         .then((products) => setProducts(convertProductsWithDecimals(products)))
         .catch((error) =>
           showError(
@@ -60,7 +60,7 @@ const Kasseapparat = () => {
         );
     };
     const getHistory = async () => {
-      fetchPurchases(apiHost, token, userId)
+      fetchPurchases(apiHost, await getToken(), userId)
         .then((history) => setPurchaseHistory(history))
         .catch((error) =>
           showError(
@@ -71,7 +71,7 @@ const Kasseapparat = () => {
     };
     getProducts();
     getHistory();
-  }, [apiHost, token, userId]); // Empty dependency array to run only once on mount
+  }, [apiHost, userId, getToken]);
 
   const handleAddToCart = (product, count = 1, listItem = null) => {
     setCart(addToCart(cart, product, count, listItem));
@@ -85,8 +85,9 @@ const Kasseapparat = () => {
     return containsListItemID(cart, listItemID);
   };
 
-  const handleRemoveAllFromCart = () => {
+  const handleRemoveAllFromCart = async () => {
     setCart(removeAllFromCart());
+    const token = await getToken();
     fetchProducts(apiHost, token)
       .then((products) => setProducts(convertProductsWithDecimals(products)))
       .catch((error) =>
@@ -103,8 +104,9 @@ const Kasseapparat = () => {
   };
 
   const handleRemoveFromPurchaseHistory = async (purchase) => {
-    return refundPurchaseById(apiHost, token, purchase.id)
-      .then(() => {
+    return refundPurchaseById(apiHost, await getToken(), purchase.id)
+      .then(async () => {
+        const token = await getToken();
         fetchPurchases(apiHost, token, userId)
           .then((history) => setPurchaseHistory(history))
           .catch((error) =>
@@ -138,7 +140,7 @@ const Kasseapparat = () => {
     try {
       const createdPurchase = await storePurchase(
         apiHost,
-        token,
+        await getToken(),
         cart,
         paymentMethodCode,
         paymentMethodData,
@@ -192,7 +194,7 @@ const Kasseapparat = () => {
 
       setCart(checkoutCart());
       handleAddToPurchaseHistory(createdPurchase);
-      fetchProducts(apiHost, token)
+      fetchProducts(apiHost, await getToken())
         .then((products) => setProducts(convertProductsWithDecimals(products)))
         .catch((error) =>
           showError(
@@ -204,9 +206,9 @@ const Kasseapparat = () => {
     }
   };
 
-  const handleAddProductInterest = (product) => {
+  const handleAddProductInterest = async (product) => {
     console.log("Adding product interest for product: ", product.id);
-    return addProductInterest(apiHost, token, product.id)
+    return addProductInterest(apiHost, await getToken(), product.id)
       .then(() => {
         product.soldOutRequestCount++;
       })

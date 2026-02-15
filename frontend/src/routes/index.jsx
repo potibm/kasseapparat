@@ -13,7 +13,15 @@ import ForgotPassword from "../Auth/components/ForgotPassword";
 import { LoggedinErrorMessage } from "./LoggedinErrorMessage";
 
 const Routes = () => {
-  const { token } = useAuth() || {};
+  const { isLoggedIn } = useAuth() || {};
+  const [loggedIn, setLoggedIn] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!isLoggedIn) return;
+    isLoggedIn()
+      .then(setLoggedIn)
+      .catch(() => setLoggedIn(false));
+  }, [isLoggedIn]);
 
   // Define public routes accessible to all users
   const routesForPublic = [
@@ -75,7 +83,7 @@ const Routes = () => {
   // Combine and conditionally include routes based on authentication status
   const router = createBrowserRouter([
     ...routesForPublic,
-    ...(!token ? routesForNotAuthenticatedOnly : []),
+    ...(loggedIn === true ? [] : routesForNotAuthenticatedOnly),
     ...routesForAuthenticatedOnly,
     ...notFoundRoute,
   ]);

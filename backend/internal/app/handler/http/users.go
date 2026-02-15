@@ -195,7 +195,12 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 }
 
 func (handler *Handler) getUserFromContext(c *gin.Context) (*models.User, error) {
-	user, _ := c.Get(middleware.IdentityKey)
+	user, exists := c.Get(middleware.IdentityKey)
+
+	if !exists {
+		return nil, errors.New("user not found in context")
+	}
+
 	sparseUserObjFromJwt, _ := user.(*models.User)
 
 	userObj, err := handler.repo.GetUserByID(int(sparseUserObjFromJwt.ID))
