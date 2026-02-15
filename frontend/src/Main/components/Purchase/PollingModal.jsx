@@ -169,14 +169,17 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
       };
     };
 
-    initializeWebSocket();
+    initializeWebSocket().catch((err) => {
+      console.error("WebSocket initialization error:", err);
+      handleFailure("Failed to connect to payment terminal.");
+    });
 
     return () => {
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.close();
       }
     };
-  }, [purchase.id, onConfirmed, onClose, onComplete, getToken, websocketHost]);
+  }, [purchase.id, onConfirmed, onComplete, getToken, websocketHost]);
 
   if (!purchase?.id) return null;
 

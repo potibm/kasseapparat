@@ -14,26 +14,29 @@ const AuthContext = createContext();
 const AuthProvider = ({ children }) => {
   const apiHost = useConfig().apiHost;
   const LOCALSTORAGE_PREFIX = "kasseapparat.auth.";
+  const LOCALSTORAGE_TOKEN_KEY = LOCALSTORAGE_PREFIX + "token";
+  const LOCALSTORAGE_EXPIRY_KEY = LOCALSTORAGE_PREFIX + "expiryDate";
+  const LOCALSTORAGE_USERDATA_KEY = LOCALSTORAGE_PREFIX + "userdata";
   const refreshingPromise = useRef(null);
 
   const updateSession = (token, expiresIn) => {
     const expiryDate = new Date(
       // eslint-disable-next-line react-hooks/purity
-      Date.now() + (expiresIn - 10) * 1000,
+      Date.now() + (expiresIn - 30) * 1000,
     ).toISOString();
     console.log("Updating session with new expiry date: " + expiryDate);
 
     setSession({ token: token, expiryDate: expiryDate });
-    localStorage.setItem(LOCALSTORAGE_PREFIX + "token", token);
-    localStorage.setItem(LOCALSTORAGE_PREFIX + "expirydate", expiryDate);
+    localStorage.setItem(LOCALSTORAGE_TOKEN_KEY, token);
+    localStorage.setItem(LOCALSTORAGE_EXPIRY_KEY, expiryDate);
 
     return token;
   };
 
   const removeSession = () => {
     setSession({ token: null, expiryDate: null });
-    localStorage.removeItem(LOCALSTORAGE_PREFIX + "token");
-    localStorage.removeItem(LOCALSTORAGE_PREFIX + "expirydate");
+    localStorage.removeItem(LOCALSTORAGE_TOKEN_KEY);
+    localStorage.removeItem(LOCALSTORAGE_EXPIRY_KEY);
   };
 
   const updateUser = (userdata) => {
@@ -64,7 +67,7 @@ const AuthProvider = ({ children }) => {
     refreshingPromise.current = refreshJwtToken(apiHost)
       .then((response) => {
         const newToken = response.access_token;
-        const expiresIn = response.expire_in || 60;
+        const expiresIn = response.expires_in || 60;
 
         updateSession(newToken, expiresIn);
 
@@ -90,16 +93,16 @@ const AuthProvider = ({ children }) => {
 
   const getSessionFromLocalStorage = () => {
     console.log("Getting session from local storage");
-    const token = localStorage.getItem(LOCALSTORAGE_PREFIX + "token");
-    const expiryDate = localStorage.getItem(LOCALSTORAGE_PREFIX + "expiryDate");
+    const token = localStorage.getItem(LOCALSTORAGE_TOKEN_KEY);
+    const expiryDate = localStorage.getItem(LOCALSTORAGE_EXPIRY_KEY);
 
     if (!token || !expiryDate) {
       return { token: null, expiryDate: null };
     }
 
     if (new Date(expiryDate) < new Date()) {
-      localStorage.removeItem(LOCALSTORAGE_PREFIX + "token");
-      localStorage.removeItem(LOCALSTORAGE_PREFIX + "expiryDate");
+      localStorage.removeItem(LOCALSTORAGE_TOKEN_KEY);
+      localStorage.removeItem(LOCALSTORAGE_EXPIRY_KEY);
       return { token: null, expiryDate: null };
     }
 
@@ -107,7 +110,7 @@ const AuthProvider = ({ children }) => {
   };
 
   const getUserFromLocalStorage = () => {
-    const userdata = localStorage.getItem(LOCALSTORAGE_PREFIX + "userdata");
+    const userdata = localStorage.getItem(LOCALSTORAGE_USERDATA_KEY);
 
     return userdata ? JSON.parse(userdata) : null;
   };

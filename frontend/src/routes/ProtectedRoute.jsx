@@ -7,11 +7,10 @@ export const ProtectedRoute = () => {
   const [loggedIn, setLoggedIn] = useState(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const result = await isLoggedIn();
-      setLoggedIn(result);
-    };
-    checkAuth();
+    if (!isLoggedIn) return;
+    isLoggedIn()
+      .then(setLoggedIn)
+      .catch(() => setLoggedIn(false));
   }, [isLoggedIn]);
 
   // Check if the user is authenticated
