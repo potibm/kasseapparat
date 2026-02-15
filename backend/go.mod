@@ -20,7 +20,7 @@ require (
 	github.com/sethvargo/go-password v0.3.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
-	github.com/sumup/sumup-go v0.13.0
+	github.com/sumup/sumup-go v0.14.1
 	golang.org/x/crypto v0.47.0
 	golang.org/x/text v0.33.0
 	gorm.io/driver/sqlite v1.6.0
