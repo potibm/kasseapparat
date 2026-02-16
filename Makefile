@@ -2,8 +2,8 @@ FRONTEND_DIR = frontend
 BACKEND_DIR = backend
 DIST_DIR = dist
 BACKEND_BUILD_CMD = go build -o ../$(DIST_DIR)
-NODE_MAJOR := 24
-GO_VERSION := 1.25
+NODE_MAJOR := 25
+GO_VERSION := 1.26
 
 .PHONY: list run run-fe run-be deps-be deps-fe run-tool linter linter-fix test test-fe test-be build docker-build docker-run manual
 
@@ -79,7 +79,7 @@ test:
 	$(MAKE) test-be
 
 test-fe: check-node
-	cd $(FRONTEND_DIR) && corepack yarn vitest run --coverage
+	cd $(FRONTEND_DIR) && NODE_OPTIONS="--no-webstorage" corepack yarn vitest run --coverage
 
 test-be: check-go
 	mkdir -p $(BACKEND_DIR)/cmd/assets

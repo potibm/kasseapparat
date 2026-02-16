@@ -57,7 +57,7 @@ jobs:
       - name: Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "24"
+          node-version: "25"
 
       - name: install
         run: yarn install
@@ -70,6 +70,8 @@ jobs:
       - name: test
         run: corepack yarn vitest run --coverage
         working-directory: frontend
+        env:
+          NODE_OPTIONS: --no-webstorage
 
       - name: Upload coverage report
         if: always()
