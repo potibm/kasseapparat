@@ -59,7 +59,7 @@ func (r *Repository) fetchPagedTransactions(ctx context.Context, oldestFrom *tim
 			return nil, err
 		}
 
-		if resp.Items == nil || len(resp.Items) == 0 {
+		if resp.Items == nil {
 			return allItems, nil
 		}
 
@@ -225,14 +225,14 @@ func fromSDKTransaction(sdkCheckout *sumup.TransactionHistory) *Transaction {
 	}
 
 	return &Transaction{
-		ID:              string(*sdkCheckout.ID),
-		TransactionCode: string(*sdkCheckout.TransactionCode),
+		ID:              stringOrEmpty(sdkCheckout.ID),
+		TransactionCode: stringOrEmpty(sdkCheckout.TransactionCode),
 		TransactionID:   transactionId,
 		Amount:          utils.F32PtrToDecimal(sdkCheckout.Amount),
-		Currency:        string(*sdkCheckout.Currency),
-		CardType:        string(*sdkCheckout.CardType),
+		Currency:        stringOrEmpty(sdkCheckout.Currency),
+		CardType:        stringOrEmpty(sdkCheckout.CardType),
 		CreatedAt:       utils.TimePtr(sdkCheckout.Timestamp),
-		Status:          string(*sdkCheckout.Status),
+		Status:          stringOrEmpty(sdkCheckout.Status),
 	}
 }
 
@@ -263,14 +263,14 @@ func fromSDKTransactionFull(sdkCheckout *sumup.TransactionFull) *Transaction {
 
 	return &Transaction{
 		ID:              transactionId.String(),
-		TransactionCode: string(*sdkCheckout.TransactionCode),
+		TransactionCode: stringOrEmpty(sdkCheckout.TransactionCode),
 		TransactionID:   transactionId,
 		Amount:          utils.F32PtrToDecimal(sdkCheckout.Amount),
-		Currency:        string(*sdkCheckout.Currency),
+		Currency:        stringOrEmpty(sdkCheckout.Currency),
 		CardType:        cardType,
 		CreatedAt:       utils.TimePtr(sdkCheckout.Timestamp),
 		Events:          events,
-		Status:          string(*sdkCheckout.Status),
+		Status:          stringOrEmpty(sdkCheckout.Status),
 	}
 }
 
@@ -289,8 +289,8 @@ func fromSDKTransactionEvent(sdkEvent *sumup.Event) TransactionEvent {
 	return TransactionEvent{
 		ID:        int(*sdkEvent.ID),
 		Timestamp: timestamp,
-		Type:      string(*sdkEvent.Type),
+		Type:      stringOrEmpty(sdkEvent.Type),
 		Amount:    decimal.NewFromFloat(amount),
-		Status:    string(*sdkEvent.Status),
+		Status:    stringOrEmpty(sdkEvent.Status),
 	}
 }

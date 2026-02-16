@@ -53,6 +53,16 @@ func getTimePtr(v url.Values, key string) *time.Time {
 	return nil
 }
 
+// stringOrEmpty returns the string value of a pointer or an empty string if nil.
+// Works with any type based on string (e.g., SumUp SDK types).
+func stringOrEmpty[T ~string](s *T) string {
+	if s == nil {
+		return ""
+	}
+
+	return string(*s)
+}
+
 func normalizeSumupError(err error) error {
 	if err == nil {
 		return nil
