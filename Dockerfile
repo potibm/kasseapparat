@@ -2,8 +2,11 @@ ARG VERSION
 ARG BUILD_DATE
 
 # Build the frontend
-FROM --platform=$BUILDPLATFORM node:24 AS frontend-build
+FROM --platform=$BUILDPLATFORM node:25 AS frontend-build
 WORKDIR /app/frontend
+RUN rm -f /usr/local/bin/yarn /usr/local/bin/yarnpkg /usr/local/bin/pnpm /usr/local/bin/pnpx \
+ && npm i -g corepack@latest \
+ && corepack enable
 COPY frontend/package.json frontend/yarn.lock frontend/.yarnrc.yml ./
 RUN corepack enable && \
     corepack yarn install --immutable
@@ -11,7 +14,7 @@ COPY frontend .
 RUN corepack yarn vite build --outDir ./build
 
 # Build the backend
-FROM --platform=$BUILDPLATFORM golang:1.25-bookworm AS backend-build
+FROM --platform=$BUILDPLATFORM golang:1.26-bookworm AS backend-build
 WORKDIR /app/backend
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
