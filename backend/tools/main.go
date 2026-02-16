@@ -32,6 +32,10 @@ var (
 	Mailer mailer.Mailer
 )
 
+var (
+	version = "0.0.0"
+)
+
 func main() {
 	// Register command-line flags
 	flag.BoolVar(&purgeDB, "purge", false, "Purge the database before initializing")
@@ -44,6 +48,7 @@ func main() {
 	flag.Parse()
 
 	cfg := config.Load()
+	cfg.SetVersion(version)
 	cfg.OutputVersion()
 
 	db := utils.ConnectToDatabase()

@@ -21,8 +21,13 @@ import (
 //go:embed assets
 var staticFiles embed.FS
 
+var (
+	version = "0.0.0"
+)
+
 func main() {
 	cfg := config.Load()
+	cfg.SetVersion(version)
 	cfg.OutputVersion()
 
 	db := utils.ConnectToDatabase()

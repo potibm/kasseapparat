@@ -8,31 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReadVersionFromFileWithValidFile(t *testing.T) {
-	// Arrange
-	filename := "./VERSION"
-	expected := "1.2.3\n"
-	err := os.WriteFile(filename, []byte(expected), 0644)
-	assert.NoError(t, err)
-
-	defer os.Remove(filename) // Clean up
-
-	// Act
-	version := readVersionFromFile()
-
-	// Assert
-	assert.Equal(t, "1.2.3", version)
-}
-
-func TestReadVersionFromFileWithFileMissing(t *testing.T) {
-	// Ensure file is absent
-	_ = os.Remove("./VERSION")
-
-	version := readVersionFromFile()
-
-	assert.Equal(t, "0.0.0", version)
-}
-
 func TestLoadConfigWithDefaults(t *testing.T) {
 	os.Setenv("CORS_ALLOW_ORIGINS", "localhost:3000,localhost:4000")
 
@@ -72,4 +47,21 @@ func TestLoadConfigWithDefaults(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, expected, config)
+}
+
+func TestSetVersion(t *testing.T) {
+	// Arrange
+	config := Config{
+		AppConfig: AppConfig{
+			Version: "0.0.0",
+		},
+		SentryConfig: SentryConfig{
+			Version: "0.0.0",
+		},
+	}
+
+	config.SetVersion("1.2.3")
+
+	assert.Equal(t, "1.2.3", config.AppConfig.Version)
+	assert.Equal(t, "1.2.3", config.SentryConfig.Version)
 }

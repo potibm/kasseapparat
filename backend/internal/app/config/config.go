@@ -2,7 +2,6 @@ package config
 
 import (
 	"log"
-	"os"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -95,22 +94,14 @@ func loadConfig() Config {
 
 func loadAppConfig() AppConfig {
 	return AppConfig{
-		Version: readVersionFromFile(),
+		Version: "0.0.0",
 		GinMode: getEnv("GIN_MODE", "release"),
 	}
 }
 
-func readVersionFromFile() string {
-	versionFilePath := "./VERSION"
-
-	content, err := os.ReadFile(versionFilePath)
-	if err != nil {
-		log.Printf("Error reading the version file: %v", err)
-
-		return "0.0.0"
-	}
-
-	return strings.TrimSpace(string(content))
+func (cfg *Config) SetVersion(version string) {
+	cfg.AppConfig.Version = version
+	cfg.SentryConfig.Version = version
 }
 
 func loadCorsAllowOrigins() []string {
@@ -139,7 +130,7 @@ func loadSentryConfig() SentryConfig {
 		TraceSampleRate:         getEnvAsFloat("SENTRY_TRACE_SAMPLE_RATE", 0.1),
 		ReplaySessionSampleRate: getEnvAsFloat("SENTRY_REPLAY_SESSION_SAMPLE_RATE", 0.1),
 		ReplayErrorSampleRate:   getEnvAsFloat("SENTRY_REPLAY_ERROR_SAMPLE_RATE", 0.1),
-		Version:                 readVersionFromFile(),
+		Version:                 "0.0.0",
 	}
 }
 

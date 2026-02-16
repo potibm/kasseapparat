@@ -1,7 +1,8 @@
 FRONTEND_DIR = frontend
 BACKEND_DIR = backend
 DIST_DIR = dist
-BACKEND_BUILD_CMD = go build -o ../$(DIST_DIR)
+VERSION = 0.0.$(shell date +%y%m%d%H%M)
+BACKEND_BUILD_CMD = go build -ldflags "-X main.version=$(VERSION)" -o ../$(DIST_DIR)
 NODE_MAJOR := 25
 GO_VERSION := 1.26
 
@@ -93,7 +94,6 @@ sec-be:
 build:
 	rm -rf $(BACKEND_DIR)/cmd/assets
 	mkdir -p $(BACKEND_DIR)/cmd/assets
-	echo "$(shell date +%y%m%d%H%M)" > $(DIST_DIR)/VERSION
 	cd $(FRONTEND_DIR) && corepack yarn build --outDir ../$(BACKEND_DIR)/cmd/assets -m production
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat ./cmd/main.go
 	cd $(BACKEND_DIR) && $(BACKEND_BUILD_CMD)/kasseapparat-tool ./tools/main.go
@@ -102,7 +102,7 @@ build:
 	cd $(DIST_DIR) && ./kasseapparat-tool --seed --purge
 
 docker-build: prepare-buildx
-	@VERSION=0.0.$$(date +%y%m%d%H%M); \
+	@VERSION=$(VERSION); \
 	BUILD_DATE=$$(date -Iseconds); \
 	docker buildx build \
 	    --builder kasseapparat-builder \
