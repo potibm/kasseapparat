@@ -48,7 +48,7 @@ deps-be: check-go
 	cd $(BACKEND_DIR) && gomajor list
 	
 deps-fe: check-node
-	cd $(FRONTEND_DIR) && corepack yarn up
+	cd $(FRONTEND_DIR) && corepack yarn up -R
 	cd $(FRONTEND_DIR) && corepack yarn upgrade-interactive
 
 deps-install:
