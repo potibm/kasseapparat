@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sumup/sumup-go/shared"
+	sumup "github.com/sumup/sumup-go"
 )
 
 func getStringPtr(v url.Values, key string) *string {
@@ -58,7 +58,7 @@ func normalizeSumupError(err error) error {
 		return nil
 	}
 
-	if apiErr, ok := err.(*shared.Error); ok {
+	if apiErr, ok := err.(*sumup.Error); ok {
 		var code string
 
 		var message string
