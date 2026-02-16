@@ -286,8 +286,13 @@ func fromSDKTransactionEvent(sdkEvent *sumup.Event) TransactionEvent {
 		amount = float64(*sdkEvent.Amount)
 	}
 
+	id := 0
+	if sdkEvent.ID != nil {
+		id = int(*sdkEvent.ID)
+	}
+
 	return TransactionEvent{
-		ID:        int(*sdkEvent.ID),
+		ID:        id,
 		Timestamp: timestamp,
 		Type:      stringOrEmpty(sdkEvent.Type),
 		Amount:    decimal.NewFromFloat(amount),
