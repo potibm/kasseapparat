@@ -11,16 +11,16 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@sentry/react": "^10.38.0",
+    "@sentry/react": "^10.39.0",
     "@tailwindcss/vite": "^4.1.18",
     "animate.css": "^4.1.1",
     "decimal.js": "^10.6.0",
     "flowbite-react": "^0.12.17",
     "install": "^0.13.0",
     "jwt-decode": "^4.0.0",
-    "ra-data-json-server": "^5.14.1",
+    "ra-data-json-server": "^5.14.2",
     "react": "^19.2.4",
-    "react-admin": "^5.14.1",
+    "react-admin": "^5.14.2",
     "react-dom": "^19.2.4",
     "react-icons": "^5.5.0",
     "tailwindcss": "^4.1.18"
