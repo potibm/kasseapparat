@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sumup/sumup-go/shared"
+	sumup "github.com/sumup/sumup-go"
 )
 
 func getStringPtr(v url.Values, key string) *string {
@@ -53,23 +53,24 @@ func getTimePtr(v url.Values, key string) *time.Time {
 	return nil
 }
 
+// stringOrEmpty returns the string value of a pointer or an empty string if nil.
+// Works with any type based on string (e.g., SumUp SDK types).
+func stringOrEmpty[T ~string](s *T) string {
+	if s == nil {
+		return ""
+	}
+
+	return string(*s)
+}
+
 func normalizeSumupError(err error) error {
 	if err == nil {
 		return nil
 	}
 
-	if apiErr, ok := err.(*shared.Error); ok {
-		var code string
-
-		var message string
-
-		if apiErr.ErrorCode != nil {
-			code = *apiErr.ErrorCode
-		}
-
-		if apiErr.Message != nil {
-			message = *apiErr.Message
-		}
+	if apiErr, ok := err.(*sumup.Error); ok {
+		code := stringOrEmpty(apiErr.ErrorCode)
+		message := stringOrEmpty(apiErr.Message)
 
 		return fmt.Errorf("SumUp error %s: %s", code, message)
 	}

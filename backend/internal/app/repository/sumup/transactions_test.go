@@ -6,8 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/sumup/sumup-go/shared"
-	"github.com/sumup/sumup-go/transactions"
+	sumup "github.com/sumup/sumup-go"
 )
 
 func TestParseHrefToListTransactionsParams(t *testing.T) {
@@ -56,7 +55,7 @@ func TestParseHrefToListTransactionsParams(t *testing.T) {
 }
 
 func TestFindNextHref(t *testing.T) {
-	links := []transactions.Link{
+	links := []sumup.Link{
 		{Rel: nil, Href: nil},
 		{Rel: nil, Href: nil},
 		{Rel: nil, Href: nil},
@@ -65,7 +64,7 @@ func TestFindNextHref(t *testing.T) {
 	nextHref := findNextHref(&links)
 	assert.Equal(t, "", nextHref)
 
-	links = []transactions.Link{
+	links = []sumup.Link{
 		{Rel: nil, Href: nil},
 		{Rel: &[]string{"next"}[0], Href: &[]string{"https://example.com/next"}[0]},
 	}
@@ -76,16 +75,16 @@ func TestFindNextHref(t *testing.T) {
 
 func TestFromSDKTransactionWithUUIDId(t *testing.T) {
 	id := "2b5cd782-0733-4fb2-bf22-5a12345bd94f"
-	tid := shared.TransactionID(id)
+	tid := sumup.TransactionID(id)
 	tc := "TAAAABCP2SA"
 	amount := float32(40.0)
-	currency := shared.CurrencyEUR
-	cardType := shared.CardTypeMastercard
-	status := transactions.TransactionHistoryStatus("SUCCESSFUL")
+	currency := sumup.CurrencyEUR
+	cardType := sumup.CardTypeMastercard
+	status := sumup.TransactionHistoryStatus("SUCCESSFUL")
 
 	timestamp := parseTime(t, "2025-06-15T20:45:27.588Z")
 
-	sdk := &transactions.TransactionHistory{
+	sdk := &sumup.TransactionHistory{
 		ID:              &id,
 		TransactionCode: &tc,
 		TransactionID:   &tid,
@@ -110,14 +109,14 @@ func TestFromSDKTransactionWithUUIDId(t *testing.T) {
 func TestFromSDKTransactionWithNonUUIDId(t *testing.T) {
 	id := "8119994131" // not a UUID
 	tc := "TAAAABCP2SA"
-	tid := shared.TransactionID("2b5cd782-0733-4fb2-bf22-5a12345bd94f")
+	tid := sumup.TransactionID("2b5cd782-0733-4fb2-bf22-5a12345bd94f")
 	amount := float32(40.0)
-	currency := shared.CurrencyEUR
-	cardType := shared.CardTypeMastercard
-	status := transactions.TransactionHistoryStatus("REFUNDED")
+	currency := sumup.CurrencyEUR
+	cardType := sumup.CardTypeMastercard
+	status := sumup.TransactionHistoryStatus("REFUNDED")
 	timestamp := parseTime(t, "2025-06-15T21:00:13.536Z")
 
-	sdk := &transactions.TransactionHistory{
+	sdk := &sumup.TransactionHistory{
 		ID:              &id,
 		TransactionCode: &tc,
 		TransactionID:   &tid,

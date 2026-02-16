@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	"github.com/sumup/sumup-go/readers"
+	sumup "github.com/sumup/sumup-go"
 )
 
 func (r *Repository) GetReaders() ([]Reader, error) {
@@ -25,8 +25,8 @@ func (r *Repository) GetReaders() ([]Reader, error) {
 }
 
 func (r *Repository) GetReader(readerId string) (*Reader, error) {
-	params := readers.GetParams{}
-	id := readers.ReaderID(readerId)
+	params := sumup.ReadersGetParams{}
+	id := sumup.ReaderID(readerId)
 
 	reader, err := r.service.Client.Readers.Get(context.Background(), r.service.MerchantCode, id, params)
 	if err != nil {
@@ -47,10 +47,10 @@ func isReaderNotFoundError(err error) bool {
 }
 
 func (r *Repository) CreateReader(pairingCode string, name string) (*Reader, error) {
-	readerName := readers.ReaderName(name)
+	readerName := sumup.ReaderName(name)
 
-	body := readers.Create{
-		PairingCode: readers.ReaderPairingCode(pairingCode),
+	body := sumup.ReadersCreateParams{
+		PairingCode: sumup.ReaderPairingCode(pairingCode),
 		Name:        readerName,
 	}
 
@@ -63,22 +63,22 @@ func (r *Repository) CreateReader(pairingCode string, name string) (*Reader, err
 }
 
 func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl *string) (*uuid.UUID, error) {
-	amountStruct := readers.CreateCheckoutTotalAmount{
+	amountStruct := sumup.CreateCheckoutRequestTotalAmount{
 		Currency:  r.service.PaymentCurrency,
 		Value:     getValueFromDecimal(amount, int(r.service.PaymentMinorUnit)), // Example amount in cents (10.00 EUR)
 		MinorUnit: int(r.service.PaymentMinorUnit),
 	}
 
-	var affiliate *readers.CreateCheckoutAffiliate
+	var affiliate *sumup.CreateCheckoutRequestAffiliate
 	if affiliateTransactionId != "" {
-		affiliate = &readers.CreateCheckoutAffiliate{
+		affiliate = &sumup.CreateCheckoutRequestAffiliate{
 			AppID:                r.service.ApplicationId,
 			Key:                  r.service.AffiliateKey,
 			ForeignTransactionID: affiliateTransactionId,
 		}
 	}
 
-	body := readers.CreateCheckout{
+	body := sumup.ReadersCreateCheckoutParams{
 		TotalAmount: amountStruct,
 		Description: &description,
 		Affiliate:   affiliate,
@@ -109,12 +109,12 @@ func (r *Repository) CreateReaderTerminateAction(readerId string) error {
 }
 
 func (r *Repository) DeleteReader(readerId string) error {
-	id := readers.ReaderID(readerId)
+	id := sumup.ReaderID(readerId)
 
 	return r.service.Client.Readers.Delete(context.Background(), r.service.MerchantCode, id)
 }
 
-func fromSDKReader(sdkReader *readers.Reader) *Reader {
+func fromSDKReader(sdkReader *sumup.Reader) *Reader {
 	return &Reader{
 		ID:               string(sdkReader.ID),
 		Name:             string(sdkReader.Name),

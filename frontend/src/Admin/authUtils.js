@@ -63,7 +63,9 @@ export const updateToken = async () => {
 
       console.error("Token refresh error:", error);
       clearAdminData();
-      throw new Error("Token refresh error. Please log in again.");
+      throw new Error("Token refresh error. Please log in again.", {
+        cause: error,
+      });
     } finally {
       refreshingPromise = null;
     }
