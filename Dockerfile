@@ -4,6 +4,9 @@ ARG BUILD_DATE
 # Build the frontend
 FROM --platform=$BUILDPLATFORM node:25 AS frontend-build
 WORKDIR /app/frontend
+RUN rm -f /usr/local/bin/yarn /usr/local/bin/yarnpkg /usr/local/bin/pnpm /usr/local/bin/pnpx \
+ && npm i -g corepack@latest \
+ && corepack enable
 COPY frontend/package.json frontend/yarn.lock frontend/.yarnrc.yml ./
 RUN corepack enable && \
     corepack yarn install --immutable
