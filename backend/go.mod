@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/sumup/sumup-go v0.13.0
 	golang.org/x/crypto v0.47.0
-	golang.org/x/text v0.33.0
+	golang.org/x/text v0.34.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.1
 )
