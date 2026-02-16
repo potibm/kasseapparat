@@ -69,17 +69,8 @@ func normalizeSumupError(err error) error {
 	}
 
 	if apiErr, ok := err.(*sumup.Error); ok {
-		var code string
-
-		var message string
-
-		if apiErr.ErrorCode != nil {
-			code = *apiErr.ErrorCode
-		}
-
-		if apiErr.Message != nil {
-			message = *apiErr.Message
-		}
+		code := stringOrEmpty(apiErr.ErrorCode)
+		message := stringOrEmpty(apiErr.Message)
 
 		return fmt.Errorf("SumUp error %s: %s", code, message)
 	}
