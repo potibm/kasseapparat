@@ -204,7 +204,7 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 	filters.TotalGrossPriceGte = queryDecimal(c, "totalGrossPrice_gte")
 	filters.TotalGrossPriceLte = queryDecimal(c, "totalGrossPrice_lte")
 	filters.IDs = queryArrayInt(c, "id")
-	filters.Status = queryPurchaseStatus(c, "status")
+	filters.StatusList = queryPurchaseStatusList(c, "status")
 
 	purchases, err := handler.repo.GetPurchases(end-start, start, sort, order, filters)
 	if err != nil {

@@ -3,6 +3,7 @@ import {
   ReferenceInput,
   AutocompleteInput,
   SelectInput,
+  SelectArrayInput,
   NumberInput,
   FilterForm,
   FilterButton,
@@ -38,7 +39,7 @@ export const PurchaseListToolbar = (props) => {
       source="paymentMethod"
       choices={paymentMethodChoices}
     />,
-    <SelectInput key="status" source="status" choices={statusChoices} />,
+    <SelectArrayInput key="status" source="status" choices={statusChoices} />,
     <NumberInput
       key="total-gross-price-gte"
       source="totalGrossPrice_gte"

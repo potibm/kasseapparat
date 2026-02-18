@@ -20,7 +20,7 @@ type ProductPurchaseStats struct {
 type PurchaseFilters struct {
 	CreatedByID            int
 	PaymentMethods         []models.PaymentMethod
-	Status                 *models.PurchaseStatus
+	StatusList             *models.PurchaseStatusList
 	TotalGrossPriceLte     *decimal.Decimal
 	TotalGrossPriceGte     *decimal.Decimal
 	IDs                    []int
@@ -48,8 +48,8 @@ func (filters PurchaseFilters) AddWhere(query *gorm.DB) *gorm.DB {
 		query = query.Where("purchases.total_gross_price >= ?", filters.TotalGrossPriceGte)
 	}
 
-	if filters.Status != nil {
-		query = query.Where("purchases.status = ?", *filters.Status)
+	if filters.StatusList != nil {
+		query = query.Where("purchases.status IN ?", *filters.StatusList)
 	}
 
 	if filters.HasClientTransactionID != nil {
