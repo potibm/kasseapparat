@@ -9,6 +9,7 @@ import (
 )
 
 type PurchaseStatus string
+type PurchaseStatusList []PurchaseStatus
 
 const (
 	PurchaseStatusPending   PurchaseStatus = "pending"

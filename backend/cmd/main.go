@@ -80,12 +80,11 @@ func startCleanupForWebsocketConnections() {
 }
 
 func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sqliteRepo.Repository) {
-	pendingStatus := models.PurchaseStatusPending
 	hasClientTransactionID := true
 
 	filters := sqliteRepo.PurchaseFilters{
 		PaymentMethods:         []models.PaymentMethod{models.PaymentMethodSumUp},
-		Status:                 &pendingStatus,
+		StatusList:             &models.PurchaseStatusList{models.PurchaseStatusPending},
 		HasClientTransactionID: &hasClientTransactionID,
 	}
 

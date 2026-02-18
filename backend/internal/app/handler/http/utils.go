@@ -83,10 +83,10 @@ func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods confi
 	return result
 }
 
-func queryPurchaseStatus(c *gin.Context, field string) *models.PurchaseStatus {
-	status := c.DefaultQuery(field, "")
+func queryPurchaseStatusList(c *gin.Context, field string) *models.PurchaseStatusList {
+	status := c.QueryArray(field)
 
-	if status == "" {
+	if len(status) == 0 {
 		return nil
 	}
 
@@ -98,11 +98,19 @@ func queryPurchaseStatus(c *gin.Context, field string) *models.PurchaseStatus {
 		"refunded":  models.PurchaseStatusRefunded,
 	}
 
-	if purchaseStatus, ok := statusMapper[strings.ToLower(status)]; ok {
-		return &purchaseStatus
+	statusList := make(models.PurchaseStatusList, 0, len(status))
+
+	for _, s := range status {
+		if purchaseStatus, ok := statusMapper[strings.ToLower(s)]; ok {
+			statusList = append(statusList, purchaseStatus)
+		}
 	}
 
-	return nil
+	if len(statusList) == 0 {
+		return nil
+	}
+
+	return &statusList
 }
 
 func (handler *Handler) IsValidPaymentMethod(code models.PaymentMethod) bool {
