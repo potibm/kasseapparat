@@ -48,7 +48,7 @@ func (filters PurchaseFilters) AddWhere(query *gorm.DB) *gorm.DB {
 		query = query.Where("purchases.total_gross_price >= ?", filters.TotalGrossPriceGte)
 	}
 
-	if filters.StatusList != nil {
+	if filters.StatusList != nil && len(*filters.StatusList) > 0 {
 		query = query.Where("purchases.status IN ?", *filters.StatusList)
 	}
 
