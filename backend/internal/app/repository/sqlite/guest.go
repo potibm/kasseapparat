@@ -113,15 +113,20 @@ func (repo *Repository) GetGuestsByPurchaseID(purchaseId uuid.UUID) ([]models.Gu
 func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) (models.GuestSummarySlice, error) {
 	var guests models.GuestSummarySlice
 
+	var filter GuestFilters
+
+	filter.NotPresent = true
+	if q != "" {
+		filter.Query = q
+	}
+
 	query := repo.db.Model(&models.Guest{}).
 		Select("Guests.id, Guests.name, Guests.code, Guestlists.name AS list_name, Guests.additional_guests, Guests.arrival_note").
 		Joins("JOIN guestlists ON Guests.guestlist_id = Guestlists.id").
 		Joins("JOIN products ON Guestlists.product_id = Products.id").
-		Where("Products.id = ? AND Guests.attended_guests = ?", productId, 0).
+		Where("Products.id = ?", productId).
 		Order("guests.name ASC")
-	if q != "" {
-		query = query.Where("Guests.name LIKE ? OR Guests.code LIKE ?", "%"+q+"%", q+"%")
-	}
+	query = filter.AddWhere(query)
 
 	if err := query.Scan(&guests).Error; err != nil {
 		return nil, ErrGuestsNotFound
