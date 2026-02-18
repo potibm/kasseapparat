@@ -35,7 +35,7 @@ func (r *deineTicketsRecord) validateBlocked() bool {
 	return r.Blocked == ""
 }
 
-func (r *deineTicketsRecord) Validate(repo sqliteRepo.RepositoryInterface) (bool, string) {
+func (r *deineTicketsRecord) Validate(repo sqliteRepo.GuestRepository) (bool, string) {
 	if !r.validateCode() {
 		return false, "Invalid code"
 	}

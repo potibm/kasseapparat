@@ -16,9 +16,12 @@ type Repository struct {
 	decimalPlaces int32
 }
 
-type RepositoryInterface interface {
+type TransactionalRepository interface {
 	GetDB() *gorm.DB
 	WithTransaction(ctx context.Context, fn func(repo RepositoryInterface) error) error
+}
+
+type GuestRepository interface {
 	GetGuests(limit int, offset int, sort string, order string, filters GuestFilters) ([]models.Guest, error)
 	GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.Guest, error)
 	GetTotalGuests(filters *GuestFilters) (int64, error)
@@ -30,6 +33,9 @@ type RepositoryInterface interface {
 	CreateGuest(guest models.Guest) (models.Guest, error)
 	DeleteGuest(guest models.Guest, deletedBy models.User)
 	RollbackVisitedGuestsByPurchaseID(purchaseId uuid.UUID) error
+}
+
+type GuestlistRepository interface {
 	GetGuestlists(limit int, offset int, sort string, order string, filters GuestlistFilters) ([]models.Guestlist, error)
 	GetTotalGuestlists() (int64, error)
 	GetGuestlistByID(id int) (*models.Guestlist, error)
@@ -37,12 +43,18 @@ type RepositoryInterface interface {
 	UpdateGuestlistByID(id int, updatedGuestlist models.Guestlist) (*models.Guestlist, error)
 	CreateGuestlist(guestlist models.Guestlist) (models.Guestlist, error)
 	DeleteGuestlist(guestlist models.Guestlist, deletedBy models.User)
+}
+
+type ProductInterestRepository interface {
 	GetProductInterests(limit int, offset int, ids []int) ([]models.ProductInterest, error)
 	GetTotalProductInterests() (int64, error)
 	GetProductInterestByID(id int) (*models.ProductInterest, error)
 	DeleteProductInterest(productInterest models.ProductInterest, deletedBy models.User)
 	CreateProductInterest(productInterest models.ProductInterest, createdBy models.User) (models.ProductInterest, error)
 	GetProductInterestCountByProductID(productID uint) (int, error)
+}
+
+type ProductRepository interface {
 	GetProductStats() ([]response.ProductStats, error)
 	GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error)
 	GetTotalProducts() (int64, error)
@@ -51,6 +63,9 @@ type RepositoryInterface interface {
 	CreateProduct(product models.Product) (models.Product, error)
 	DeleteProduct(product models.Product, deletedBy models.User)
 	GetAttendedGuestSumByProductID(productID uint) (int, error)
+}
+
+type PurchaseRepository interface {
 	StorePurchases(purchase models.Purchase) (models.Purchase, error)
 	DeletePurchaseByID(id uuid.UUID, deletedBy models.User)
 	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
@@ -63,6 +78,9 @@ type RepositoryInterface interface {
 	GetTotalPurchases(filters PurchaseFilters) (int64, error)
 	GetPurchaseStats() ([]ProductPurchaseStats, error)
 	GetPurchasedQuantitiesByProductID(productID uint) (int, error)
+}
+
+type UserRepository interface {
 	GetUserByID(id int) (*models.User, error)
 	GetUsers(limit int, offset int, sort string, order string, filters UserFilters) ([]models.User, error)
 	GetTotalUsers(filters *UserFilters) (int64, error)
@@ -72,6 +90,16 @@ type RepositoryInterface interface {
 	GetUserByEmail(email string) (*models.User, error)
 	GetUserByUsername(username string) (*models.User, error)
 	GetUserByUsernameOrEmail(usernameOrEmail string) (*models.User, error)
+}
+
+type RepositoryInterface interface {
+	TransactionalRepository
+	GuestRepository
+	GuestlistRepository
+	ProductInterestRepository
+	ProductRepository
+	PurchaseRepository
+	UserRepository
 }
 
 var _ RepositoryInterface = (*Repository)(nil)
