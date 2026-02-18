@@ -109,23 +109,23 @@ func (repo *Repository) getPurchaseByQueryAndValue(query string, value string) (
 }
 
 func (repo *Repository) UpdatePurchaseStatusByID(id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
-	return repo.updatePurchaseFieldByID(id, map[string]interface{}{
+	return repo.updatePurchaseFieldByID(id, map[string]any{
 		"status": string(status),
 	})
 }
 func (repo *Repository) UpdatePurchaseSumupClientTransactionIDByID(id uuid.UUID, sumupClientTransactionID uuid.UUID) (*models.Purchase, error) {
-	return repo.updatePurchaseFieldByID(id, map[string]interface{}{
+	return repo.updatePurchaseFieldByID(id, map[string]any{
 		"sumup_client_transaction_id": sumupClientTransactionID.String(),
 	})
 }
 
 func (repo *Repository) UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error) {
-	return repo.updatePurchaseFieldByID(id, map[string]interface{}{
+	return repo.updatePurchaseFieldByID(id, map[string]any{
 		"sumup_transaction_id": sumupTransactionID.String(),
 	})
 }
 
-func (repo *Repository) updatePurchaseFieldByID(id uuid.UUID, fields map[string]interface{}) (*models.Purchase, error) {
+func (repo *Repository) updatePurchaseFieldByID(id uuid.UUID, fields map[string]any) (*models.Purchase, error) {
 	var purchase models.Purchase
 	if err := repo.db.Model(&purchase).
 		Where(whereIDEquals, id.String()).

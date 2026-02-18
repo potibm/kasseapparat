@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"log"
+	"maps"
 	"sync"
 	"time"
 
@@ -78,9 +79,7 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 	payload := gin.H{
 		"type": msgType,
 	}
-	for k, v := range data {
-		payload[k] = v
-	}
+	maps.Copy(payload, data)
 
 	if transactionID != nil {
 		payload["transaction_id"] = transactionID.String()

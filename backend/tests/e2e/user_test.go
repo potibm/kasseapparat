@@ -131,7 +131,7 @@ func TestCreateUpdateAndDeleteUser(t *testing.T) {
 	changedEmail := "changed@example.com"
 
 	user := withDemoUserAuthToken(e.POST(userBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"username": originalUsername,
 			"email":    originalEmail,
 		}).
@@ -154,7 +154,7 @@ func TestCreateUpdateAndDeleteUser(t *testing.T) {
 	user.Value("email").String().IsEqual(originalEmail)
 
 	withDemoUserAuthToken(e.PUT(userUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"username": changedUsername,
 			"email":    changedEmail,
 		}).

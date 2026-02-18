@@ -47,7 +47,7 @@ func TestCreateAndDeleteProductInterest(t *testing.T) {
 	defer cleanup()
 
 	productInterest := withDemoUserAuthToken(e.POST(productInterestBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"productId": 1,
 		}).
 		Expect().
