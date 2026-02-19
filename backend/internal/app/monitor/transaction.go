@@ -25,7 +25,9 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 
 		log.Printf("Polling started for %s\n", transactionID)
 
-		ticker := time.NewTicker(5 * time.Second)
+		const pollingInterval = 5 * time.Second
+
+		ticker := time.NewTicker(pollingInterval)
 		defer ticker.Stop()
 
 		for range ticker.C {

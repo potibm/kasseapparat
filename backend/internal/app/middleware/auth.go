@@ -14,6 +14,8 @@ import (
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
 
+const RefreshTokenLifetime = 7 * time.Hour * 24
+
 var IdentityKey = "ID"
 
 type login struct {
@@ -58,7 +60,7 @@ func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeou
 		Realm:      realm,
 		Key:        []byte(secret),
 		Timeout:    time.Minute * time.Duration(timeout), // Short-lived access tokens
-		MaxRefresh: time.Hour * 24 * 7,
+		MaxRefresh: RefreshTokenLifetime,
 
 		SecureCookie:   secureCookie,            // HTTPS only
 		CookieHTTPOnly: true,                    // Prevent XSS

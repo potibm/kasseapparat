@@ -8,7 +8,6 @@ linters:
   disable:
     - wsl
     - testpackage
-    - mnd
     - lll
     - interfacebloat
     - funlen

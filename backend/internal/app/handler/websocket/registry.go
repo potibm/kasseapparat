@@ -15,6 +15,8 @@ const maxConnections = 100
 const CloseTooManyConnections = 4001
 const CloseStaleConnection = 4005
 
+const CleanupStaleConnectionsInterval = 5 * time.Minute
+
 type wsConnection struct {
 	Conn     *websocket.Conn
 	mu       sync.Mutex
@@ -103,7 +105,7 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 
 func StartCleanupRoutine(timeout time.Duration) {
 	go func() {
-		ticker := time.NewTicker(5 * time.Minute)
+		ticker := time.NewTicker(CleanupStaleConnectionsInterval)
 		defer ticker.Stop()
 
 		for range ticker.C {

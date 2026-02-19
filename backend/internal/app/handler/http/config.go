@@ -1,6 +1,8 @@
 package http
 
 import (
+	nethttp "net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -53,5 +55,5 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		PaymentMethods:                paymentMethods,
 	}
 
-	c.JSON(200, config)
+	c.JSON(nethttp.StatusOK, config)
 }

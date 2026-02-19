@@ -42,5 +42,7 @@ func (pi PurchaseItem) TotalVATAmount(decimalPlaces int32) decimal.Decimal {
 }
 
 func (pi PurchaseItem) vatRateAsPercentage() decimal.Decimal {
-	return pi.VATRate.Div(decimal.NewFromInt(100))
+	const hundred = 100
+
+	return pi.VATRate.Div(decimal.NewFromInt(hundred))
 }

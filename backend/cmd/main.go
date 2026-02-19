@@ -76,7 +76,8 @@ func main() {
 }
 
 func startCleanupForWebsocketConnections() {
-	websocket.StartCleanupRoutine(5 * time.Minute)
+	const cleanupInterval = 5 * time.Minute
+	websocket.StartCleanupRoutine(cleanupInterval)
 }
 
 func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sqliteRepo.Repository) {
@@ -88,7 +89,9 @@ func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sql
 		HasClientTransactionID: &hasClientTransactionID,
 	}
 
-	activeTransactions, err := sqliteRepository.GetPurchases(1000, 0, "createdAt", "ASC", filters)
+	const PlentyOfTransactions = 1000
+
+	activeTransactions, err := sqliteRepository.GetPurchases(PlentyOfTransactions, 0, "createdAt", "ASC", filters)
 	if err != nil {
 		log.Printf("[Error] failed to get active purchases: %v", err)
 

@@ -125,11 +125,17 @@ func loadFormatConfig() FormatConfig {
 }
 
 func loadSentryConfig() SentryConfig {
+	const (
+		DefaultTraceSampleRate         = 0.1
+		DefaultReplaySessionSampleRate = 0.1
+		DefaultReplayErrorSampleRate   = 0.1
+	)
+
 	return SentryConfig{
 		DSN:                     getEnv("SENTRY_DSN", ""),
-		TraceSampleRate:         getEnvAsFloat("SENTRY_TRACE_SAMPLE_RATE", 0.1),
-		ReplaySessionSampleRate: getEnvAsFloat("SENTRY_REPLAY_SESSION_SAMPLE_RATE", 0.1),
-		ReplayErrorSampleRate:   getEnvAsFloat("SENTRY_REPLAY_ERROR_SAMPLE_RATE", 0.1),
+		TraceSampleRate:         getEnvAsFloat("SENTRY_TRACE_SAMPLE_RATE", DefaultTraceSampleRate),
+		ReplaySessionSampleRate: getEnvAsFloat("SENTRY_REPLAY_SESSION_SAMPLE_RATE", DefaultReplaySessionSampleRate),
+		ReplayErrorSampleRate:   getEnvAsFloat("SENTRY_REPLAY_ERROR_SAMPLE_RATE", DefaultReplayErrorSampleRate),
 		Version:                 "0.0.0",
 	}
 }
@@ -156,5 +162,7 @@ func getCurrencyCode() string {
 }
 
 func getCurrencyMinorUnit() int {
-	return getEnvAsInt("FRACTION_DIGITS_MAX", 2)
+	const defaultMinorUnit = 2
+
+	return getEnvAsInt("FRACTION_DIGITS_MAX", defaultMinorUnit)
 }

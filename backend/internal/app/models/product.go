@@ -27,5 +27,7 @@ func (p Product) GrossPrice(decimalPlaces int32) decimal.Decimal {
 }
 
 func (p Product) VATAmount(decimalPlaces int32) decimal.Decimal {
-	return p.NetPrice.Mul(p.VATRate.Div(decimal.NewFromInt(100))).Round(decimalPlaces)
+	const hundred = 100
+
+	return p.NetPrice.Mul(p.VATRate.Div(decimal.NewFromInt(hundred))).Round(decimalPlaces)
 }

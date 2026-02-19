@@ -140,7 +140,9 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 	user.Email = userRequest.Email
 	user.GenerateRandomPassword()
 
-	validity := 3 * time.Hour
+	const validityOfChangePasswordToken = 3 * time.Hour
+
+	validity := validityOfChangePasswordToken
 	user.GenerateChangePasswordToken(&validity)
 
 	// only an admin may change the role of a user
