@@ -74,16 +74,16 @@ func TestCreatePurchaseWithList(t *testing.T) {
 
 	// Create a purchase
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"paymentMethod":   "CC",
 			"totalNetPrice":   "18.69",
 			"totalGrossPrice": "20",
-			"cart": []map[string]interface{}{
+			"cart": []map[string]any{
 				{
 					"ID":       2,
 					"quantity": 1,
 					"netPrice": "18.69",
-					"listItems": []map[string]interface{}{
+					"listItems": []map[string]any{
 						{
 							"ID":             1,
 							"attendedGuests": 1,
@@ -152,16 +152,16 @@ func TestCreatePurchaseWithWithFreeProduct(t *testing.T) {
 
 	// Create a purchase with a free product
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalNetPrice":   "0",
 			"totalGrossPrice": "0",
-			"cart": []map[string]interface{}{
+			"cart": []map[string]any{
 				{
 					"id":        3, // free product
 					"quantity":  1,
 					"netPrice":  "0",
-					"listItems": []map[string]interface{}{},
+					"listItems": []map[string]any{},
 				},
 			},
 		}).
@@ -194,16 +194,16 @@ func TestCreatePurchaseWithWrongTotalGrossPrice(t *testing.T) {
 
 	// Create a purchase, but with a wrong total gross price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalGrossPrice": "21",
 			"totalNetPrice":   "18.69",
-			"cart": []map[string]interface{}{
+			"cart": []map[string]any{
 				{
 					"ID":        2,
 					"quantity":  1,
 					"netPrice":  "18.69",
-					"listItems": []map[string]interface{}{},
+					"listItems": []map[string]any{},
 				},
 			},
 		}).
@@ -219,16 +219,16 @@ func TestCreatePurchaseWithWrongTotalNetPrice(t *testing.T) {
 
 	// Create a purchase, but with a wrong total net price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalGrossPrice": "20",
 			"totalNetPrice":   "1.69",
-			"cart": []map[string]interface{}{
+			"cart": []map[string]any{
 				{
 					"ID":        2,
 					"quantity":  1,
 					"netPrice":  "18.69",
-					"listItems": []map[string]interface{}{},
+					"listItems": []map[string]any{},
 				},
 			},
 		}).
@@ -244,16 +244,16 @@ func TestCreatePurchaseWithWrongProductPrice(t *testing.T) {
 
 	// Create a purchase, but with a wrong total net price
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalGrossPrice": "20",
 			"totalNetPrice":   "18.69",
-			"cart": []map[string]interface{}{
+			"cart": []map[string]any{
 				{
 					"ID":        2,
 					"quantity":  1,
 					"netPrice":  "1.69", // wrong price
-					"listItems": []map[string]interface{}{},
+					"listItems": []map[string]any{},
 				},
 			},
 		}).
@@ -269,16 +269,16 @@ func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
 
 	// Create a purchase, but with a wrong product ID
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalGrossPrice": "21",
 			"totalNetPrice":   "21",
-			"cart": []map[string]interface{}{
+			"cart": []map[string]any{
 				{
 					"ID":        123,
 					"quantity":  1,
 					"netPrice":  "21",
-					"listItems": []map[string]interface{}{},
+					"listItems": []map[string]any{},
 				},
 			},
 		}).
@@ -294,16 +294,16 @@ func TestCreatePurchaseWithInvalidPaymentMethod(t *testing.T) {
 
 	// Create a purchase, but with a wrong payment method
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"paymentMethod":   "INVALID",
 			"totalGrossPrice": "21",
 			"totalNetPrice":   "21",
-			"cart": []map[string]interface{}{
+			"cart": []map[string]any{
 				{
 					"ID":        123,
 					"quantity":  1,
 					"netPrice":  "21",
-					"listItems": []map[string]interface{}{},
+					"listItems": []map[string]any{},
 				},
 			},
 		}).
@@ -319,16 +319,16 @@ func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
 
 	// Create a purchase
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalNetPrice":   "0",
 			"totalGrossPrice": "0",
-			"cart": []map[string]interface{}{
+			"cart": []map[string]any{
 				{
 					"ID":       3, // free product
 					"quantity": 1,
 					"netPrice": 0,
-					"listItems": []map[string]interface{}{
+					"listItems": []map[string]any{
 						{
 							"ID":             1,
 							"attendedGuests": 1,
@@ -349,16 +349,16 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 
 	// Create a purchase
 	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalNetPrice":   "0",
 			"totalGrossPrice": "0",
-			"cart": []map[string]interface{}{
+			"cart": []map[string]any{
 				{
 					"ID":       3, // free product
 					"quantity": 1,
 					"netPrice": 0,
-					"listItems": []map[string]interface{}{
+					"listItems": []map[string]any{
 						{
 							"ID":             1,
 							"attendedGuests": 15,
@@ -413,16 +413,16 @@ func TestPurchaseDeleteWithoutUuid(t *testing.T) {
 
 func createPurchase() string {
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalNetPrice":   "37.38",
 			"totalGrossPrice": "40",
-			"cart": []map[string]interface{}{
+			"cart": []map[string]any{
 				{
 					"ID":        1,
 					"quantity":  1,
 					"netPrice":  "37.38",
-					"listItems": []map[string]interface{}{},
+					"listItems": []map[string]any{},
 				},
 			},
 		}).

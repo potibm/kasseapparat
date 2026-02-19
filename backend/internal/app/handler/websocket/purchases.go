@@ -94,7 +94,7 @@ func (h *Handler) sendInitialStatus(conn *websocket.Conn, transactionID uuid.UUI
 
 func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uuid.UUID) {
 	for {
-		var msg map[string]interface{}
+		var msg map[string]any
 		if err := conn.ReadJSON(&msg); err != nil {
 			log.Println("WS read error:", err)
 
@@ -116,7 +116,7 @@ func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uu
 	}
 }
 
-func (h *Handler) handleCancelPayment(conn *websocket.Conn, msg map[string]interface{}, transactionID uuid.UUID) {
+func (h *Handler) handleCancelPayment(conn *websocket.Conn, msg map[string]any, transactionID uuid.UUID) {
 	readerID, ok := msg["reader_id"].(string)
 	if !ok || readerID == "" {
 		sendWSMessage(conn, "error", gin.H{"message": "reader_id missing or invalid"}, &transactionID)

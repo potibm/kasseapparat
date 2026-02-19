@@ -175,7 +175,7 @@ func TestCreateUpdateAndDeleteGuest(t *testing.T) {
 	arrivalNote := "Hand out a tshirt"
 
 	guest := withDemoUserAuthToken(e.POST(guestBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"guestlistId":          1,
 			"name":                 originalName,
 			"additionalGuests":     2,
@@ -204,7 +204,7 @@ func TestCreateUpdateAndDeleteGuest(t *testing.T) {
 	guest.Value("name").String().Contains(originalName)
 
 	withDemoUserAuthToken(e.PUT(guestUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"name":                 changedName,
 			"additionalGuests":     3,
 			"attendedGuests":       0,

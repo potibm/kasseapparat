@@ -90,7 +90,7 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 	changedName := "Test Product Updated"
 
 	product := withDemoUserAuthToken(e.POST(productBaseUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"name":      originalName,
 			"price":     "10",
 			"wrapAfter": false,
@@ -114,7 +114,7 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 	product.Value("name").String().Contains(originalName)
 
 	withDemoUserAuthToken(e.PUT(productUrl)).
-		WithJSON(map[string]interface{}{
+		WithJSON(map[string]any{
 			"name":      changedName,
 			"price":     "20",
 			"wrapAfter": false,

@@ -68,9 +68,9 @@ func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods confi
 
 	result := make([]models.PaymentMethod, 0)
 
-	paymentMethodsArray := strings.Split(paymentMethods, ",")
-	for _, code := range paymentMethodsArray {
-		code = strings.TrimSpace(string(code))
+	paymentMethodsArray := strings.SplitSeq(paymentMethods, ",")
+	for code := range paymentMethodsArray {
+		code = strings.TrimSpace(code)
 		if code == "" {
 			continue
 		}

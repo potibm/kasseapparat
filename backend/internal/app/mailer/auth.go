@@ -35,7 +35,7 @@ func (mailer *Mailer) sendTokenMail(to string, userId uint, username string, tok
 		return fmt.Errorf("failed to parse email template: %w", err)
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"Username": username,
 		"Link":     generateChangePasswordLink(mailer.frontendBaseUrl, token, userId),
 	}

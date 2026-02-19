@@ -85,8 +85,8 @@ func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeou
 	}
 }
 
-func authenticator(repo *sqliteRepo.Repository) func(c *gin.Context) (interface{}, error) {
-	return func(c *gin.Context) (interface{}, error) {
+func authenticator(repo *sqliteRepo.Repository) func(c *gin.Context) (any, error) {
+	return func(c *gin.Context) (any, error) {
 		var loginVals login
 		if err := c.ShouldBind(&loginVals); err != nil {
 			return "", ginjwt.ErrMissingLoginValues
@@ -106,8 +106,8 @@ func authenticator(repo *sqliteRepo.Repository) func(c *gin.Context) (interface{
 	}
 }
 
-func payloadFunc() func(data interface{}) jwt.MapClaims {
-	return func(data interface{}) jwt.MapClaims {
+func payloadFunc() func(data any) jwt.MapClaims {
+	return func(data any) jwt.MapClaims {
 		if v, ok := data.(*models.User); ok {
 			return jwt.MapClaims{
 				IdentityKey: v.ID,
@@ -118,8 +118,8 @@ func payloadFunc() func(data interface{}) jwt.MapClaims {
 	}
 }
 
-func identityHandler() func(c *gin.Context) interface{} {
-	return func(c *gin.Context) interface{} {
+func identityHandler() func(c *gin.Context) any {
+	return func(c *gin.Context) any {
 		claims := ginjwt.ExtractClaims(c)
 
 		return &models.User{

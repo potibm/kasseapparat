@@ -75,12 +75,8 @@ func PushUpdate(transactionID uuid.UUID, status models.PurchaseStatus) {
 }
 
 func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transactionID *uuid.UUID) {
-	payload := gin.H{
-		"type": msgType,
-	}
-	for k, v := range data {
-		payload[k] = v
-	}
+	payload := data
+	payload["type"] = msgType
 
 	if transactionID != nil {
 		payload["transaction_id"] = transactionID.String()
