@@ -132,47 +132,6 @@ func (s *PurchaseService) ValidateAndPrepareGuests(input PurchaseInput) ([]model
 	return updatedGuests, nil
 }
 
-func (s *PurchaseService) validateGuest(listInput ListItemInput, productID int) (*models.Guest, error) {
-	guest, err := s.sqliteRepo.GetFullGuestByID(listInput.ID)
-	if err != nil || guest == nil {
-		return nil, ErrGuestNotFound
-	}
-
-	if guest.AttendedGuests != 0 {
-		return nil, ErrGuestAlreadyAttended
-	}
-
-	if guest.AdditionalGuests+1 < uint(listInput.AttendedGuests) {
-		return nil, ErrTooManyAdditionalGuests
-	}
-
-	if guest.Guestlist.ProductID != uint(productID) {
-		return nil, ErrListItemWrongProduct
-	}
-
-	guest.AttendedGuests = uint(listInput.AttendedGuests)
-	guest.MarkAsArrived()
-
-	return guest, nil
-}
-
-func (s *PurchaseService) notifyGuests(guests []models.Guest) {
-	if s.Mailer == nil {
-		log.Println("Mailer is not configured, skipping guest notifications")
-
-		return
-	}
-
-	for _, guest := range guests {
-		if guest.NotifyOnArrivalEmail != nil {
-			err := s.Mailer.SendNotificationOnArrival(*guest.NotifyOnArrivalEmail, guest.Name)
-			if err != nil {
-				log.Printf("Failed to send notification email to guest %s: %v", *guest.NotifyOnArrivalEmail, err)
-			}
-		}
-	}
-}
-
 func (s *PurchaseService) CreateConfirmedPurchase(ctx context.Context, input PurchaseInput, userID int) (*models.Purchase, error) {
 	savedPurchase, guests, err := s.createPurchaseWithStatus(ctx, input, userID, models.PurchaseStatusConfirmed)
 	if err != nil {
@@ -188,67 +147,6 @@ func (s *PurchaseService) CreatePendingPurchase(ctx context.Context, input Purch
 	savedPurchase, _, err := s.createPurchaseWithStatus(ctx, input, userID, models.PurchaseStatusPending)
 
 	return savedPurchase, err
-}
-
-func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input PurchaseInput, userID int, status models.PurchaseStatus) (*models.Purchase, []models.Guest, error) {
-	net, gross, err := s.ValidateAndCalculatePrices(input)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	guests, err := s.ValidateAndPrepareGuests(input)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var savedPurchase *models.Purchase
-
-	err = s.sqliteRepo.WithTransaction(ctx, func(txRepo sqlite.RepositoryInterface) error {
-		purchase := &models.Purchase{
-			TotalNetPrice:   net,
-			TotalGrossPrice: gross,
-			PaymentMethod:   input.PaymentMethod,
-			Status:          status,
-		}
-		purchase.CreatedByID = uintPtr(uint(userID))
-
-		for _, item := range input.Cart {
-			product, err := txRepo.GetProductByID(item.ID)
-			if err != nil {
-				return err
-			}
-
-			pi := models.PurchaseItem{
-				ProductID: product.ID,
-				Quantity:  item.Quantity,
-				NetPrice:  product.NetPrice,
-				VATRate:   product.VATRate,
-			}
-
-			purchase.PurchaseItems = append(purchase.PurchaseItems, pi)
-		}
-
-		stored, err := txRepo.StorePurchases(*purchase)
-		if err != nil {
-			return err
-		}
-
-		savedPurchase = &stored
-
-		for _, guest := range guests {
-			guest.PurchaseID = &stored.ID
-			if _, err := txRepo.UpdateGuestByID(int(guest.ID), guest); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return savedPurchase, guests, nil
 }
 
 func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
@@ -346,4 +244,107 @@ func (s *PurchaseService) setPurchaseStatus(ctx context.Context, purchaseId uuid
 	})
 
 	return purchase, err
+}
+
+
+func (s *PurchaseService) validateGuest(listInput ListItemInput, productID int) (*models.Guest, error) {
+	guest, err := s.sqliteRepo.GetFullGuestByID(listInput.ID)
+	if err != nil || guest == nil {
+		return nil, ErrGuestNotFound
+	}
+
+	if guest.AttendedGuests != 0 {
+		return nil, ErrGuestAlreadyAttended
+	}
+
+	if guest.AdditionalGuests+1 < uint(listInput.AttendedGuests) {
+		return nil, ErrTooManyAdditionalGuests
+	}
+
+	if guest.Guestlist.ProductID != uint(productID) {
+		return nil, ErrListItemWrongProduct
+	}
+
+	guest.AttendedGuests = uint(listInput.AttendedGuests)
+	guest.MarkAsArrived()
+
+	return guest, nil
+}
+
+func (s *PurchaseService) notifyGuests(guests []models.Guest) {
+	if s.Mailer == nil {
+		log.Println("Mailer is not configured, skipping guest notifications")
+
+		return
+	}
+
+	for _, guest := range guests {
+		if guest.NotifyOnArrivalEmail != nil {
+			err := s.Mailer.SendNotificationOnArrival(*guest.NotifyOnArrivalEmail, guest.Name)
+			if err != nil {
+				log.Printf("Failed to send notification email to guest %s: %v", *guest.NotifyOnArrivalEmail, err)
+			}
+		}
+	}
+}
+
+func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input PurchaseInput, userID int, status models.PurchaseStatus) (*models.Purchase, []models.Guest, error) {
+	net, gross, err := s.ValidateAndCalculatePrices(input)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	guests, err := s.ValidateAndPrepareGuests(input)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var savedPurchase *models.Purchase
+
+	err = s.sqliteRepo.WithTransaction(ctx, func(txRepo sqlite.RepositoryInterface) error {
+		purchase := &models.Purchase{
+			TotalNetPrice:   net,
+			TotalGrossPrice: gross,
+			PaymentMethod:   input.PaymentMethod,
+			Status:          status,
+		}
+		purchase.CreatedByID = uintPtr(uint(userID))
+
+		for _, item := range input.Cart {
+			product, err := txRepo.GetProductByID(item.ID)
+			if err != nil {
+				return err
+			}
+
+			pi := models.PurchaseItem{
+				ProductID: product.ID,
+				Quantity:  item.Quantity,
+				NetPrice:  product.NetPrice,
+				VATRate:   product.VATRate,
+			}
+
+			purchase.PurchaseItems = append(purchase.PurchaseItems, pi)
+		}
+
+		stored, err := txRepo.StorePurchases(*purchase)
+		if err != nil {
+			return err
+		}
+
+		savedPurchase = &stored
+
+		for _, guest := range guests {
+			guest.PurchaseID = &stored.ID
+			if _, err := txRepo.UpdateGuestByID(int(guest.ID), guest); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return savedPurchase, guests, nil
 }

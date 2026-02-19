@@ -66,10 +66,6 @@ func (m *Mailer) SetFrontendBaseUrl(url string) {
 	m.frontendBaseUrl = url
 }
 
-func (m *Mailer) address() string {
-	return m.host + ":" + strconv.Itoa(m.port)
-}
-
 func (m *Mailer) SetDisabled(disabled bool) {
 	m.disabled = disabled
 }
@@ -99,4 +95,8 @@ func (m *Mailer) SendMail(to string, subject string, body string) error {
 	}
 
 	return err
+}
+
+func (m *Mailer) address() string {
+	return m.host + ":" + strconv.Itoa(m.port)
 }

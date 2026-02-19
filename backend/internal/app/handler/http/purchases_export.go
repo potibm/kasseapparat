@@ -53,9 +53,14 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 	}
 
 	for _, p := range purchases {
-		Vat := p.Purchase.TotalGrossPrice.Sub(p.Purchase.TotalNetPrice)
+		handler.exportSinglePurchase(c, writer, p)
+	}
+}
 
-		err = writer.Write([]string{
+func (handler *Handler) exportSinglePurchase(c *gin.Context, writer *csv.Writer, p models.PurchaseItem) {
+	Vat := p.Purchase.TotalGrossPrice.Sub(p.Purchase.TotalNetPrice)
+
+		err := writer.Write([]string{
 			fmt.Sprint(p.CreatedAt.Format("2006-01-02 15:04:05")),
 			p.Purchase.ID.String(),
 			strconv.Itoa(p.Quantity),
@@ -78,4 +83,3 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 			return
 		}
 	}
-}

@@ -16,8 +16,9 @@ const passwordLength = 32
 const defaultChangePasswordTokenValidity = 15 * time.Minute
 
 type User struct {
-	ID uint `gorm:"primarykey" json:"id"`
 	GormModel
+
+	ID                        uint    `gorm:"primarykey"   json:"id"`
 	Username                  string  `gorm:"unique"       json:"username"`
 	Email                     string  `gorm:"unique"       json:"email"`
 	Password                  string  `json:"-"`

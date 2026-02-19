@@ -29,9 +29,10 @@ const (
 )
 
 type Purchase struct {
-	ID        uuid.UUID `gorm:"type:text;primaryKey" json:"id"`
-	CreatedAt time.Time `gorm:"index"                json:"createdAt"`
 	GormOwnedModel
+
+	ID                       uuid.UUID       `gorm:"type:text;primaryKey"          json:"id"`
+	CreatedAt                time.Time       `gorm:"index"                         json:"createdAt"`
 	TotalNetPrice            decimal.Decimal `gorm:"type:TEXT"                     json:"totalNetPrice"`
 	TotalGrossPrice          decimal.Decimal `gorm:"type:TEXT"                     json:"totalGrossPrice"`
 	PurchaseItems            []PurchaseItem  `gorm:"foreignKey:PurchaseID"         json:"purchaseItems"`

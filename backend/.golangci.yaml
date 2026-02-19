@@ -11,8 +11,6 @@ linters:
     - lll
     - funlen
     - cyclop
-    - embeddedstructfieldcheck
-    - funcorder
   settings:
     wsl_v5:
       allow-first-in-block: true

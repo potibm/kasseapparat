@@ -23,50 +23,6 @@ type MockSumUpRepository struct {
 	GetWebhookUrlFunc               func() *string
 }
 
-func (m *MockSumUpRepository) GetReaders() ([]sumup.Reader, error) {
-	return m.GetReadersFunc()
-}
-
-func (m *MockSumUpRepository) GetReader(readerId string) (*sumup.Reader, error) {
-	return m.GetReaderFunc(readerId)
-}
-
-func (m *MockSumUpRepository) CreateReader(pairingCode string, readerName string) (*sumup.Reader, error) {
-	return m.CreateReaderFunc(pairingCode, readerName)
-}
-
-func (m *MockSumUpRepository) DeleteReader(readerId string) error {
-	return m.DeleteReaderFunc(readerId)
-}
-
-func (m *MockSumUpRepository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl *string) (*uuid.UUID, error) {
-	return m.CreateReaderCheckoutFunc(readerId, amount, description, affiliateTransactionId, returnUrl)
-}
-
-func (m *MockSumUpRepository) CreateReaderTerminateAction(readerId string) error {
-	return m.CreateReaderTerminateActionFunc(readerId)
-}
-
-func (m *MockSumUpRepository) GetTransactions(oldestFrom *time.Time) ([]sumup.Transaction, error) {
-	return m.GetTransactionsFunc(oldestFrom)
-}
-
-func (m *MockSumUpRepository) GetTransactionByClientTransactionId(transactionId uuid.UUID) (*sumup.Transaction, error) {
-	return m.GetTransactionByIdFunc(transactionId)
-}
-
-func (m *MockSumUpRepository) GetTransactionById(transactionId uuid.UUID) (*sumup.Transaction, error) {
-	return m.GetTransactionByIdFunc(transactionId)
-}
-
-func (m *MockSumUpRepository) RefundTransaction(transactionId uuid.UUID) error {
-	return m.RefundTransactionFunc(transactionId)
-}
-
-func (m *MockSumUpRepository) GetWebhookUrl() *string {
-	return m.GetWebhookUrlFunc()
-}
-
 func NewMockSumUpRepository() *MockSumUpRepository {
 	const mockCheckoutUUID = "00000000-0000-4000-8000-000000000000"
 
@@ -118,6 +74,50 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 			return &url
 		},
 	}
+}
+
+func (m *MockSumUpRepository) GetReaders() ([]sumup.Reader, error) {
+	return m.GetReadersFunc()
+}
+
+func (m *MockSumUpRepository) GetReader(readerId string) (*sumup.Reader, error) {
+	return m.GetReaderFunc(readerId)
+}
+
+func (m *MockSumUpRepository) CreateReader(pairingCode string, readerName string) (*sumup.Reader, error) {
+	return m.CreateReaderFunc(pairingCode, readerName)
+}
+
+func (m *MockSumUpRepository) DeleteReader(readerId string) error {
+	return m.DeleteReaderFunc(readerId)
+}
+
+func (m *MockSumUpRepository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl *string) (*uuid.UUID, error) {
+	return m.CreateReaderCheckoutFunc(readerId, amount, description, affiliateTransactionId, returnUrl)
+}
+
+func (m *MockSumUpRepository) CreateReaderTerminateAction(readerId string) error {
+	return m.CreateReaderTerminateActionFunc(readerId)
+}
+
+func (m *MockSumUpRepository) GetTransactions(oldestFrom *time.Time) ([]sumup.Transaction, error) {
+	return m.GetTransactionsFunc(oldestFrom)
+}
+
+func (m *MockSumUpRepository) GetTransactionByClientTransactionId(transactionId uuid.UUID) (*sumup.Transaction, error) {
+	return m.GetTransactionByIdFunc(transactionId)
+}
+
+func (m *MockSumUpRepository) GetTransactionById(transactionId uuid.UUID) (*sumup.Transaction, error) {
+	return m.GetTransactionByIdFunc(transactionId)
+}
+
+func (m *MockSumUpRepository) RefundTransaction(transactionId uuid.UUID) error {
+	return m.RefundTransactionFunc(transactionId)
+}
+
+func (m *MockSumUpRepository) GetWebhookUrl() *string {
+	return m.GetWebhookUrlFunc()
 }
 
 type MockStatusPublisher struct {
