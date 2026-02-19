@@ -102,7 +102,9 @@ func TestRefreshTokenWithExpiredToken(t *testing.T) {
 	defer cleanup()
 
 	// old token
-	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MiwiZXhwIjoxNzI2MDg4NTA4LCJvcmlnX2lhdCI6MTcyNjA4NzkwOH0.sNlaDHxoJ6Lr1IruI2DembljhSFmlZncusHUV4hcGq4"
+	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+		"eyJJRCI6MiwiZXhwIjoxNzI2MDg4NTA4LCJvcmlnX2lhdCI6MTcyNjA4NzkwOH0." +
+		"sNlaDHxoJ6Lr1IruI2DembljhSFmlZncusHUV4hcGq4"
 
 	response := e.POST(refreshtokenUrl).
 		WithCookie("refresh_token", token).

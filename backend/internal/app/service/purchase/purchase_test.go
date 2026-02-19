@@ -31,7 +31,10 @@ func (m *MockRepository) WithTransaction(ctx context.Context, fn func(repo sqlit
 	return fn(m)
 }
 
-func (m *MockRepository) UpdatePurchaseStatusByID(id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
+func (m *MockRepository) UpdatePurchaseStatusByID(
+	id uuid.UUID,
+	status models.PurchaseStatus,
+) (*models.Purchase, error) {
 	if m.StoredPurchase == nil || m.StoredPurchase.ID.String() != id.String() {
 		return nil, fmt.Errorf("purchase %s not found in mock", id)
 	}
@@ -114,7 +117,13 @@ func (m *MockRepository) GetDB() *gorm.DB {
 	panic(errNotImplemented)
 }
 
-func (m *MockRepository) GetGuests(limit int, offset int, sort string, order string, filters sqlite.GuestFilters) ([]models.Guest, error) {
+func (m *MockRepository) GetGuests(
+	limit int,
+	offset int,
+	sort string,
+	order string,
+	filters sqlite.GuestFilters,
+) ([]models.Guest, error) {
 	panic(errNotImplemented)
 }
 func (m *MockRepository) GetTotalGuests(filters *sqlite.GuestFilters) (int64, error) {
@@ -137,7 +146,13 @@ func (m *MockRepository) DeleteGuest(guest models.Guest, deletedBy models.User) 
 	panic(errNotImplemented)
 }
 
-func (m *MockRepository) GetGuestlists(limit int, offset int, sort string, order string, filters sqlite.GuestlistFilters) ([]models.Guestlist, error) {
+func (m *MockRepository) GetGuestlists(
+	limit int,
+	offset int,
+	sort string,
+	order string,
+	filters sqlite.GuestlistFilters,
+) ([]models.Guestlist, error) {
 	panic(errNotImplemented)
 }
 func (m *MockRepository) GetTotalGuestlists() (int64, error) {
@@ -170,7 +185,11 @@ func (m *MockRepository) GetProductInterestByID(id int) (*models.ProductInterest
 func (m *MockRepository) DeleteProductInterest(productInterest models.ProductInterest, deletedBy models.User) {
 	panic(errNotImplemented)
 }
-func (m *MockRepository) CreateProductInterest(productInterest models.ProductInterest, createdBy models.User) (models.ProductInterest, error) {
+
+func (m *MockRepository) CreateProductInterest(
+	productInterest models.ProductInterest,
+	createdBy models.User,
+) (models.ProductInterest, error) {
 	panic(errNotImplemented)
 }
 func (m *MockRepository) GetProductInterestCountByProductID(productID uint) (int, error) {
@@ -179,7 +198,14 @@ func (m *MockRepository) GetProductInterestCountByProductID(productID uint) (int
 func (m *MockRepository) GetProductStats() ([]response.ProductStats, error) {
 	panic(errNotImplemented)
 }
-func (m *MockRepository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error) {
+
+func (m *MockRepository) GetProducts(
+	limit int,
+	offset int,
+	sort string,
+	order string,
+	ids []int,
+) ([]models.Product, error) {
 	panic(errNotImplemented)
 }
 func (m *MockRepository) GetTotalProducts() (int64, error) {
@@ -203,14 +229,27 @@ func (m *MockRepository) DeletePurchaseByID(id uuid.UUID, deletedBy models.User)
 	panic(errNotImplemented)
 }
 
-func (m *MockRepository) UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error) {
-	panic(errNotImplemented)
-}
-func (m *MockRepository) UpdatePurchaseSumupClientTransactionIDByID(id uuid.UUID, sumupClientTransactionID uuid.UUID) (*models.Purchase, error) {
+func (m *MockRepository) UpdatePurchaseSumupTransactionIDByID(
+	id uuid.UUID,
+	sumupTransactionID uuid.UUID,
+) (*models.Purchase, error) {
 	panic(errNotImplemented)
 }
 
-func (m *MockRepository) GetPurchases(limit int, offset int, sort string, order string, filters sqlite.PurchaseFilters) ([]models.Purchase, error) {
+func (m *MockRepository) UpdatePurchaseSumupClientTransactionIDByID(
+	id uuid.UUID,
+	sumupClientTransactionID uuid.UUID,
+) (*models.Purchase, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) GetPurchases(
+	limit int,
+	offset int,
+	sort string,
+	order string,
+	filters sqlite.PurchaseFilters,
+) ([]models.Purchase, error) {
 	panic(errNotImplemented)
 }
 func (m *MockRepository) GetFilteredPurchases(filters sqlite.PurchaseFilters) ([]models.PurchaseItem, error) {
@@ -229,7 +268,14 @@ func (m *MockRepository) GetPurchasedQuantitiesByProductID(productID uint) (int,
 func (m *MockRepository) GetUserByID(id int) (*models.User, error) {
 	panic(errNotImplemented)
 }
-func (m *MockRepository) GetUsers(limit int, offset int, sort string, order string, filters sqlite.UserFilters) ([]models.User, error) {
+
+func (m *MockRepository) GetUsers(
+	limit int,
+	offset int,
+	sort string,
+	order string,
+	filters sqlite.UserFilters,
+) ([]models.User, error) {
 	panic(errNotImplemented)
 }
 func (m *MockRepository) GetTotalUsers(filters *sqlite.UserFilters) (int64, error) {

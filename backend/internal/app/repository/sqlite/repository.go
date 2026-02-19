@@ -40,7 +40,13 @@ type GuestCRUDRepository interface {
 }
 
 type GuestlistRepository interface {
-	GetGuestlists(limit int, offset int, sort string, order string, filters GuestlistFilters) ([]models.Guestlist, error)
+	GetGuestlists(
+		limit int,
+		offset int,
+		sort string,
+		order string,
+		filters GuestlistFilters,
+	) ([]models.Guestlist, error)
 	GetTotalGuestlists() (int64, error)
 	GetGuestlistByID(id int) (*models.Guestlist, error)
 	GetGuestlistWithTypeCode() (*models.Guestlist, error)
@@ -71,11 +77,14 @@ type ProductRepository interface {
 
 type PurchaseRepository interface {
 	PurchaseCRUDRepository
-	
+
 	GetPurchaseBySumupClientTransactionID(sumupTransactionID uuid.UUID) (*models.Purchase, error)
 	UpdatePurchaseStatusByID(id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error)
 	UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error)
-	UpdatePurchaseSumupClientTransactionIDByID(id uuid.UUID, sumupClientTransactionID uuid.UUID) (*models.Purchase, error)
+	UpdatePurchaseSumupClientTransactionIDByID(
+		id uuid.UUID,
+		sumupClientTransactionID uuid.UUID,
+	) (*models.Purchase, error)
 	GetFilteredPurchases(filters PurchaseFilters) ([]models.PurchaseItem, error)
 	GetPurchaseStats() ([]ProductPurchaseStats, error)
 	GetPurchasedQuantitiesByProductID(productID uint) (int, error)
@@ -88,7 +97,6 @@ type PurchaseCRUDRepository interface {
 	GetTotalPurchases(filters PurchaseFilters) (int64, error)
 	GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error)
 }
-
 
 type UserRepository interface {
 	GetUserByID(id int) (*models.User, error)

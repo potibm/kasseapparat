@@ -8,7 +8,6 @@ linters:
   disable:
     - wsl
     - testpackage
-    - lll
     - funlen
     - cyclop
   settings:
@@ -46,6 +45,11 @@ linters:
         linters:
           - mnd
 formatters:
+  enable:
+    - golines
+  settings:
+    golines:
+      max-len: 120
   exclusions:
     generated: lax
     paths:

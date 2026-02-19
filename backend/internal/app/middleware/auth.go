@@ -49,7 +49,13 @@ func RegisterRoute(r *gin.RouterGroup, handle *ginjwt.GinJWTMiddleware) {
 	r.POST("/auth/logout", handle.LogoutHandler)
 }
 
-func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeout int, secureCookie bool) *ginjwt.GinJWTMiddleware {
+func InitParams(
+	repo *sqliteRepo.Repository,
+	realm string,
+	secret string,
+	timeout int,
+	secureCookie bool,
+) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		log.Println("JWT_SECRET is not set, using default value")
 

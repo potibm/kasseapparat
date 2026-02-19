@@ -88,7 +88,8 @@ func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 	err = handler.mailer.SendChangePasswordTokenMail(
 		user.Email, user.ID, user.Username, *user.ChangePasswordToken)
 	if err != nil {
-		sentrygin.GetHubFromContext(c).CaptureException(fmt.Errorf("error sending change password token email: %w", err))
+		sentrygin.GetHubFromContext(c).
+			CaptureException(fmt.Errorf("error sending change password token email: %w", err))
 		log.Println("Error sending email", err)
 	}
 

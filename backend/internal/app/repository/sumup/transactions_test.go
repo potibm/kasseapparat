@@ -10,7 +10,10 @@ import (
 )
 
 func TestParseHrefToListTransactionsParams(t *testing.T) {
-	href := "limit=1&oldest_ref=0dd170c7-d82a-4fec-b2c0-e6de01c631a8&order=ascending&skip_tx_result=true&changes_since=2024-01-01T12%3A00%3A00Z&users=test1%40example.com&users=test2%40example.com"
+	href := "limit=1&oldest_ref=0dd170c7-d82a-4fec-b2c0-e6de01c631a8&" +
+		"order=ascending&skip_tx_result=true&" +
+		"changes_since=2024-01-01T12%3A00%3A00Z&users=test1%40example.com&" +
+		"users=test2%40example.com"
 
 	params, err := parseHrefToListTransactionsParams(href)
 	assert.NoError(t, err)

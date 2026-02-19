@@ -12,18 +12,18 @@ import (
 )
 
 type GuestCreateRequest struct {
-	GuestlistID          uint    `binding:"required"          form:"guestlistId"          json:"guestlistId"`
-	Name                 string  `binding:"required"          form:"name"                 json:"name"`
-	Code                 string  `form:"code"                 json:"code"`
-	AdditionalGuests     uint    `form:"additionalGuests"     json:"additionalGuests"`
-	AttendedGuests       uint    `form:"attendedGuests"       json:"attendedGuests"`
-	ArrivalNote          *string `form:"arrivalNote"          json:"arrivalNote"`
-	NotifyOnArrivalEmail *string `form:"notifyOnArrivalEmail" json:"notifyOnArrivalEmail"`
+	GuestlistID          uint    `binding:"required" form:"guestlistId"          json:"guestlistId"`
+	Name                 string  `binding:"required" form:"name"                 json:"name"`
+	Code                 string  `                   form:"code"                 json:"code"`
+	AdditionalGuests     uint    `                   form:"additionalGuests"     json:"additionalGuests"`
+	AttendedGuests       uint    `                   form:"attendedGuests"       json:"attendedGuests"`
+	ArrivalNote          *string `                   form:"arrivalNote"          json:"arrivalNote"`
+	NotifyOnArrivalEmail *string `                   form:"notifyOnArrivalEmail" json:"notifyOnArrivalEmail"`
 }
 
 type GuestUpdateRequest struct {
 	GuestlistID          uint       `form:"guestlistId"          json:"guestlistId"`
-	Name                 string     `binding:"required"          form:"name"                 json:"name"`
+	Name                 string     `form:"name"                 json:"name"                 binding:"required"`
 	Code                 string     `form:"code"                 json:"code"`
 	AdditionalGuests     uint       `form:"additionalGuests"     json:"additionalGuests"`
 	AttendedGuests       uint       `form:"attendedGuests"       json:"attendedGuests"`

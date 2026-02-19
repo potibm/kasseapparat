@@ -15,9 +15,9 @@ type Guest struct {
 	GuestlistID          uint       `json:"guestlistId"`
 	Guestlist            Guestlist  `json:"guestlist"`
 	Name                 string     `json:"name"`
-	Code                 *string    `gorm:"unique"               json:"code"`
-	AdditionalGuests     uint       `gorm:"default:0"            json:"additionalGuests"`
-	AttendedGuests       uint       `gorm:"default:0"            json:"attendedGuests"`
+	Code                 *string    `json:"code"                 gorm:"unique"`
+	AdditionalGuests     uint       `json:"additionalGuests"     gorm:"default:0"`
+	AttendedGuests       uint       `json:"attendedGuests"       gorm:"default:0"`
 	ArrivedAt            *time.Time `json:"arrivedAt"`
 	ArrivalNote          *string    `json:"arrivalNote"`
 	NotifyOnArrivalEmail *string    `json:"notifyOnArrivalEmail"`
@@ -28,9 +28,9 @@ type Guest struct {
 type GuestSummary struct {
 	ID               uint    `json:"id"`
 	Name             string  `json:"name"`
-	Code             *string `gorm:"unique"      json:"code"`
+	Code             *string `json:"code"             gorm:"unique"`
 	ListName         *string `json:"listName"`
-	AdditionalGuests uint    `gorm:"default:0"   json:"additionalGuests"`
+	AdditionalGuests uint    `json:"additionalGuests" gorm:"default:0"`
 	ArrivalNote      *string `json:"arrivalNote"`
 }
 

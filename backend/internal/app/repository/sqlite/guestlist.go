@@ -18,7 +18,13 @@ var guestlistSortFieldMappings = map[string]string{
 	"name": "LOWER(Name)",
 }
 
-func (repo *Repository) GetGuestlists(limit int, offset int, sort string, order string, filters GuestlistFilters) ([]models.Guestlist, error) {
+func (repo *Repository) GetGuestlists(
+	limit int,
+	offset int,
+	sort string,
+	order string,
+	filters GuestlistFilters,
+) ([]models.Guestlist, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}

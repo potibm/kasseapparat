@@ -52,7 +52,12 @@ func ToProductResponse(product models.Product, decimalPlaces int32) ProductRespo
 	return response
 }
 
-func ToExtendedProductResponse(product models.Product, unitsSold int, soldOutRequestCount int, decimalPlaces int32) ExtendedProductResponse {
+func ToExtendedProductResponse(
+	product models.Product,
+	unitsSold int,
+	soldOutRequestCount int,
+	decimalPlaces int32,
+) ExtendedProductResponse {
 	response := ExtendedProductResponse{
 		ProductResponse:     ToProductResponse(product, decimalPlaces),
 		UnitsSold:           unitsSold,

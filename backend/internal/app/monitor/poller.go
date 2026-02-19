@@ -36,7 +36,12 @@ type transactionPoller struct {
 	active           map[string]struct{}
 }
 
-func NewPoller(sumupRepo sumupRepo.RepositoryInterface, sqliteRepo sqliteRepo.RepositoryInterface, purchaseService purchaseService.Service, statusPublisher StatusPublisher) Poller {
+func NewPoller(
+	sumupRepo sumupRepo.RepositoryInterface,
+	sqliteRepo sqliteRepo.RepositoryInterface,
+	purchaseService purchaseService.Service,
+	statusPublisher StatusPublisher,
+) Poller {
 	return &transactionPoller{
 		SumupRepository:  sumupRepo,
 		SqliteRepository: sqliteRepo,

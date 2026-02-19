@@ -120,9 +120,17 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	var purchase *models.Purchase
 
 	if req.PaymentMethod == models.PaymentMethodSumUp {
-		purchase, err = handler.purchaseService.CreatePendingPurchase(c.Request.Context(), input, int(executingUserObj.ID))
+		purchase, err = handler.purchaseService.CreatePendingPurchase(
+			c.Request.Context(),
+			input,
+			int(executingUserObj.ID),
+		)
 	} else {
-		purchase, err = handler.purchaseService.CreateConfirmedPurchase(c.Request.Context(), input, int(executingUserObj.ID))
+		purchase, err = handler.purchaseService.CreateConfirmedPurchase(
+			c.Request.Context(),
+			input,
+			int(executingUserObj.ID),
+		)
 	}
 
 	if err != nil {
@@ -159,7 +167,9 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			handler.sumupRepository.GetWebhookUrl(),
 		)
 		if err != nil {
-			_ = c.Error(InternalServerError.WithMsg("Failed to create SumUp reader checkout: " + err.Error()).WithCause(err))
+			_ = c.Error(
+				InternalServerError.WithMsg("Failed to create SumUp reader checkout: " + err.Error()).WithCause(err),
+			)
 
 			log.Printf("Error creating SumUp reader checkout: %v", err)
 
@@ -175,7 +185,9 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 		_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(reloadedPurchase.ID, *clientTransactionId)
 		if err != nil {
-			_ = c.Error(InternalServerError.WithMsg("Failed to update purchase with SumUp transaction ID").WithCause(err))
+			_ = c.Error(
+				InternalServerError.WithMsg("Failed to update purchase with SumUp transaction ID").WithCause(err),
+			)
 
 			return
 		}

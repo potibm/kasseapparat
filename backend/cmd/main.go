@@ -40,9 +40,20 @@ func main() {
 	mailer := initializer.InitializeMailer(cfg.MailerConfig)
 	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, cfg.JwtConfig)
 
-	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, int32(cfg.FormatConfig.FractionDigitsMax))
+	purchaseService := purchaseService.NewPurchaseService(
+		sqliteRepository,
+		sumupRepository,
+		&mailer,
+		int32(cfg.FormatConfig.FractionDigitsMax),
+	)
 
-	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService, jwtMiddleware, &cfg.CorsAllowOrigins)
+	websocketHandler := websocket.NewHandler(
+		sqliteRepository,
+		sumupRepository,
+		purchaseService,
+		jwtMiddleware,
+		&cfg.CorsAllowOrigins,
+	)
 	publisher := &websocket.WebsocketPublisher{}
 	poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseService, publisher)
 
@@ -57,7 +68,14 @@ func main() {
 	}
 	httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
-	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles, jwtMiddleware, cfg)
+	router := initializer.InitializeHttpServer(
+		*httpHandler,
+		websocketHandler,
+		*sqliteRepository,
+		staticFiles,
+		jwtMiddleware,
+		cfg,
+	)
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
 	startCleanupForWebsocketConnections()

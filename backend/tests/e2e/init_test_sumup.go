@@ -56,7 +56,12 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 		},
 		GetTransactionByIdFunc: func(transactionId uuid.UUID) (*sumup.Transaction, error) {
 			if transactionId.String() == mockCheckoutUUID {
-				return &sumup.Transaction{ID: transactionId.String(), Currency: "EUR", Amount: decimal.NewFromFloat(10.00), Status: "COMPLETED"}, nil
+				return &sumup.Transaction{
+					ID:       transactionId.String(),
+					Currency: "EUR",
+					Amount:   decimal.NewFromFloat(10.00),
+					Status:   "COMPLETED",
+				}, nil
 			}
 
 			return nil, nil
@@ -92,7 +97,13 @@ func (m *MockSumUpRepository) DeleteReader(readerId string) error {
 	return m.DeleteReaderFunc(readerId)
 }
 
-func (m *MockSumUpRepository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl *string) (*uuid.UUID, error) {
+func (m *MockSumUpRepository) CreateReaderCheckout(
+	readerId string,
+	amount decimal.Decimal,
+	description string,
+	affiliateTransactionId string,
+	returnUrl *string,
+) (*uuid.UUID, error) {
 	return m.CreateReaderCheckoutFunc(readerId, amount, description, affiliateTransactionId, returnUrl)
 }
 

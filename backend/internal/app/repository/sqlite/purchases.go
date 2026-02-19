@@ -90,7 +90,9 @@ func (repo *Repository) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error) 
 	return repo.getPurchaseByQueryAndValue(whereIDEquals, id.String())
 }
 
-func (repo *Repository) GetPurchaseBySumupClientTransactionID(sumupClientTransactionID uuid.UUID) (*models.Purchase, error) {
+func (repo *Repository) GetPurchaseBySumupClientTransactionID(
+	sumupClientTransactionID uuid.UUID,
+) (*models.Purchase, error) {
 	return repo.getPurchaseByQueryAndValue("sumup_client_transaction_id = ?", sumupClientTransactionID.String())
 }
 
@@ -113,13 +115,20 @@ func (repo *Repository) UpdatePurchaseStatusByID(id uuid.UUID, status models.Pur
 		"status": string(status),
 	})
 }
-func (repo *Repository) UpdatePurchaseSumupClientTransactionIDByID(id uuid.UUID, sumupClientTransactionID uuid.UUID) (*models.Purchase, error) {
+
+func (repo *Repository) UpdatePurchaseSumupClientTransactionIDByID(
+	id uuid.UUID,
+	sumupClientTransactionID uuid.UUID,
+) (*models.Purchase, error) {
 	return repo.updatePurchaseFieldByID(id, map[string]any{
 		"sumup_client_transaction_id": sumupClientTransactionID.String(),
 	})
 }
 
-func (repo *Repository) UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error) {
+func (repo *Repository) UpdatePurchaseSumupTransactionIDByID(
+	id uuid.UUID,
+	sumupTransactionID uuid.UUID,
+) (*models.Purchase, error) {
 	return repo.updatePurchaseFieldByID(id, map[string]any{
 		"sumup_transaction_id": sumupTransactionID.String(),
 	})
@@ -137,7 +146,13 @@ func (repo *Repository) updatePurchaseFieldByID(id uuid.UUID, fields map[string]
 	return repo.GetPurchaseByID(id)
 }
 
-func (repo *Repository) GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error) {
+func (repo *Repository) GetPurchases(
+	limit int,
+	offset int,
+	sort string,
+	order string,
+	filters PurchaseFilters,
+) ([]models.Purchase, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -149,7 +164,13 @@ func (repo *Repository) GetPurchases(limit int, offset int, sort string, order s
 
 	var purchases []models.Purchase
 
-	query := repo.db.Joins("CreatedBy").Model(&models.Purchase{}).Preload("PurchaseItems").Preload("PurchaseItems.Product").Order(sort + " " + order + ", purchases.created_at DESC").Limit(limit).Offset(offset)
+	query := repo.db.Joins("CreatedBy").
+		Model(&models.Purchase{}).
+		Preload("PurchaseItems").
+		Preload("PurchaseItems.Product").
+		Order(sort + " " + order + ", purchases.created_at DESC").
+		Limit(limit).
+		Offset(offset)
 	query = filters.AddWhere(query)
 
 	if err := query.Find(&purchases).Error; err != nil {
@@ -200,9 +221,15 @@ func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
 
 	err := repo.db.
 		Model(&models.PurchaseItem{}).
-		Select("purchase_items.product_id, SUM(purchase_items.quantity) AS quantity, products.name").
-		Joins("JOIN purchases ON purchases.id = purchase_items.purchase_id AND purchases.status = ? ", models.PurchaseStatusConfirmed).
-		Joins("JOIN products ON products.id = purchase_items.product_id AND products.api_export = ?", 1).
+		Select("purchase_items.product_id, "+
+			"SUM(purchase_items.quantity) AS quantity, "+
+			"products.name").
+		Joins("JOIN purchases ON "+
+			"purchases.id = purchase_items.purchase_id AND "+
+			"purchases.status = ? ", models.PurchaseStatusConfirmed).
+		Joins("JOIN products ON "+
+			"products.id = purchase_items.product_id AND "+
+			"products.api_export = ?", 1).
 		Where("purchase_items.deleted_at IS NULL").
 		Group("purchase_items.product_id, products.name").
 		Scan(&purchases).Error
@@ -218,8 +245,11 @@ func (repo *Repository) GetPurchasedQuantitiesByProductID(productID uint) (int, 
 
 	err := repo.db.Table("purchase_items").
 		Select("SUM(quantity)").
-		Joins("JOIN purchases ON (purchase_items.purchase_id = purchases.id AND purchase_items.deleted_at IS NULL)").
-		Where("purchase_items.product_id = ? AND purchases.deleted_at IS NULL AND purchases.status = ?", productID, models.PurchaseStatusConfirmed).
+		Joins("JOIN purchases ON "+
+			"(purchase_items.purchase_id = purchases.id AND purchase_items.deleted_at IS NULL)").
+		Where("purchase_items.product_id = ? AND "+
+			"purchases.deleted_at IS NULL AND "+
+			"purchases.status = ?", productID, models.PurchaseStatusConfirmed).
 		Scan(&sum).Error
 	if err != nil {
 		return 0, err

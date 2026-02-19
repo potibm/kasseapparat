@@ -21,8 +21,8 @@ type User struct {
 	ID                        uint    `gorm:"primarykey"   json:"id"`
 	Username                  string  `gorm:"unique"       json:"username"`
 	Email                     string  `gorm:"unique"       json:"email"`
-	Password                  string  `json:"-"`
-	Admin                     bool    `json:"admin"`
+	Password                  string  `                    json:"-"`
+	Admin                     bool    `                    json:"admin"`
 	ChangePasswordToken       *string `gorm:"default:null" json:"-"`
 	ChangePasswordTokenExpiry *int64  `gorm:"default:null" json:"-"`
 }

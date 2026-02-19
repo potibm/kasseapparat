@@ -17,7 +17,13 @@ var productSortFieldMappings = map[string]string{
 	"pos":        "Pos",
 }
 
-func (repo *Repository) GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error) {
+func (repo *Repository) GetProducts(
+	limit int,
+	offset int,
+	sort string,
+	order string,
+	ids []int,
+) ([]models.Product, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -29,7 +35,11 @@ func (repo *Repository) GetProducts(limit int, offset int, sort string, order st
 
 	var products []models.Product
 
-	query := repo.db.Table("Products").Preload("Guestlists").Order(sortField + " " + order + ", Pos ASC, Id ASC").Limit(limit).Offset(offset)
+	query := repo.db.Table("Products").
+		Preload("Guestlists").
+		Order(sortField + " " + order + ", Pos ASC, Id ASC").
+		Limit(limit).
+		Offset(offset)
 
 	if len(ids) > 0 {
 		query = query.Where("Id IN ?", ids)
@@ -111,8 +121,13 @@ func (repo *Repository) GetAttendedGuestSumByProductID(productID uint) (int, err
 	err := repo.db.
 		Model(&models.Guest{}).
 		Select("SUM(guests.attended_guests)").
-		Joins("JOIN guestlists ON guests.guestlist_id = guestlists.id AND guestlists.product_id = ?", productID).
-		Joins("JOIN purchases ON guests.purchase_id = purchases.id AND purchases.deleted_at IS NULL AND purchases.status = ?", models.PurchaseStatusConfirmed).
+		Joins("JOIN guestlists ON "+
+			"guests.guestlist_id = guestlists.id AND "+
+			"guestlists.product_id = ?", productID).
+		Joins("JOIN purchases ON "+
+			"guests.purchase_id = purchases.id AND "+
+			"purchases.deleted_at IS NULL AND"+
+			"purchases.status = ?", models.PurchaseStatusConfirmed).
 		Where("guests.deleted_at IS NULL").
 		Scan(&sum).Error
 	if err != nil {

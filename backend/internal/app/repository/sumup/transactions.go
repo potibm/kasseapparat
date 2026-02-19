@@ -35,7 +35,11 @@ func (r *Repository) GetTransactions(oldestFrom *time.Time) ([]Transaction, erro
 	return result, nil
 }
 
-func (r *Repository) fetchPagedTransactions(ctx context.Context, oldestFrom *time.Time, maxPages, pageSize int) ([]*sumup.TransactionHistory, error) {
+func (r *Repository) fetchPagedTransactions(
+	ctx context.Context,
+	oldestFrom *time.Time,
+	maxPages, pageSize int,
+) ([]*sumup.TransactionHistory, error) {
 	var allItems []*sumup.TransactionHistory
 
 	pageCount := 0

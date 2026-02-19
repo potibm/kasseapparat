@@ -10,9 +10,9 @@ type PurchaseItem struct {
 
 	PurchaseID uuid.UUID       `gorm:"type:text"             json:"purchaseID"` // Foreign key to Purchase
 	Purchase   Purchase        `gorm:"foreignKey:PurchaseID" json:"-"`
-	ProductID  uint            `json:"productID"` // Foreign key to Product
+	ProductID  uint            `                             json:"productID"` // Foreign key to Product
 	Product    Product         `gorm:"foreignKey:ProductID"  json:"product"`
-	Quantity   int             `json:"quantity"`
+	Quantity   int             `                             json:"quantity"`
 	NetPrice   decimal.Decimal `gorm:"type:TEXT"             json:"netPrice"`
 	VATRate    decimal.Decimal `gorm:"type:TEXT"             json:"vatRate"`
 }

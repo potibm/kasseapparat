@@ -15,7 +15,7 @@ type ProductRequestCreate struct {
 	Name      string          `binding:"required"         form:"name"      json:"name"`
 	NetPrice  decimal.Decimal `binding:"required"         form:"netPrice"  json:"netPrice"`
 	VATRate   decimal.Decimal `binding:"required"         form:"vatRate"   json:"vatRate"`
-	WrapAfter bool            `form:"wrapAfter"           json:"wrapAfter"`
+	WrapAfter bool            `                           form:"wrapAfter" json:"wrapAfter"`
 	Pos       int             `binding:"numeric,required" form:"pos"       json:"pos"`
 	Hidden    bool            `binding:"boolean"          form:"hidden"    json:"hidden"`
 }
@@ -24,7 +24,7 @@ type ProductRequestUpdate struct {
 	Name       string          `binding:"required"         form:"name"       json:"name"`
 	NetPrice   decimal.Decimal `binding:"required"         form:"netPrice"   json:"netPrice"`
 	VATRate    decimal.Decimal `binding:"required"         form:"vatRate"    json:"vatRate"`
-	WrapAfter  bool            `form:"wrapAfter"           json:"wrapAfter"`
+	WrapAfter  bool            `                           form:"wrapAfter"  json:"wrapAfter"`
 	Pos        int             `binding:"numeric,required" form:"pos"        json:"pos"`
 	ApiExport  bool            `binding:"boolean"          form:"apiExport"  json:"apiExport"`
 	Hidden     bool            `binding:"boolean"          form:"hidden"     json:"hidden"`
@@ -85,7 +85,11 @@ func filterHiddenProducts(products []models.Product) []models.Product {
 	return filteredProducts
 }
 
-func createExtendedProductResponse(repo sqliteRepo.RepositoryInterface, products []models.Product, decimalPlaces int32) []response.ExtendedProductResponse {
+func createExtendedProductResponse(
+	repo sqliteRepo.RepositoryInterface,
+	products []models.Product,
+	decimalPlaces int32,
+) []response.ExtendedProductResponse {
 	productsResponse := make([]response.ExtendedProductResponse, 0, len(products))
 
 	for _, product := range products {

@@ -9,16 +9,16 @@ type Product struct {
 	GormOwnedModel
 
 	Name                string          `json:"name"`
-	NetPrice            decimal.Decimal `gorm:"type:TEXT"               json:"netPrice"`
-	VATRate             decimal.Decimal `gorm:"type:TEXT;default:'0.0'" json:"vatRate"`
-	WrapAfter           bool            `gorm:"default:false"           json:"wrapAfter"`
-	Hidden              bool            `gorm:"default:false"           json:"hidden"`
-	SoldOut             bool            `gorm:"default:false"           json:"soldOut"`
-	ApiExport           bool            `gorm:"default:false"           json:"apiExport"`
+	NetPrice            decimal.Decimal `json:"netPrice"            gorm:"type:TEXT"`
+	VATRate             decimal.Decimal `json:"vatRate"             gorm:"type:TEXT;default:'0.0'"`
+	WrapAfter           bool            `json:"wrapAfter"           gorm:"default:false"`
+	Hidden              bool            `json:"hidden"              gorm:"default:false"`
+	SoldOut             bool            `json:"soldOut"             gorm:"default:false"`
+	ApiExport           bool            `json:"apiExport"           gorm:"default:false"`
 	Pos                 int             `json:"pos"`
-	TotalStock          int             `gorm:"default:0"               json:"totalStock"`
-	UnitsSold           int             `gorm:"default:0"               json:"unitsSold"`
-	SoldOutRequestCount int             `gorm:"default:0"               json:"soldOutRequestCount"`
+	TotalStock          int             `json:"totalStock"          gorm:"default:0"`
+	UnitsSold           int             `json:"unitsSold"           gorm:"default:0"`
+	SoldOutRequestCount int             `json:"soldOutRequestCount" gorm:"default:0"`
 	Guestlists          []Guestlist     `json:"guestlists"`
 }
 

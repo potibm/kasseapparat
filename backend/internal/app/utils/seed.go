@@ -70,32 +70,153 @@ func (ds *DatabaseSeed) seedProducts() {
 	price1GrossAt19 := decimal.NewFromFloat(0.84)
 	price20GrossAt19 := decimal.NewFromFloat(16.81)
 
-	ds.regularProduct = &models.Product{Name: "🎟️ Regular", NetPrice: price40GrossAt7, VATRate: vat7, Pos: 1, ApiExport: true}
+	ds.regularProduct = &models.Product{
+		Name:      "🎟️ Regular",
+		NetPrice:  price40GrossAt7,
+		VATRate:   vat7,
+		Pos:       1,
+		ApiExport: true,
+	}
 	ds.db.Create(ds.regularProduct)
 
-	ds.reducedProduct = &models.Product{Name: "🎟️ Reduced", NetPrice: price20GrossAt7, VATRate: vat7, Pos: 2, ApiExport: true}
+	ds.reducedProduct = &models.Product{
+		Name:      "🎟️ Reduced",
+		NetPrice:  price20GrossAt7,
+		VATRate:   vat7,
+		Pos:       2,
+		ApiExport: true,
+	}
 	ds.db.Create(ds.reducedProduct)
 
 	ds.freeProduct = &models.Product{Name: "🎟️ Free", NetPrice: price0, VATRate: vat0, Pos: 3, ApiExport: true}
 	ds.db.Create(ds.freeProduct)
 
-	ds.prepaidProduct = &models.Product{Name: "🎟️ Prepaid", NetPrice: price0, VATRate: vat0, Pos: 4, WrapAfter: true, ApiExport: true}
+	ds.prepaidProduct = &models.Product{
+		Name:      "🎟️ Prepaid",
+		NetPrice:  price0,
+		VATRate:   vat0,
+		Pos:       4,
+		WrapAfter: true,
+		ApiExport: true,
+	}
 	ds.db.Create(ds.prepaidProduct)
 
 	ds.products = append(ds.products, *ds.prepaidProduct)
 
-	ds.products = append(ds.products, models.Product{Name: "👕 Male S", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Male M", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Male L", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Male XL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Male XXL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Male 4XL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Female S", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Female M", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Female L", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Female XL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "👕 Female XXL", NetPrice: price20GrossAt19, VATRate: vat19, Pos: 10, TotalStock: gofakeit.IntRange(5, 30)})
-	ds.products = append(ds.products, models.Product{Name: "☕ Coffee Mug", NetPrice: price1GrossAt19, VATRate: vat19, Pos: 30})
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Male S",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Male M",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Male L",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Male XL",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Male XXL",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Male 4XL",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Female S",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Female M",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Female L",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Female XL",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{
+			Name:       "👕 Female XXL",
+			NetPrice:   price20GrossAt19,
+			VATRate:    vat19,
+			Pos:        10,
+			TotalStock: gofakeit.IntRange(5, 30),
+		},
+	)
+	ds.products = append(
+		ds.products,
+		models.Product{Name: "☕ Coffee Mug", NetPrice: price1GrossAt19, VATRate: vat19, Pos: 30},
+	)
 
 	for i := range ds.products {
 		if ds.products[i].ID == 0 {
@@ -126,7 +247,14 @@ func (ds *DatabaseSeed) seedGuests() {
 
 	for i := 1; i < 20; i++ {
 		code := gofakeit.Password(false, true, true, false, false, 9)
-		ds.db.Create(&models.Guest{Name: gofakeit.Name(), Code: &code, GuestlistID: ds.deineTicketsGuestlist.ID, AdditionalGuests: 0})
+		ds.db.Create(
+			&models.Guest{
+				Name:             gofakeit.Name(),
+				Code:             &code,
+				GuestlistID:      ds.deineTicketsGuestlist.ID,
+				AdditionalGuests: 0,
+			},
+		)
 	}
 }
 
@@ -140,12 +268,26 @@ func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, max
 		ds.db.Create(userGuestlist)
 
 		for range gofakeit.Number(1, maxNotPresentEntries) {
-			ds.db.Create(&models.Guest{Name: gofakeit.Name(), GuestlistID: userGuestlist.ID, AdditionalGuests: uint(gofakeit.Number(0, 2))})
+			ds.db.Create(
+				&models.Guest{
+					Name:             gofakeit.Name(),
+					GuestlistID:      userGuestlist.ID,
+					AdditionalGuests: uint(gofakeit.Number(0, 2)),
+				},
+			)
 		}
 
 		for range gofakeit.Number(1, maxPresentEntries) {
 			arrivedAt := gofakeit.Date()
-			ds.db.Create(&models.Guest{Name: gofakeit.Name(), GuestlistID: userGuestlist.ID, AdditionalGuests: uint(gofakeit.Number(0, 2)), AttendedGuests: 1, ArrivedAt: &arrivedAt})
+			ds.db.Create(
+				&models.Guest{
+					Name:             gofakeit.Name(),
+					GuestlistID:      userGuestlist.ID,
+					AdditionalGuests: uint(gofakeit.Number(0, 2)),
+					AttendedGuests:   1,
+					ArrivedAt:        &arrivedAt,
+				},
+			)
 		}
 	}
 }
@@ -159,7 +301,9 @@ func (ds *DatabaseSeed) seedPurchases(purchaseCount int) {
 		for i := 1; i < purchaseCount; i++ {
 			purchase := models.Purchase{
 				// generate a random PaymentMethod from models.PaymentMethodCash and models.PaymentMethodCC
-				PaymentMethod:   models.PaymentMethod(gofakeit.RandomString([]string{string(models.PaymentMethodCash), string(models.PaymentMethodCC)})),
+				PaymentMethod: models.PaymentMethod(
+					gofakeit.RandomString([]string{string(models.PaymentMethodCash), string(models.PaymentMethodCC)}),
+				),
 				TotalGrossPrice: decimal.NewFromInt(0),
 				TotalNetPrice:   decimal.NewFromInt(0),
 			}

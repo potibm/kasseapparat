@@ -112,7 +112,16 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 		}
 
 		if len(line) < expectedCsvColumns {
-			warnings = append(warnings, "Invalid CSV row length at line "+strconv.Itoa(lineNumber)+": expected "+strconv.Itoa(expectedCsvColumns)+" columns, got "+strconv.Itoa(len(line)))
+			warnings = append(
+				warnings,
+				"Invalid CSV row length at line "+strconv.Itoa(
+					lineNumber,
+				)+": expected "+strconv.Itoa(
+					expectedCsvColumns,
+				)+" columns, got "+strconv.Itoa(
+					len(line),
+				),
+			)
 
 			continue
 		}
