@@ -2,7 +2,6 @@ package websocket
 
 import (
 	"log"
-	"maps"
 	"sync"
 	"time"
 
@@ -76,10 +75,8 @@ func PushUpdate(transactionID uuid.UUID, status models.PurchaseStatus) {
 }
 
 func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transactionID *uuid.UUID) {
-	payload := gin.H{
-		"type": msgType,
-	}
-	maps.Copy(payload, data)
+	payload := data
+	payload["type"] = msgType
 
 	if transactionID != nil {
 		payload["transaction_id"] = transactionID.String()
