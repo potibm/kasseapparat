@@ -9,7 +9,6 @@ linters:
     - wsl
     - testpackage
     - lll
-    - interfacebloat
     - funlen
     - cyclop
     - embeddedstructfieldcheck
