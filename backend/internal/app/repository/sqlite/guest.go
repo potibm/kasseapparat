@@ -53,7 +53,13 @@ func (filters GuestFilters) AddWhere(query *gorm.DB) *gorm.DB {
 	return query
 }
 
-func (repo *Repository) GetGuests(limit int, offset int, sort string, order string, filters GuestFilters) ([]models.Guest, error) {
+func (repo *Repository) GetGuests(
+	limit int,
+	offset int,
+	sort string,
+	order string,
+	filters GuestFilters,
+) ([]models.Guest, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
 	}
@@ -121,7 +127,9 @@ func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) 
 	}
 
 	query := repo.db.Model(&models.Guest{}).
-		Select("Guests.id, Guests.name, Guests.code, Guestlists.name AS list_name, Guests.additional_guests, Guests.arrival_note").
+		Select("Guests.id, Guests.name, "+
+			"Guests.code, Guestlists.name AS list_name, "+
+			"Guests.additional_guests, Guests.arrival_note").
 		Joins("JOIN guestlists ON Guests.guestlist_id = Guestlists.id").
 		Joins("JOIN products ON Guestlists.product_id = Products.id").
 		Where("Products.id = ?", productId).

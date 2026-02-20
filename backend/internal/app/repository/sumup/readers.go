@@ -62,7 +62,13 @@ func (r *Repository) CreateReader(pairingCode string, name string) (*Reader, err
 	return fromSDKReader(createdReader), nil
 }
 
-func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl *string) (*uuid.UUID, error) {
+func (r *Repository) CreateReaderCheckout(
+	readerId string,
+	amount decimal.Decimal,
+	description string,
+	affiliateTransactionId string,
+	returnUrl *string,
+) (*uuid.UUID, error) {
 	amountStruct := sumup.CreateCheckoutRequestTotalAmount{
 		Currency:  r.service.PaymentCurrency,
 		Value:     getValueFromDecimal(amount, int(r.service.PaymentMinorUnit)), // Example amount in cents (10.00 EUR)
@@ -85,7 +91,12 @@ func (r *Repository) CreateReaderCheckout(readerId string, amount decimal.Decima
 		ReturnURL:   returnUrl,
 	}
 
-	response, err := r.service.Client.Readers.CreateCheckout(context.Background(), r.service.MerchantCode, readerId, body)
+	response, err := r.service.Client.Readers.CreateCheckout(
+		context.Background(),
+		r.service.MerchantCode,
+		readerId,
+		body,
+	)
 	if err != nil {
 		log.Printf("Error creating SumUp reader checkout: %v", err)
 

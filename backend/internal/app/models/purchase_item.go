@@ -8,13 +8,13 @@ import (
 type PurchaseItem struct {
 	GormModel
 
-	PurchaseID uuid.UUID       `gorm:"type:text"             json:"purchaseID"` // Foreign key to Purchase
-	Purchase   Purchase        `gorm:"foreignKey:PurchaseID" json:"-"`
+	PurchaseID uuid.UUID       `json:"purchaseID" gorm:"type:text"` // Foreign key to Purchase
+	Purchase   Purchase        `json:"-"          gorm:"foreignKey:PurchaseID"`
 	ProductID  uint            `json:"productID"` // Foreign key to Product
-	Product    Product         `gorm:"foreignKey:ProductID"  json:"product"`
+	Product    Product         `json:"product"    gorm:"foreignKey:ProductID"`
 	Quantity   int             `json:"quantity"`
-	NetPrice   decimal.Decimal `gorm:"type:TEXT"             json:"netPrice"`
-	VATRate    decimal.Decimal `gorm:"type:TEXT"             json:"vatRate"`
+	NetPrice   decimal.Decimal `json:"netPrice"   gorm:"type:TEXT"`
+	VATRate    decimal.Decimal `json:"vatRate"    gorm:"type:TEXT"`
 }
 
 func (pi PurchaseItem) GrossPrice(decimalPlaces int32) decimal.Decimal {
@@ -23,10 +23,6 @@ func (pi PurchaseItem) GrossPrice(decimalPlaces int32) decimal.Decimal {
 
 func (pi PurchaseItem) VATAmount(decimalPlaces int32) decimal.Decimal {
 	return pi.NetPrice.Mul(pi.vatRateAsPercentage()).Round(decimalPlaces)
-}
-
-func (pi PurchaseItem) getQuantityAsDecimal() decimal.Decimal {
-	return decimal.NewFromInt(int64(pi.Quantity))
 }
 
 func (pi PurchaseItem) TotalNetPrice(decimalPlaces int32) decimal.Decimal {
@@ -41,6 +37,12 @@ func (pi PurchaseItem) TotalVATAmount(decimalPlaces int32) decimal.Decimal {
 	return pi.VATAmount(decimalPlaces).Mul(pi.getQuantityAsDecimal()).Round(decimalPlaces)
 }
 
+func (pi PurchaseItem) getQuantityAsDecimal() decimal.Decimal {
+	return decimal.NewFromInt(int64(pi.Quantity))
+}
+
 func (pi PurchaseItem) vatRateAsPercentage() decimal.Decimal {
-	return pi.VATRate.Div(decimal.NewFromInt(100))
+	const hundred = 100
+
+	return pi.VATRate.Div(decimal.NewFromInt(hundred))
 }

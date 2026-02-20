@@ -9,23 +9,23 @@ import (
 )
 
 type PurchaseListItemRequest struct {
-	ID             int  `binding:"required" form:"ID"`
-	AttendedGuests uint `binding:"required" form:"attendedGuests"`
+	ID             int  `form:"ID"             binding:"required"`
+	AttendedGuests uint `form:"attendedGuests" binding:"required"`
 }
 
 type PurchaseCartRequest struct {
-	ID        int                       `binding:"required"      form:"ID"`
-	Quantity  int                       `binding:"required"      form:"quantity"`
-	NetPrice  decimal.Decimal           `binding:"required"      form:"netPrice"`
-	ListItems []PurchaseListItemRequest `binding:"required,dive" form:"listItems"`
+	ID        int                       `form:"ID"        binding:"required"`
+	Quantity  int                       `form:"quantity"  binding:"required"`
+	NetPrice  decimal.Decimal           `form:"netPrice"  binding:"required"`
+	ListItems []PurchaseListItemRequest `form:"listItems" binding:"required,dive"`
 }
 
 type PurchaseRequest struct {
-	TotalNetPrice   decimal.Decimal       `binding:"required"      form:"totalNetPrice"`
-	TotalGrossPrice decimal.Decimal       `binding:"required"      form:"totalGrossPrice"`
-	Cart            []PurchaseCartRequest `binding:"required,dive" form:"cart"`
-	PaymentMethod   models.PaymentMethod  `binding:"required"      form:"paymentMethod"`
-	SumupReaderID   string                `binding:"omitempty"     form:"sumupReaderId"`
+	TotalNetPrice   decimal.Decimal       `form:"totalNetPrice"   binding:"required"`
+	TotalGrossPrice decimal.Decimal       `form:"totalGrossPrice" binding:"required"`
+	Cart            []PurchaseCartRequest `form:"cart"            binding:"required,dive"`
+	PaymentMethod   models.PaymentMethod  `form:"paymentMethod"   binding:"required"`
+	SumupReaderID   string                `form:"sumupReaderId"   binding:"omitempty"`
 }
 
 func (req PurchaseRequest) Validate() error {

@@ -40,9 +40,20 @@ func main() {
 	mailer := initializer.InitializeMailer(cfg.MailerConfig)
 	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, cfg.JwtConfig)
 
-	purchaseService := purchaseService.NewPurchaseService(sqliteRepository, sumupRepository, &mailer, int32(cfg.FormatConfig.FractionDigitsMax))
+	purchaseService := purchaseService.NewPurchaseService(
+		sqliteRepository,
+		sumupRepository,
+		&mailer,
+		int32(cfg.FormatConfig.FractionDigitsMax),
+	)
 
-	websocketHandler := websocket.NewHandler(sqliteRepository, sumupRepository, purchaseService, jwtMiddleware, &cfg.CorsAllowOrigins)
+	websocketHandler := websocket.NewHandler(
+		sqliteRepository,
+		sumupRepository,
+		purchaseService,
+		jwtMiddleware,
+		&cfg.CorsAllowOrigins,
+	)
 	publisher := &websocket.WebsocketPublisher{}
 	poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseService, publisher)
 
@@ -57,7 +68,14 @@ func main() {
 	}
 	httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
-	router := initializer.InitializeHttpServer(*httpHandler, websocketHandler, *sqliteRepository, staticFiles, jwtMiddleware, cfg)
+	router := initializer.InitializeHttpServer(
+		*httpHandler,
+		websocketHandler,
+		*sqliteRepository,
+		staticFiles,
+		jwtMiddleware,
+		cfg,
+	)
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
 	startCleanupForWebsocketConnections()
@@ -76,7 +94,9 @@ func main() {
 }
 
 func startCleanupForWebsocketConnections() {
-	websocket.StartCleanupRoutine(5 * time.Minute)
+	const cleanupInterval = 5 * time.Minute
+
+	websocket.StartCleanupRoutine(cleanupInterval)
 }
 
 func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sqliteRepo.Repository) {
@@ -88,7 +108,9 @@ func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sql
 		HasClientTransactionID: &hasClientTransactionID,
 	}
 
-	activeTransactions, err := sqliteRepository.GetPurchases(1000, 0, "createdAt", "ASC", filters)
+	const plentyOfTransactions = 1000
+
+	activeTransactions, err := sqliteRepository.GetPurchases(plentyOfTransactions, 0, "createdAt", "ASC", filters)
 	if err != nil {
 		log.Printf("[Error] failed to get active purchases: %v", err)
 

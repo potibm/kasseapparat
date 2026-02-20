@@ -25,7 +25,9 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 
 		log.Printf("Polling started for %s\n", transactionID)
 
-		ticker := time.NewTicker(5 * time.Second)
+		const pollingInterval = 5 * time.Second
+
+		ticker := time.NewTicker(pollingInterval)
 		defer ticker.Stop()
 
 		for range ticker.C {
@@ -90,7 +92,10 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 	}
 
 	if purchase.SumupTransactionID == nil {
-		purchase, err = n.SqliteRepository.UpdatePurchaseSumupTransactionIDByID(transactionID, transaction.TransactionID)
+		purchase, err = n.SqliteRepository.UpdatePurchaseSumupTransactionIDByID(
+			transactionID,
+			transaction.TransactionID,
+		)
 		if err != nil {
 			log.Printf("Error updating purchase %s with SumUp transaction ID: %v", transactionID, err)
 		}
@@ -101,7 +106,12 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 	return n.handleStatusUpdate(ctx, transactionID, transaction.Status, purchase)
 }
 
-func (n *transactionPoller) handleStatusUpdate(ctx context.Context, transactionID uuid.UUID, status string, purchase *models.Purchase) bool {
+func (n *transactionPoller) handleStatusUpdate(
+	ctx context.Context,
+	transactionID uuid.UUID,
+	status string,
+	purchase *models.Purchase,
+) bool {
 	var (
 		updatedPurchase *models.Purchase
 		err             error

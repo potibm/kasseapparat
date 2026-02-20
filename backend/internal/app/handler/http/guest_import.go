@@ -25,16 +25,6 @@ type deineTicketsRecord struct {
 
 const expectedCsvColumns = 6
 
-func (r *deineTicketsRecord) validateCode() bool {
-	matched, _ := regexp.MatchString(`^[0-9A-Z]{9}$`, r.Code)
-
-	return matched
-}
-
-func (r *deineTicketsRecord) validateBlocked() bool {
-	return r.Blocked == ""
-}
-
 func (r *deineTicketsRecord) Validate(repo sqliteRepo.GuestRepository) (bool, string) {
 	if !r.validateCode() {
 		return false, "Invalid code"
@@ -122,7 +112,16 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 		}
 
 		if len(line) < expectedCsvColumns {
-			warnings = append(warnings, "Invalid CSV row length at line "+strconv.Itoa(lineNumber)+": expected "+strconv.Itoa(expectedCsvColumns)+" columns, got "+strconv.Itoa(len(line)))
+			warnings = append(
+				warnings,
+				"Invalid CSV row length at line "+strconv.Itoa(
+					lineNumber,
+				)+": expected "+strconv.Itoa(
+					expectedCsvColumns,
+				)+" columns, got "+strconv.Itoa(
+					len(line),
+				),
+			)
 
 			continue
 		}
@@ -154,4 +153,14 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"createdGuests": createdGuests, "warnings": warnings})
+}
+
+func (r *deineTicketsRecord) validateCode() bool {
+	matched, _ := regexp.MatchString(`^[0-9A-Z]{9}$`, r.Code)
+
+	return matched
+}
+
+func (r *deineTicketsRecord) validateBlocked() bool {
+	return r.Blocked == ""
 }

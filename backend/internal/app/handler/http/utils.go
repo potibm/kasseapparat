@@ -63,7 +63,11 @@ func queryTime(c *gin.Context, field string, defaultValue *time.Time) *time.Time
 	}
 }
 
-func queryPaymentMethods(c *gin.Context, field string, validPaymentMethods config.PaymentMethods) []models.PaymentMethod {
+func queryPaymentMethods(
+	c *gin.Context,
+	field string,
+	validPaymentMethods config.PaymentMethods,
+) []models.PaymentMethod {
 	paymentMethods := c.DefaultQuery(field, "")
 
 	result := make([]models.PaymentMethod, 0)

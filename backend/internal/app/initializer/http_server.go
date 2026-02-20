@@ -27,7 +27,14 @@ var (
 
 const API_VERSION = "v2"
 
-func InitializeHttpServer(httpHandler httpHandler.Handler, websocketHandler websocket.HandlerInterface, repository sqliteRepo.Repository, staticFiles embed.FS, jwtMiddleware *jwt.GinJWTMiddleware, config config.Config) *gin.Engine {
+func InitializeHttpServer(
+	httpHandler httpHandler.Handler,
+	websocketHandler websocket.HandlerInterface,
+	repository sqliteRepo.Repository,
+	staticFiles embed.FS,
+	jwtMiddleware *jwt.GinJWTMiddleware,
+	config config.Config,
+) *gin.Engine {
 	gin.SetMode(config.AppConfig.GinMode)
 
 	r = gin.Default()
@@ -100,7 +107,11 @@ func SentryMiddleware() gin.HandlerFunc {
 	}
 }
 
-func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocket.HandlerInterface, authMiddleware *jwt.GinJWTMiddleware) {
+func registerApiRoutes(
+	httpHandler httpHandler.Handler,
+	websocketHandler websocket.HandlerInterface,
+	authMiddleware *jwt.GinJWTMiddleware,
+) {
 	protectedApiRouter := r.Group("/api/" + API_VERSION)
 	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
 	{
@@ -112,7 +123,7 @@ func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocke
 		registerGuestRoutes(protectedApiRouter, httpHandler)
 		protectedApiRouter.POST("/guestsUpload", httpHandler.ImportGuestsFromDeineTicketsCsv)
 
-		registerPurchaseRoutes(protectedApiRouter, httpHandler, websockeHandler)
+		registerPurchaseRoutes(protectedApiRouter, httpHandler)
 		registerUserRoutes(protectedApiRouter, httpHandler)
 
 		registerSumupReadersRoutes(protectedApiRouter, httpHandler)
@@ -129,7 +140,7 @@ func registerApiRoutes(httpHandler httpHandler.Handler, websockeHandler websocke
 
 		unprotectedApiRouter.POST("/sumup/webhook", httpHandler.GetSumupTransactionWebhook)
 
-		unprotectedApiRouter.GET("/purchases/:id/ws", websockeHandler.HandleTransactionWebSocket)
+		unprotectedApiRouter.GET("/purchases/:id/ws", websocketHandler.HandleTransactionWebSocket)
 	}
 }
 
@@ -167,7 +178,10 @@ func registerGuestRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	}
 }
 
-func registerPurchaseRoutes(rg *gin.RouterGroup, handler httpHandler.Handler, websockeHandler websocket.HandlerInterface) {
+func registerPurchaseRoutes(
+	rg *gin.RouterGroup,
+	handler httpHandler.Handler,
+) {
 	purchases := rg.Group("/purchases")
 	{
 		purchases.GET("", handler.GetPurchases)

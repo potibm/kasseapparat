@@ -21,7 +21,12 @@ func TestLoadConfigWithDefaults(t *testing.T) {
 			GinMode: "release",
 		},
 		FormatConfig: FormatConfig{
-			CurrencyLocale: "dk-DK", CurrencyCode: "DKK", DateLocale: "dk-DK", DateOptions: DefaultDateOptions, FractionDigitsMin: 0, FractionDigitsMax: 2,
+			CurrencyLocale:    "dk-DK",
+			CurrencyCode:      "DKK",
+			DateLocale:        "dk-DK",
+			DateOptions:       DefaultDateOptions,
+			FractionDigitsMin: 0,
+			FractionDigitsMax: 2,
 		},
 		VATRates:           DefaultVatRates,
 		EnvironmentMessage: "",
@@ -30,7 +35,12 @@ func TestLoadConfigWithDefaults(t *testing.T) {
 				Name: "💶 Cash", Code: models.PaymentMethodCash},
 		},
 		SentryConfig: SentryConfig{
-			DSN: "", TraceSampleRate: config.SentryConfig.TraceSampleRate, ReplaySessionSampleRate: config.SentryConfig.ReplaySessionSampleRate, ReplayErrorSampleRate: config.SentryConfig.ReplayErrorSampleRate, Environment: "", Version: "0.0.0",
+			DSN:                     "",
+			TraceSampleRate:         config.SentryConfig.TraceSampleRate,
+			ReplaySessionSampleRate: config.SentryConfig.ReplaySessionSampleRate,
+			ReplayErrorSampleRate:   config.SentryConfig.ReplayErrorSampleRate,
+			Environment:             "",
+			Version:                 "0.0.0",
 		},
 		JwtConfig: JwtConfig{
 			Secret: "", Realm: "kasseapparat", SecureCookie: true,
@@ -38,10 +48,19 @@ func TestLoadConfigWithDefaults(t *testing.T) {
 		CorsAllowOrigins: []string{"localhost:3000", "localhost:4000"},
 		FrontendURL:      "",
 		MailerConfig: MailerConfig{
-			DSN: "smtp://user:password@localhost:1025", FromEmail: "", MailSubjectPrefix: "[Kasseapparat]", FrontendURL: "",
+			DSN:               "smtp://user:password@localhost:1025",
+			FromEmail:         "",
+			MailSubjectPrefix: "[Kasseapparat]",
+			FrontendURL:       "",
 		},
 		SumupConfig: SumupConfig{
-			ApiKey: "", MerchantCode: "", CurrencyCode: "DKK", CurrencyMinorUnit: 2, AffiliateKey: "", ApplicationId: "", PublicUrl: "",
+			ApiKey:            "",
+			MerchantCode:      "",
+			CurrencyCode:      "DKK",
+			CurrencyMinorUnit: 2,
+			AffiliateKey:      "",
+			ApplicationId:     "",
+			PublicUrl:         "",
 		},
 	}
 

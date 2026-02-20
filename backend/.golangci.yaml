@@ -5,21 +5,22 @@ linters:
   default: "fast"
   enable:
     - wsl_v5
+    - staticcheck
+    - errcheck
+    - depguard
+    - govet
+    - mnd
+    - tagalign
+    - cyclop
   disable:
     - wsl
     - testpackage
-    - mnd
-    - lll
-    - interfacebloat
     - funlen
-    - cyclop
-    - embeddedstructfieldcheck
-    - funcorder
   settings:
     wsl_v5:
       allow-first-in-block: true
       allow-whole-block: false
-      branch-max-lines: 2
+      branch-max-lines: 4
     depguard:
       rules:
         main:
@@ -31,6 +32,19 @@ linters:
               desc: not allowed
             - pkg: "github.com/pkg/errors"
               desc: Should be replaced by standard lib errors package
+    tagalign:
+      order:
+        - json
+        - yaml
+        - yml
+        - toml
+        - form
+        - mapstructure
+        - binding
+        - validate
+        - gorm
+    cyclop:
+      max-complexity: 15
   exclusions:
     generated: lax
     presets:
@@ -39,9 +53,9 @@ linters:
       - legacy
       - std-error-handling
     paths:
-      - third_party$
-      - builtin$
-      - examples
+      - (^|/)examples(/|$)
+      - (^|/)third_party(/|$)
+      - (^|/)builtin(/|$)
     rules:
       - path: tests/e2e/init_test_sumup.go
         linters:
@@ -50,9 +64,15 @@ linters:
         linters:
           - mnd
 formatters:
+  enable:
+    - golines
+  settings:
+    golines:
+      max-len: 120
+      reformat-tags: false
   exclusions:
     generated: lax
     paths:
-      - third_party$
-      - builtin$
-      - examples$
+      - (^|/)examples(/|$)
+      - (^|/)third_party(/|$)
+      - (^|/)builtin(/|$)

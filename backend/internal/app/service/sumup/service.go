@@ -12,6 +12,22 @@ type Service struct {
 	WebhookUrl       *string
 }
 
-func NewService(client *sumup.Client, merchantCode string, applicationId string, affiliateKey string, paymentCurrency string, paymentMinorUnit uint, webhookUrl *string) *Service {
-	return &Service{Client: client, MerchantCode: merchantCode, ApplicationId: applicationId, AffiliateKey: affiliateKey, PaymentCurrency: paymentCurrency, PaymentMinorUnit: paymentMinorUnit, WebhookUrl: webhookUrl}
+func NewService(
+	client *sumup.Client,
+	merchantCode string,
+	applicationId string,
+	affiliateKey string,
+	paymentCurrency string,
+	paymentMinorUnit uint,
+	webhookUrl *string,
+) *Service {
+	return &Service{
+		Client:           client,
+		MerchantCode:     merchantCode,
+		ApplicationId:    applicationId,
+		AffiliateKey:     affiliateKey,
+		PaymentCurrency:  paymentCurrency,
+		PaymentMinorUnit: paymentMinorUnit,
+		WebhookUrl:       webhookUrl,
+	}
 }

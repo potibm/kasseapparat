@@ -15,9 +15,9 @@ type Guest struct {
 	GuestlistID          uint       `json:"guestlistId"`
 	Guestlist            Guestlist  `json:"guestlist"`
 	Name                 string     `json:"name"`
-	Code                 *string    `gorm:"unique"               json:"code"`
-	AdditionalGuests     uint       `gorm:"default:0"            json:"additionalGuests"`
-	AttendedGuests       uint       `gorm:"default:0"            json:"attendedGuests"`
+	Code                 *string    `json:"code"                 gorm:"unique"`
+	AdditionalGuests     uint       `json:"additionalGuests"     gorm:"default:0"`
+	AttendedGuests       uint       `json:"attendedGuests"       gorm:"default:0"`
 	ArrivedAt            *time.Time `json:"arrivedAt"`
 	ArrivalNote          *string    `json:"arrivalNote"`
 	NotifyOnArrivalEmail *string    `json:"notifyOnArrivalEmail"`
@@ -28,9 +28,9 @@ type Guest struct {
 type GuestSummary struct {
 	ID               uint    `json:"id"`
 	Name             string  `json:"name"`
-	Code             *string `gorm:"unique"      json:"code"`
+	Code             *string `json:"code"             gorm:"unique"`
 	ListName         *string `json:"listName"`
-	AdditionalGuests uint    `gorm:"default:0"   json:"additionalGuests"`
+	AdditionalGuests uint    `json:"additionalGuests" gorm:"default:0"`
 	ArrivalNote      *string `json:"arrivalNote"`
 }
 
@@ -61,14 +61,21 @@ func (entries GuestSummarySlice) SortByQuery(q string) {
 }
 
 func calculateWeight(name, query string) int {
+	const (
+		WeightExactMatch     = 3
+		WeightPrefixMatch    = 2
+		WeightSubstringMatch = 1
+		WeightNoMatch        = 0
+	)
+
 	switch {
 	case name == query:
-		return 3
+		return WeightExactMatch
 	case strings.HasPrefix(name, query):
-		return 2
+		return WeightPrefixMatch
 	case strings.Contains(" "+name, " "+query):
-		return 1
+		return WeightSubstringMatch
 	default:
-		return 0
+		return WeightNoMatch
 	}
 }

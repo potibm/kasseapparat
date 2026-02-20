@@ -14,11 +14,13 @@ import (
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
 
+const RefreshTokenLifetime = 7 * 24 * time.Hour
+
 var IdentityKey = "ID"
 
 type login struct {
-	Login    string `binding:"required" form:"login"    json:"login"`
-	Password string `binding:"required" form:"password" json:"password"`
+	Login    string `json:"login"    form:"login"    binding:"required"`
+	Password string `json:"password" form:"password" binding:"required"`
 }
 
 type loginResponse struct {
@@ -47,7 +49,13 @@ func RegisterRoute(r *gin.RouterGroup, handle *ginjwt.GinJWTMiddleware) {
 	r.POST("/auth/logout", handle.LogoutHandler)
 }
 
-func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeout int, secureCookie bool) *ginjwt.GinJWTMiddleware {
+func InitParams(
+	repo *sqliteRepo.Repository,
+	realm string,
+	secret string,
+	timeout int,
+	secureCookie bool,
+) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		log.Println("JWT_SECRET is not set, using default value")
 
@@ -58,7 +66,7 @@ func InitParams(repo *sqliteRepo.Repository, realm string, secret string, timeou
 		Realm:      realm,
 		Key:        []byte(secret),
 		Timeout:    time.Minute * time.Duration(timeout), // Short-lived access tokens
-		MaxRefresh: time.Hour * 24 * 7,
+		MaxRefresh: RefreshTokenLifetime,
 
 		SecureCookie:   secureCookie,            // HTTPS only
 		CookieHTTPOnly: true,                    // Prevent XSS
@@ -152,11 +160,6 @@ func loginReponse(c *gin.Context, token *ginjwtCore.Token, user *models.User) {
 		AccessToken: token.AccessToken,
 		TokenType:   token.TokenType,
 		ExpiresIn:   token.ExpiresIn(),
-	}
-
-	// Include refresh token if present
-	if token.RefreshToken != "" {
-		//loginResponse.RefreshToken = token.RefreshToken
 	}
 
 	if user != nil {

@@ -42,12 +42,24 @@ type sqliteRepository interface {
 	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
 }
 
-func NewHandler(sqliteRepository sqliteRepository, sumupRepository sumupRepo.RepositoryInterface, purchaseService purchaseService.Service, jwtMiddleware *jwt.GinJWTMiddleware, corsAllowOrigins *config.CorsAllowOriginsConfig) *Handler {
+func NewHandler(
+	sqliteRepository sqliteRepository,
+	sumupRepository sumupRepo.RepositoryInterface,
+	purchaseService purchaseService.Service,
+	jwtMiddleware *jwt.GinJWTMiddleware,
+	corsAllowOrigins *config.CorsAllowOriginsConfig,
+) *Handler {
 	upgrader := websocket.Upgrader{
 		CheckOrigin: makeCheckOrigin(corsAllowOrigins),
 	}
 
-	return &Handler{sqliteRepository: sqliteRepository, sumupRepository: sumupRepository, purchaseService: purchaseService, upgrader: upgrader, jwtMiddleware: jwtMiddleware}
+	return &Handler{
+		sqliteRepository: sqliteRepository,
+		sumupRepository:  sumupRepository,
+		purchaseService:  purchaseService,
+		upgrader:         upgrader,
+		jwtMiddleware:    jwtMiddleware,
+	}
 }
 
 func makeCheckOrigin(allowedOrigins *config.CorsAllowOriginsConfig) func(r *http.Request) bool {

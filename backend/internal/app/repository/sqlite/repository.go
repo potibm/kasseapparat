@@ -22,21 +22,31 @@ type TransactionalRepository interface {
 }
 
 type GuestRepository interface {
-	GetGuests(limit int, offset int, sort string, order string, filters GuestFilters) ([]models.Guest, error)
+	GuestCRUDRepository
 	GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.Guest, error)
-	GetTotalGuests(filters *GuestFilters) (int64, error)
 	GetUnattendedGuestsByProductID(productId int, q string) (models.GuestSummarySlice, error)
-	GetGuestByID(id int) (*models.Guest, error)
 	GetGuestByCode(code string) (*models.Guest, error)
 	GetFullGuestByID(id int) (*models.Guest, error)
-	UpdateGuestByID(id int, updatedGuest models.Guest) (*models.Guest, error)
-	CreateGuest(guest models.Guest) (models.Guest, error)
-	DeleteGuest(guest models.Guest, deletedBy models.User)
 	RollbackVisitedGuestsByPurchaseID(purchaseId uuid.UUID) error
 }
 
+type GuestCRUDRepository interface {
+	GetGuests(limit int, offset int, sort string, order string, filters GuestFilters) ([]models.Guest, error)
+	GetGuestByID(id int) (*models.Guest, error)
+	UpdateGuestByID(id int, updatedGuest models.Guest) (*models.Guest, error)
+	CreateGuest(guest models.Guest) (models.Guest, error)
+	DeleteGuest(guest models.Guest, deletedBy models.User)
+	GetTotalGuests(filters *GuestFilters) (int64, error)
+}
+
 type GuestlistRepository interface {
-	GetGuestlists(limit int, offset int, sort string, order string, filters GuestlistFilters) ([]models.Guestlist, error)
+	GetGuestlists(
+		limit int,
+		offset int,
+		sort string,
+		order string,
+		filters GuestlistFilters,
+	) ([]models.Guestlist, error)
 	GetTotalGuestlists() (int64, error)
 	GetGuestlistByID(id int) (*models.Guestlist, error)
 	GetGuestlistWithTypeCode() (*models.Guestlist, error)
@@ -66,18 +76,26 @@ type ProductRepository interface {
 }
 
 type PurchaseRepository interface {
-	StorePurchases(purchase models.Purchase) (models.Purchase, error)
-	DeletePurchaseByID(id uuid.UUID, deletedBy models.User)
-	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
+	PurchaseCRUDRepository
+
 	GetPurchaseBySumupClientTransactionID(sumupTransactionID uuid.UUID) (*models.Purchase, error)
 	UpdatePurchaseStatusByID(id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error)
 	UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error)
-	UpdatePurchaseSumupClientTransactionIDByID(id uuid.UUID, sumupClientTransactionID uuid.UUID) (*models.Purchase, error)
-	GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error)
+	UpdatePurchaseSumupClientTransactionIDByID(
+		id uuid.UUID,
+		sumupClientTransactionID uuid.UUID,
+	) (*models.Purchase, error)
 	GetFilteredPurchases(filters PurchaseFilters) ([]models.PurchaseItem, error)
-	GetTotalPurchases(filters PurchaseFilters) (int64, error)
 	GetPurchaseStats() ([]ProductPurchaseStats, error)
 	GetPurchasedQuantitiesByProductID(productID uint) (int, error)
+}
+
+type PurchaseCRUDRepository interface {
+	StorePurchases(purchase models.Purchase) (models.Purchase, error)
+	DeletePurchaseByID(id uuid.UUID, deletedBy models.User)
+	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
+	GetTotalPurchases(filters PurchaseFilters) (int64, error)
+	GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error)
 }
 
 type UserRepository interface {
@@ -86,7 +104,7 @@ type UserRepository interface {
 	GetTotalUsers(filters *UserFilters) (int64, error)
 	CreateUser(user models.User) (models.User, error)
 	UpdateUserByID(id int, updatedUser models.User) (*models.User, error)
-	DeleteUser(user models.User)
+	DeleteUser(user models.User) error
 	GetUserByEmail(email string) (*models.User, error)
 	GetUserByUsername(username string) (*models.User, error)
 	GetUserByUsernameOrEmail(usernameOrEmail string) (*models.User, error)

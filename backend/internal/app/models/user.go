@@ -11,17 +11,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var bcryptCost = 14
+const bcryptCost = 14
+const passwordLength = 32
+const defaultChangePasswordTokenValidity = 15 * time.Minute
 
 type User struct {
-	ID uint `gorm:"primarykey" json:"id"`
 	GormModel
-	Username                  string  `gorm:"unique"       json:"username"`
-	Email                     string  `gorm:"unique"       json:"email"`
+
+	ID                        uint    `json:"id"       gorm:"primarykey"`
+	Username                  string  `json:"username" gorm:"unique"`
+	Email                     string  `json:"email"    gorm:"unique"`
 	Password                  string  `json:"-"`
 	Admin                     bool    `json:"admin"`
-	ChangePasswordToken       *string `gorm:"default:null" json:"-"`
-	ChangePasswordTokenExpiry *int64  `gorm:"default:null" json:"-"`
+	ChangePasswordToken       *string `json:"-"        gorm:"default:null"`
+	ChangePasswordTokenExpiry *int64  `json:"-"        gorm:"default:null"`
 }
 
 func (u *User) Role() string {
@@ -76,11 +79,11 @@ func (u *User) ChangePasswordTokenIsExpired() bool {
 
 func (u *User) GenerateChangePasswordToken(validity *time.Duration) {
 	if validity == nil {
-		duration := 15 * time.Minute
+		duration := defaultChangePasswordTokenValidity
 		validity = &duration
 	}
 
-	token := randomString(32)
+	token := randomString(passwordLength)
 	u.ChangePasswordToken = &token
 	currentTimestamp := time.Now().Unix()
 	expiry := currentTimestamp + int64(validity.Seconds())
@@ -88,11 +91,15 @@ func (u *User) GenerateChangePasswordToken(validity *time.Duration) {
 }
 
 func (u *User) GenerateRandomPassword() {
-	u.Password = randomString(32)
+	u.Password = randomString(passwordLength)
 }
 
 func randomString(length int) string {
-	result, err := password.Generate(length, int(math.Round(float64(length)/4)), 0, false, false)
+	const fractionOfDigits = 0.25
+
+	numberOfDigitsInPassword := int(math.Round(float64(length) * fractionOfDigits))
+
+	result, err := password.Generate(length, numberOfDigitsInPassword, 0, false, false)
 	if err != nil {
 		panic(err)
 	}

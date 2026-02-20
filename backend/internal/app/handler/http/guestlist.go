@@ -10,15 +10,15 @@ import (
 )
 
 type GuestlistCreateRequest struct {
-	Name      string `binding:"required" form:"name"      json:"name"`
-	TypeCode  bool   `binding:"boolean"  form:"typeCode"  json:"typeCode"`
-	ProductID uint   `binding:"required" form:"productId" json:"productId"`
+	Name      string `json:"name"      form:"name"      binding:"required"`
+	TypeCode  bool   `json:"typeCode"  form:"typeCode"  binding:"boolean"`
+	ProductID uint   `json:"productId" form:"productId" binding:"required"`
 }
 
 type GuestlistUpdateRequest struct {
-	Name      string `binding:"required" form:"name"      json:"name"`
-	TypeCode  bool   `binding:"boolean"  form:"typeCode"  json:"typeCode"`
-	ProductID uint   `binding:"required" form:"productId" json:"productId"`
+	Name      string `json:"name"      form:"name"      binding:"required"`
+	TypeCode  bool   `json:"typeCode"  form:"typeCode"  binding:"boolean"`
+	ProductID uint   `json:"productId" form:"productId" binding:"required"`
 }
 
 func (handler *Handler) GetGuestlists(c *gin.Context) {

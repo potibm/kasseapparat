@@ -10,7 +10,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 )
 
-type SumupReaderReponse struct {
+type SumupReaderResponse struct {
 	ID               string    `json:"id"`
 	Name             string    `json:"name"`
 	Status           string    `json:"status"`
@@ -53,7 +53,7 @@ func (handler *Handler) GetSumupReaderByID(c *gin.Context) {
 
 func (handler *Handler) CreateSumupReader(c *gin.Context) {
 	var request struct {
-		PairingCode string `binding:"required" json:"pairingCode"`
+		PairingCode string `json:"pairingCode" binding:"required"`
 		Name        string `json:"name"`
 	}
 
@@ -85,20 +85,20 @@ func (handler *Handler) DeleteSumupReader(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func toSumupReaderResponse(c sumup.Reader) SumupReaderReponse {
-	return SumupReaderReponse{
-		ID:               c.ID,
-		Name:             c.Name,
-		Status:           c.Status,
-		DeviceIdentifier: c.DeviceIdentifier,
-		DeviceModel:      c.DeviceModel,
-		CreatedAt:        c.CreatedAt,
-		UpdatedAt:        c.UpdatedAt,
+func toSumupReaderResponse(reader sumup.Reader) SumupReaderResponse {
+	return SumupReaderResponse{
+		ID:               reader.ID,
+		Name:             reader.Name,
+		Status:           reader.Status,
+		DeviceIdentifier: reader.DeviceIdentifier,
+		DeviceModel:      reader.DeviceModel,
+		CreatedAt:        reader.CreatedAt,
+		UpdatedAt:        reader.UpdatedAt,
 	}
 }
 
-func toSumupReaderResponses(readers []sumup.Reader) []SumupReaderReponse {
-	responses := make([]SumupReaderReponse, len(readers))
+func toSumupReaderResponses(readers []sumup.Reader) []SumupReaderResponse {
+	responses := make([]SumupReaderResponse, len(readers))
 	for i, reader := range readers {
 		responses[i] = toSumupReaderResponse(reader)
 	}

@@ -74,7 +74,12 @@ func uintPtr(v uint) *uint {
 	return &v
 }
 
-func NewPurchaseService(sqliteRepo sqlite.RepositoryInterface, sumupRepo sumupRepository, mailer Mailer, decimalPlaces int32) *PurchaseService {
+func NewPurchaseService(
+	sqliteRepo sqlite.RepositoryInterface,
+	sumupRepo sumupRepository,
+	mailer Mailer,
+	decimalPlaces int32,
+) *PurchaseService {
 	return &PurchaseService{
 		sqliteRepo:    sqliteRepo,
 		sumupRepo:     sumupRepo,
@@ -132,6 +137,137 @@ func (s *PurchaseService) ValidateAndPrepareGuests(input PurchaseInput) ([]model
 	return updatedGuests, nil
 }
 
+func (s *PurchaseService) CreateConfirmedPurchase(
+	ctx context.Context,
+	input PurchaseInput,
+	userID int,
+) (*models.Purchase, error) {
+	savedPurchase, guests, err := s.createPurchaseWithStatus(ctx, input, userID, models.PurchaseStatusConfirmed)
+	if err != nil {
+		return nil, err
+	}
+
+	s.notifyGuests(guests)
+
+	return savedPurchase, nil
+}
+
+func (s *PurchaseService) CreatePendingPurchase(
+	ctx context.Context,
+	input PurchaseInput,
+	userID int,
+) (*models.Purchase, error) {
+	savedPurchase, _, err := s.createPurchaseWithStatus(ctx, input, userID, models.PurchaseStatusPending)
+
+	return savedPurchase, err
+}
+
+func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
+	// update status of purchase to confirmed
+	purchase, err := s.setPurchaseStatus(ctx, purchaseId, models.PurchaseStatusConfirmed, false)
+	if err != nil {
+		return nil, errors.New("failed to finalize purchase: " + err.Error())
+	}
+
+	// notify guests
+	guests, err := s.sqliteRepo.GetGuestsByPurchaseID(purchaseId)
+	if guests == nil || err != nil {
+		log.Println("no guests found for purchase, skipping notification")
+	} else {
+		s.notifyGuests(guests)
+	}
+
+	return purchase, nil
+}
+
+func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
+	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusCancelled)
+	if err != nil {
+		return nil, errors.New("failed to cancel purchase: " + err.Error())
+	}
+
+	return purchase, nil
+}
+
+func (s *PurchaseService) FailPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
+	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusFailed)
+	if err != nil {
+		return nil, errors.New("failed to set the purchase to failed: " + err.Error())
+	}
+
+	return purchase, nil
+}
+
+func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
+	purchase, err := s.sqliteRepo.GetPurchaseByID(purchaseId)
+	if err != nil {
+		return nil, errors.New("failed to get purchase by ID: " + err.Error())
+	}
+
+	// Validate current status
+	if purchase.Status != models.PurchaseStatusConfirmed {
+		return nil, fmt.Errorf("cannot refund purchase with status: %s", purchase.Status)
+	}
+
+	// refund the purchase via sumup
+	if purchase.PaymentMethod == models.PaymentMethodSumUp && purchase.SumupTransactionID != nil {
+		fmt.Println("Refunding transaction via SumUp for transaction ID:", *purchase.SumupTransactionID)
+
+		if err := s.sumupRepo.RefundTransaction(*purchase.SumupTransactionID); err != nil {
+			return nil, errors.New("failed to refund purchase via sumup: " + err.Error())
+		}
+	}
+
+	// update status of purchase to refunded
+	purchase, err = s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusRefunded)
+	if err != nil {
+		return nil, errors.New("failed to set the purchase to refunded: " + err.Error())
+	}
+
+	return purchase, nil
+}
+
+func (s *PurchaseService) rollbackPurchase(
+	ctx context.Context,
+	purchaseId uuid.UUID,
+	status models.PurchaseStatus,
+) (*models.Purchase, error) {
+	purchase, err := s.setPurchaseStatus(ctx, purchaseId, status, true)
+	if err != nil {
+		return nil, errors.New("failed to rollback purchase: " + err.Error())
+	}
+
+	return purchase, err
+}
+
+func (s *PurchaseService) setPurchaseStatus(
+	ctx context.Context,
+	purchaseId uuid.UUID,
+	status models.PurchaseStatus,
+	rollbackGuests bool,
+) (*models.Purchase, error) {
+	var purchase *models.Purchase
+
+	err := s.sqliteRepo.WithTransaction(ctx, func(txRepo sqlite.RepositoryInterface) error {
+		p, err := txRepo.UpdatePurchaseStatusByID(purchaseId, status)
+		if err != nil {
+			return err
+		}
+
+		purchase = p
+
+		if rollbackGuests {
+			if err := txRepo.RollbackVisitedGuestsByPurchaseID(purchaseId); err != nil {
+				return fmt.Errorf("failed to rollback visited guests: %w", err)
+			}
+		}
+
+		return nil
+	})
+
+	return purchase, err
+}
+
 func (s *PurchaseService) validateGuest(listInput ListItemInput, productID int) (*models.Guest, error) {
 	guest, err := s.sqliteRepo.GetFullGuestByID(listInput.ID)
 	if err != nil || guest == nil {
@@ -173,24 +309,12 @@ func (s *PurchaseService) notifyGuests(guests []models.Guest) {
 	}
 }
 
-func (s *PurchaseService) CreateConfirmedPurchase(ctx context.Context, input PurchaseInput, userID int) (*models.Purchase, error) {
-	savedPurchase, guests, err := s.createPurchaseWithStatus(ctx, input, userID, models.PurchaseStatusConfirmed)
-	if err != nil {
-		return nil, err
-	}
-
-	s.notifyGuests(guests)
-
-	return savedPurchase, nil
-}
-
-func (s *PurchaseService) CreatePendingPurchase(ctx context.Context, input PurchaseInput, userID int) (*models.Purchase, error) {
-	savedPurchase, _, err := s.createPurchaseWithStatus(ctx, input, userID, models.PurchaseStatusPending)
-
-	return savedPurchase, err
-}
-
-func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input PurchaseInput, userID int, status models.PurchaseStatus) (*models.Purchase, []models.Guest, error) {
+func (s *PurchaseService) createPurchaseWithStatus(
+	ctx context.Context,
+	input PurchaseInput,
+	userID int,
+	status models.PurchaseStatus,
+) (*models.Purchase, []models.Guest, error) {
 	net, gross, err := s.ValidateAndCalculatePrices(input)
 	if err != nil {
 		return nil, nil, err
@@ -249,101 +373,4 @@ func (s *PurchaseService) createPurchaseWithStatus(ctx context.Context, input Pu
 	}
 
 	return savedPurchase, guests, nil
-}
-
-func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
-	// update status of purchase to confirmed
-	purchase, err := s.setPurchaseStatus(ctx, purchaseId, models.PurchaseStatusConfirmed, false)
-	if err != nil {
-		return nil, errors.New("failed to finalize purchase: " + err.Error())
-	}
-
-	// notfiy guests
-	guests, err := s.sqliteRepo.GetGuestsByPurchaseID(purchaseId)
-	if guests == nil || err != nil {
-		log.Println("no guests found for purchase, skipping notification")
-	} else {
-		s.notifyGuests(guests)
-	}
-
-	return purchase, nil
-}
-
-func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
-	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusCancelled)
-	if err != nil {
-		return nil, errors.New("failed to cancel purchase: " + err.Error())
-	}
-
-	return purchase, nil
-}
-
-func (s *PurchaseService) FailPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
-	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusFailed)
-	if err != nil {
-		return nil, errors.New("failed to set the purchase to failed: " + err.Error())
-	}
-
-	return purchase, nil
-}
-
-func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
-	purchase, err := s.sqliteRepo.GetPurchaseByID(purchaseId)
-	if err != nil {
-		return nil, errors.New("failed to get purchase by ID: " + err.Error())
-	}
-
-	// Validate current status
-	if purchase.Status != models.PurchaseStatusConfirmed {
-		return nil, fmt.Errorf("cannot refund purchase with status: %s", purchase.Status)
-	}
-
-	// refund the purchase via sumup
-	if purchase.PaymentMethod == models.PaymentMethodSumUp && purchase.SumupTransactionID != nil {
-		fmt.Println("Refunding transaction via SumUp for transaction ID:", *purchase.SumupTransactionID)
-
-		if err := s.sumupRepo.RefundTransaction(*purchase.SumupTransactionID); err != nil {
-			return nil, errors.New("failed to refund purchase via sumup: " + err.Error())
-		}
-	}
-
-	// update status of purchase to refunded
-	purchase, err = s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusRefunded)
-	if err != nil {
-		return nil, errors.New("failed to set the purchase to refunded: " + err.Error())
-	}
-
-	return purchase, nil
-}
-
-func (s *PurchaseService) rollbackPurchase(ctx context.Context, purchaseId uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error) {
-	purchase, err := s.setPurchaseStatus(ctx, purchaseId, status, true)
-	if err != nil {
-		return nil, errors.New("failed to rollback purchase: " + err.Error())
-	}
-
-	return purchase, err
-}
-
-func (s *PurchaseService) setPurchaseStatus(ctx context.Context, purchaseId uuid.UUID, status models.PurchaseStatus, rollbackGuests bool) (*models.Purchase, error) {
-	var purchase *models.Purchase
-
-	err := s.sqliteRepo.WithTransaction(ctx, func(txRepo sqlite.RepositoryInterface) error {
-		p, err := txRepo.UpdatePurchaseStatusByID(purchaseId, status)
-		if err != nil {
-			return err
-		}
-
-		purchase = p
-
-		if rollbackGuests {
-			if err := txRepo.RollbackVisitedGuestsByPurchaseID(purchaseId); err != nil {
-				return fmt.Errorf("failed to rollback visited guests: %w", err)
-			}
-		}
-
-		return nil
-	})
-
-	return purchase, err
 }

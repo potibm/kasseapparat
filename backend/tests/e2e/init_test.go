@@ -79,7 +79,12 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 
 	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepo, cfg.JwtConfig)
 
-	purchaseService := purchaseService.NewPurchaseService(sqliteRepo, sumupRepo, mailer, int32(cfg.FormatConfig.FractionDigitsMax))
+	purchaseService := purchaseService.NewPurchaseService(
+		sqliteRepo,
+		sumupRepo,
+		mailer,
+		int32(cfg.FormatConfig.FractionDigitsMax),
+	)
 
 	statusPublisher := MockStatusPublisher{}
 	poller := monitor.NewPoller(sumupRepo, sqliteRepo, purchaseService, &statusPublisher)
@@ -93,9 +98,22 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		AppConfig:       cfg,
 	}
 	handlerHttp := handlerHttp.NewHandler(httpHandlerConfig)
-	websocketHandler := websocket.NewHandler(sqliteRepo, sumupRepo, purchaseService, jwtMiddleware, &cfg.CorsAllowOrigins)
+	websocketHandler := websocket.NewHandler(
+		sqliteRepo,
+		sumupRepo,
+		purchaseService,
+		jwtMiddleware,
+		&cfg.CorsAllowOrigins,
+	)
 
-	router := initializer.InitializeHttpServer(*handlerHttp, websocketHandler, *sqliteRepo, embed.FS{}, jwtMiddleware, cfg)
+	router := initializer.InitializeHttpServer(
+		*handlerHttp,
+		websocketHandler,
+		*sqliteRepo,
+		embed.FS{},
+		jwtMiddleware,
+		cfg,
+	)
 
 	ts := httptest.NewServer(router)
 

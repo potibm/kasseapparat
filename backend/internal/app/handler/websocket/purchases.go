@@ -68,7 +68,7 @@ func (h *Handler) upgradeAndRegister(c *gin.Context) (uuid.UUID, *websocket.Conn
 
 	if !registerConnection(transactionID, conn) {
 		msg := websocket.FormatCloseMessage(CloseTooManyConnections, "connection limit reached")
-		conn.WriteControl(websocket.CloseMessage, msg, time.Now().Add(time.Second))
+		_ = conn.WriteControl(websocket.CloseMessage, msg, time.Now().Add(time.Second))
 		conn.Close()
 
 		return uuid.Nil, nil, false

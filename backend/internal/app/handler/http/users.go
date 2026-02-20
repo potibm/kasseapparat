@@ -56,16 +56,16 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 }
 
 type UserCreateRequest struct {
-	Username string `binding:"required" form:"username" json:"username"`
-	Email    string `binding:"required" form:"email"    json:"email"`
-	Admin    bool   `binding:""         form:"admin"    json:"admin"`
+	Username string `json:"username" form:"username" binding:"required"`
+	Email    string `json:"email"    form:"email"    binding:"required"`
+	Admin    bool   `json:"admin"    form:"admin"    binding:""`
 }
 
 type UserUpdateRequest struct {
-	Username string `binding:"required" form:"username" json:"username"`
-	Password string `binding:""         form:"password" json:"password"`
-	Email    string `binding:"required" form:"email"    json:"email"`
-	Admin    bool   `binding:""         form:"admin"    json:"admin"`
+	Username string `json:"username" form:"username" binding:"required"`
+	Password string `json:"password" form:"password" binding:""`
+	Email    string `json:"email"    form:"email"    binding:"required"`
+	Admin    bool   `json:"admin"    form:"admin"    binding:""`
 }
 
 func (handler *Handler) UpdateUserByID(c *gin.Context) {
@@ -140,7 +140,9 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 	user.Email = userRequest.Email
 	user.GenerateRandomPassword()
 
-	validity := 3 * time.Hour
+	const validityOfChangePasswordToken = 3 * time.Hour
+
+	validity := validityOfChangePasswordToken
 	user.GenerateChangePasswordToken(&validity)
 
 	// only an admin may change the role of a user
@@ -189,7 +191,12 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 		return
 	}
 
-	handler.repo.DeleteUser(*user)
+	err = handler.repo.DeleteUser(*user)
+	if err != nil {
+		_ = c.Error(InternalServerError.WithCause(err))
+
+		return
+	}
 
 	c.Status(http.StatusNoContent)
 }

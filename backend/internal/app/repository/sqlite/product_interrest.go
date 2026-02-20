@@ -39,12 +39,17 @@ func (repo *Repository) GetProductInterestByID(id int) (*models.ProductInterest,
 }
 
 func (repo *Repository) DeleteProductInterest(productInterest models.ProductInterest, deletedBy models.User) {
-	repo.db.Model(&models.ProductInterest{}).Where(whereIDEquals, productInterest.ID).Update("DeletedByID", deletedBy.ID)
+	repo.db.Model(&models.ProductInterest{}).
+		Where(whereIDEquals, productInterest.ID).
+		Update("DeletedByID", deletedBy.ID)
 
 	repo.db.Delete(&productInterest)
 }
 
-func (repo *Repository) CreateProductInterest(productInterest models.ProductInterest, createdBy models.User) (models.ProductInterest, error) {
+func (repo *Repository) CreateProductInterest(
+	productInterest models.ProductInterest,
+	createdBy models.User,
+) (models.ProductInterest, error) {
 	productInterest.CreatedByID = &createdBy.ID
 
 	result := repo.db.Create(&productInterest)

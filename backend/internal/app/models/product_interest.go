@@ -4,5 +4,5 @@ type ProductInterest struct {
 	GormOwnedModel
 
 	ProductID uint    `json:"productID"`
-	Product   Product `gorm:""          json:"product"`
+	Product   Product `json:"product"   gorm:""`
 }

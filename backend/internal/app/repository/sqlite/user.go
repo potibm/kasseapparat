@@ -56,7 +56,10 @@ func (repo *Repository) GetUserByID(id int) (*models.User, error) {
 
 func (repo *Repository) GetUserByUsername(username string) (*models.User, error) {
 	var user models.User
-	if err := repo.db.Model(&models.User{}).Where("LOWER(Username) = ?", strings.ToLower(username)).First(&user).Error; err != nil {
+	if err := repo.db.Model(&models.User{}).
+		Where("LOWER(Username) = ?", strings.ToLower(username)).
+		First(&user).
+		Error; err != nil {
 		return nil, ErrUserNotFoundByUsername
 	}
 
@@ -65,7 +68,10 @@ func (repo *Repository) GetUserByUsername(username string) (*models.User, error)
 
 func (repo *Repository) GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
-	if err := repo.db.Model(&models.User{}).Where("LOWER(Email) = ?", strings.ToLower(email)).First(&user).Error; err != nil {
+	if err := repo.db.Model(&models.User{}).
+		Where("LOWER(Email) = ?", strings.ToLower(email)).
+		First(&user).
+		Error; err != nil {
 		return nil, ErrUserNotFoundByEmail
 	}
 
@@ -74,7 +80,10 @@ func (repo *Repository) GetUserByEmail(email string) (*models.User, error) {
 
 func (repo *Repository) GetUserByUsernameOrEmail(login string) (*models.User, error) {
 	var user models.User
-	if err := repo.db.Model(&models.User{}).Where("LOWER(Username) = ? OR LOWER(Email) = ?", strings.ToLower(login), strings.ToLower(login)).First(&user).Error; err != nil {
+	if err := repo.db.Model(&models.User{}).
+		Where("LOWER(Username) = ? OR LOWER(Email) = ?", strings.ToLower(login), strings.ToLower(login)).
+		First(&user).
+		Error; err != nil {
 		return nil, ErrUserNotFound
 	}
 
@@ -95,7 +104,13 @@ func (repo *Repository) GetUserByLoginAndPassword(login string, password string)
 	return user, nil
 }
 
-func (repo *Repository) GetUsers(limit int, offset int, sort string, order string, filters UserFilters) ([]models.User, error) {
+func (repo *Repository) GetUsers(
+	limit int,
+	offset int,
+	sort string,
+	order string,
+	filters UserFilters,
+) ([]models.User, error) {
 	sort, err := getUsersValidSortFieldName(sort)
 	if err != nil {
 		return nil, err
@@ -153,14 +168,23 @@ func (repo *Repository) CreateUser(user models.User) (models.User, error) {
 	return user, result.Error
 }
 
-func (repo *Repository) DeleteUser(user models.User) {
-	// update the user to be deleted: postfix the username with "_deleted" and the current timestamp, and prefix the email with "deleted_" and the current timestamp
+func (repo *Repository) DeleteUser(user models.User) error {
+	// update the user to be deleted:
+	//  - postfix the username with "_deleted" and the current timestamp and
+	//  - prefix the email with "deleted_" and the current timestamp
 	now := time.Now().Format("20060102150405")
 	user.Username = user.Username + "_deleted_" + now
-	user.Email = "deleted_" + now + "_" + user.Email
-	repo.db.Save(&user)
 
-	repo.db.Delete(&user)
+	user.Email = "deleted_" + now + "_" + user.Email
+	if err := repo.db.Save(&user).Error; err != nil {
+		return fmt.Errorf("failed to anonymise user before deletion: %w", err)
+	}
+
+	if err := repo.db.Delete(&user).Error; err != nil {
+		return fmt.Errorf("failed to delete user: %w", err)
+	}
+
+	return nil
 }
 
 func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models.User, error) {
