@@ -109,7 +109,7 @@ func SentryMiddleware() gin.HandlerFunc {
 
 func registerApiRoutes(
 	httpHandler httpHandler.Handler,
-	websockeHandler websocket.HandlerInterface,
+	websocketHandler websocket.HandlerInterface,
 	authMiddleware *jwt.GinJWTMiddleware,
 ) {
 	protectedApiRouter := r.Group("/api/" + API_VERSION)
@@ -123,7 +123,7 @@ func registerApiRoutes(
 		registerGuestRoutes(protectedApiRouter, httpHandler)
 		protectedApiRouter.POST("/guestsUpload", httpHandler.ImportGuestsFromDeineTicketsCsv)
 
-		registerPurchaseRoutes(protectedApiRouter, httpHandler, websockeHandler)
+		registerPurchaseRoutes(protectedApiRouter, httpHandler)
 		registerUserRoutes(protectedApiRouter, httpHandler)
 
 		registerSumupReadersRoutes(protectedApiRouter, httpHandler)
@@ -140,7 +140,7 @@ func registerApiRoutes(
 
 		unprotectedApiRouter.POST("/sumup/webhook", httpHandler.GetSumupTransactionWebhook)
 
-		unprotectedApiRouter.GET("/purchases/:id/ws", websockeHandler.HandleTransactionWebSocket)
+		unprotectedApiRouter.GET("/purchases/:id/ws", websocketHandler.HandleTransactionWebSocket)
 	}
 }
 
@@ -181,7 +181,6 @@ func registerGuestRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 func registerPurchaseRoutes(
 	rg *gin.RouterGroup,
 	handler httpHandler.Handler,
-	websockeHandler websocket.HandlerInterface,
 ) {
 	purchases := rg.Group("/purchases")
 	{

@@ -287,7 +287,7 @@ func (m *MockRepository) CreateUser(user models.User) (models.User, error) {
 func (m *MockRepository) UpdateUserByID(id int, updatedUser models.User) (*models.User, error) {
 	panic(errNotImplemented)
 }
-func (m *MockRepository) DeleteUser(user models.User) {
+func (m *MockRepository) DeleteUser(user models.User) error {
 	panic(errNotImplemented)
 }
 func (m *MockRepository) GetUserByEmail(email string) (*models.User, error) {

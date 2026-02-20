@@ -168,16 +168,21 @@ func (repo *Repository) CreateUser(user models.User) (models.User, error) {
 	return user, result.Error
 }
 
-func (repo *Repository) DeleteUser(user models.User) {
+func (repo *Repository) DeleteUser(user models.User) error {
 	// update the user to be deleted:
 	//  - postfix the username with "_deleted" and the current timestamp and
 	//  - prefix the email with "deleted_" and the current timestamp
 	now := time.Now().Format("20060102150405")
 	user.Username = user.Username + "_deleted_" + now
+
 	user.Email = "deleted_" + now + "_" + user.Email
-	repo.db.Save(&user)
+	if err := repo.db.Save(&user).Error; err != nil {
+		return fmt.Errorf("failed to anonymise user before deletion: %w", err)
+	}
 
 	repo.db.Delete(&user)
+
+	return nil
 }
 
 func (repo *Repository) UpdateUserByID(id int, updatedUser models.User) (*models.User, error) {

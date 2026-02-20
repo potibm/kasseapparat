@@ -191,7 +191,12 @@ func (handler *Handler) DeleteUserByID(c *gin.Context) {
 		return
 	}
 
-	handler.repo.DeleteUser(*user)
+	err = handler.repo.DeleteUser(*user)
+	if err != nil {
+		_ = c.Error(InternalServerError.WithCause(err))
+
+		return
+	}
 
 	c.Status(http.StatusNoContent)
 }

@@ -104,7 +104,7 @@ type UserRepository interface {
 	GetTotalUsers(filters *UserFilters) (int64, error)
 	CreateUser(user models.User) (models.User, error)
 	UpdateUserByID(id int, updatedUser models.User) (*models.User, error)
-	DeleteUser(user models.User)
+	DeleteUser(user models.User) error
 	GetUserByEmail(email string) (*models.User, error)
 	GetUserByUsername(username string) (*models.User, error)
 	GetUserByUsernameOrEmail(usernameOrEmail string) (*models.User, error)

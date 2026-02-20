@@ -70,14 +70,18 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 	}
 
 	for _, p := range purchases {
-		handler.exportSinglePurchase(c, writer, p)
+		if err := handler.exportSinglePurchase(writer, p); err != nil {
+			_ = c.Error(InternalServerError.WithMsg("Failed to write CSV: " + err.Error()).WithCause(err))
+
+			return
+		}
 	}
 }
 
-func (handler *Handler) exportSinglePurchase(c *gin.Context, writer *csv.Writer, p models.PurchaseItem) {
+func (handler *Handler) exportSinglePurchase(writer *csv.Writer, p models.PurchaseItem) error {
 	Vat := p.Purchase.TotalGrossPrice.Sub(p.Purchase.TotalNetPrice)
 
-	err := writer.Write([]string{
+	return writer.Write([]string{
 		fmt.Sprint(p.CreatedAt.Format("2006-01-02 15:04:05")),
 		p.Purchase.ID.String(),
 		strconv.Itoa(p.Quantity),
@@ -94,9 +98,4 @@ func (handler *Handler) exportSinglePurchase(c *gin.Context, writer *csv.Writer,
 		Vat.StringFixed(handler.decimalPlaces),
 		string(p.Purchase.PaymentMethod),
 	})
-	if err != nil {
-		_ = c.Error(InternalServerError.WithMsg("Failed to write CSV: " + err.Error()).WithCause(err))
-
-		return
-	}
 }
