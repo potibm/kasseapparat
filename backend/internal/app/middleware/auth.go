@@ -19,8 +19,8 @@ const RefreshTokenLifetime = 7 * time.Hour * 24
 var IdentityKey = "ID"
 
 type login struct {
-	Login    string `binding:"required" form:"login"    json:"login"`
-	Password string `binding:"required" form:"password" json:"password"`
+	Login    string `json:"login"    form:"login"    binding:"required"`
+	Password string `json:"password" form:"password" binding:"required"`
 }
 
 type loginResponse struct {
@@ -160,11 +160,6 @@ func loginReponse(c *gin.Context, token *ginjwtCore.Token, user *models.User) {
 		AccessToken: token.AccessToken,
 		TokenType:   token.TokenType,
 		ExpiresIn:   token.ExpiresIn(),
-	}
-
-	// Include refresh token if present
-	if token.RefreshToken != "" {
-		//loginResponse.RefreshToken = token.RefreshToken
 	}
 
 	if user != nil {

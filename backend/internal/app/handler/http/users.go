@@ -56,16 +56,16 @@ func (handler *Handler) GetUserByID(c *gin.Context) {
 }
 
 type UserCreateRequest struct {
-	Username string `binding:"required" form:"username" json:"username"`
-	Email    string `binding:"required" form:"email"    json:"email"`
-	Admin    bool   `binding:""         form:"admin"    json:"admin"`
+	Username string `json:"username" form:"username" binding:"required"`
+	Email    string `json:"email"    form:"email"    binding:"required"`
+	Admin    bool   `json:"admin"    form:"admin"    binding:""`
 }
 
 type UserUpdateRequest struct {
-	Username string `binding:"required" form:"username" json:"username"`
-	Password string `binding:""         form:"password" json:"password"`
-	Email    string `binding:"required" form:"email"    json:"email"`
-	Admin    bool   `binding:""         form:"admin"    json:"admin"`
+	Username string `json:"username" form:"username" binding:"required"`
+	Password string `json:"password" form:"password" binding:""`
+	Email    string `json:"email"    form:"email"    binding:"required"`
+	Admin    bool   `json:"admin"    form:"admin"    binding:""`
 }
 
 func (handler *Handler) UpdateUserByID(c *gin.Context) {

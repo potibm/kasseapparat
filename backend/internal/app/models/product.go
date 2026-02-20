@@ -8,18 +8,18 @@ import (
 type Product struct {
 	GormOwnedModel
 
-	Name                string          `json:"name"`
+	Name                string          `json:"name"                gorm:""`
 	NetPrice            decimal.Decimal `json:"netPrice"            gorm:"type:TEXT"`
 	VATRate             decimal.Decimal `json:"vatRate"             gorm:"type:TEXT;default:'0.0'"`
 	WrapAfter           bool            `json:"wrapAfter"           gorm:"default:false"`
 	Hidden              bool            `json:"hidden"              gorm:"default:false"`
 	SoldOut             bool            `json:"soldOut"             gorm:"default:false"`
 	ApiExport           bool            `json:"apiExport"           gorm:"default:false"`
-	Pos                 int             `json:"pos"`
+	Pos                 int             `json:"pos"                 gorm:""`
 	TotalStock          int             `json:"totalStock"          gorm:"default:0"`
 	UnitsSold           int             `json:"unitsSold"           gorm:"default:0"`
 	SoldOutRequestCount int             `json:"soldOutRequestCount" gorm:"default:0"`
-	Guestlists          []Guestlist     `json:"guestlists"`
+	Guestlists          []Guestlist     `json:"guestlists"          gorm:""`
 }
 
 func (p Product) GrossPrice(decimalPlaces int32) decimal.Decimal {

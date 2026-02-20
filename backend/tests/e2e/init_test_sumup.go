@@ -11,11 +11,13 @@ import (
 )
 
 type MockSumUpRepository struct {
-	GetReadersFunc                  func() ([]sumup.Reader, error)
-	GetReaderFunc                   func(readerId string) (*sumup.Reader, error)
-	CreateReaderFunc                func(pairingCode string, readerName string) (*sumup.Reader, error)
-	DeleteReaderFunc                func(readerId string) error
-	CreateReaderCheckoutFunc        func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl *string) (*uuid.UUID, error)
+	GetReadersFunc           func() ([]sumup.Reader, error)
+	GetReaderFunc            func(readerId string) (*sumup.Reader, error)
+	CreateReaderFunc         func(pairingCode string, readerName string) (*sumup.Reader, error)
+	DeleteReaderFunc         func(readerId string) error
+	CreateReaderCheckoutFunc func(readerId string, amount decimal.Decimal,
+		description string, affiliateTransactionId string,
+		returnUrl *string) (*uuid.UUID, error)
 	CreateReaderTerminateActionFunc func(readerId string) error
 	GetTransactionsFunc             func(oldestFrom *time.Time) ([]sumup.Transaction, error)
 	GetTransactionByIdFunc          func(transactionId uuid.UUID) (*sumup.Transaction, error)
@@ -41,7 +43,9 @@ func NewMockSumUpRepository() *MockSumUpRepository {
 		DeleteReaderFunc: func(readerId string) error {
 			return nil
 		},
-		CreateReaderCheckoutFunc: func(readerId string, amount decimal.Decimal, description string, affiliateTransactionId string, returnUrl *string) (*uuid.UUID, error) {
+		CreateReaderCheckoutFunc: func(readerId string, amount decimal.Decimal,
+			description string, affiliateTransactionId string,
+			returnUrl *string) (*uuid.UUID, error) {
 			checkoutId, _ := uuid.Parse(mockCheckoutUUID)
 
 			return &checkoutId, nil

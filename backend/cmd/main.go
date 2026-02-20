@@ -95,6 +95,7 @@ func main() {
 
 func startCleanupForWebsocketConnections() {
 	const cleanupInterval = 5 * time.Minute
+
 	websocket.StartCleanupRoutine(cleanupInterval)
 }
 

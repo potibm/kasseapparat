@@ -18,13 +18,13 @@ const defaultChangePasswordTokenValidity = 15 * time.Minute
 type User struct {
 	GormModel
 
-	ID                        uint    `gorm:"primarykey"   json:"id"`
-	Username                  string  `gorm:"unique"       json:"username"`
-	Email                     string  `gorm:"unique"       json:"email"`
-	Password                  string  `                    json:"-"`
-	Admin                     bool    `                    json:"admin"`
-	ChangePasswordToken       *string `gorm:"default:null" json:"-"`
-	ChangePasswordTokenExpiry *int64  `gorm:"default:null" json:"-"`
+	ID                        uint    `json:"id"       gorm:"primarykey"`
+	Username                  string  `json:"username" gorm:"unique"`
+	Email                     string  `json:"email"    gorm:"unique"`
+	Password                  string  `json:"-"`
+	Admin                     bool    `json:"admin"`
+	ChangePasswordToken       *string `json:"-"        gorm:"default:null"`
+	ChangePasswordTokenExpiry *int64  `json:"-"        gorm:"default:null"`
 }
 
 func (u *User) Role() string {

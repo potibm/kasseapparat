@@ -10,9 +10,9 @@ import (
 )
 
 type UserUpdatePasswordRequest struct {
-	UserId   int    `binding:"required"        form:"userId"   json:"userId"`
-	Token    string `binding:"required,len=32" form:"token"    json:"token"`
-	Password string `binding:"required,min=8"  form:"password" json:"password"`
+	UserId   int    `json:"userId"   form:"userId"   binding:"required"`
+	Token    string `json:"token"    form:"token"    binding:"required,len=32"`
+	Password string `json:"password" form:"password" binding:"required,min=8"`
 }
 
 func (handler *Handler) UpdateUserPassword(c *gin.Context) {
@@ -51,7 +51,7 @@ func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 }
 
 type RequestChangePasswordTokenRequest struct {
-	Login string `binding:"required" form:"login" json:"login"`
+	Login string `json:"login" form:"login" binding:"required"`
 }
 
 func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {

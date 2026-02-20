@@ -12,24 +12,24 @@ import (
 )
 
 type ProductRequestCreate struct {
-	Name      string          `binding:"required"         form:"name"      json:"name"`
-	NetPrice  decimal.Decimal `binding:"required"         form:"netPrice"  json:"netPrice"`
-	VATRate   decimal.Decimal `binding:"required"         form:"vatRate"   json:"vatRate"`
-	WrapAfter bool            `                           form:"wrapAfter" json:"wrapAfter"`
-	Pos       int             `binding:"numeric,required" form:"pos"       json:"pos"`
-	Hidden    bool            `binding:"boolean"          form:"hidden"    json:"hidden"`
+	Name      string          `json:"name"      form:"name"      binding:"required"`
+	NetPrice  decimal.Decimal `json:"netPrice"  form:"netPrice"  binding:"required"`
+	VATRate   decimal.Decimal `json:"vatRate"   form:"vatRate"   binding:"required"`
+	WrapAfter bool            `json:"wrapAfter" form:"wrapAfter"`
+	Pos       int             `json:"pos"       form:"pos"       binding:"numeric,required"`
+	Hidden    bool            `json:"hidden"    form:"hidden"    binding:"boolean"`
 }
 
 type ProductRequestUpdate struct {
-	Name       string          `binding:"required"         form:"name"       json:"name"`
-	NetPrice   decimal.Decimal `binding:"required"         form:"netPrice"   json:"netPrice"`
-	VATRate    decimal.Decimal `binding:"required"         form:"vatRate"    json:"vatRate"`
-	WrapAfter  bool            `                           form:"wrapAfter"  json:"wrapAfter"`
-	Pos        int             `binding:"numeric,required" form:"pos"        json:"pos"`
-	ApiExport  bool            `binding:"boolean"          form:"apiExport"  json:"apiExport"`
-	Hidden     bool            `binding:"boolean"          form:"hidden"     json:"hidden"`
-	SoldOut    bool            `binding:"boolean"          form:"soldOut"    json:"soldOut"`
-	TotalStock int             `binding:"numeric"          form:"totalStock" json:"totalStock"`
+	Name       string          `json:"name"       form:"name"       binding:"required"`
+	NetPrice   decimal.Decimal `json:"netPrice"   form:"netPrice"   binding:"required"`
+	VATRate    decimal.Decimal `json:"vatRate"    form:"vatRate"    binding:"required"`
+	WrapAfter  bool            `json:"wrapAfter"  form:"wrapAfter"`
+	Pos        int             `json:"pos"        form:"pos"        binding:"numeric,required"`
+	ApiExport  bool            `json:"apiExport"  form:"apiExport"  binding:"boolean"`
+	Hidden     bool            `json:"hidden"     form:"hidden"     binding:"boolean"`
+	SoldOut    bool            `json:"soldOut"    form:"soldOut"    binding:"boolean"`
+	TotalStock int             `json:"totalStock" form:"totalStock" binding:"numeric"`
 }
 
 func (handler *Handler) GetProducts(c *gin.Context) {

@@ -12,24 +12,24 @@ import (
 )
 
 type GuestCreateRequest struct {
-	GuestlistID          uint    `binding:"required" form:"guestlistId"          json:"guestlistId"`
-	Name                 string  `binding:"required" form:"name"                 json:"name"`
-	Code                 string  `                   form:"code"                 json:"code"`
-	AdditionalGuests     uint    `                   form:"additionalGuests"     json:"additionalGuests"`
-	AttendedGuests       uint    `                   form:"attendedGuests"       json:"attendedGuests"`
-	ArrivalNote          *string `                   form:"arrivalNote"          json:"arrivalNote"`
-	NotifyOnArrivalEmail *string `                   form:"notifyOnArrivalEmail" json:"notifyOnArrivalEmail"`
+	GuestlistID          uint    `json:"guestlistId"          form:"guestlistId"          binding:"required"`
+	Name                 string  `json:"name"                 form:"name"                 binding:"required"`
+	Code                 string  `json:"code"                 form:"code"`
+	AdditionalGuests     uint    `json:"additionalGuests"     form:"additionalGuests"`
+	AttendedGuests       uint    `json:"attendedGuests"       form:"attendedGuests"`
+	ArrivalNote          *string `json:"arrivalNote"          form:"arrivalNote"`
+	NotifyOnArrivalEmail *string `json:"notifyOnArrivalEmail" form:"notifyOnArrivalEmail"`
 }
 
 type GuestUpdateRequest struct {
-	GuestlistID          uint       `form:"guestlistId"          json:"guestlistId"`
-	Name                 string     `form:"name"                 json:"name"                 binding:"required"`
-	Code                 string     `form:"code"                 json:"code"`
-	AdditionalGuests     uint       `form:"additionalGuests"     json:"additionalGuests"`
-	AttendedGuests       uint       `form:"attendedGuests"       json:"attendedGuests"`
-	ArrivedAt            *time.Time `form:"arrivedAt"            json:"arrivedAt"`
-	ArrivalNote          *string    `form:"arrivalNote"          json:"arrivalNote"`
-	NotifyOnArrivalEmail *string    `form:"notifyOnArrivalEmail" json:"notifyOnArrivalEmail"`
+	GuestlistID          uint       `json:"guestlistId"          form:"guestlistId"`
+	Name                 string     `json:"name"                 form:"name"                 binding:"required"`
+	Code                 string     `json:"code"                 form:"code"`
+	AdditionalGuests     uint       `json:"additionalGuests"     form:"additionalGuests"`
+	AttendedGuests       uint       `json:"attendedGuests"       form:"attendedGuests"`
+	ArrivedAt            *time.Time `json:"arrivedAt"            form:"arrivedAt"`
+	ArrivalNote          *string    `json:"arrivalNote"          form:"arrivalNote"`
+	NotifyOnArrivalEmail *string    `json:"notifyOnArrivalEmail" form:"notifyOnArrivalEmail"`
 }
 
 func (handler *Handler) GetGuests(c *gin.Context) {

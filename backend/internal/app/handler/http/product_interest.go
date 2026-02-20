@@ -9,7 +9,7 @@ import (
 )
 
 type ProductInterestCreateRequest struct {
-	ProductID uint `binding:"required" form:"productId" json:"productId"`
+	ProductID uint `json:"productId" form:"productId" binding:"required"`
 }
 
 func (handler *Handler) GetProductInterests(c *gin.Context) {

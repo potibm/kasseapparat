@@ -127,7 +127,7 @@ func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) 
 	}
 
 	query := repo.db.Model(&models.Guest{}).
-		Select("Guests.id, Guests.name, " +
+		Select("Guests.id, Guests.name, "+
 			"Guests.code, Guestlists.name AS list_name, "+
 			"Guests.additional_guests, Guests.arrival_note").
 		Joins("JOIN guestlists ON Guests.guestlist_id = Guestlists.id").

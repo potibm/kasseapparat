@@ -53,7 +53,7 @@ func (handler *Handler) GetSumupReaderByID(c *gin.Context) {
 
 func (handler *Handler) CreateSumupReader(c *gin.Context) {
 	var request struct {
-		PairingCode string `binding:"required" json:"pairingCode"`
+		PairingCode string `json:"pairingCode" binding:"required"`
 		Name        string `json:"name"`
 	}
 
