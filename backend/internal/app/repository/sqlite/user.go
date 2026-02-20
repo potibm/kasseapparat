@@ -180,7 +180,9 @@ func (repo *Repository) DeleteUser(user models.User) error {
 		return fmt.Errorf("failed to anonymise user before deletion: %w", err)
 	}
 
-	repo.db.Delete(&user)
+	if err := repo.db.Delete(&user).Error; err != nil {
+		return fmt.Errorf("failed to delete user: %w", err)
+	}
 
 	return nil
 }

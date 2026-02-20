@@ -85,15 +85,15 @@ func (handler *Handler) DeleteSumupReader(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func toSumupReaderResponse(c sumup.Reader) SumupReaderResponse {
+func toSumupReaderResponse(reader sumup.Reader) SumupReaderResponse {
 	return SumupReaderResponse{
-		ID:               c.ID,
-		Name:             c.Name,
-		Status:           c.Status,
-		DeviceIdentifier: c.DeviceIdentifier,
-		DeviceModel:      c.DeviceModel,
-		CreatedAt:        c.CreatedAt,
-		UpdatedAt:        c.UpdatedAt,
+		ID:               reader.ID,
+		Name:             reader.Name,
+		Status:           reader.Status,
+		DeviceIdentifier: reader.DeviceIdentifier,
+		DeviceModel:      reader.DeviceModel,
+		CreatedAt:        reader.CreatedAt,
+		UpdatedAt:        reader.UpdatedAt,
 	}
 }
 
