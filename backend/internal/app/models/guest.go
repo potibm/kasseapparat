@@ -62,20 +62,20 @@ func (entries GuestSummarySlice) SortByQuery(q string) {
 
 func calculateWeight(name, query string) int {
 	const (
-		WheightExactMatch     = 3
-		WheightPrefixMatch    = 2
-		WheightSubstringMatch = 1
-		WheightNoMatch        = 0
+		WeightExactMatch     = 3
+		WeightPrefixMatch    = 2
+		WeightSubstringMatch = 1
+		WeightNoMatch        = 0
 	)
 
 	switch {
 	case name == query:
-		return WheightExactMatch
+		return WeightExactMatch
 	case strings.HasPrefix(name, query):
-		return WheightPrefixMatch
+		return WeightPrefixMatch
 	case strings.Contains(" "+name, " "+query):
-		return WheightSubstringMatch
+		return WeightSubstringMatch
 	default:
-		return WheightNoMatch
+		return WeightNoMatch
 	}
 }
