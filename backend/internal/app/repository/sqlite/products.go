@@ -126,7 +126,7 @@ func (repo *Repository) GetAttendedGuestSumByProductID(productID uint) (int, err
 			"guestlists.product_id = ?", productID).
 		Joins("JOIN purchases ON "+
 			"guests.purchase_id = purchases.id AND "+
-			"purchases.deleted_at IS NULL AND"+
+			"purchases.deleted_at IS NULL AND "+
 			"purchases.status = ?", models.PurchaseStatusConfirmed).
 		Where("guests.deleted_at IS NULL").
 		Scan(&sum).Error
