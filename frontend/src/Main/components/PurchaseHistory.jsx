@@ -132,7 +132,6 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
 
             <div className="flex justify-center gap-4">
               <MyButton
-                color="failure"
                 disabled={processing}
                 onClick={() => confirmRefund(openModal.purchase)}
               >
