@@ -108,9 +108,9 @@ func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sql
 		HasClientTransactionID: &hasClientTransactionID,
 	}
 
-	const PlentyOfTransactions = 1000
+	const plentyOfTransactions = 1000
 
-	activeTransactions, err := sqliteRepository.GetPurchases(PlentyOfTransactions, 0, "createdAt", "ASC", filters)
+	activeTransactions, err := sqliteRepository.GetPurchases(plentyOfTransactions, 0, "createdAt", "ASC", filters)
 	if err != nil {
 		log.Printf("[Error] failed to get active purchases: %v", err)
 

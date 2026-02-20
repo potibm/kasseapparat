@@ -10,7 +10,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/repository/sumup"
 )
 
-type SumupReaderReponse struct {
+type SumupReaderResponse struct {
 	ID               string    `json:"id"`
 	Name             string    `json:"name"`
 	Status           string    `json:"status"`
@@ -85,8 +85,8 @@ func (handler *Handler) DeleteSumupReader(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func toSumupReaderResponse(c sumup.Reader) SumupReaderReponse {
-	return SumupReaderReponse{
+func toSumupReaderResponse(c sumup.Reader) SumupReaderResponse {
+	return SumupReaderResponse{
 		ID:               c.ID,
 		Name:             c.Name,
 		Status:           c.Status,
@@ -97,8 +97,8 @@ func toSumupReaderResponse(c sumup.Reader) SumupReaderReponse {
 	}
 }
 
-func toSumupReaderResponses(readers []sumup.Reader) []SumupReaderReponse {
-	responses := make([]SumupReaderReponse, len(readers))
+func toSumupReaderResponses(readers []sumup.Reader) []SumupReaderResponse {
+	responses := make([]SumupReaderResponse, len(readers))
 	for i, reader := range readers {
 		responses[i] = toSumupReaderResponse(reader)
 	}

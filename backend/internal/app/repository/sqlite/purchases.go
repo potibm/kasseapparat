@@ -219,6 +219,8 @@ func (repo *Repository) GetTotalPurchases(filters PurchaseFilters) (int64, error
 func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
 	var purchases []ProductPurchaseStats
 
+	const apiExportEnabled = 1
+
 	err := repo.db.
 		Model(&models.PurchaseItem{}).
 		Select("purchase_items.product_id, "+
@@ -229,7 +231,7 @@ func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
 			"purchases.status = ? ", models.PurchaseStatusConfirmed).
 		Joins("JOIN products ON "+
 			"products.id = purchase_items.product_id AND "+
-			"products.api_export = ?", 1).
+			"products.api_export = ?", apiExportEnabled).
 		Where("purchase_items.deleted_at IS NULL").
 		Group("purchase_items.product_id, products.name").
 		Scan(&purchases).Error

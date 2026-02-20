@@ -79,10 +79,10 @@ func (handler *Handler) ExportPurchases(c *gin.Context) {
 }
 
 func (handler *Handler) exportSinglePurchase(writer *csv.Writer, p models.PurchaseItem) error {
-	Vat := p.Purchase.TotalGrossPrice.Sub(p.Purchase.TotalNetPrice)
+	vat := p.Purchase.TotalGrossPrice.Sub(p.Purchase.TotalNetPrice)
 
 	return writer.Write([]string{
-		fmt.Sprint(p.CreatedAt.Format("2006-01-02 15:04:05")),
+		p.CreatedAt.Format("2006-01-02 15:04:05"),
 		p.Purchase.ID.String(),
 		strconv.Itoa(p.Quantity),
 		p.Product.Name,
@@ -95,7 +95,7 @@ func (handler *Handler) exportSinglePurchase(writer *csv.Writer, p models.Purcha
 		p.TotalVATAmount(handler.decimalPlaces).StringFixed(handler.decimalPlaces),
 		p.Purchase.TotalGrossPrice.StringFixed(handler.decimalPlaces),
 		p.Purchase.TotalNetPrice.StringFixed(handler.decimalPlaces),
-		Vat.StringFixed(handler.decimalPlaces),
+		vat.StringFixed(handler.decimalPlaces),
 		string(p.Purchase.PaymentMethod),
 	})
 }

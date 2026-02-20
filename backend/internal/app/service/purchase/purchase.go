@@ -169,7 +169,7 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.
 		return nil, errors.New("failed to finalize purchase: " + err.Error())
 	}
 
-	// notfiy guests
+	// notify guests
 	guests, err := s.sqliteRepo.GetGuestsByPurchaseID(purchaseId)
 	if guests == nil || err != nil {
 		log.Println("no guests found for purchase, skipping notification")

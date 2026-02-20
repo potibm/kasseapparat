@@ -14,7 +14,7 @@ import (
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
 
-const RefreshTokenLifetime = 7 * time.Hour * 24
+const RefreshTokenLifetime = 7 * 24 * time.Hour
 
 var IdentityKey = "ID"
 

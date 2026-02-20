@@ -46,9 +46,9 @@ func MigrateDatabase(db *gorm.DB) {
 		&models.Purchase{},
 		&models.PurchaseItem{},
 		&models.User{},
-		models.Guestlist{},
-		models.Guest{},
-		models.ProductInterest{},
+		&models.Guestlist{},
+		&models.Guest{},
+		&models.ProductInterest{},
 	)
 	if err != nil {
 		panic(err)
