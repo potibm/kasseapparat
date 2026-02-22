@@ -2,7 +2,7 @@ package http
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 
 	sentrygin "github.com/getsentry/sentry-go/gin"
@@ -90,7 +90,7 @@ func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 	if err != nil {
 		sentrygin.GetHubFromContext(c).
 			CaptureException(fmt.Errorf("error sending change password token email: %w", err))
-		log.Println("Error sending email", err)
+		slog.Warn("Error sending change password token email", "error", err)
 	}
 
 	c.JSON(http.StatusOK, "OK")

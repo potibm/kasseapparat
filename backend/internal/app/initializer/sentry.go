@@ -1,7 +1,7 @@
 package initializer
 
 import (
-	"fmt"
+	"log/slog"
 
 	"github.com/getsentry/sentry-go"
 	"github.com/potibm/kasseapparat/internal/app/config"
@@ -18,6 +18,6 @@ func InitializeSentry(sentryConfig config.SentryConfig) {
 		// We recommend adjusting this value in production,
 		TracesSampleRate: sentryConfig.TraceSampleRate,
 	}); err != nil {
-		fmt.Printf("Sentry initialization failed: %v\n", err)
+		slog.Error("Sentry initialization failed", "error", err)
 	}
 }

@@ -1,7 +1,7 @@
 package mailer
 
 import (
-	"log"
+	"log/slog"
 	"net/smtp"
 	"net/url"
 	"strconv"
@@ -28,19 +28,19 @@ const (
 func NewMailer(dsn string) *Mailer {
 	user := ""
 	password := ""
-	host := "localhost"
-	port := 1025
 	frontendBaseUrl := "http://localhost:3000"
 
 	u, err := url.Parse(dsn)
 	if err != nil {
-		log.Fatalln("Error parsing Mail DSN:", err)
-	} else {
-		host = u.Hostname()
-		user = u.User.Username()
-		password, _ = u.User.Password()
-		port, _ = strconv.Atoi(u.Port())
+		slog.Error("Error parsing Mail DSN", "error", err)
+
+		return nil
 	}
+
+	host := u.Hostname()
+	user = u.User.Username()
+	password, _ = u.User.Password()
+	port, _ := strconv.Atoi(u.Port())
 
 	return &Mailer{
 		user:            user,
@@ -72,7 +72,7 @@ func (m *Mailer) SetDisabled(disabled bool) {
 
 func (m *Mailer) SendMail(to string, subject string, body string) error {
 	if m.disabled {
-		log.Println("Mailer is disabled, not sending email")
+		slog.Info("Mailer is disabled, not sending email")
 
 		return nil
 	}
@@ -91,7 +91,7 @@ func (m *Mailer) SendMail(to string, subject string, body string) error {
 
 	err := smtp.SendMail(m.address(), auth, m.from, []string{to}, message)
 	if err != nil {
-		log.Println("Error sending mail:", err)
+		slog.Error("Error sending mail", "error", err)
 	}
 
 	return err

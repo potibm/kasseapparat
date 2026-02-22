@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -35,10 +35,10 @@ func registerConnection(transactionID uuid.UUID, conn *websocket.Conn) bool {
 	connections.Lock()
 	defer connections.Unlock()
 
-	log.Println("Current WebSocket connection number:", len(connections.clients))
+	slog.Info("Current WebSocket connection number", "count", len(connections.clients))
 
 	if len(connections.clients) >= maxConnections {
-		log.Printf("WebSocket connection limit reached (%d)", maxConnections)
+		slog.Error("WebSocket connection limit reached", "max_connections", maxConnections)
 
 		return false
 	}
@@ -64,7 +64,7 @@ func PushUpdate(transactionID uuid.UUID, status models.PurchaseStatus) {
 	connections.RUnlock()
 
 	if !ok {
-		log.Printf("No WebSocket client for %s", transactionID)
+		slog.Warn("No WebSocket client for transaction", "transaction_id", transactionID)
 
 		return
 	}
@@ -85,7 +85,7 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 	}
 
 	if err := conn.WriteJSON(payload); err != nil {
-		log.Printf("WebSocket send error [%s]: %v", msgType, err)
+		slog.Warn("WebSocket send error", "message_type", msgType, "error", err)
 
 		closeMsg := websocket.FormatCloseMessage(
 			websocket.CloseAbnormalClosure,
@@ -143,7 +143,7 @@ func cleanupStaleConnections(timeout time.Duration) {
 
 	// Close WebSocket connections outside the lock to avoid blocking other operations
 	for i, ws := range staleConns {
-		log.Printf("Cleaning up stale WebSocket connection: %s", staleIDs[i])
+		slog.Info("Cleaning up stale WebSocket connection", "transaction_id", staleIDs[i])
 
 		msg := websocket.FormatCloseMessage(CloseStaleConnection, "connection stale")
 		_ = ws.WriteControl(websocket.CloseMessage, msg, time.Now().Add(time.Second))

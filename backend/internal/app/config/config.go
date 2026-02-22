@@ -1,10 +1,12 @@
 package config
 
 import (
-	"log"
+	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/joho/godotenv"
+	"github.com/potibm/kasseapparat/internal/app/exitcode"
 )
 
 const (
@@ -65,13 +67,13 @@ type Config struct {
 }
 
 func (cfg Config) OutputVersion() {
-	log.Printf("Kasseapparat %s\n", cfg.AppConfig.Version)
+	slog.Info("Kasseapparat", slog.String("version", cfg.AppConfig.Version))
 }
 
 func Load() Config {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("Error loading .env file, using environment variables")
+		slog.Warn("Error loading .env file, using environment variables")
 	}
 
 	return loadConfig()
@@ -107,7 +109,8 @@ func (cfg *Config) SetVersion(version string) {
 func loadCorsAllowOrigins() []string {
 	origins := getEnv("CORS_ALLOW_ORIGINS", "")
 	if origins == "" {
-		log.Fatalf("CORS_ALLOW_ORIGINS is not set in env")
+		slog.Error("CORS_ALLOW_ORIGINS is not set in env")
+		os.Exit(int(exitcode.Config))
 	}
 
 	return strings.Split(origins, ",")

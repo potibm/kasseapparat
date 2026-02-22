@@ -2,7 +2,7 @@ package initializer
 
 import (
 	"embed"
-	"log"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -37,7 +37,7 @@ func InitializeHttpServer(
 	jwtMiddleware *jwt.GinJWTMiddleware,
 	config config.Config,
 	logger *slog.Logger,
-) *gin.Engine {
+) (*gin.Engine, error) {
 	gin.SetMode(config.AppConfig.GinMode)
 
 	r = gin.Default()
@@ -53,7 +53,7 @@ func InitializeHttpServer(
 
 	folder, err := static.EmbedFolder(staticFiles, "assets")
 	if err != nil {
-		log.Fatalf("Failed to create embedded folder: %v", err)
+		return nil, fmt.Errorf("create embedded folder: %w", err)
 	}
 
 	r.Use(static.Serve("/", folder))
@@ -72,7 +72,7 @@ func InitializeHttpServer(
 		}
 	})
 
-	return r
+	return r, nil
 }
 
 func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {

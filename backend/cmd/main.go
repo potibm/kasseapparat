@@ -3,11 +3,13 @@ package main
 import (
 	"embed"
 	"flag"
-	"log"
+	"log/slog"
+	"os"
 	"strconv"
 	"time"
 
 	config "github.com/potibm/kasseapparat/internal/app/config"
+	"github.com/potibm/kasseapparat/internal/app/exitcode"
 	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
@@ -34,7 +36,7 @@ func main() {
 
 	flag.Parse()
 
-	logger := initializer.InitLogger(*logLevel)
+	logger := initializer.InitJsonLogger(*logLevel)
 
 	cfg := config.Load()
 	cfg.SetVersion(version)
@@ -78,7 +80,7 @@ func main() {
 	}
 	httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
-	router := initializer.InitializeHttpServer(
+	router, err := initializer.InitializeHttpServer(
 		*httpHandler,
 		websocketHandler,
 		*sqliteRepository,
@@ -87,16 +89,21 @@ func main() {
 		cfg,
 		logger,
 	)
+	if err != nil {
+		logger.Error("Failed to initialize HTTP server", "error", err)
+		os.Exit(int(exitcode.Software))
+	}
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
 	startCleanupForWebsocketConnections()
 
 	portStr := ":" + strconv.Itoa(*port)
-	logger.Info("Listening on " + portStr + "...")
+	logger.Info("HTTP server listening", slog.Int("port", *port))
 
-	err := router.Run(portStr)
+	err = router.Run(portStr)
 	if err != nil {
 		logger.Error("Failed to start server", "error", err.Error())
+		os.Exit(int(exitcode.Software))
 	}
 }
 
@@ -119,13 +126,13 @@ func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sql
 
 	activeTransactions, err := sqliteRepository.GetPurchases(plentyOfTransactions, 0, "createdAt", "ASC", filters)
 	if err != nil {
-		log.Printf("[Error] failed to get active purchases: %v", err)
+		slog.Error("Failed to get active purchases", "error", err)
 
 		return
 	}
 
 	for _, tx := range activeTransactions {
-		log.Println("Starting poller for active transaction:", tx.ID)
+		slog.Debug("Starting poller for active transaction", "transaction_id", tx.ID)
 		poller.Start(tx.ID)
 	}
 }

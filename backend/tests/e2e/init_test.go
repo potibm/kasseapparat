@@ -108,7 +108,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		&cfg.CorsAllowOrigins,
 	)
 
-	router := initializer.InitializeHttpServer(
+	router, _ := initializer.InitializeHttpServer(
 		*handlerHttp,
 		websocketHandler,
 		*sqliteRepo,

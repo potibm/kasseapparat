@@ -1,7 +1,6 @@
 package tests_e2e
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -56,7 +55,6 @@ func TestGetGuestWithQuery(t *testing.T) {
 	name := guest.Value("name").String().Raw()
 
 	name = strings.Split(name, " ")[0]
-	log.Println("name: ", name)
 
 	res = withDemoUserAuthToken(e.GET(guestBaseUrl)).
 		WithQuery("q", name).

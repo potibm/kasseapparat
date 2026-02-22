@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"os"
 	"strconv"
 )
@@ -54,7 +54,7 @@ func getEnvWithJSONValidation(key, fallback string) string {
 
 	var tmp any
 	if err := json.Unmarshal([]byte(val), &tmp); err != nil {
-		log.Printf("Invalid JSON in %s: %v", key, err)
+		slog.Warn("Invalid JSON", "key", key, "error", err)
 
 		return fallback
 	}

@@ -3,7 +3,7 @@ package http
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -162,7 +162,7 @@ func (handler *Handler) CreateUser(c *gin.Context) {
 	err = handler.mailer.SendNewUserTokenMail(user.Email, user.ID, user.Username, *user.ChangePasswordToken)
 	if err != nil {
 		sentrygin.GetHubFromContext(c).CaptureException(fmt.Errorf("error sending new user token email: %w", err))
-		log.Println("Error sending email", err)
+		slog.Warn("Error sending email", "error", err)
 	}
 
 	c.JSON(http.StatusCreated, user)

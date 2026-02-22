@@ -23,14 +23,25 @@ func logLevelFromString(level string) slog.Level {
 	}
 }
 
-func InitLogger(level string) *slog.Logger {
+func InitJsonLogger(level string) *slog.Logger {
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logLevelFromString(level),
 	})
 
+	return initLogger(handler)
+}
+
+func InitTxtLogger(level string) *slog.Logger {
+	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: logLevelFromString(level),
+	})
+
+	return initLogger(handler)
+}
+
+func initLogger(handler slog.Handler) *slog.Logger {
 	logger := slog.New(handler)
 
-	// optional global setzen
 	slog.SetDefault(logger)
 
 	return logger

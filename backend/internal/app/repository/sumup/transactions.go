@@ -3,7 +3,7 @@ package sumup
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/url"
 	"sort"
 	"time"
@@ -77,7 +77,7 @@ func (r *Repository) fetchPagedTransactions(
 
 		nextParams, err := parseHrefToListTransactionsParams(nextHref)
 		if err != nil {
-			log.Printf("Error parsing next page link: %v", err)
+			slog.Warn("Error parsing next page link", "error", err)
 
 			return allItems, nil
 		}
@@ -210,7 +210,7 @@ func (r *Repository) RefundTransaction(transactionId uuid.UUID) error {
 
 	err := r.service.Client.Transactions.Refund(context.Background(), transactionId.String(), body)
 	if err != nil {
-		log.Printf("Error refunding transaction with ID %s: %v", transactionId, err)
+		slog.Error("Error refunding transaction with ID", "transaction_id", transactionId, "error", err)
 
 		return normalizeSumupError(err)
 	}
