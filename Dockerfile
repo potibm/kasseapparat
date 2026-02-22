@@ -55,4 +55,4 @@ USER appuser
 EXPOSE 8080
 
 # Command to run the application (adjust based on your application)
-CMD ["/app/kasseapparat", "8080"]
+CMD ["/app/kasseapparat", "--port 8080"]

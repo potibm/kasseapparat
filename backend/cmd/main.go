@@ -2,8 +2,9 @@ package main
 
 import (
 	"embed"
+	"flag"
 	"log"
-	"os"
+	"strconv"
 	"time"
 
 	config "github.com/potibm/kasseapparat/internal/app/config"
@@ -25,7 +26,16 @@ var (
 	version = "0.0.0"
 )
 
+const defaultPort = 3000
+
 func main() {
+	logLevel := flag.String("log-level", "info", "Set the log level (debug, info, warn, error)")
+	port := flag.Int("port", defaultPort, "Set the port number for the server to listen on")
+
+	flag.Parse()
+
+	logger := initializer.InitLogger(*logLevel)
+
 	cfg := config.Load()
 	cfg.SetVersion(version)
 	cfg.OutputVersion()
@@ -75,21 +85,18 @@ func main() {
 		staticFiles,
 		jwtMiddleware,
 		cfg,
+		logger,
 	)
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
 	startCleanupForWebsocketConnections()
 
-	port := ":3000" // Default port number
-	if len(os.Args) > 1 {
-		port = ":" + os.Args[1] // Use the provided port number if available
-	}
+	portStr := ":" + strconv.Itoa(*port)
+	logger.Info("Listening on " + portStr + "...")
 
-	log.Println("Listening on " + port + "...")
-
-	err := router.Run(port)
+	err := router.Run(portStr)
 	if err != nil {
-		panic("[Error] failed to start Gin server due to: " + err.Error())
+		logger.Error("Failed to start server", "error", err.Error())
 	}
 }
 

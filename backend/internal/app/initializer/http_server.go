@@ -3,6 +3,7 @@ package initializer
 import (
 	"embed"
 	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
+	sloggin "github.com/samber/slog-gin"
 )
 
 var (
@@ -34,6 +36,7 @@ func InitializeHttpServer(
 	staticFiles embed.FS,
 	jwtMiddleware *jwt.GinJWTMiddleware,
 	config config.Config,
+	logger *slog.Logger,
 ) *gin.Engine {
 	gin.SetMode(config.AppConfig.GinMode)
 
@@ -41,6 +44,7 @@ func InitializeHttpServer(
 	r.Use(sentrygin.New(sentrygin.Options{
 		Repanic: false,
 	}))
+	registerLoggerMiddleware(logger)
 	r.Use(middleware.ErrorHandlingMiddleware())
 
 	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHandler.GetPurchaseStats)
@@ -82,6 +86,25 @@ func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	return cors.New(corsConfig)
 }
 
+func registerLoggerMiddleware(logger *slog.Logger) {
+	r.Use(sloggin.New(logger))
+}
+
+func SlogUserID() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, exists := c.Get(middleware.IdentityKey)
+		if exists {
+			if user, ok := user.(*models.User); ok {
+				sloggin.AddCustomAttributes(c,
+					slog.String("user_id", strconv.Itoa(int(user.ID))),
+				)
+			}
+		}
+
+		c.Next()
+	}
+}
+
 func registerAuthMiddleware(authMiddleware *jwt.GinJWTMiddleware) {
 	r.Use(middleware.HandlerMiddleWare(authMiddleware))
 
@@ -111,9 +134,10 @@ func registerApiRoutes(
 	httpHandler httpHandler.Handler,
 	websocketHandler websocket.HandlerInterface,
 	authMiddleware *jwt.GinJWTMiddleware,
+
 ) {
 	protectedApiRouter := r.Group("/api/" + API_VERSION)
-	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
+	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware(), SlogUserID())
 	{
 		registerProductRoutes(protectedApiRouter, httpHandler)
 		registerProductInterestRoutes(protectedApiRouter, httpHandler)
