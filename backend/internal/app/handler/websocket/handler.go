@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	jwt "github.com/appleboy/gin-jwt/v3"
@@ -72,14 +72,14 @@ func makeCheckOrigin(allowedOrigins *config.CorsAllowOriginsConfig) func(r *http
 		origin := r.Header.Get("Origin")
 
 		if origin == "" {
-			log.Printf("WebSocket connection attempt failed: missing origin header")
+			slog.Warn("WebSocket connection attempt failed: missing origin header")
 
 			return false
 		}
 
 		_, ok := allowed[origin]
 		if !ok {
-			log.Printf("WebSocket connection attempt failed: origin not allowed: %s", origin)
+			slog.Warn("WebSocket connection attempt failed: origin not allowed", "origin", origin)
 		}
 
 		return ok

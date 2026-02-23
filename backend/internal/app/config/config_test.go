@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log/slog"
 	"os"
 	"testing"
 
@@ -11,8 +12,12 @@ import (
 func TestLoadConfigWithDefaults(t *testing.T) {
 	os.Setenv("CORS_ALLOW_ORIGINS", "localhost:3000,localhost:4000")
 
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
 	// Act
-	config := loadConfig()
+	config, err := loadConfig(logger)
+
+	assert.NoError(t, err)
 
 	// Arrange
 	expected := Config{
@@ -36,9 +41,9 @@ func TestLoadConfigWithDefaults(t *testing.T) {
 		},
 		SentryConfig: SentryConfig{
 			DSN:                     "",
-			TraceSampleRate:         config.SentryConfig.TraceSampleRate,
-			ReplaySessionSampleRate: config.SentryConfig.ReplaySessionSampleRate,
-			ReplayErrorSampleRate:   config.SentryConfig.ReplayErrorSampleRate,
+			TraceSampleRate:         defaultTraceSampleRate,
+			ReplaySessionSampleRate: defaultReplaySessionSampleRate,
+			ReplayErrorSampleRate:   defaultReplayErrorSampleRate,
 			Environment:             "",
 			Version:                 "0.0.0",
 		},

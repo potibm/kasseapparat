@@ -2,7 +2,7 @@ package http
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
@@ -21,7 +21,7 @@ func queryArrayInt(c *gin.Context, field string) []int {
 	for _, s := range idStrings {
 		id, err := strconv.Atoi(s)
 		if err != nil {
-			log.Printf("Error converting %s to int: %v", s, err)
+			slog.WarnContext(c.Request.Context(), "Error converting string to int", "value", s, "error", err)
 
 			continue // skip invalid integers
 		}

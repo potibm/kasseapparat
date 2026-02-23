@@ -2,7 +2,7 @@ package http
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -102,7 +102,7 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 	}
 
 	if payload.EventType != "solo.transaction.updated" {
-		log.Println("unsupported event type:", payload.EventType)
+		slog.WarnContext(c.Request.Context(), "Unsupported event type", "event_type", payload.EventType)
 
 		_ = c.Error(InvalidRequest.WithMsg("unsupported event type"))
 
@@ -133,23 +133,23 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 	switch payload.Payload.Status {
 	case sumup.StatusSuccessful:
 		// Update purchase status to confirmed
-		log.Println("updating purchase status to confirmed for transaction ID:", payload.Payload.ClientTransactionID)
+		slog.InfoContext(ctx, "Updating purchase status to confirmed", "transaction_id", payload.Payload.ClientTransactionID)
 		handler.statusPublisher.PushUpdate(purchase.ID, model.PurchaseStatusConfirmed)
 
 		_, err = handler.purchaseService.FinalizePurchase(ctx, purchase.ID)
 	case sumup.StatusFailed:
 		// Update purchase status to failed
-		log.Println("updating purchase status to failed for transaction ID:", payload.Payload.ClientTransactionID)
+		slog.InfoContext(ctx, "Updating purchase status to failed", "transaction_id", payload.Payload.ClientTransactionID)
 		handler.statusPublisher.PushUpdate(purchase.ID, model.PurchaseStatusFailed)
 
 		_, err = handler.purchaseService.FailPurchase(ctx, purchase.ID)
 	default:
-		log.Println("unsupported status:", payload.Payload.Status)
+		slog.WarnContext(ctx, "Unsupported status", "status", payload.Payload.Status)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported status"})
 	}
 
 	if err != nil {
-		log.Println("failed to update purchase status:", err)
+		slog.ErrorContext(ctx, "Failed to update purchase status", "error", err)
 		_ = c.Error(InternalServerError.WithMsg("failed to update purchase status").WithCause(err))
 
 		return

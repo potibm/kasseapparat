@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -172,7 +172,7 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.
 	// notify guests
 	guests, err := s.sqliteRepo.GetGuestsByPurchaseID(purchaseId)
 	if guests == nil || err != nil {
-		log.Println("no guests found for purchase, skipping notification")
+		slog.Warn("No guests found for purchase, skipping notification", "purchase_id", purchaseId, "error", err)
 	} else {
 		s.notifyGuests(guests)
 	}
@@ -211,7 +211,7 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 
 	// refund the purchase via sumup
 	if purchase.PaymentMethod == models.PaymentMethodSumUp && purchase.SumupTransactionID != nil {
-		fmt.Println("Refunding transaction via SumUp for transaction ID:", *purchase.SumupTransactionID)
+		slog.Debug("Refunding transaction via SumUp for transaction", "transaction_id", *purchase.SumupTransactionID)
 
 		if err := s.sumupRepo.RefundTransaction(*purchase.SumupTransactionID); err != nil {
 			return nil, errors.New("failed to refund purchase via sumup: " + err.Error())
@@ -294,7 +294,7 @@ func (s *PurchaseService) validateGuest(listInput ListItemInput, productID int) 
 
 func (s *PurchaseService) notifyGuests(guests []models.Guest) {
 	if s.Mailer == nil {
-		log.Println("Mailer is not configured, skipping guest notifications")
+		slog.Warn("Mailer is not configured, skipping guest notifications")
 
 		return
 	}
@@ -303,7 +303,13 @@ func (s *PurchaseService) notifyGuests(guests []models.Guest) {
 		if guest.NotifyOnArrivalEmail != nil {
 			err := s.Mailer.SendNotificationOnArrival(*guest.NotifyOnArrivalEmail, guest.Name)
 			if err != nil {
-				log.Printf("Failed to send notification email to guest %s: %v", *guest.NotifyOnArrivalEmail, err)
+				slog.Error(
+					"Failed to send notification email to guest",
+					"email",
+					*guest.NotifyOnArrivalEmail,
+					"error",
+					err,
+				)
 			}
 		}
 	}

@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	ginjwtCore "github.com/appleboy/gin-jwt/v3/core"
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v5"
+	"github.com/potibm/kasseapparat/internal/app/exitcode"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
@@ -38,7 +40,8 @@ func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc 
 	return func(context *gin.Context) {
 		errInit := authMiddleware.MiddlewareInit()
 		if errInit != nil {
-			log.Fatal("authMiddleware.MiddlewareInit() Error:" + errInit.Error())
+			slog.Error("Error initializing auth middleware", "error", errInit.Error())
+			os.Exit(int(exitcode.Software))
 		}
 	}
 }
@@ -57,7 +60,7 @@ func InitParams(
 	secureCookie bool,
 ) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
-		log.Println("JWT_SECRET is not set, using default value")
+		slog.Warn("JWT_SECRET is not set, using default value")
 
 		secret = "secret"
 	}

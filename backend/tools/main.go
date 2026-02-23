@@ -4,12 +4,13 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/mail"
 	"os"
 	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/config"
+	"github.com/potibm/kasseapparat/internal/app/exitcode"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
 	"github.com/potibm/kasseapparat/internal/app/mailer"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -47,7 +48,14 @@ func main() {
 	flag.BoolVar(&createUserIsAdmin, "create-user-admin", false, "Create a user with admin rights")
 	flag.Parse()
 
-	cfg := config.Load()
+	logger := initializer.InitTxtLogger("debug")
+
+	cfg, err := config.Load(logger)
+	if err != nil {
+		logger.Error("Failed to load config", "error", err)
+		os.Exit(int(exitcode.Config))
+	}
+
 	cfg.SetVersion(version)
 	cfg.OutputVersion()
 
@@ -57,7 +65,7 @@ func main() {
 	Mailer = initializer.InitializeMailer(cfg.MailerConfig)
 
 	if userImportCsvFile != "" {
-		log.Println("Importing users from CSV file...")
+		logger.Info("Importing users from CSV file...")
 		importUsers(userImportCsvFile)
 
 		return
@@ -74,35 +82,35 @@ func main() {
 			os.Exit(1)
 		}
 
-		log.Println("Creating user", createUserName)
+		logger.Info("Creating user", "username", createUserName)
 
 		err := createUser(createUserName, createUserEmail, createUserIsAdmin)
 		if err != nil {
-			log.Println("Failed to create user:", err)
+			logger.Error("Failed to create user", "error", err)
 
 			return
 		}
 
-		log.Println("User created")
+		logger.Info("User created")
 
 		return
 	}
 
 	// Purge the database if requested
 	if purgeDB {
-		log.Println("Purging database...")
+		logger.Info("Purging database...")
 		utils.PurgeDatabase(db)
 	}
 
-	log.Println("Starting database migration...")
+	logger.Info("Starting database migration...")
 	utils.MigrateDatabase(db)
 
 	// Seed initial data if requested
 	if seedData {
-		log.Println("Start seeding DB...")
+		logger.Info("Start seeding DB...")
 		utils.SeedDatabase(db, false)
 	} else if seedDataWithTest {
-		log.Println("Start seeding DB with test data...")
+		logger.Info("Start seeding DB with test data...")
 		utils.SeedDatabase(db, true)
 	}
 }
@@ -110,7 +118,8 @@ func main() {
 func importUsers(filename string) {
 	file, err := os.Open(filename) // #nosec G304
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("Failed to open CSV file", "error", err)
+		os.Exit(int(exitcode.Usage))
 	}
 	defer file.Close()
 
@@ -118,7 +127,7 @@ func importUsers(filename string) {
 
 	records, err := reader.ReadAll()
 	if err != nil {
-		log.Printf("Failed to read CSV file: %v", err)
+		slog.Error("Failed to read CSV file", "error", err)
 
 		return
 	}
@@ -126,29 +135,29 @@ func importUsers(filename string) {
 	for _, record := range records {
 		const expectedFields = 3
 		if len(record) != expectedFields {
-			log.Printf("Skipping malformed record: %v", record)
+			slog.Warn("Skipping malformed record", "record", record)
 
 			continue
 		}
 
-		log.Println("Creating user", record[0])
+		slog.Info("Creating user", "username", record[0])
 
 		isAdmin := false
 		if record[2] == "true" || record[2] == "false" {
 			isAdmin = record[2] == "true"
 		} else {
-			log.Printf("Invalid admin value '%s' for user %s, defaulting to false", record[2], record[0])
+			slog.Warn("Invalid admin value", "value", record[2], "username", record[0])
 		}
 
 		if !validEmail(record[1]) {
-			log.Printf("Invalid email format for user %s, skipping", record[0])
+			slog.Warn("Invalid email format for user", "username", record[0])
 
 			continue
 		}
 
 		err := createUser(record[0], record[1], isAdmin)
 		if err != nil {
-			log.Println("Failed to create user:", err)
+			slog.Error("Failed to create user", "error", err)
 
 			continue
 		}

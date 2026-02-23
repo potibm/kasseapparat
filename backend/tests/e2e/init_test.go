@@ -2,6 +2,7 @@ package tests_e2e
 
 import (
 	"embed"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -88,6 +89,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 
 	statusPublisher := MockStatusPublisher{}
 	poller := monitor.NewPoller(sumupRepo, sqliteRepo, purchaseService, &statusPublisher)
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	httpHandlerConfig := handlerHttp.HandlerConfig{
 		Repo:            sqliteRepo,
@@ -106,13 +108,14 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		&cfg.CorsAllowOrigins,
 	)
 
-	router := initializer.InitializeHttpServer(
+	router, _ := initializer.InitializeHttpServer(
 		*handlerHttp,
 		websocketHandler,
 		*sqliteRepo,
 		embed.FS{},
 		jwtMiddleware,
 		cfg,
+		logger,
 	)
 
 	ts := httptest.NewServer(router)

@@ -1,7 +1,6 @@
 package tests_e2e
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -103,7 +102,6 @@ func deleteGuestsByNameQuery(query string) {
 	for i := range len(guests.Iter()) {
 		guest := guests.Value(i).Object()
 		guestId := guest.Value("id").Number().Raw()
-		log.Println("Deleting guest with id", guestId)
 
 		withDemoUserAuthToken(e.DELETE(guestBaseUrl + "/" + strconv.Itoa(int(guestId)))).
 			Expect().

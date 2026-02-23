@@ -2,11 +2,14 @@ package main
 
 import (
 	"embed"
-	"log"
+	"flag"
+	"log/slog"
 	"os"
+	"strconv"
 	"time"
 
 	config "github.com/potibm/kasseapparat/internal/app/config"
+	"github.com/potibm/kasseapparat/internal/app/exitcode"
 	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
@@ -25,8 +28,22 @@ var (
 	version = "0.0.0"
 )
 
+const defaultPort = 3000
+
 func main() {
-	cfg := config.Load()
+	logLevel := flag.String("log-level", "info", "Set the log level (debug, info, warn, error)")
+	port := flag.Int("port", defaultPort, "Set the port number for the server to listen on")
+
+	flag.Parse()
+
+	logger := initializer.InitJsonLogger(*logLevel)
+
+	cfg, err := config.Load(logger)
+	if err != nil {
+		logger.Error("Failed to load config", "error", err)
+		os.Exit(int(exitcode.Config))
+	}
+
 	cfg.SetVersion(version)
 	cfg.OutputVersion()
 
@@ -68,28 +85,30 @@ func main() {
 	}
 	httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
-	router := initializer.InitializeHttpServer(
+	router, err := initializer.InitializeHttpServer(
 		*httpHandler,
 		websocketHandler,
 		*sqliteRepository,
 		staticFiles,
 		jwtMiddleware,
 		cfg,
+		logger,
 	)
+	if err != nil {
+		logger.Error("Failed to initialize HTTP server", "error", err)
+		os.Exit(int(exitcode.Software))
+	}
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
 	startCleanupForWebsocketConnections()
 
-	port := ":3000" // Default port number
-	if len(os.Args) > 1 {
-		port = ":" + os.Args[1] // Use the provided port number if available
-	}
+	portStr := ":" + strconv.Itoa(*port)
+	logger.Info("HTTP server listening", slog.Int("port", *port))
 
-	log.Println("Listening on " + port + "...")
-
-	err := router.Run(port)
+	err = router.Run(portStr)
 	if err != nil {
-		panic("[Error] failed to start Gin server due to: " + err.Error())
+		logger.Error("Failed to start server", "error", err.Error())
+		os.Exit(int(exitcode.Software))
 	}
 }
 
@@ -112,13 +131,13 @@ func startPollerForPendingPurchases(poller monitor.Poller, sqliteRepository *sql
 
 	activeTransactions, err := sqliteRepository.GetPurchases(plentyOfTransactions, 0, "createdAt", "ASC", filters)
 	if err != nil {
-		log.Printf("[Error] failed to get active purchases: %v", err)
+		slog.Error("Failed to get active purchases", "error", err)
 
 		return
 	}
 
 	for _, tx := range activeTransactions {
-		log.Println("Starting poller for active transaction:", tx.ID)
+		slog.Debug("Starting poller for active transaction", "transaction_id", tx.ID)
 		poller.Start(tx.ID)
 	}
 }

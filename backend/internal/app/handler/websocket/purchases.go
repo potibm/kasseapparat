@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -41,7 +41,7 @@ func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
 	defer unregisterConnection(transactionID)
 
 	if err := h.sendInitialStatus(conn, transactionID); err != nil {
-		log.Println("Sending initial status failed:", err)
+		slog.Warn("Sending initial status failed", "error", err)
 
 		return
 	}
@@ -59,17 +59,18 @@ func (h *Handler) upgradeAndRegister(c *gin.Context) (uuid.UUID, *websocket.Conn
 
 	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Println("WebSocket upgrade failed:", err)
+		slog.Warn("WebSocket upgrade failed", "error", err)
 
 		return uuid.Nil, nil, false
 	}
 
-	log.Printf("WebSocket connected for transaction: %s", transactionID)
+	slog.Info("WebSocket connected", "transaction_id", transactionID)
 
 	if !registerConnection(transactionID, conn) {
 		msg := websocket.FormatCloseMessage(CloseTooManyConnections, "connection limit reached")
 		_ = conn.WriteControl(websocket.CloseMessage, msg, time.Now().Add(time.Second))
 		conn.Close()
+		slog.Error("Connection limit reached for transaction", "transaction_id", transactionID)
 
 		return uuid.Nil, nil, false
 	}
@@ -80,7 +81,7 @@ func (h *Handler) upgradeAndRegister(c *gin.Context) (uuid.UUID, *websocket.Conn
 func (h *Handler) sendInitialStatus(conn *websocket.Conn, transactionID uuid.UUID) error {
 	purchase, err := h.sqliteRepository.GetPurchaseByID(transactionID)
 	if err != nil {
-		log.Println("Failed to get purchase by ID:", err)
+		slog.Warn("Failed to get purchase by ID", "error", err)
 
 		sendWSMessage(conn, "error", gin.H{"message": "failed to retrieve purchase"}, &uuid.Nil)
 
@@ -96,13 +97,13 @@ func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uu
 	for {
 		var msg map[string]any
 		if err := conn.ReadJSON(&msg); err != nil {
-			log.Println("WS read error:", err)
+			slog.Warn("Websocket read error", "error", err)
 
 			break
 		}
 
 		msgType, _ := msg["type"].(string)
-		log.Printf("WS message for %s: %v", transactionID, msg)
+		slog.Info("Websocket message for transaction", "transaction_id", transactionID, "message", msg)
 
 		switch msgType {
 		case "cancel_payment":

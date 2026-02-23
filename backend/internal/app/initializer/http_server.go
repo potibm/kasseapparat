@@ -2,7 +2,8 @@ package initializer
 
 import (
 	"embed"
-	"log"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
+	sloggin "github.com/samber/slog-gin"
 )
 
 var (
@@ -34,13 +36,15 @@ func InitializeHttpServer(
 	staticFiles embed.FS,
 	jwtMiddleware *jwt.GinJWTMiddleware,
 	config config.Config,
-) *gin.Engine {
+	logger *slog.Logger,
+) (*gin.Engine, error) {
 	gin.SetMode(config.AppConfig.GinMode)
 
 	r = gin.Default()
 	r.Use(sentrygin.New(sentrygin.Options{
 		Repanic: false,
 	}))
+	registerLoggerMiddleware(logger)
 	r.Use(middleware.ErrorHandlingMiddleware())
 
 	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHandler.GetPurchaseStats)
@@ -49,7 +53,7 @@ func InitializeHttpServer(
 
 	folder, err := static.EmbedFolder(staticFiles, "assets")
 	if err != nil {
-		log.Fatalf("Failed to create embedded folder: %v", err)
+		return nil, fmt.Errorf("create embedded folder: %w", err)
 	}
 
 	r.Use(static.Serve("/", folder))
@@ -68,7 +72,7 @@ func InitializeHttpServer(
 		}
 	})
 
-	return r
+	return r, nil
 }
 
 func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
@@ -80,6 +84,25 @@ func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	corsConfig.AddExposeHeaders("X-Total-Count", "Content-Disposition")
 
 	return cors.New(corsConfig)
+}
+
+func registerLoggerMiddleware(logger *slog.Logger) {
+	r.Use(sloggin.New(logger))
+}
+
+func SlogUserID() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, exists := c.Get(middleware.IdentityKey)
+		if exists {
+			if user, ok := user.(*models.User); ok {
+				sloggin.AddCustomAttributes(c,
+					slog.String("user_id", strconv.Itoa(int(user.ID))),
+				)
+			}
+		}
+
+		c.Next()
+	}
 }
 
 func registerAuthMiddleware(authMiddleware *jwt.GinJWTMiddleware) {
@@ -111,9 +134,10 @@ func registerApiRoutes(
 	httpHandler httpHandler.Handler,
 	websocketHandler websocket.HandlerInterface,
 	authMiddleware *jwt.GinJWTMiddleware,
+
 ) {
 	protectedApiRouter := r.Group("/api/" + API_VERSION)
-	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware())
+	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware(), SlogUserID())
 	{
 		registerProductRoutes(protectedApiRouter, httpHandler)
 		registerProductInterestRoutes(protectedApiRouter, httpHandler)

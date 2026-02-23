@@ -1,9 +1,11 @@
 package config
 
 import (
-	"log"
+	"log/slog"
+	"os"
 	"strings"
 
+	"github.com/potibm/kasseapparat/internal/app/exitcode"
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -81,7 +83,8 @@ func createPaymentMethodConfig(method models.PaymentMethod) PaymentMethodConfig 
 			Name: name,
 		}
 	} else {
-		log.Fatalf("Payment method %s is not supported", method)
+		slog.Error("Payment method is not supported", "method", method)
+		os.Exit(int(exitcode.Config))
 
 		return PaymentMethodConfig{}
 	}
