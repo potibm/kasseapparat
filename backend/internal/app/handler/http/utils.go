@@ -21,7 +21,7 @@ func queryArrayInt(c *gin.Context, field string) []int {
 	for _, s := range idStrings {
 		id, err := strconv.Atoi(s)
 		if err != nil {
-			slog.Warn("Error converting string to int", "value", s, "error", err)
+			slog.WarnContext(c.Request.Context(), "Error converting string to int", "value", s, "error", err)
 
 			continue // skip invalid integers
 		}

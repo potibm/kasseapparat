@@ -171,17 +171,17 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 				InternalServerError.WithMsg("Failed to create SumUp reader checkout: " + err.Error()).WithCause(err),
 			)
 
-			slog.Error("Error creating SumUp reader checkout", "error", err)
+			slog.ErrorContext(c.Request.Context(), "Error creating SumUp reader checkout", "error", err)
 
 			_, err = handler.purchaseService.CancelPurchase(c.Request.Context(), reloadedPurchase.ID)
 			if err != nil {
-				slog.Error("Error canceling purchase", "purchase_id", reloadedPurchase.ID, "error", err)
+				slog.ErrorContext(c.Request.Context(), "Error canceling purchase", "purchase_id", reloadedPurchase.ID, "error", err)
 			}
 
 			return
 		}
 
-		slog.Info("Created SumUp reader checkout", "client_transaction_id", *clientTransactionId)
+		slog.InfoContext(c.Request.Context(), "Created SumUp reader checkout", "client_transaction_id", *clientTransactionId)
 
 		_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(reloadedPurchase.ID, *clientTransactionId)
 		if err != nil {
@@ -192,17 +192,17 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 			return
 		}
 
-		slog.Debug(
+		slog.DebugContext(c.Request.Context(),
 			"Updated purchase with SumUp client transaction ID",
 			"purchase_id",
 			reloadedPurchase.ID,
 			"client_transaction_id",
 			*clientTransactionId,
 		)
-		slog.Debug("Monitor", "handler_monitor", handler.monitor)
+		slog.DebugContext(c.Request.Context(),"Monitor", "handler_monitor", handler.monitor)
 
 		handler.monitor.Start(reloadedPurchase.ID)
-		slog.Info("Started monitoring for purchase", "purchase_id", reloadedPurchase.ID)
+		slog.InfoContext(c.Request.Context(), "Started monitoring for purchase", "purchase_id", reloadedPurchase.ID)
 	}
 
 	purchaseResponse := response.ToPurchaseResponse(*reloadedPurchase, handler.decimalPlaces)

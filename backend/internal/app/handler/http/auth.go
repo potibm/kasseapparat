@@ -90,7 +90,7 @@ func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 	if err != nil {
 		sentrygin.GetHubFromContext(c).
 			CaptureException(fmt.Errorf("error sending change password token email: %w", err))
-		slog.Warn("Error sending change password token email", "error", err)
+		slog.WarnContext(c.Request.Context(), "Error sending change password token email", "error", err)
 	}
 
 	c.JSON(http.StatusOK, "OK")

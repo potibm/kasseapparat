@@ -48,9 +48,14 @@ func main() {
 	flag.BoolVar(&createUserIsAdmin, "create-user-admin", false, "Create a user with admin rights")
 	flag.Parse()
 
-	log := initializer.InitTxtLogger("debug")
+	logger := initializer.InitTxtLogger("debug")
 
-	cfg := config.Load()
+	cfg, err := config.Load(logger)
+	if err != nil {
+		logger.Error("Failed to load config", "error", err)
+		os.Exit(int(exitcode.Config))
+	}
+
 	cfg.SetVersion(version)
 	cfg.OutputVersion()
 
@@ -60,7 +65,7 @@ func main() {
 	Mailer = initializer.InitializeMailer(cfg.MailerConfig)
 
 	if userImportCsvFile != "" {
-		log.Info("Importing users from CSV file...")
+		logger.Info("Importing users from CSV file...")
 		importUsers(userImportCsvFile)
 
 		return
@@ -77,35 +82,35 @@ func main() {
 			os.Exit(1)
 		}
 
-		log.Info("Creating user", "username", createUserName)
+		logger.Info("Creating user", "username", createUserName)
 
 		err := createUser(createUserName, createUserEmail, createUserIsAdmin)
 		if err != nil {
-			log.Error("Failed to create user", "error", err)
+			logger.Error("Failed to create user", "error", err)
 
 			return
 		}
 
-		log.Info("User created")
+		logger.Info("User created")
 
 		return
 	}
 
 	// Purge the database if requested
 	if purgeDB {
-		log.Info("Purging database...")
+		logger.Info("Purging database...")
 		utils.PurgeDatabase(db)
 	}
 
-	log.Info("Starting database migration...")
+	logger.Info("Starting database migration...")
 	utils.MigrateDatabase(db)
 
 	// Seed initial data if requested
 	if seedData {
-		log.Info("Start seeding DB...")
+		logger.Info("Start seeding DB...")
 		utils.SeedDatabase(db, false)
 	} else if seedDataWithTest {
-		log.Info("Start seeding DB with test data...")
+		logger.Info("Start seeding DB with test data...")
 		utils.SeedDatabase(db, true)
 	}
 }

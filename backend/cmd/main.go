@@ -38,7 +38,12 @@ func main() {
 
 	logger := initializer.InitJsonLogger(*logLevel)
 
-	cfg := config.Load()
+	cfg, err := config.Load(logger)
+	if err != nil {
+		logger.Error("Failed to load config", "error", err)
+		os.Exit(int(exitcode.Config))
+	}
+
 	cfg.SetVersion(version)
 	cfg.OutputVersion()
 

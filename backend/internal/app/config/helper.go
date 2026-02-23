@@ -49,12 +49,12 @@ func getEnvAsFloat(key string, defaultValue float64) float64 {
 	return floatValue
 }
 
-func getEnvWithJSONValidation(key, fallback string) string {
+func getEnvWithJSONValidation(logger *slog.Logger, key, fallback string) string {
 	val := getEnv(key, fallback)
 
 	var tmp any
 	if err := json.Unmarshal([]byte(val), &tmp); err != nil {
-		slog.Warn("Invalid JSON", "key", key, "error", err)
+		logger.Warn("Invalid JSON", "key", key, "error", err)
 
 		return fallback
 	}
