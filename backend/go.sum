@@ -224,8 +224,8 @@ github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXl
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/sumup/sumup-go v0.14.1 h1:YYg4Xpm4+CRXPJ1ev+5NCP/eO8/KA4+CF4oQFhviyKY=
-github.com/sumup/sumup-go v0.14.1/go.mod h1:UgT9aaxvUBrAiRpunqyb1zi5v/+1z+6Lr6p6bgL8EYI=
+github.com/sumup/sumup-go v0.15.0 h1:JnzBKahXjdNbY4st/pB0jWl/AJRl86fO9cKkE0k8rEw=
+github.com/sumup/sumup-go v0.15.0/go.mod h1:D++G2u9zvobimuUrgvSbah/tS3ON2Dmi6yb6ScA2Jpg=
 github.com/tailscale/depaware v0.0.0-20210622194025-720c4b409502/go.mod h1:p9lPsd+cx33L3H9nNoecRRxPssFKUwwI50I3pZ0yT+8=
 github.com/testcontainers/testcontainers-go v0.39.0 h1:uCUJ5tA+fcxbFAB0uP3pIK3EJ2IjjDUHFSZ1H1UxAts=
 github.com/testcontainers/testcontainers-go v0.39.0/go.mod h1:qmHpkG7H5uPf/EvOORKvS6EuDkBUPE3zpVGaH9NL7f8=
