@@ -11,7 +11,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@sentry/react": "^10.39.0",
+    "@sentry/react": "^10.40.0",
     "@tailwindcss/vite": "^4.1.18",
     "animate.css": "^4.1.1",
     "decimal.js": "^10.6.0",
