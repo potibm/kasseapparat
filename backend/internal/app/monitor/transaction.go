@@ -135,7 +135,7 @@ func (n *transactionPoller) handleStatusUpdate(
 
 	switch status {
 	case "PENDING":
-		slog.Info("Transaction is still pending, continuing to poll", "transaction_id", purchase.SumupTransactionID)
+		slog.Info("Transaction is still pending, continuing to poll", "transaction_id", transactionID)
 		websocket.PushUpdate(transactionID, purchase.Status)
 
 		return false
