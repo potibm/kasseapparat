@@ -103,7 +103,7 @@ func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uu
 		}
 
 		msgType, _ := msg["type"].(string)
-		slog.Info("Websocket message for transaction", "transaction_id", transactionID, "message", msg)
+		slog.Debug("Websocket message for transaction", "transaction_id", transactionID, "message_type", msgType)
 
 		switch msgType {
 		case "cancel_payment":
