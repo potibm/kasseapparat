@@ -305,8 +305,8 @@ func (s *PurchaseService) notifyGuests(guests []models.Guest) {
 			if err != nil {
 				slog.Error(
 					"Failed to send notification email to guest",
-					"email",
-					*guest.NotifyOnArrivalEmail,
+					"guest_id",
+					guest.ID,
 					"error",
 					err,
 				)
