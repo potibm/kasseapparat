@@ -44,7 +44,8 @@ func InitializeHttpServer(
 	r.Use(sentrygin.New(sentrygin.Options{
 		Repanic: false,
 	}))
-	registerLoggerMiddleware(logger)
+	r.Use(sloggin.New(logger))
+
 	r.Use(middleware.ErrorHandlingMiddleware())
 
 	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHandler.GetPurchaseStats)
@@ -84,10 +85,6 @@ func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	corsConfig.AddExposeHeaders("X-Total-Count", "Content-Disposition")
 
 	return cors.New(corsConfig)
-}
-
-func registerLoggerMiddleware(logger *slog.Logger) {
-	r.Use(sloggin.New(logger))
 }
 
 func SlogUserID() gin.HandlerFunc {
