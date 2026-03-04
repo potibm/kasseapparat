@@ -32,11 +32,12 @@ const defaultPort = 3000
 
 func main() {
 	logLevel := flag.String("log-level", "info", "Set the log level (debug, info, warn, error)")
+	logFormat := flag.String("log-format", "json", "Set the log format (json, text)")
 	port := flag.Int("port", defaultPort, "Set the port number for the server to listen on")
 
 	flag.Parse()
 
-	logger := initializer.InitJsonLogger(*logLevel)
+	logger := initializer.InitLogger(*logFormat, *logLevel)
 
 	cfg, err := config.Load(logger)
 	if err != nil {

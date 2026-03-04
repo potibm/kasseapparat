@@ -23,12 +23,20 @@ func logLevelFromString(level string) slog.Level {
 	}
 }
 
+func InitLogger(loggerType, level string) *slog.Logger {
+	if loggerType == "text" {
+		return InitTxtLogger(level)
+	}
+
+	return InitJsonLogger(level) // default to JSON logger
+}
+
 func InitJsonLogger(level string) *slog.Logger {
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logLevelFromString(level),
 	})
 
-	return initLogger(handler)
+	return initializeLogger(handler)
 }
 
 func InitTxtLogger(level string) *slog.Logger {
@@ -36,10 +44,10 @@ func InitTxtLogger(level string) *slog.Logger {
 		Level: logLevelFromString(level),
 	})
 
-	return initLogger(handler)
+	return initializeLogger(handler)
 }
 
-func initLogger(handler slog.Handler) *slog.Logger {
+func initializeLogger(handler slog.Handler) *slog.Logger {
 	logger := slog.New(handler)
 
 	slog.SetDefault(logger)
