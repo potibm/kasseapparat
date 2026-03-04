@@ -75,7 +75,7 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 
 	sqliteRepo := sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
 	sumupRepo := NewMockSumUpRepository()
-	mailer := mailer.NewMailer("smtp://127.0.0.1:1025")
+	mailer, _ := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mailer.SetDisabled(true)
 
 	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepo, cfg.JwtConfig)

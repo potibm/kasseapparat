@@ -25,7 +25,7 @@ const (
 	footerTemplate = "mail/_footer.txt"
 )
 
-func NewMailer(dsn string) *Mailer {
+func NewMailer(dsn string) (*Mailer, error) {
 	user := ""
 	password := ""
 	frontendBaseUrl := "http://localhost:3000"
@@ -34,7 +34,7 @@ func NewMailer(dsn string) *Mailer {
 	if err != nil {
 		slog.Error("Error parsing Mail DSN", "error", err)
 
-		return nil
+		return nil, err
 	}
 
 	host := u.Hostname()
@@ -54,7 +54,7 @@ func NewMailer(dsn string) *Mailer {
 		subjectPrefix:   "[Kasseapparat] ",
 		frontendBaseUrl: frontendBaseUrl,
 		disabled:        false,
-	}
+	}, nil
 }
 
 func (m *Mailer) SetFrom(from string) {
