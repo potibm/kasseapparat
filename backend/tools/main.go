@@ -66,7 +66,7 @@ func main() {
 
 	if userImportCsvFile != "" {
 		logger.Info("Importing users from CSV file...")
-		importUsers(userImportCsvFile)
+		importUsers(logger, userImportCsvFile)
 
 		return
 	}
@@ -115,10 +115,10 @@ func main() {
 	}
 }
 
-func importUsers(filename string) {
+func importUsers(logger *slog.Logger, filename string) {
 	file, err := os.Open(filename) // #nosec G304
 	if err != nil {
-		slog.Error("Failed to open CSV file", "error", err)
+		logger.Error("Failed to open CSV file", "error", err)
 		os.Exit(int(exitcode.Usage))
 	}
 	defer file.Close()
@@ -127,7 +127,7 @@ func importUsers(filename string) {
 
 	records, err := reader.ReadAll()
 	if err != nil {
-		slog.Error("Failed to read CSV file", "error", err)
+		logger.Error("Failed to read CSV file", "error", err)
 
 		return
 	}
@@ -135,29 +135,29 @@ func importUsers(filename string) {
 	for _, record := range records {
 		const expectedFields = 3
 		if len(record) != expectedFields {
-			slog.Warn("Skipping malformed record", "record", record)
+			logger.Warn("Skipping malformed record", "record", record)
 
 			continue
 		}
 
-		slog.Info("Creating user", "username", record[0])
+		logger.Info("Creating user", "username", record[0])
 
 		isAdmin := false
 		if record[2] == "true" || record[2] == "false" {
 			isAdmin = record[2] == "true"
 		} else {
-			slog.Warn("Invalid admin value", "value", record[2], "username", record[0])
+			logger.Warn("Invalid admin value", "value", record[2], "username", record[0])
 		}
 
 		if !validEmail(record[1]) {
-			slog.Warn("Invalid email format for user", "username", record[0])
+			logger.Warn("Invalid email format for user", "username", record[0])
 
 			continue
 		}
 
 		err := createUser(record[0], record[1], isAdmin)
 		if err != nil {
-			slog.Error("Failed to create user", "error", err)
+			logger.Error("Failed to create user", "error", err)
 
 			continue
 		}

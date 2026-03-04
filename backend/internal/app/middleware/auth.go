@@ -40,7 +40,7 @@ func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc 
 	return func(context *gin.Context) {
 		errInit := authMiddleware.MiddlewareInit()
 		if errInit != nil {
-			slog.Error("Error initializing auth middleware", "error", errInit.Error())
+			slog.Error("Error initializing auth middleware", "error", errInit)
 			os.Exit(int(exitcode.Software))
 		}
 	}

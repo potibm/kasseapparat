@@ -85,7 +85,7 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 	}
 
 	if err := conn.WriteJSON(payload); err != nil {
-		slog.Warn("WebSocket send error", "message_type", msgType, "error", err)
+		slog.Error("WebSocket send error", "message_type", msgType, "error", err)
 
 		closeMsg := websocket.FormatCloseMessage(
 			websocket.CloseAbnormalClosure,

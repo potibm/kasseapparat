@@ -178,21 +178,17 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 				slog.ErrorContext(
 					c.Request.Context(),
 					"Error canceling purchase",
-					"purchase_id",
-					reloadedPurchase.ID,
-					"error",
-					err,
+					"purchase_id", reloadedPurchase.ID,
+					"error", err,
 				)
 			}
 
 			return
 		}
 
-		slog.InfoContext(
-			c.Request.Context(),
+		slog.InfoContext(c.Request.Context(),
 			"Created SumUp reader checkout",
-			"client_transaction_id",
-			*clientTransactionId,
+			"client_transaction_id", *clientTransactionId,
 		)
 
 		_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(reloadedPurchase.ID, *clientTransactionId)
@@ -206,10 +202,8 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 
 		slog.DebugContext(c.Request.Context(),
 			"Updated purchase with SumUp client transaction ID",
-			"purchase_id",
-			reloadedPurchase.ID,
-			"client_transaction_id",
-			*clientTransactionId,
+			"purchase_id", reloadedPurchase.ID,
+			"client_transaction_id", *clientTransactionId,
 		)
 		slog.DebugContext(c.Request.Context(), "Monitor", "handler_monitor", handler.monitor)
 

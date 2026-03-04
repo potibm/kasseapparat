@@ -97,7 +97,14 @@ func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uu
 	for {
 		var msg map[string]any
 		if err := conn.ReadJSON(&msg); err != nil {
-			slog.Warn("Websocket read error", "error", err)
+			if websocket.IsUnexpectedCloseError(err,
+				websocket.CloseNormalClosure,
+				websocket.CloseGoingAway,
+			) {
+				slog.Warn("Websocket read error", "transaction_id", transactionID, "error", err)
+			} else {
+				slog.Info("WebSocket connection closed", "transaction_id", transactionID)
+			}
 
 			break
 		}

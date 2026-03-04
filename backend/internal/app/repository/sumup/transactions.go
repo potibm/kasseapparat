@@ -77,7 +77,7 @@ func (r *Repository) fetchPagedTransactions(
 
 		nextParams, err := parseHrefToListTransactionsParams(nextHref)
 		if err != nil {
-			slog.Warn("Error parsing next page link", "error", err)
+			slog.WarnContext(ctx, "Error parsing next page link", "error", err)
 
 			return allItems, nil
 		}

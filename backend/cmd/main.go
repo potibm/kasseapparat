@@ -108,7 +108,7 @@ func main() {
 
 	err = router.Run(portStr)
 	if err != nil {
-		logger.Error("Failed to start server", "error", err.Error())
+		logger.Error("Failed to start server", "error", err)
 		os.Exit(int(exitcode.Software))
 	}
 }
