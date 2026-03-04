@@ -7,11 +7,24 @@ import (
 	"strconv"
 )
 
-type Mailer struct {
+const (
+	defaultSmtpPort = 587
+	defaultSmtpUsername = ""
+	defaultSmtpPassword = ""
+	defaultFrom = "kasseapparat@example.com"
+	defaultSubjectPrefix = "[Kasseapparat] "
+	defaultFrontendBaseUrl = "http://localhost:3000"
+)
+
+type SmtpConfig struct {
 	user     string
 	password string
 	host     string
 	port     int
+}
+
+type Mailer struct {
+	smtpConfig SmtpConfig
 
 	disabled bool
 
@@ -26,13 +39,31 @@ const (
 )
 
 func NewMailer(dsn string) (*Mailer, error) {
-	user := ""
-	password := ""
-	frontendBaseUrl := "http://localhost:3000"
+	frontendBaseUrl := defaultFrontendBaseUrl
+
+	smtpConfig, err := SmtpConfigFromDsn(dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Mailer{
+		smtpConfig:      *smtpConfig,
+		from:            defaultFrom,
+		subjectPrefix:   defaultSubjectPrefix,
+		frontendBaseUrl: frontendBaseUrl,
+		disabled:        false,
+	}, nil
+}
+
+func SmtpConfigFromDsn(dsn string) (*SmtpConfig, error) {
+	user := defaultSmtpUsername
+	password := defaultSmtpPassword
+	port := defaultSmtpPort
 
 	u, err := url.Parse(dsn)
 	if err != nil {
 		slog.Error("Error parsing Mail DSN", "error", err)
+		println(err)
 
 		return nil, err
 	}
@@ -43,17 +74,20 @@ func NewMailer(dsn string) (*Mailer, error) {
 		password, _ = u.User.Password()
 	}
 
-	port, _ := strconv.Atoi(u.Port())
+	if u.Port() != "" {	
+		port, err = strconv.Atoi(u.Port())
+		if err != nil {
+			slog.Error("Invalid port in Mail DSN", "error", err)
 
-	return &Mailer{
-		user:            user,
-		password:        password,
-		host:            host,
-		port:            port,
-		from:            "kasseapparat@example.com",
-		subjectPrefix:   "[Kasseapparat] ",
-		frontendBaseUrl: frontendBaseUrl,
-		disabled:        false,
+			return nil, err
+		}
+	}
+
+	return &SmtpConfig{
+		user:     user,
+		password: password,
+		host:     host,
+		port:     port,
 	}, nil
 }
 
@@ -88,8 +122,8 @@ func (m *Mailer) SendMail(to string, subject string, body string) error {
 	message := []byte(header + body)
 
 	var auth smtp.Auth = nil
-	if m.user != "" && m.password != "" {
-		auth = smtp.PlainAuth("", m.user, m.password, m.host)
+	if m.smtpConfig.user != defaultSmtpUsername && m.smtpConfig.password != defaultSmtpPassword {
+		auth = smtp.PlainAuth("", m.smtpConfig.user, m.smtpConfig.password, m.smtpConfig.host)
 	}
 
 	err := smtp.SendMail(m.address(), auth, m.from, []string{to}, message)
@@ -101,5 +135,5 @@ func (m *Mailer) SendMail(to string, subject string, body string) error {
 }
 
 func (m *Mailer) address() string {
-	return m.host + ":" + strconv.Itoa(m.port)
+	return m.smtpConfig.host + ":" + strconv.Itoa(m.smtpConfig.port)
 }

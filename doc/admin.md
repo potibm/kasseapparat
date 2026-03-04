@@ -26,6 +26,14 @@ Find a list below with hardware that was tried and tested at demoparties (feel f
 - create directory /app/kassepparat/data
 - create directory /app/kassepparat/backup
 
+## Command line flags
+
+On startup you can override the defaults for the webserver port and logging.
+
+- --port=3000
+- --log-level=info (or debug, warn, error)
+- --log-format=json (or text)
+
 ## create /app/kasseapparat/.env
 
 ```
