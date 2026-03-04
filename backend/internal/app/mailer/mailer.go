@@ -38,8 +38,11 @@ func NewMailer(dsn string) *Mailer {
 	}
 
 	host := u.Hostname()
-	user = u.User.Username()
-	password, _ = u.User.Password()
+	if u.User != nil {
+		user = u.User.Username()
+		password, _ = u.User.Password()
+	}
+
 	port, _ := strconv.Atoi(u.Port())
 
 	return &Mailer{

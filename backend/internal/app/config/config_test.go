@@ -69,8 +69,45 @@ func TestLoadConfigWithDefaults(t *testing.T) {
 		},
 	}
 
-	// Assert
-	assert.Equal(t, expected, config)
+	assert.Equal(t, expected.EnvironmentMessage, config.EnvironmentMessage)
+	assert.Equal(t, expected.FrontendURL, config.FrontendURL)
+
+	// test all the other fields in a loop to avoid writing a lot of repetitive code
+	tests := []struct {
+		name     string
+		expected interface{}
+		actual   interface{}
+	}{
+		{"AppConfig", expected.AppConfig, config.AppConfig},
+		{"FormatConfig", expected.FormatConfig, config.FormatConfig},
+		{"VATRates", expected.VATRates, config.VATRates},
+		{"PaymentMethods", expected.PaymentMethods, config.PaymentMethods},
+		{"JwtConfig", expected.JwtConfig, config.JwtConfig},
+		{"CorsAllowOrigins", expected.CorsAllowOrigins, config.CorsAllowOrigins},
+		{"MailerConfig", expected.MailerConfig, config.MailerConfig},
+		{"SumupConfig", expected.SumupConfig, config.SumupConfig},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.NotNil(t, tt.actual)
+			assert.Equal(t, tt.expected, tt.actual)
+		})
+	}
+
+	// sentry config needs to be tested separately because of the float fields
+	assert.NotNil(t, config.SentryConfig)
+	assert.Equal(t, expected.SentryConfig.DSN, config.SentryConfig.DSN)
+	assert.Equal(t, expected.SentryConfig.Environment, config.SentryConfig.Environment)
+	assert.Equal(t, expected.SentryConfig.Version, config.SentryConfig.Version)
+	assert.InEpsilon(t, expected.SentryConfig.TraceSampleRate, config.SentryConfig.TraceSampleRate, 0.0001)
+	assert.InEpsilon(
+		t,
+		expected.SentryConfig.ReplaySessionSampleRate,
+		config.SentryConfig.ReplaySessionSampleRate,
+		0.0001,
+	)
+	assert.InEpsilon(t, expected.SentryConfig.ReplayErrorSampleRate, config.SentryConfig.ReplayErrorSampleRate, 0.0001)
 }
 
 func TestSetVersion(t *testing.T) {

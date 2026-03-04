@@ -133,13 +133,23 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 	switch payload.Payload.Status {
 	case sumup.StatusSuccessful:
 		// Update purchase status to confirmed
-		slog.InfoContext(ctx, "Updating purchase status to confirmed", "transaction_id", payload.Payload.ClientTransactionID)
+		slog.InfoContext(
+			ctx,
+			"Updating purchase status to confirmed",
+			"transaction_id",
+			payload.Payload.ClientTransactionID,
+		)
 		handler.statusPublisher.PushUpdate(purchase.ID, model.PurchaseStatusConfirmed)
 
 		_, err = handler.purchaseService.FinalizePurchase(ctx, purchase.ID)
 	case sumup.StatusFailed:
 		// Update purchase status to failed
-		slog.InfoContext(ctx, "Updating purchase status to failed", "transaction_id", payload.Payload.ClientTransactionID)
+		slog.InfoContext(
+			ctx,
+			"Updating purchase status to failed",
+			"transaction_id",
+			payload.Payload.ClientTransactionID,
+		)
 		handler.statusPublisher.PushUpdate(purchase.ID, model.PurchaseStatusFailed)
 
 		_, err = handler.purchaseService.FailPurchase(ctx, purchase.ID)

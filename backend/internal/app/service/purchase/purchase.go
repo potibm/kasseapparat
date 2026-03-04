@@ -172,7 +172,12 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.
 	// notify guests
 	guests, err := s.sqliteRepo.GetGuestsByPurchaseID(purchaseId)
 	if guests == nil || err != nil {
-		slog.Warn("No guests found for purchase, skipping notification", "purchase_id", purchaseId, "error", err)
+		args := []any{"purchase_id", purchaseId}
+		if err != nil {
+			args = append(args, "error", err)
+		}
+
+		slog.Warn("No guests found for purchase, skipping notification", args...)
 	} else {
 		s.notifyGuests(guests)
 	}
