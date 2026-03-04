@@ -40,13 +40,15 @@ func InitializeHttpServer(
 ) (*gin.Engine, error) {
 	gin.SetMode(config.AppConfig.GinMode)
 
-	r = gin.Default()
-	r.Use(sentrygin.New(sentrygin.Options{
-		Repanic: false,
-	}))
-	r.Use(sloggin.New(logger))
-
-	r.Use(middleware.ErrorHandlingMiddleware())
+	r = gin.New()
+	r.Use(
+		gin.Recovery(),
+		sentrygin.New(sentrygin.Options{
+			Repanic: false,
+		}),
+		sloggin.New(logger),
+		middleware.ErrorHandlingMiddleware(),
+	)
 
 	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHandler.GetPurchaseStats)
 
