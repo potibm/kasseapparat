@@ -16,7 +16,7 @@ func TestSmtpConfigFromDsnWithValidDsn(t *testing.T) {
 }
 
 func TestSmtpConfigFromDsnWithInvalidDsn(t *testing.T) {
-	_, err := SmtpConfigFromDsn("töst://invalid-dsn")	
+	_, err := SmtpConfigFromDsn("töst://invalid-dsn")
 	assert.Error(t, err)
 }
 
@@ -42,4 +42,3 @@ func TestSmtpConfigFromDsnWithoutPort(t *testing.T) {
 	assert.Equal(t, "localhost", smtpConfig.host)
 	assert.Equal(t, 587, smtpConfig.port)
 }
-

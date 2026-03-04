@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	defaultSmtpPort = 587
-	defaultSmtpUsername = ""
-	defaultSmtpPassword = ""
-	defaultFrom = "kasseapparat@example.com"
-	defaultSubjectPrefix = "[Kasseapparat] "
+	defaultSmtpPort        = 587
+	defaultSmtpUsername    = ""
+	defaultSmtpPassword    = ""
+	defaultFrom            = "kasseapparat@example.com"
+	defaultSubjectPrefix   = "[Kasseapparat] "
 	defaultFrontendBaseUrl = "http://localhost:3000"
 )
 
@@ -74,7 +74,7 @@ func SmtpConfigFromDsn(dsn string) (*SmtpConfig, error) {
 		password, _ = u.User.Password()
 	}
 
-	if u.Port() != "" {	
+	if u.Port() != "" {
 		port, err = strconv.Atoi(u.Port())
 		if err != nil {
 			slog.Error("Invalid port in Mail DSN", "error", err)
