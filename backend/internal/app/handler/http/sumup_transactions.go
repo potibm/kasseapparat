@@ -156,6 +156,8 @@ func (handler *Handler) GetSumupTransactionWebhook(c *gin.Context) {
 	default:
 		slog.WarnContext(ctx, "Unsupported status", "status", payload.Payload.Status)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported status"})
+
+		return
 	}
 
 	if err != nil {
