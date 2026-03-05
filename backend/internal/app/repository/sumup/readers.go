@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	sumup "github.com/sumup/sumup-go"
+	sumupnullable "github.com/sumup/sumup-go/nullable"
 )
 
 func (r *Repository) GetReaders() ([]Reader, error) {
@@ -75,19 +76,21 @@ func (r *Repository) CreateReaderCheckout(
 		MinorUnit: int(r.service.PaymentMinorUnit),
 	}
 
-	var affiliate *sumup.CreateCheckoutRequestAffiliate
+	var affiliateNullable *sumupnullable.Field[sumup.CreateCheckoutRequestAffiliate]
+
 	if affiliateTransactionId != "" {
-		affiliate = &sumup.CreateCheckoutRequestAffiliate{
+		affiliate := sumup.CreateCheckoutRequestAffiliate{
 			AppID:                r.service.ApplicationId,
 			Key:                  r.service.AffiliateKey,
 			ForeignTransactionID: affiliateTransactionId,
 		}
+		affiliateNullable = sumupnullable.Value(affiliate)
 	}
 
 	body := sumup.ReadersCreateCheckoutParams{
 		TotalAmount: amountStruct,
 		Description: &description,
-		Affiliate:   affiliate,
+		Affiliate:   affiliateNullable,
 		ReturnURL:   returnUrl,
 	}
 

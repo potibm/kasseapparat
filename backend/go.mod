@@ -6,13 +6,13 @@ toolchain go1.25.1
 
 require (
 	github.com/appleboy/gin-jwt/v3 v3.4.1
-	github.com/brianvoe/gofakeit/v7 v7.14.0
+	github.com/brianvoe/gofakeit/v7 v7.14.1
 	github.com/gavv/httpexpect/v2 v2.17.0
-	github.com/getsentry/sentry-go v0.42.0
-	github.com/getsentry/sentry-go/gin v0.42.0
+	github.com/getsentry/sentry-go v0.43.0
+	github.com/getsentry/sentry-go/gin v0.43.0
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-contrib/static v1.1.5
-	github.com/gin-gonic/gin v1.11.0
+	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
@@ -21,7 +21,7 @@ require (
 	github.com/sethvargo/go-password v0.3.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
-	github.com/sumup/sumup-go v0.14.1
+	github.com/sumup/sumup-go v0.15.0
 	golang.org/x/crypto v0.48.0
 	golang.org/x/text v0.34.0
 	gorm.io/driver/sqlite v1.6.0
@@ -30,11 +30,12 @@ require (
 
 require (
 	github.com/TylerBrock/colorjson v0.0.0-20200706003622-8a50f05110d2 // indirect
-	github.com/ajg/form v1.6.1 // indirect
+	github.com/ajg/form v1.7.1 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic v1.15.0 // indirect
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
@@ -66,7 +67,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.0 // indirect
-	github.com/redis/rueidis v1.0.71 // indirect
+	github.com/redis/rueidis v1.0.72 // indirect
 	github.com/sanity-io/litter v1.5.8 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
@@ -80,10 +81,11 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
-	go.opentelemetry.io/otel v1.37.0 // indirect
-	go.opentelemetry.io/otel/trace v1.37.0 // indirect
+	go.mongodb.org/mongo-driver/v2 v2.5.0 // indirect
+	go.opentelemetry.io/otel v1.41.0 // indirect
+	go.opentelemetry.io/otel/trace v1.41.0 // indirect
 	golang.org/x/arch v0.24.0 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
