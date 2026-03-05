@@ -12,6 +12,7 @@ linters:
     - mnd
     - tagalign
     - cyclop
+    - sloglint
   disable:
     - wsl
     - testpackage
@@ -45,6 +46,8 @@ linters:
         - gorm
     cyclop:
       max-complexity: 15
+    sloglint:
+      key-naming-case: snake
   exclusions:
     generated: lax
     presets:

@@ -1,17 +1,30 @@
 package mailer
 
 import (
-	"log"
+	"log/slog"
 	"net/smtp"
 	"net/url"
 	"strconv"
 )
 
-type Mailer struct {
+const (
+	defaultSmtpPort        = 587
+	defaultSmtpUsername    = ""
+	defaultSmtpPassword    = ""
+	defaultFrom            = "kasseapparat@example.com"
+	defaultSubjectPrefix   = "[Kasseapparat] "
+	defaultFrontendBaseUrl = "http://localhost:3000"
+)
+
+type SmtpConfig struct {
 	user     string
 	password string
 	host     string
 	port     int
+}
+
+type Mailer struct {
+	smtpConfig SmtpConfig
 
 	disabled bool
 
@@ -25,33 +38,57 @@ const (
 	footerTemplate = "mail/_footer.txt"
 )
 
-func NewMailer(dsn string) *Mailer {
-	user := ""
-	password := ""
-	host := "localhost"
-	port := 1025
-	frontendBaseUrl := "http://localhost:3000"
+func NewMailer(dsn string) (*Mailer, error) {
+	frontendBaseUrl := defaultFrontendBaseUrl
 
-	u, err := url.Parse(dsn)
+	smtpConfig, err := SmtpConfigFromDsn(dsn)
 	if err != nil {
-		log.Fatalln("Error parsing Mail DSN:", err)
-	} else {
-		host = u.Hostname()
-		user = u.User.Username()
-		password, _ = u.User.Password()
-		port, _ = strconv.Atoi(u.Port())
+		return nil, err
 	}
 
 	return &Mailer{
-		user:            user,
-		password:        password,
-		host:            host,
-		port:            port,
-		from:            "kasseapparat@example.com",
-		subjectPrefix:   "[Kasseapparat] ",
+		smtpConfig:      *smtpConfig,
+		from:            defaultFrom,
+		subjectPrefix:   defaultSubjectPrefix,
 		frontendBaseUrl: frontendBaseUrl,
 		disabled:        false,
+	}, nil
+}
+
+func SmtpConfigFromDsn(dsn string) (*SmtpConfig, error) {
+	user := defaultSmtpUsername
+	password := defaultSmtpPassword
+	port := defaultSmtpPort
+
+	u, err := url.Parse(dsn)
+	if err != nil {
+		slog.Error("Error parsing Mail DSN", "error", err)
+		println(err)
+
+		return nil, err
 	}
+
+	host := u.Hostname()
+	if u.User != nil {
+		user = u.User.Username()
+		password, _ = u.User.Password()
+	}
+
+	if u.Port() != "" {
+		port, err = strconv.Atoi(u.Port())
+		if err != nil {
+			slog.Error("Invalid port in Mail DSN", "error", err)
+
+			return nil, err
+		}
+	}
+
+	return &SmtpConfig{
+		user:     user,
+		password: password,
+		host:     host,
+		port:     port,
+	}, nil
 }
 
 func (m *Mailer) SetFrom(from string) {
@@ -72,7 +109,7 @@ func (m *Mailer) SetDisabled(disabled bool) {
 
 func (m *Mailer) SendMail(to string, subject string, body string) error {
 	if m.disabled {
-		log.Println("Mailer is disabled, not sending email")
+		slog.Info("Mailer is disabled, not sending email")
 
 		return nil
 	}
@@ -85,18 +122,18 @@ func (m *Mailer) SendMail(to string, subject string, body string) error {
 	message := []byte(header + body)
 
 	var auth smtp.Auth = nil
-	if m.user != "" && m.password != "" {
-		auth = smtp.PlainAuth("", m.user, m.password, m.host)
+	if m.smtpConfig.user != defaultSmtpUsername && m.smtpConfig.password != defaultSmtpPassword {
+		auth = smtp.PlainAuth("", m.smtpConfig.user, m.smtpConfig.password, m.smtpConfig.host)
 	}
 
 	err := smtp.SendMail(m.address(), auth, m.from, []string{to}, message)
 	if err != nil {
-		log.Println("Error sending mail:", err)
+		slog.Error("Error sending mail", "error", err)
 	}
 
 	return err
 }
 
 func (m *Mailer) address() string {
-	return m.host + ":" + strconv.Itoa(m.port)
+	return m.smtpConfig.host + ":" + strconv.Itoa(m.smtpConfig.port)
 }

@@ -6,7 +6,10 @@ import (
 )
 
 func InitializeMailer(mailerConfig config.MailerConfig) mailer.Mailer {
-	mailer := mailer.NewMailer(mailerConfig.DSN)
+	mailer, err := mailer.NewMailer(mailerConfig.DSN)
+	if err != nil {
+		panic(err)
+	}
 
 	if mailerConfig.FromEmail != "" {
 		mailer.SetFrom(mailerConfig.FromEmail)

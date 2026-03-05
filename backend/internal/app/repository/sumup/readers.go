@@ -2,7 +2,7 @@ package sumup
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -30,7 +30,7 @@ func (r *Repository) GetReader(readerId string) (*Reader, error) {
 
 	reader, err := r.service.Client.Readers.Get(context.Background(), r.service.MerchantCode, id, params)
 	if err != nil {
-		log.Printf("Error retrieving reader with ID %s: %v", readerId, err)
+		slog.Error("Error retrieving reader with ID", "reader_id", readerId, "error", err)
 
 		if isReaderNotFoundError(err) {
 			return nil, nil
@@ -98,7 +98,7 @@ func (r *Repository) CreateReaderCheckout(
 		body,
 	)
 	if err != nil {
-		log.Printf("Error creating SumUp reader checkout: %v", err)
+		slog.Error("Error creating SumUp reader checkout", "error", err)
 
 		return nil, err
 	}

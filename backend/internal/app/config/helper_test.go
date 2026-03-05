@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log/slog"
 	"os"
 	"testing"
 
@@ -50,13 +51,15 @@ func TestGetEnvAsFloat(t *testing.T) {
 }
 
 func TestGetEnvWithJSONValidation(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
 	t.Setenv("VALID_JSON", `[{"x":1}]`)
 	t.Setenv("INVALID_JSON", `not-a-json`)
 	t.Setenv("EMPTY", "")
 
-	assert.Equal(t, `[{"x":1}]`, getEnvWithJSONValidation("VALID_JSON", `[{"fallback":true}]`))
-	assert.Equal(t, `[{"fallback":true}]`, getEnvWithJSONValidation("INVALID_JSON", `[{"fallback":true}]`))
-	assert.Equal(t, `[{"fallback":true}]`, getEnvWithJSONValidation("EMPTY", `[{"fallback":true}]`))
+	assert.Equal(t, `[{"x":1}]`, getEnvWithJSONValidation(logger, "VALID_JSON", `[{"fallback":true}]`))
+	assert.Equal(t, `[{"fallback":true}]`, getEnvWithJSONValidation(logger, "INVALID_JSON", `[{"fallback":true}]`))
+	assert.Equal(t, `[{"fallback":true}]`, getEnvWithJSONValidation(logger, "EMPTY", `[{"fallback":true}]`))
 }
 
 func TestGetEnvAsBool(t *testing.T) {
