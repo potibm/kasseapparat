@@ -1,16 +1,16 @@
 import { Navigate, createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router-dom";
-import { useAuth } from "../Auth/provider/AuthProvider";
+import { useAuth } from "../apps/pos/features/auth/providers/auth-provider";
 import { ProtectedRoute } from "./ProtectedRoute";
 import React from "react";
-import Kasseapparat from "../Main/Kasseapparat";
-import Admin from "../Admin/Admin";
-import Logout from "../Auth/components/Logout";
-import Login from "../Auth/components/Login";
-import ChangePassword from "../Auth/components/ChangePassword";
-import NotFound from "../components/NotFound";
-import ForgotPassword from "../Auth/components/ForgotPassword";
-import { LoggedinErrorMessage } from "./LoggedinErrorMessage";
+import Kasseapparat from "../apps/pos/pages/Pos";
+import Admin from "../apps/admin/Admin";
+import Logout from "../apps/pos/features/auth/components/Logout";
+import Login from "../apps/pos/features/auth/components/Login";
+import ChangePassword from "../apps/pos/features/auth/components/ChangePassword";
+import NotFound from "../apps/pos/pages/NotFound";
+import ForgotPassword from "../apps/pos/features/auth/components/ForgotPassword";
+import { LoggedinErrorMessage } from "../apps/pos/features/auth/components/LoggedinErrorMessage";
 
 const Routes = () => {
   const { isLoggedIn } = useAuth() || {};

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router";
-import { useAuth } from "../Auth/provider/AuthProvider";
+import { useAuth } from "../apps/pos/features/auth/providers/auth-provider";
 
 export const ProtectedRoute = () => {
   const { isLoggedIn } = useAuth() || {};
