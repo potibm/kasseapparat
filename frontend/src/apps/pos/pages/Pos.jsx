@@ -27,6 +27,7 @@ import { useAuth } from "../features/auth/providers/auth-provider";
 import { useConfig } from "../../../core/config/providers/config-provider";
 import Version from "../components/Version";
 import Decimal from "decimal.js";
+import PosLayout from "../layouts/PosLayout";
 
 const Kasseapparat = () => {
   const [cart, setCart] = useState([]);
@@ -37,8 +38,7 @@ const Kasseapparat = () => {
   const [pollingModalOpen, setPollingModalOpen] = useState(false);
   const [onPollingComplete, setOnPollingComplete] = useState(() => () => {});
   const [pendingPurchase, setPendingPurchase] = useState(null);
-  const apiHost = useConfig().apiHost;
-  const envMessage = useConfig().environmentMessage;
+  const { apiHost, environmentMessage } = useConfig();
 
   const convertProductsWithDecimals = (products) => {
     return products.map((product) => {
@@ -230,68 +230,48 @@ const Kasseapparat = () => {
   };
 
   return (
-    <div className="App p-2 dark:bg-black">
-      {envMessage && (
-        <Alert color="info" className="mb-5 rounded-none">
-          {envMessage}
-        </Alert>
-      )}
-      <div className="w-full overflow-hidden">
-        {products === null && (
-          <div className="w-9/12 text-gray-500 text-left p-5">
-            Loading products...
-            <Spinner className="ml-2" />
-          </div>
-        )}
-        {products !== null && products.length === 0 && (
-          <div className="w-9/12 text-gray-500 text-left p-5">
-            No products, yet.
-          </div>
-        )}
-        {products !== null && products.length > 0 && (
-          <div className="w-9/12">
-            <ProductList
-              products={products}
-              addToCart={handleAddToCart}
-              hasListItem={hasListItem}
-              quantityByProductInCart={getQuantityByProductInCart}
-              addProductInterest={handleAddProductInterest}
-            />
-          </div>
-        )}
-        <div className="fixed inset-y-0 right-0 w-3/12 bg-slate-200 dark:bg-gray-900 p-2">
+    <PosLayout
+      topAlert={
+        environmentMessage && <Alert color="info">{environmentMessage}</Alert>
+      }
+      sidebar={
+        <>
           <Cart
             cart={cart}
             removeFromCart={handleRemoveFromCart}
             removeAllFromCart={handleRemoveAllFromCart}
             checkoutCart={handleCheckoutCart}
           />
-
           <PurchaseHistory
             history={purchaseHistory}
             removeFromPurchaseHistory={handleRemoveFromPurchaseHistory}
           />
-
           <Menu username={username} />
-
           <p className="text-xs mt-10 dark:text-white">
             <Version />
           </p>
-        </div>
-      </div>
-      <ErrorModal message={errorMessage} onClose={handleCloseError} />
-      {pollingModalOpen && pendingPurchase && (
-        <PollingModal
-          purchase={pendingPurchase}
-          show={pollingModalOpen}
-          onClose={() => setPollingModalOpen(false)}
-          onComplete={onPollingComplete}
-          onConfirmed={() => {
-            setPollingModalOpen(false);
-          }}
-        />
-      )}
-    </div>
+        </>
+      }
+      overlays={
+        <>
+          <ErrorModal message={errorMessage} onClose={handleCloseError} />
+          {pollingModalOpen && (
+            <PollingModal
+              purchase={pendingPurchase}
+              onComplete={onPollingComplete}
+            />
+          )}
+        </>
+      }
+    >
+      <ProductList
+        products={products}
+        addToCart={handleAddToCart}
+        hasListItem={hasListItem}
+        quantityByProductInCart={getQuantityByProductInCart}
+        addProductInterest={handleAddProductInterest}
+      />
+    </PosLayout>
   );
 };
 

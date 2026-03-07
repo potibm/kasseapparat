@@ -73,7 +73,12 @@ const Login = () => {
           <div className="mb-2 block">
             <Label htmlFor="password" value="Your password" />
           </div>
-          <TextInput id="password" type="password" placeholder="Password" required />
+          <TextInput
+            id="password"
+            type="password"
+            placeholder="Password"
+            required
+          />
         </div>
         <Button type="submit" disabled={disabled}>
           Login {disabled && <Spinner className="ml-3" />}

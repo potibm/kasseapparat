@@ -9,6 +9,10 @@ const ProductList = ({
   quantityByProductInCart,
   addProductInterest,
 }) => {
+  if (!products || products.length === 0) {
+    return <p>No products available.</p>;
+  }
+
   return (
     <div className="flex flex-wrap -m-1.5">
       {products.map((product) => (
