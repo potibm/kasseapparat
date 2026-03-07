@@ -45,7 +45,7 @@ const CheckoutButtons = ({
       {paymentMethods.map((paymentMethod) => (
         <Button
           key={paymentMethod.code}
-          {...((cart.length === 0 ||
+          {...((cart.isEmpty ||
             checkoutProcessing ||
             !paymentMethodIsActive(paymentMethod.code, cartValue)) && {
             disabled: true,
@@ -59,7 +59,7 @@ const CheckoutButtons = ({
           }
         >
           {paymentMethod.name}&nbsp;
-          {cart.length > 0 && currency.format(cartValue)}
+          {!cart.isEmpty && currency.format(cartValue)}
           {checkoutProcessing === paymentMethod.code && (
             <Spinner color="gray" className="ml-3" />
           )}

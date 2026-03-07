@@ -8,6 +8,9 @@ export const useCart = (apiHost: string, getToken) => {
   const [cart, setCart] = useState(new Cart());
   const [isPolling, setIsPolling] = useState(false);
   const [pendingPurchase, setPendingPurchase] = useState(null);
+  const [checkoutProcessing, setCheckoutProcessing] = useState<string | null>(
+    null,
+  );
 
   const add = useCallback((product: Product, count: number, listItem) => {
     setCart((prevCart) => prevCart.add(product, count, listItem));
@@ -25,34 +28,47 @@ export const useCart = (apiHost: string, getToken) => {
     paymentMethodCode: string,
     paymentMethodData: any,
   ) => {
-    const token = await getToken();
-    const payload = cart.toApiPayload(paymentMethodCode, paymentMethodData);
-    const createdPurchase = await storePurchase(apiHost, token, payload);
+    setCheckoutProcessing(paymentMethodCode);
 
-    if (createdPurchase.status === "pending") {
-      setPendingPurchase(createdPurchase);
-      setIsPolling(true);
+    try {
+      const token = await getToken();
+      const payload = cart.toApiPayload(paymentMethodCode, paymentMethodData);
+      const createdPurchase = await storePurchase(apiHost, token, payload);
 
-      return new Promise((resolve, reject) => {
-        // Diese Resolver-Funktion geben wir später an das Modal weiter
-        createdPurchase.onComplete = (success) => {
-          setIsPolling(false);
-          if (success) {
-            clear();
-            resolve(createdPurchase);
-          } else {
-            reject(new Error("Payment failed or cancelled"));
-          }
-        };
-      });
+      if (createdPurchase.status === "pending") {
+        return new Promise((resolve, reject) => {
+          const enrichedPurchase = {
+            ...createdPurchase,
+            onComplete: (success: boolean) => {
+              setIsPolling(false);
+              setPendingPurchase(null);
+              setCheckoutProcessing(null);
+
+              if (success) {
+                clear();
+                resolve(createdPurchase);
+              } else {
+                reject(new Error("Payment failed or cancelled"));
+              }
+            },
+          };
+
+          setPendingPurchase(enrichedPurchase);
+          setIsPolling(true);
+        });
+      }
+
+      if (createdPurchase.status === "confirmed") {
+        clear();
+        setCheckoutProcessing(null);
+        return createdPurchase;
+      }
+
+      throw new Error("Unknown purchase status: " + createdPurchase.status);
+    } catch (error) {
+      setCheckoutProcessing(null);
+      throw error;
     }
-
-    if (createdPurchase.status === "confirmed") {
-      clear();
-      return createdPurchase;
-    }
-
-    throw new Error("Unknown purchase status: " + createdPurchase.status);
   };
 
   return {
@@ -62,6 +78,7 @@ export const useCart = (apiHost: string, getToken) => {
     remove,
     clear,
     checkout,
+    checkoutProcessing,
     isPolling,
     pendingPurchase,
     setIsPolling,

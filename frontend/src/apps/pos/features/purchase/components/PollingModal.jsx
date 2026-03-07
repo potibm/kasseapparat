@@ -7,7 +7,7 @@ import Button from "../../../components/Button";
 import { useAuth } from "../../auth/providers/auth-provider";
 import { useConfig } from "../../../../../core/config/providers/config-provider";
 
-const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
+const PollingModal = ({ purchase, onClose, onConfirmed, onComplete }) => {
   const [status, setStatus] = useState(purchase.status);
   const [lastUpdate, setLastUpdate] = useState(() => Date.now());
   const [now, setNow] = useState(() => Date.now()); // for age display
@@ -184,7 +184,7 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
   if (!purchase?.id) return null;
 
   return (
-    <Modal show={show} size="md" popup dismissible={false}>
+    <Modal show="true" size="md" popup dismissible={false}>
       <ModalBody className="m-5">
         <div className="text-center">
           <h3 className="text-lg font-semibold mb-8 dark:text-gray-200">
@@ -232,7 +232,6 @@ const PollingModal = ({ show, purchase, onClose, onConfirmed, onComplete }) => {
 };
 
 PollingModal.propTypes = {
-  show: PropTypes.bool.isRequired,
   purchase: PropTypes.shape({
     id: PropTypes.number.isRequired,
     status: PropTypes.string.isRequired,

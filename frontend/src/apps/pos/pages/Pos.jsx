@@ -10,9 +10,7 @@ import Menu from "../features/menu/compontents/Menu";
 import PollingModal from "../features/purchase/components/PollingModal";
 import {
   refundPurchaseById,
-  fetchProducts,
   fetchPurchases,
-  storePurchase,
   addProductInterest,
 } from "../utils/api";
 import { useAuth } from "../features/auth/providers/auth-provider";
@@ -28,8 +26,6 @@ const Kasseapparat = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [purchaseHistory, setPurchaseHistory] = useState(null);
-  const [pollingModalOpen, setPollingModalOpen] = useState(false);
-  const [onPollingComplete, setOnPollingComplete] = useState(() => () => {});
 
   const showError = useCallback((message) => {
     setErrorMessage(message);
@@ -50,6 +46,7 @@ const Kasseapparat = () => {
     remove,
     clear,
     checkout,
+    checkoutProcessing,
     isPolling,
     pendingPurchase,
     setIsPolling,
@@ -112,6 +109,7 @@ const Kasseapparat = () => {
         <>
           <Cart
             cart={cart}
+            checkoutProcessing={checkoutProcessing}
             removeFromCart={remove}
             removeAllFromCart={clear}
             checkoutCart={checkout}
@@ -129,10 +127,11 @@ const Kasseapparat = () => {
       overlays={
         <>
           <ErrorModal message={errorMessage} onClose={handleCloseError} />
-          {pollingModalOpen && (
+          {isPolling && pendingPurchase && (
             <PollingModal
               purchase={pendingPurchase}
-              onComplete={onPollingComplete}
+              onComplete={pendingPurchase.onComplete}
+              onConfirmed={() => setIsPolling(false)}
             />
           )}
         </>

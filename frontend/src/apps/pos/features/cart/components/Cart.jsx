@@ -16,11 +16,16 @@ import Button from "../../../components/Button";
 import Decimal from "decimal.js";
 import CheckoutButtons from "./_internal/CheckoutButtons";
 
-const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
+const Cart = ({
+  cart,
+  removeFromCart,
+  removeAllFromCart,
+  checkoutCart,
+  checkoutProcessing,
+}) => {
   const { currency } = useConfig();
 
   const [flash, setFlash] = useState(false);
-  const [checkoutProcessing, setCheckoutProcessing] = useState(null);
 
   const prevCartTotalQuantity = useRef(cart.totalQuantity);
   const isFirstRender = useRef(true);
@@ -35,13 +40,7 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
   };
 
   const handleCheckoutCart = async (paymentMethodCode, paymentMethodData) => {
-    if (checkoutProcessing) {
-      return;
-    }
-    setCheckoutProcessing(paymentMethodCode);
-    checkoutCart(paymentMethodCode, paymentMethodData).then(() => {
-      setCheckoutProcessing(null);
-    });
+    return checkoutCart(paymentMethodCode, paymentMethodData);
   };
 
   useEffect(() => {
@@ -163,6 +162,7 @@ Cart.propTypes = {
   removeFromCart: PropTypes.func.isRequired,
   removeAllFromCart: PropTypes.func.isRequired,
   checkoutCart: PropTypes.func.isRequired,
+  checkoutProcessing: PropTypes.string,
 };
 
 export default Cart;
