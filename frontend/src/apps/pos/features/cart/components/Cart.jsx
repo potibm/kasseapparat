@@ -15,7 +15,6 @@ import "animate.css";
 import Button from "../../../components/Button";
 import Decimal from "decimal.js";
 import CheckoutButtons from "./_internal/CheckoutButtons";
-import { getCartTotalQuantity } from "./services/cart.logic";
 
 const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
   const { currency } = useConfig();
@@ -23,7 +22,7 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
   const [flash, setFlash] = useState(false);
   const [checkoutProcessing, setCheckoutProcessing] = useState(null);
 
-  const prevCartTotalQuantity = useRef(getCartTotalQuantity(cart));
+  const prevCartTotalQuantity = useRef(cart.totalQuantity);
   const isFirstRender = useRef(true);
 
   const triggerFlash = () => {
@@ -51,11 +50,11 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
       return;
     }
 
-    if (getCartTotalQuantity(cart) !== prevCartTotalQuantity.current) {
+    if (cart.totalQuantity !== prevCartTotalQuantity.current) {
       triggerFlash();
     }
 
-    prevCartTotalQuantity.current = getCartTotalQuantity(cart);
+    prevCartTotalQuantity.current = cart.totalQuantity;
   }, [cart]);
 
   const displayListItem = (listItem) => {
@@ -99,7 +98,7 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {cart.map((cartElement) => (
+          {cart.items.map((cartElement) => (
             <TableRow key={cartElement.id}>
               <TableCell className="whitespace-normal px-4 py-2">
                 {cartElement.name}
@@ -133,15 +132,10 @@ const Cart = ({ cart, removeFromCart, removeAllFromCart, checkoutCart }) => {
               Total
             </TableCell>
             <TableCell className="font-bold text-right">
-              {currency.format(
-                cart.reduce(
-                  (total, item) => total.add(item.totalGrossPrice),
-                  new Decimal(0),
-                ),
-              )}
+              {currency.format(cart.totalGross)}
             </TableCell>
             <TableCell className="flex justify-end">
-              {cart.length ? (
+              {!cart.isEmpty ? (
                 <Button color="failure" onClick={() => removeAllFromCart()}>
                   <HiXCircle />
                 </Button>

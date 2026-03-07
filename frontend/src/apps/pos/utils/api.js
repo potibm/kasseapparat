@@ -65,33 +65,7 @@ export const fetchGuestlistByProductId = async (
 };
 
 // Store a new purchase
-export const storePurchase = async (
-  apiHost,
-  jwtToken,
-  cart,
-  paymentMethodCode,
-  paymentMethodData = {},
-) => {
-  const cartPayload = cart.map((item) => ({
-    ...item,
-    lists: null,
-    guestlists: null,
-  }));
-
-  const payload = {
-    paymentMethod: paymentMethodCode,
-    cart: cartPayload,
-    totalGrossPrice: cart.reduce(
-      (total, item) => total.add(item.totalGrossPrice),
-      new Decimal(0),
-    ),
-    totalNetPrice: cart.reduce(
-      (total, item) => total.add(item.totalNetPrice),
-      new Decimal(0),
-    ),
-    ...paymentMethodData,
-  };
-
+export const storePurchase = async (apiHost, jwtToken, payload) => {
   return post(`${apiHost}/api/v2/purchases`, jwtToken, payload);
 };
 

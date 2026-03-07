@@ -1,19 +1,26 @@
 import React from "react";
 import { useConfig } from "../../../../../../core/config/providers/config-provider";
 import Button from "../../../../components/Button";
-import Decimal from "decimal.js";
 import { Spinner } from "flowbite-react";
 import { getCurrentReaderId } from "../../../../../../core/localstorage/helper/reader";
 import PropTypes from "prop-types";
+import { Cart } from "../../services/Cart";
 
-const CheckoutButtons = ({ cart, checkoutProcessing, handleCheckoutCart }) => {
+interface CheckoutButtonsProps {
+  cart: Cart;
+  checkoutProcessing: string | boolean;
+  handleCheckoutCart: (code: string, data: any) => void;
+}
+
+const CheckoutButtons = ({
+  cart,
+  checkoutProcessing,
+  handleCheckoutCart,
+}: CheckoutButtonsProps) => {
   const { currency, paymentMethods } = useConfig();
   const sumUpReaderId = getCurrentReaderId();
 
-  const cartValue = cart.reduce(
-    (total, item) => total.add(item.totalGrossPrice),
-    new Decimal(0),
-  );
+  const cartValue = cart.totalGross;
 
   const paymentMethodIsActive = (paymentMethodCode, cartValue) => {
     if (paymentMethodCode === "SUMUP") {

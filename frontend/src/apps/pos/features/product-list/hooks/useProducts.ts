@@ -4,7 +4,11 @@ import Decimal from "decimal.js";
 import { fetchProducts } from "../../../utils/api";
 import { Product } from "../types/product.types";
 
-export const useProducts = (apiHost: string, getToken: () => Promise<string>, onError: (msg: string) => void) => {
+export const useProducts = (
+  apiHost: string,
+  getToken: () => Promise<string>,
+  onError: (msg: string) => void,
+) => {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -13,7 +17,7 @@ export const useProducts = (apiHost: string, getToken: () => Promise<string>, on
     try {
       const token = await getToken();
       const rawProducts = await fetchProducts(apiHost, token);
-      
+
       // Hier findet die "Decimal"-Magie statt
       const converted = rawProducts.map((p: any) => ({
         ...p,
@@ -21,7 +25,7 @@ export const useProducts = (apiHost: string, getToken: () => Promise<string>, on
         grossPrice: new Decimal(p.grossPrice),
         vatAmount: new Decimal(p.vatAmount),
       }));
-      
+
       setProducts(converted);
     } catch (error: any) {
       onError("There was an error fetching the products: " + error.message);
