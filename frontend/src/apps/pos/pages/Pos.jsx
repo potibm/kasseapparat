@@ -26,12 +26,12 @@ import {
 import { useAuth } from "../features/auth/providers/auth-provider";
 import { useConfig } from "../../../core/config/providers/config-provider";
 import Version from "../components/Version";
-import Decimal from "decimal.js";
 import PosLayout from "../layouts/PosLayout";
+import { useProducts } from "../features/product-list/hooks/useProducts";
 
 const Kasseapparat = () => {
   const [cart, setCart] = useState([]);
-  const [products, setProducts] = useState(null);
+  //const [products, setProducts] = useState(null);
   const [purchaseHistory, setPurchaseHistory] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const { username, getToken, id: userId } = useAuth();
@@ -40,27 +40,21 @@ const Kasseapparat = () => {
   const [pendingPurchase, setPendingPurchase] = useState(null);
   const { apiHost, environmentMessage } = useConfig();
 
-  const convertProductsWithDecimals = (products) => {
-    return products.map((product) => {
-      return {
-        ...product,
-        netPrice: new Decimal(product.netPrice),
-        grossPrice: new Decimal(product.grossPrice),
-        vatAmount: new Decimal(product.vatAmount),
-      };
-    });
+  const showError = (message) => {
+    setErrorMessage(message);
   };
 
+  const handleCloseError = () => {
+    setErrorMessage("");
+  };
+
+  const { products, loading: productsLoading, refreshProducts } = useProducts(
+    apiHost, 
+    getToken, 
+    showError
+  );
+
   useEffect(() => {
-    const getProducts = async () => {
-      return fetchProducts(apiHost, await getToken())
-        .then((products) => setProducts(convertProductsWithDecimals(products)))
-        .catch((error) =>
-          showError(
-            "There was an error fetching the products: " + error.message,
-          ),
-        );
-    };
     const getHistory = async () => {
       fetchPurchases(apiHost, await getToken(), userId)
         .then((history) => setPurchaseHistory(history))
@@ -71,7 +65,6 @@ const Kasseapparat = () => {
           ),
         );
     };
-    getProducts();
     getHistory();
   }, [apiHost, userId, getToken]);
 
@@ -117,15 +110,7 @@ const Kasseapparat = () => {
                 error.message,
             ),
           );
-        fetchProducts(apiHost, token)
-          .then((products) =>
-            setProducts(convertProductsWithDecimals(products)),
-          )
-          .catch((error) =>
-            showError(
-              "There was an error fetching the products: " + error.message,
-            ),
-          );
+        refreshProducts();
       })
       .catch((error) => {
         showError(
@@ -196,13 +181,7 @@ const Kasseapparat = () => {
 
       setCart(checkoutCart());
       handleAddToPurchaseHistory(createdPurchase);
-      fetchProducts(apiHost, await getToken())
-        .then((products) => setProducts(convertProductsWithDecimals(products)))
-        .catch((error) =>
-          showError(
-            "There was an error fetching the products: " + error.message,
-          ),
-        );
+      refreshProducts();
     } catch (error) {
       showError("There was an error during checkout: " + error.message);
     }
@@ -221,13 +200,6 @@ const Kasseapparat = () => {
       });
   };
 
-  const showError = (message) => {
-    setErrorMessage(message);
-  };
-
-  const handleCloseError = () => {
-    setErrorMessage("");
-  };
 
   return (
     <PosLayout
