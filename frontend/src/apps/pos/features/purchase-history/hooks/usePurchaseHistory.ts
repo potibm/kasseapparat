@@ -4,7 +4,12 @@ import { fetchPurchases, refundPurchaseById } from "../../../utils/api";
 import { Purchase } from "../types/purchase.types";
 import Decimal from "decimal.js";
 
-export const usePurchaseHistory = (apiHost: string, getToken: () => Promise<string>, userId: string, onError: (msg: string) => void) => {
+export const usePurchaseHistory = (
+  apiHost: string,
+  getToken: () => Promise<string>,
+  userId: string,
+  onError: (msg: string) => void,
+) => {
   const [history, setHistory] = useState<Purchase[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -28,7 +33,7 @@ export const usePurchaseHistory = (apiHost: string, getToken: () => Promise<stri
           totalNetPrice: new Decimal(item.totalNetPrice),
           totalGrossPrice: new Decimal(item.totalGrossPrice),
           totalVatAmount: new Decimal(item.totalVatAmount),
-        }))
+        })),
       }));
 
       setHistory(convertedData);
@@ -54,10 +59,10 @@ export const usePurchaseHistory = (apiHost: string, getToken: () => Promise<stri
     }
   };
 
-  return { 
-    history, 
-    loading, 
-    refreshHistory: loadHistory, 
-    refundPurchase: refund 
+  return {
+    history,
+    loading,
+    refreshHistory: loadHistory,
+    refundPurchase: refund,
   };
 };

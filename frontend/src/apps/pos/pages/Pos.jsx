@@ -8,9 +8,6 @@ import PurchaseHistory from "../features/purchase-history/components/PurchaseHis
 import ErrorModal from "../components/ErrorModal";
 import Menu from "../features/menu/compontents/Menu";
 import PollingModal from "../features/purchase/components/PollingModal";
-import {
-  addProductInterest,
-} from "../utils/api";
 import { useAuth } from "../features/auth/providers/auth-provider";
 import { useConfig } from "../../../core/config/providers/config-provider";
 import Version from "../components/Version";
@@ -36,7 +33,9 @@ const Kasseapparat = () => {
     products,
     loading: productsLoading,
     refreshProducts,
+    addInterest,
   } = useProducts(apiHost, getToken, showError);
+
   const {
     cart,
     add,
@@ -63,23 +62,10 @@ const Kasseapparat = () => {
       showError(error.message);
     } finally {
       await Promise.all([
-        refreshHistory(),  // Historie neu vom Server laden
-        refreshProducts()  // Lagerbestände/Produkte aktualisieren
+        refreshHistory(), // Historie neu vom Server laden
+        refreshProducts(), // Lagerbestände/Produkte aktualisieren
       ]);
     }
-  }; 
-
-  const handleAddProductInterest = async (product) => {
-    console.log("Adding product interest for product: ", product.id);
-    return addProductInterest(apiHost, await getToken(), product.id)
-      .then(() => {
-        product.soldOutRequestCount++;
-      })
-      .catch((error) => {
-        showError(
-          "There was an error adding the product interest: " + error.message,
-        );
-      });
   };
 
   return (
@@ -124,7 +110,7 @@ const Kasseapparat = () => {
         addToCart={add}
         hasListItem={(id) => cart.hasListItem(id)}
         quantityByProductInCart={(p) => cart.getQuantity(p.id)}
-        addProductInterest={handleAddProductInterest}
+        addProductInterest={(p) => addInterest(p.id)}
       />
     </PosLayout>
   );

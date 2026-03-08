@@ -41,7 +41,6 @@ const Product = ({
 
   const handleCardClick = () => {
     if (product.soldOut) {
-      console.log("ioen");
       setIsPIModalOpen(true);
     } else if (product.guestlists.length > 0) {
       handleShowGuestlist();

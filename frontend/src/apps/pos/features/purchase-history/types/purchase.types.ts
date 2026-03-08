@@ -3,13 +3,13 @@ import { Product } from "../../product-list/types/product.types";
 
 export interface Purchase {
   id: string;
-  status: 'pending' | 'confirmed' | 'refunded' | 'failed';
+  status: "pending" | "confirmed" | "refunded" | "failed";
   paymentMethod: string;
   totalGrossPrice: Decimal;
   totalNetPrice: Decimal;
   totalVatAmount: Decimal;
-  purchaseItems: PurchaseItem[]; 
-  createdAt: string; 
+  purchaseItems: PurchaseItem[];
+  createdAt: string;
   createdById: number;
   createdBy: User;
   sumupTransactionId?: string;

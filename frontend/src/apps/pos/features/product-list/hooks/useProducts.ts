@@ -1,7 +1,7 @@
 // src/apps/pos/features/product-list/hooks/useProducts.ts
 import { useState, useEffect, useCallback } from "react";
 import Decimal from "decimal.js";
-import { fetchProducts } from "../../../utils/api";
+import { fetchProducts, addProductInterest } from "../../../utils/api";
 import { Product } from "../types/product.types";
 
 export const useProducts = (
@@ -34,11 +34,21 @@ export const useProducts = (
     }
   }, [apiHost, getToken, onError]);
 
+  const addInterest = async (productId: number) => {
+    try {
+      const token = await getToken();
+      await addProductInterest(apiHost, token, productId);
+      await loadProducts();
+    } catch (error) {
+      onError("Fehler beim Speichern des Interesses: " + error.message);
+    }
+  };
+
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
 
-  return { products, loading, refreshProducts: loadProducts };
+  return { products, loading, refreshProducts: loadProducts, addInterest };
 };
 
 export default useProducts;
