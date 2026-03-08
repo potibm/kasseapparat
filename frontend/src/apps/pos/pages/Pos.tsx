@@ -2,26 +2,32 @@ import "../assets/styles/pos-style.css";
 
 import React, { useState, useCallback } from "react";
 import { Alert } from "flowbite-react";
+// components & layouts
 import Cart from "../features/cart/components/Cart";
 import ProductList from "../features/product-list/components/ProductList";
 import PurchaseHistory from "../features/purchase-history/components/PurchaseHistory";
 import ErrorModal from "../components/ErrorModal";
 import Menu from "../features/menu/compontents/Menu";
 import PollingModal from "../features/purchase/components/PollingModal";
-import { useAuth } from "../features/auth/providers/auth-provider";
-import { useConfig } from "../../../core/config/providers/config-provider";
 import Version from "../components/Version";
 import PosLayout from "../layouts/PosLayout";
+// hooks
+import { useAuth } from "../features/auth/providers/auth-provider";
+import { useConfig } from "../../../core/config/providers/config-provider";
 import { useProducts } from "../features/product-list/hooks/useProducts";
 import { useCart } from "../features/cart/hooks/useCart";
 import { usePurchaseHistory } from "../features/purchase-history/hooks/usePurchaseHistory";
+// types
+import { Product } from "../features/product-list/types/product.types";
+import { Purchase } from "../features/purchase-history/types/purchase.types";
 
 const Kasseapparat = () => {
   const { apiHost, environmentMessage } = useConfig();
   const { username, getToken, id: userId } = useAuth();
-  const [errorMessage, setErrorMessage] = useState("");
 
-  const showError = useCallback((message) => {
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const showError = useCallback((message: string) => {
     setErrorMessage(message);
   }, []);
 
@@ -55,16 +61,31 @@ const Kasseapparat = () => {
     showError,
   );
 
-  const handleCheckout = async (paymentMethodCode, paymentMethodData) => {
+  const handleCheckout = async (
+    paymentMethodCode: string,
+    paymentMethodData: any,
+  ) => {
     try {
       await checkout(paymentMethodCode, paymentMethodData);
-    } catch (error) {
+    } catch (error: any) {
       showError(error.message);
     } finally {
       await Promise.all([
         refreshHistory(), // Historie neu vom Server laden
         refreshProducts(), // Lagerbestände/Produkte aktualisieren
       ]);
+    }
+  };
+
+  const handleRefund = async (purchaseId: string) => {
+    try {
+      await refundPurchase(purchaseId);
+
+      await refreshProducts();
+
+      console.log("Refund und Product-Refresh erfolgreich.");
+    } catch (error: any) {
+      showError("Error on Refund: " + error.message);
     }
   };
 
@@ -84,7 +105,7 @@ const Kasseapparat = () => {
           />
           <PurchaseHistory
             history={history}
-            removeFromPurchaseHistory={(p) => refundPurchase(p.id)}
+            removeFromPurchaseHistory={(p: Purchase) => handleRefund(p.id)}
           />
           <Menu username={username} />
           <p className="text-xs mt-10 dark:text-white">
@@ -108,9 +129,9 @@ const Kasseapparat = () => {
       <ProductList
         products={products}
         addToCart={add}
-        hasListItem={(id) => cart.hasListItem(id)}
-        quantityByProductInCart={(p) => cart.getQuantity(p.id)}
-        addProductInterest={(p) => addInterest(p.id)}
+        hasListItem={(id: number) => cart.hasListItem(id)}
+        quantityByProductInCart={(p: Product) => cart.getQuantity(p.id)}
+        addProductInterest={(p: Product) => addInterest(p.id)}
       />
     </PosLayout>
   );

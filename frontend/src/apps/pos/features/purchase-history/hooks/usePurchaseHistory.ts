@@ -38,7 +38,7 @@ export const usePurchaseHistory = (
 
       setHistory(convertedData);
     } catch (error: any) {
-      onError("Fehler beim Laden der Historie: " + error.message);
+      onError("Error while loading the purchase history: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,8 @@ export const usePurchaseHistory = (
       await refundPurchaseById(apiHost, token, purchaseId);
       await loadHistory();
     } catch (error: any) {
-      onError("Fehler beim Stornieren: " + error.message);
+      onError("Error while refunding the purchase: " + error.message);
+      throw error;
     }
   };
 
