@@ -19,9 +19,10 @@ export const useProducts = (
 
       setProducts(products);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error 
-        ? "There was an error fetching the products: " + error.message 
-        : "An unknown error has occured";
+      const errorMessage =
+        error instanceof Error
+          ? "There was an error fetching the products: " + error.message
+          : "An unknown error has occured";
 
       onError(errorMessage);
     } finally {
@@ -35,10 +36,11 @@ export const useProducts = (
       await addProductInterest(apiHost, token, productId);
       await loadProducts();
     } catch (error: unknown) {
-        const errorMessage = error instanceof Error 
-        ? "Error on saving the interest: " + error.message 
-        : "An unknown error has occured";
-        
+      const errorMessage =
+        error instanceof Error
+          ? "Error on saving the interest: " + error.message
+          : "An unknown error has occured";
+
       onError(errorMessage);
     }
   };

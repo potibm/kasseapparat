@@ -12,8 +12,8 @@ export interface Purchase {
   createdAt: string;
   createdById: number;
   createdBy: User;
-  sumupTransactionId?: string;
-  sumupClientTransactionId?: string;
+  sumupTransactionId: string | null;
+  sumupClientTransactionId: string | null;
 }
 
 interface User {
@@ -24,14 +24,14 @@ interface User {
 }
 
 interface PurchaseItem {
-  id: string;
+  id: number;
   purchaseID: string;
   productID: number;
   product: Product;
   quantity: number;
   netPrice: Decimal;
   grossPrice: Decimal;
-  vatRate: number;
+  vatRate: Decimal;
   vatAmount: Decimal;
   totalNetPrice: Decimal;
   totalGrossPrice: Decimal;

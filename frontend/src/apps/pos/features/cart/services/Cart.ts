@@ -99,7 +99,10 @@ export class Cart {
     );
   }
 
-  public toApiPayload(paymentMethodCode: string, paymentMethodData: PaymentMethodData) {
+  public toApiPayload(
+    paymentMethodCode: string,
+    paymentMethodData: PaymentMethodData,
+  ) {
     return {
       paymentMethod: paymentMethodCode,
       cart: this.items.map((item) => ({

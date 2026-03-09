@@ -13,7 +13,7 @@ export interface Product {
   apiExport: boolean;
   pos: number;
   totalStock: number;
-  guestlists?: Guestlist[];
+  guestlists?: Guestlist[] | null;
   unitsSold: number;
   soldOutRequestCount: number;
 }

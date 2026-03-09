@@ -69,10 +69,9 @@ const Kasseapparat = () => {
     try {
       await checkout(paymentMethodCode, paymentMethodData);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "An unknown error has occured";
-        
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error has occured";
+
       showError(errorMessage);
     } finally {
       await Promise.all([
@@ -87,10 +86,9 @@ const Kasseapparat = () => {
       await refundPurchase(purchaseId);
       await refreshProducts();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "An unknown error has occured";
-        
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error has occured";
+
       showError(errorMessage);
     }
   };

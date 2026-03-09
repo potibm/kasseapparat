@@ -5,7 +5,7 @@ interface User {
   name: string;
 }
 
-export interface ApiGetResponseProduct {
+interface ApiGetResponseProduct {
   id: number;
   name: string;
   netPrice: string;

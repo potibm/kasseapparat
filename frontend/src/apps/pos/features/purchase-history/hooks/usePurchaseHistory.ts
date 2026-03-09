@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchPurchases, refundPurchaseById } from "../../../utils/api";
 import { Purchase } from "../types/purchase.types";
-import Decimal from "decimal.js";
 
 export const usePurchaseHistory = (
   apiHost: string,
@@ -18,29 +17,14 @@ export const usePurchaseHistory = (
     setLoading(true);
     try {
       const token = await getToken();
-      const rawData = await fetchPurchases(apiHost, token, userId);
+      const purchases = await fetchPurchases(apiHost, token, userId);
 
-      const convertedData: Purchase[] = (rawData as any[]).map((p: any) => ({
-        ...p,
-        totalGrossPrice: new Decimal(p.totalGrossPrice),
-        totalNetPrice: new Decimal(p.totalNetPrice),
-        totalVatAmount: new Decimal(p.totalVatAmount),
-        purchaseItems: p.purchaseItems.map((item: any) => ({
-          ...item,
-          netPrice: new Decimal(item.netPrice),
-          grossPrice: new Decimal(item.grossPrice),
-          vatAmount: new Decimal(item.vatAmount),
-          totalNetPrice: new Decimal(item.totalNetPrice),
-          totalGrossPrice: new Decimal(item.totalGrossPrice),
-          totalVatAmount: new Decimal(item.totalVatAmount),
-        })),
-      }));
-
-      setHistory(convertedData);
+      setHistory(purchases);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error 
-        ? "Error while loading the purchase history: " + error.message 
-        : "An unknown error has occured";
+      const errorMessage =
+        error instanceof Error
+          ? "Error while loading the purchase history: " + error.message
+          : "An unknown error has occured";
 
       onError(errorMessage);
     } finally {
@@ -59,9 +43,10 @@ export const usePurchaseHistory = (
       await refundPurchaseById(apiHost, token, purchaseId);
       await loadHistory();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error 
-        ? "Error while refunding the purchase: " + error.message 
-        : "An unknown error has occured";
+      const errorMessage =
+        error instanceof Error
+          ? "Error while refunding the purchase: " + error.message
+          : "An unknown error has occured";
 
       onError(errorMessage);
       throw error;

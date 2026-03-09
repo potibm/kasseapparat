@@ -5,7 +5,7 @@ import { storePurchase } from "../../../utils/api";
 import { Product } from "../../product-list/types/product.types";
 import { ApiCreateResponsePurchase } from "../../../utils/api.types";
 import { PaymentMethodData } from "../types/cart.types";
-import { Guest } from "../../guestlist/types/guest.types"
+import { Guest } from "../../guestlist/types/guest.types";
 
 interface EnrichedPurchase extends ApiCreateResponsePurchase {
   onComplete: (success: boolean) => void;
@@ -20,9 +20,12 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
     null,
   );
 
-  const add = useCallback((product: Product, count: number, listItem: Guest|null) => {
-    setCart((prevCart) => prevCart.add(product, count, listItem));
-  }, []);
+  const add = useCallback(
+    (product: Product, count: number, listItem: Guest | null) => {
+      setCart((prevCart) => prevCart.add(product, count, listItem));
+    },
+    [],
+  );
 
   const remove = useCallback((product: Product) => {
     setCart((prevCart) => prevCart.remove(product.id));

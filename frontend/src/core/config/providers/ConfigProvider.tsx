@@ -51,65 +51,6 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /*
-  useEffect(() => {
-    fetch(`${API_HOST}/api/v2/config`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        data.apiHost = API_HOST;
-        data.websocketHost = API_HOST.replace(/^http/, "ws");
-
-        data.currencyOptions = {
-          style: "currency",
-          currency: data.currencyCode ?? "DKK",
-          minimumFractionDigits: data.fractionDigitsMin ?? 0,
-          maximumFractionDigits: data.fractionDigitsMax ?? 2,
-        };
-
-        data.locale = data.currencyLocale ?? "dk-DK";
-        data.currency = new Intl.NumberFormat(
-          data.currencyLocale ?? "dk-DK",
-          data.currencyOptions,
-        );
-
-        data.dateLocale = data.dateLocale ?? "en-US";
-        try {
-          data.dateOptions = JSON.parse(data.dateOptions ?? "{}");
-        } catch (error) {
-          console.error("Error parsing dateOptions:", error);
-          data.dateOptions = {};
-        }
-        try {
-          data.vatRates = JSON.parse(data.vatRates ?? "{}");
-        } catch (error) {
-          console.error("Error parsing vatRates:", error);
-          data.vatRates = {};
-        }
-
-        data.sumupEnabled = false;
-        // when code == "SUMUP" in the array of paymentMethods, set sumupEnabled to true
-        if (data.paymentMethods && Array.isArray(data.paymentMethods)) {
-          data.sumupEnabled = data.paymentMethods.some(
-            (method) => method.code === "SUMUP",
-          );
-        }
-
-        setConfig(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching config:", error);
-        setError(error.message);
-        setLoading(false);
-      });
-  }, []);
-  */
-
   useEffect(() => {
     const loadConfig = async () => {
       try {
@@ -122,7 +63,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
         const parsedData = ConfigSchema.parse(json);
 
         const finalConfig = transformConfig(parsedData, API_HOST);
-        
+
         setConfig(finalConfig);
       } catch (err) {
         console.error("Config loading failed:", err);

@@ -1,14 +1,20 @@
 import * as Sentry from "@sentry/react";
-import Decimal from "decimal.js";
+import { z } from "zod";
 
-import { Product } from "../features/product-list/types/product.types";
-import { Guest } from "../features/guestlist/types/guest.types";
+//import { Guest } from "../features/guestlist/types/guest.types";
 import {
-  ApiGetResponseProduct,
   ApiCreateResponsePurchase,
   ApiGetResponsePurchase,
   ApiCreateResponseProductInterest,
 } from "./api.types";
+import {
+  Product,
+  ProductSchema,
+  Purchase,
+  PurchaseSchema,
+  Guest,
+  GuestSchema,
+} from "./api.schemas";
 
 // Unified error handler for failed fetch responses
 const handleFetchError = async (response: Response): Promise<never> => {
@@ -29,19 +35,6 @@ const handleFetchError = async (response: Response): Promise<never> => {
   throw error;
 };
 
-// Authenticated GET helper
-const get = async <T>(url: string, token: string): Promise<T> => {
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  if (!response.ok) await handleFetchError(response);
-  return response.json();
-};
-
 // Authenticated POST helper
 const post = async <T>(
   url: string,
@@ -60,21 +53,35 @@ const post = async <T>(
   return response.json();
 };
 
+const getValidated = async <S extends z.ZodTypeAny>(
+  url: string,
+  token: string,
+  schema: S,
+): Promise<z.infer<S>> => {
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) await handleFetchError(response);
+
+  const rawData = await response.json();
+
+  // Hier passiert die Magie: Validierung + Transformation
+  const result = schema.safeParse(rawData);
+  if (!result.success) {
+    console.error("Zod Validation Error:", result.error);
+    throw new Error("API Response format mismatch");
+  }
+  return result.data;
+};
+
 // Fetch all visible products
 export const fetchProducts = async (
   apiHost: string,
   jwtToken: string,
 ): Promise<Product[]> => {
   const url = `${apiHost}/api/v2/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true`;
-  const data = await get<ApiGetResponseProduct[]>(url, jwtToken);
 
-  return data.map((p) => ({
-    ...p,
-    netPrice: new Decimal(p.netPrice),
-    grossPrice: new Decimal(p.grossPrice),
-    vatRate: new Decimal(p.vatRate),
-    vatAmount: new Decimal(p.vatAmount),
-  }));
+  return getValidated(url, jwtToken, z.array(ProductSchema));
 };
 
 // Fetch guests for a specific product
@@ -85,7 +92,13 @@ export const fetchGuestlistByProductId = async (
   query: string,
 ): Promise<Guest[]> => {
   const url = `${apiHost}/api/v2/products/${productId}/guests?q=${query}`;
-  return get(url, jwtToken);
+
+  const GuestListSchema = z.preprocess(
+    (val) => (val === null ? [] : val),
+    z.array(GuestSchema),
+  );
+
+  return getValidated(url, jwtToken, GuestListSchema);
 };
 
 // Store a new purchase
@@ -102,9 +115,9 @@ export const fetchPurchases = async (
   apiHost: string,
   jwtToken: string,
   userId: number,
-): Promise<ApiGetResponsePurchase[]> => {
+): Promise<Purchase[]> => {
   const url = `${apiHost}/api/v2/purchases?createdById=${encodeURIComponent(userId)}&status=confirmed`;
-  return get(url, jwtToken);
+  return getValidated(url, jwtToken, z.array(PurchaseSchema));
 };
 
 // Refund a purchase by ID
