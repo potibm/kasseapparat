@@ -3,11 +3,11 @@ import { useState, useCallback } from "react";
 import { Cart } from "../services/Cart";
 import { storePurchase } from "../../../utils/api";
 import { Product } from "../../product-list/types/product.types";
-import { ApiCreateResponsePurchase } from "../../../utils/api.types";
+import { Purchase } from "../../../utils/api.schemas";
 import { PaymentMethodData } from "../types/cart.types";
 import { Guest } from "../../guestlist/types/guest.types";
 
-interface EnrichedPurchase extends ApiCreateResponsePurchase {
+interface EnrichedPurchase extends Purchase {
   onComplete: (success: boolean) => void;
 }
 
@@ -39,11 +39,6 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
     paymentMethodCode: string,
     paymentMethodData: PaymentMethodData,
   ) => {
-    console.log(
-      "Initiating checkout with payment method:",
-      paymentMethodCode,
-      paymentMethodData,
-    );
     setCheckoutProcessing(paymentMethodCode);
 
     try {

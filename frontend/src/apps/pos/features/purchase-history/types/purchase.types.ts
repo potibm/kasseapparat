@@ -11,7 +11,7 @@ export interface Purchase {
   purchaseItems: PurchaseItem[];
   createdAt: string;
   createdById: number;
-  createdBy: User;
+  createdBy: User | null;
   sumupTransactionId: string | null;
   sumupClientTransactionId: string | null;
 }

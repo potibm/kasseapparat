@@ -43,12 +43,14 @@ export const PurchaseSchema = z.object({
   id: z.uuid(),
   createdAt: z.string(),
   createdById: z.number(),
-  createdBy: z.object({
-    id: z.number(),
-    username: z.string(),
-    email: z.string(),
-    admin: z.boolean(),
-  }),
+  createdBy: z
+    .object({
+      id: z.number(),
+      username: z.string(),
+      email: z.string(),
+      admin: z.boolean(),
+    })
+    .nullable(),
   paymentMethod: z.string(),
   totalNetPrice: DecimalSchema,
   totalGrossPrice: DecimalSchema,
@@ -86,3 +88,9 @@ export const GuestSchema = z.object({
 });
 
 export type Guest = z.infer<typeof GuestSchema>;
+
+export const ProductInterestSchema = z.object({
+  id: z.number(),
+});
+
+export type ProductInterest = z.infer<typeof ProductInterestSchema>;

@@ -1,12 +1,6 @@
 import * as Sentry from "@sentry/react";
 import { z } from "zod";
 
-//import { Guest } from "../features/guestlist/types/guest.types";
-import {
-  ApiCreateResponsePurchase,
-  ApiGetResponsePurchase,
-  ApiCreateResponseProductInterest,
-} from "./api.types";
 import {
   Product,
   ProductSchema,
@@ -14,6 +8,8 @@ import {
   PurchaseSchema,
   Guest,
   GuestSchema,
+  ProductInterest,
+  ProductInterestSchema,
 } from "./api.schemas";
 
 // Unified error handler for failed fetch responses
@@ -35,12 +31,12 @@ const handleFetchError = async (response: Response): Promise<never> => {
   throw error;
 };
 
-// Authenticated POST helper
-const post = async <T>(
+const postValidated = async <S extends z.ZodTypeAny>(
   url: string,
   token: string,
   body: object,
-): Promise<T> => {
+  schema: S,
+): Promise<z.infer<S>> => {
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -50,7 +46,15 @@ const post = async <T>(
     body: JSON.stringify(body),
   });
   if (!response.ok) await handleFetchError(response);
-  return response.json();
+
+  const rawData = await response.json();
+
+  const result = schema.safeParse(rawData);
+  if (!result.success) {
+    console.error("Zod Validation Error:", result.error);
+    throw new Error("API Response format mismatch");
+  }
+  return result.data;
 };
 
 const getValidated = async <S extends z.ZodTypeAny>(
@@ -65,7 +69,6 @@ const getValidated = async <S extends z.ZodTypeAny>(
 
   const rawData = await response.json();
 
-  // Hier passiert die Magie: Validierung + Transformation
   const result = schema.safeParse(rawData);
   if (!result.success) {
     console.error("Zod Validation Error:", result.error);
@@ -106,8 +109,13 @@ export const storePurchase = async (
   apiHost: string,
   jwtToken: string,
   payload: object,
-): Promise<ApiCreateResponsePurchase> => {
-  return post(`${apiHost}/api/v2/purchases`, jwtToken, payload);
+): Promise<Purchase> => {
+  return postValidated(
+    `${apiHost}/api/v2/purchases`,
+    jwtToken,
+    payload,
+    PurchaseSchema,
+  );
 };
 
 // Fetch all confirmed purchases for a user
@@ -125,9 +133,9 @@ export const refundPurchaseById = async (
   apiHost: string,
   jwtToken: string,
   purchaseId: string,
-): Promise<ApiGetResponsePurchase> => {
+): Promise<Purchase> => {
   const url = `${apiHost}/api/v2/purchases/${purchaseId}/refund`;
-  return post(url, jwtToken, {});
+  return postValidated(url, jwtToken, {}, PurchaseSchema);
 };
 
 // Add interest in a product
@@ -135,6 +143,11 @@ export const addProductInterest = async (
   apiHost: string,
   jwtToken: string,
   productId: number,
-): Promise<ApiCreateResponseProductInterest> => {
-  return post(`${apiHost}/api/v2/productInterests`, jwtToken, { productId });
+): Promise<ProductInterest> => {
+  return postValidated(
+    `${apiHost}/api/v2/productInterests`,
+    jwtToken,
+    { productId },
+    ProductInterestSchema,
+  );
 };

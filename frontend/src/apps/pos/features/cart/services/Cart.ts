@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 import { CartItem, PaymentMethodData } from "../types/cart.types";
 import { Guest } from "../../guestlist/types/guest.types";
 import { Product } from "../../product-list/types/product.types";
+import { ApiCreatePayloadPurchase } from "../../../utils/api.types";
 
 export class Cart {
   public readonly items: readonly CartItem[];
@@ -102,7 +103,7 @@ export class Cart {
   public toApiPayload(
     paymentMethodCode: string,
     paymentMethodData: PaymentMethodData,
-  ) {
+  ): ApiCreatePayloadPurchase {
     return {
       paymentMethod: paymentMethodCode,
       cart: this.items.map((item) => ({
@@ -110,8 +111,8 @@ export class Cart {
         lists: null,
         guestlists: null,
       })),
-      totalGrossPrice: this.totalGross,
-      totalNetPrice: this.totalNet,
+      totalGrossPrice: this.totalGross.toString(),
+      totalNetPrice: this.totalNet.toString(),
       ...paymentMethodData,
     };
   }
