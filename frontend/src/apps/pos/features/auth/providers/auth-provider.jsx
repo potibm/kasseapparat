@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { refreshJwtToken } from "../hooks/api";
 import PropTypes from "prop-types";
-import { useConfig } from "../../../../../core/config/providers/config-provider";
+import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 
 const AuthContext = createContext();
 

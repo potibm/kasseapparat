@@ -14,7 +14,7 @@ import {
   ReferenceField,
   DeleteWithConfirmButton,
 } from "react-admin";
-import { useConfig } from "../../../core/config/providers/config-provider";
+import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import { Box } from "@mui/material";
 import { PurchaseListToolbar } from "./PurchaseListToolbar";
 import ListIcon from "@mui/icons-material/List";

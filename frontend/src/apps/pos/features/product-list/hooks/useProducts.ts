@@ -1,6 +1,5 @@
 // src/apps/pos/features/product-list/hooks/useProducts.ts
 import { useState, useEffect, useCallback } from "react";
-import Decimal from "decimal.js";
 import { fetchProducts, addProductInterest } from "../../../utils/api";
 import { Product } from "../types/product.types";
 
@@ -16,19 +15,15 @@ export const useProducts = (
     setLoading(true);
     try {
       const token = await getToken();
-      const rawProducts = await fetchProducts(apiHost, token);
+      const products = await fetchProducts(apiHost, token);
 
-      // Hier findet die "Decimal"-Magie statt
-      const converted = rawProducts.map((p: any) => ({
-        ...p,
-        netPrice: new Decimal(p.netPrice),
-        grossPrice: new Decimal(p.grossPrice),
-        vatAmount: new Decimal(p.vatAmount),
-      }));
+      setProducts(products);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error 
+        ? "There was an error fetching the products: " + error.message 
+        : "An unknown error has occured";
 
-      setProducts(converted);
-    } catch (error: any) {
-      onError("There was an error fetching the products: " + error.message);
+      onError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -39,8 +34,12 @@ export const useProducts = (
       const token = await getToken();
       await addProductInterest(apiHost, token, productId);
       await loadProducts();
-    } catch (error) {
-      onError("Fehler beim Speichern des Interesses: " + error.message);
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error 
+        ? "Error on saving the interest: " + error.message 
+        : "An unknown error has occured";
+        
+      onError(errorMessage);
     }
   };
 

@@ -6,7 +6,7 @@ import { Link } from "react-router";
 
 const BaseCard = ({
   children,
-  title = null,
+  title = "",
   linkLogin = false,
   linkForgotPassword = false,
 }) => {

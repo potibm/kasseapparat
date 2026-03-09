@@ -7,7 +7,7 @@ import Decimal from "decimal.js";
 export const usePurchaseHistory = (
   apiHost: string,
   getToken: () => Promise<string>,
-  userId: string,
+  userId: number,
   onError: (msg: string) => void,
 ) => {
   const [history, setHistory] = useState<Purchase[] | null>(null);
@@ -37,8 +37,12 @@ export const usePurchaseHistory = (
       }));
 
       setHistory(convertedData);
-    } catch (error: any) {
-      onError("Error while loading the purchase history: " + error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error 
+        ? "Error while loading the purchase history: " + error.message 
+        : "An unknown error has occured";
+
+      onError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -54,8 +58,12 @@ export const usePurchaseHistory = (
       const token = await getToken();
       await refundPurchaseById(apiHost, token, purchaseId);
       await loadHistory();
-    } catch (error: any) {
-      onError("Error while refunding the purchase: " + error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error 
+        ? "Error while refunding the purchase: " + error.message 
+        : "An unknown error has occured";
+
+      onError(errorMessage);
       throw error;
     }
   };

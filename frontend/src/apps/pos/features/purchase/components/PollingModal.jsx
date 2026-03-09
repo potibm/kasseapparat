@@ -5,7 +5,7 @@ import { getCurrentReaderId } from "../../../../../core/localstorage/helper/read
 import PropTypes from "prop-types";
 import Button from "../../../components/Button";
 import { useAuth } from "../../auth/providers/auth-provider";
-import { useConfig } from "../../../../../core/config/providers/config-provider";
+import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 
 const PollingModal = ({ purchase, onClose, onConfirmed, onComplete }) => {
   const [status, setStatus] = useState(purchase.status);

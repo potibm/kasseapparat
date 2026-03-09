@@ -13,7 +13,7 @@ import {
 } from "flowbite-react";
 import { changePassword } from "../hooks/api";
 import BaseCard from "../../../components/BaseCard";
-import { useConfig } from "../../../../../core/config/providers/config-provider";
+import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 
 const ChangePassword = () => {
   const [password, setPassword] = useState("");

@@ -1,16 +1,19 @@
 import Decimal from "decimal.js";
 import { Product } from "../../product-list/types/product.types";
+import { Guest } from "../../guestlist/types/guest.types";
 
 export interface CartItem extends Product {
   quantity: number;
-  listItems: ListItem[];
+  listItems: Guest[];
   totalNetPrice: Decimal;
   totalGrossPrice: Decimal;
   totalVatAmount: Decimal;
 }
 
-export interface ListItem {
-  id: number;
-  name: string;
-  attendedGuests?: number;
+interface EmptyPaymentMethodData {}
+
+interface SumUpPaymentMethodData {
+  sumupReaderId: string;
 }
+
+export type PaymentMethodData = EmptyPaymentMethodData | SumUpPaymentMethodData;

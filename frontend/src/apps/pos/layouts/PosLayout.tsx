@@ -1,4 +1,18 @@
-export const PosLayout = ({ children, sidebar, topAlert, overlays }) => (
+import React, { ReactNode } from "react";
+
+interface PosLayoutProps {
+  children: ReactNode;
+  sidebar: ReactNode;
+  topAlert?: ReactNode;
+  overlays?: ReactNode;
+}
+
+export const PosLayout: React.FC<PosLayoutProps> = ({
+  children,
+  sidebar,
+  topAlert,
+  overlays,
+}) => (
   <div className="App p-2 dark:bg-black min-h-screen">
     {topAlert}
     <div className="flex w-full">

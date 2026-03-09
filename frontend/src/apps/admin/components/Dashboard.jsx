@@ -12,7 +12,7 @@ import {
   TableBody,
   TableRow,
 } from "flowbite-react";
-import { useConfig } from "../../../core/config/providers/config-provider";
+import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import Decimal from "decimal.js";
 
 const Dashboard = () => {

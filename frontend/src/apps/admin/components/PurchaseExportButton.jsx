@@ -10,7 +10,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import { useConfig } from "../../../core/config/providers/config-provider";
+import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import { getAdminData } from "../utils/auth-utils";
 import PropTypes from "prop-types";
 

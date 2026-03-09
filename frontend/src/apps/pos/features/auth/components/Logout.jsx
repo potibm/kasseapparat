@@ -4,7 +4,7 @@ import { useAuth } from "../providers/auth-provider";
 import BaseCard from "../../../components/BaseCard";
 import { Spinner } from "flowbite-react";
 import { logout } from "../hooks/api";
-import { useConfig } from "../../../../../core/config/providers/config-provider";
+import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 
 const Logout = () => {
   const { removeSession } = useAuth();

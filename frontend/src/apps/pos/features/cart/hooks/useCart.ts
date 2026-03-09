@@ -3,16 +3,24 @@ import { useState, useCallback } from "react";
 import { Cart } from "../services/Cart";
 import { storePurchase } from "../../../utils/api";
 import { Product } from "../../product-list/types/product.types";
+import { ApiCreateResponsePurchase } from "../../../utils/api.types";
+import { PaymentMethodData } from "../types/cart.types";
+import { Guest } from "../../guestlist/types/guest.types"
 
-export const useCart = (apiHost: string, getToken) => {
+interface EnrichedPurchase extends ApiCreateResponsePurchase {
+  onComplete: (success: boolean) => void;
+}
+
+export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
   const [cart, setCart] = useState(new Cart());
   const [isPolling, setIsPolling] = useState(false);
-  const [pendingPurchase, setPendingPurchase] = useState(null);
+  const [pendingPurchase, setPendingPurchase] =
+    useState<EnrichedPurchase | null>(null);
   const [checkoutProcessing, setCheckoutProcessing] = useState<string | null>(
     null,
   );
 
-  const add = useCallback((product: Product, count: number, listItem) => {
+  const add = useCallback((product: Product, count: number, listItem: Guest|null) => {
     setCart((prevCart) => prevCart.add(product, count, listItem));
   }, []);
 
@@ -26,8 +34,13 @@ export const useCart = (apiHost: string, getToken) => {
 
   const checkout = async (
     paymentMethodCode: string,
-    paymentMethodData: any,
+    paymentMethodData: PaymentMethodData,
   ) => {
+    console.log(
+      "Initiating checkout with payment method:",
+      paymentMethodCode,
+      paymentMethodData,
+    );
     setCheckoutProcessing(paymentMethodCode);
 
     try {
@@ -65,7 +78,7 @@ export const useCart = (apiHost: string, getToken) => {
       }
 
       throw new Error("Unknown purchase status: " + createdPurchase.status);
-    } catch (error) {
+    } catch (error: unknown) {
       setCheckoutProcessing(null);
       throw error;
     }

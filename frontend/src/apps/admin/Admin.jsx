@@ -51,7 +51,7 @@ import {
 } from "./components/SumupTransaction";
 import PropTypes from "prop-types";
 import Dashboard from "./components/Dashboard";
-import { useConfig } from "../../core/config/providers/config-provider";
+import { useConfig } from "../../core/config/providers/ConfigProvider";
 
 const AdminPanel = () => (
   <Admin

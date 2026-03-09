@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
-import { CartItem, ListItem } from "../types/cart.types";
+import { CartItem, PaymentMethodData } from "../types/cart.types";
+import { Guest } from "../../guestlist/types/guest.types";
 import { Product } from "../../product-list/types/product.types";
 
 export class Cart {
@@ -12,7 +13,7 @@ export class Cart {
   public add(
     product: Product,
     count: number = 1,
-    listItem: ListItem | null = null,
+    listItem: Guest | null = null,
   ): Cart {
     const existingIndex = this.items.findIndex(
       (item) => item.id === product.id,
@@ -98,7 +99,7 @@ export class Cart {
     );
   }
 
-  public toApiPayload(paymentMethodCode: string, paymentMethodData: any) {
+  public toApiPayload(paymentMethodCode: string, paymentMethodData: PaymentMethodData) {
     return {
       paymentMethod: paymentMethodCode,
       cart: this.items.map((item) => ({

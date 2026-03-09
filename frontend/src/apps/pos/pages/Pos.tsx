@@ -1,6 +1,6 @@
 import "../assets/styles/pos-style.css";
 
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Alert } from "flowbite-react";
 // components & layouts
 import Cart from "../features/cart/components/Cart";
@@ -13,13 +13,14 @@ import Version from "../components/Version";
 import PosLayout from "../layouts/PosLayout";
 // hooks
 import { useAuth } from "../features/auth/providers/auth-provider";
-import { useConfig } from "../../../core/config/providers/config-provider";
+import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import { useProducts } from "../features/product-list/hooks/useProducts";
 import { useCart } from "../features/cart/hooks/useCart";
 import { usePurchaseHistory } from "../features/purchase-history/hooks/usePurchaseHistory";
 // types
 import { Product } from "../features/product-list/types/product.types";
 import { Purchase } from "../features/purchase-history/types/purchase.types";
+import { PaymentMethodData } from "../features/cart/types/cart.types";
 
 const Kasseapparat = () => {
   const { apiHost, environmentMessage } = useConfig();
@@ -37,7 +38,7 @@ const Kasseapparat = () => {
 
   const {
     products,
-    loading: productsLoading,
+    loading: _productsLoading,
     refreshProducts,
     addInterest,
   } = useProducts(apiHost, getToken, showError);
@@ -63,12 +64,16 @@ const Kasseapparat = () => {
 
   const handleCheckout = async (
     paymentMethodCode: string,
-    paymentMethodData: any,
+    paymentMethodData: PaymentMethodData,
   ) => {
     try {
       await checkout(paymentMethodCode, paymentMethodData);
-    } catch (error: any) {
-      showError(error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "An unknown error has occured";
+        
+      showError(errorMessage);
     } finally {
       await Promise.all([
         refreshHistory(), // Historie neu vom Server laden
@@ -80,12 +85,13 @@ const Kasseapparat = () => {
   const handleRefund = async (purchaseId: string) => {
     try {
       await refundPurchase(purchaseId);
-
       await refreshProducts();
-
-      console.log("Refund und Product-Refresh erfolgreich.");
-    } catch (error: any) {
-      showError("Error on Refund: " + error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "An unknown error has occured";
+        
+      showError(errorMessage);
     }
   };
 
@@ -121,6 +127,7 @@ const Kasseapparat = () => {
               purchase={pendingPurchase}
               onComplete={pendingPurchase.onComplete}
               onConfirmed={() => setIsPolling(false)}
+              onClose={() => setIsPolling(false)}
             />
           )}
         </>

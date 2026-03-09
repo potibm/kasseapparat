@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Badge, Card } from "flowbite-react";
 import { HiShoppingCart, HiUserAdd, HiOutlineThumbUp } from "react-icons/hi";
 import PropTypes from "prop-types";
-import { useConfig } from "../../../../../../core/config/providers/config-provider";
+import { useConfig } from "../../../../../../core/config/providers/ConfigProvider";
 import GuestlistModal from "../../../guestlist/components/GuestlistModal";
 import Button from "../../../../components/Button";
 import ProductInterestModal from "./ProductInterestModal";
@@ -17,6 +17,8 @@ const Product = ({
   const [isGuestListModalOpen, setIsGuestListModalOpen] = useState(false);
   const [isPIModalOpen, setIsPIModalOpen] = useState(false);
 
+  const { currency } = useConfig();
+
   const handleAddToCart = () => {
     addToCart(product);
   };
@@ -28,7 +30,6 @@ const Product = ({
   const handleHideGuestlist = () => {
     setIsGuestListModalOpen(false);
   };
-  const currency = useConfig().currency;
 
   const compactCardTheme = {
     root: {

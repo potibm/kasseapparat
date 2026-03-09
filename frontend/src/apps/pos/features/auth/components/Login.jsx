@@ -4,7 +4,7 @@ import { useAuth } from "../providers/auth-provider";
 import { Label, Button, TextInput, Alert, Spinner } from "flowbite-react";
 import { getJwtToken } from "../hooks/api";
 import BaseCard from "../../../components/BaseCard";
-import { useConfig } from "../../../../../core/config/providers/config-provider";
+import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 
 const Login = () => {
   const [error, setError] = useState(null);
@@ -36,7 +36,6 @@ const Login = () => {
         delete userdata.code;
         setUserdata(userdata);
         console.log("Logged in, expires in: " + expiresIn);
-        console.log("Userdata:", userdata);
 
         navigate("/", { replace: true });
       })

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useConfig } from "../../../core/config/providers/config-provider";
+import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import { Link } from "react-router-dom";
 
 export const Version = () => {

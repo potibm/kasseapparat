@@ -1,15 +1,15 @@
-import React from "react";
-import { useConfig } from "../../../../../../core/config/providers/config-provider";
+import { useConfig } from "../../../../../../core/config/providers/ConfigProvider";
 import Button from "../../../../components/Button";
 import { Spinner } from "flowbite-react";
 import { getCurrentReaderId } from "../../../../../../core/localstorage/helper/reader";
-import PropTypes from "prop-types";
 import { Cart } from "../../services/Cart";
+import Decimal from "decimal.js";
+import { PaymentMethodData } from "../../types/cart.types";
 
 interface CheckoutButtonsProps {
   cart: Cart;
   checkoutProcessing: string | boolean;
-  handleCheckoutCart: (code: string, data: any) => void;
+  handleCheckoutCart: (code: string, data: PaymentMethodData) => void;
 }
 
 const CheckoutButtons = ({
@@ -22,7 +22,10 @@ const CheckoutButtons = ({
 
   const cartValue = cart.totalGross;
 
-  const paymentMethodIsActive = (paymentMethodCode, cartValue) => {
+  const paymentMethodIsActive = (
+    paymentMethodCode: string,
+    cartValue: Decimal,
+  ) => {
     if (paymentMethodCode === "SUMUP") {
       return sumUpReaderId !== undefined && cartValue.greaterThan(0);
     }
@@ -30,7 +33,7 @@ const CheckoutButtons = ({
     return true;
   };
 
-  const getPaymentMethodData = (paymentMethodCode) => {
+  const getPaymentMethodData = (paymentMethodCode: string) => {
     if (paymentMethodCode === "SUMUP") {
       return {
         sumupReaderId: sumUpReaderId,
@@ -59,7 +62,7 @@ const CheckoutButtons = ({
           }
         >
           {paymentMethod.name}&nbsp;
-          {!cart.isEmpty && currency.format(cartValue)}
+          {!cart.isEmpty && currency.format(cartValue.toNumber())}
           {checkoutProcessing === paymentMethod.code && (
             <Spinner color="gray" className="ml-3" />
           )}
@@ -67,12 +70,6 @@ const CheckoutButtons = ({
       ))}
     </>
   );
-};
-
-CheckoutButtons.propTypes = {
-  cart: PropTypes.array.isRequired,
-  checkoutProcessing: PropTypes.string.isRequired,
-  handleCheckoutCart: PropTypes.func.isRequired,
 };
 
 export default CheckoutButtons;

@@ -15,7 +15,7 @@ import {
   Button,
   useListContext,
 } from "react-admin";
-import { useConfig } from "../../../core/config/providers/config-provider";
+import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import { Box, Tooltip } from "@mui/material";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import LinkOffIcon from "@mui/icons-material/LinkOff";

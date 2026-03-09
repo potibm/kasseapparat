@@ -10,7 +10,7 @@ import {
   ExportButton,
   Toolbar,
 } from "react-admin";
-import { useConfig } from "../../../core/config/providers/config-provider";
+import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import { PurchaseExportButton } from "./PurchaseExportButton";
 
 export const PurchaseListToolbar = (props) => {

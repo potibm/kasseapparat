@@ -4,7 +4,7 @@ import { fetchGuestlistByProductId } from "../../../utils/api";
 import { HiOutlineX } from "react-icons/hi";
 import PropTypes from "prop-types";
 import SidebarKeyboard from "./_internal/SidebarKeyboard";
-import { useConfig } from "../../../../../core/config/providers/config-provider";
+import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import { useAuth } from "../../auth/providers/auth-provider";
 import Button from "../../../components/Button";
 import GuestlistResultTable from "./_internal/ResultTable";
@@ -21,7 +21,7 @@ const GuestlistModal = ({
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadedSearchQuery, setLoadedSearchQuery] = useState("");
-  const apiHost = useConfig().apiHost;
+  const { apiHost } = useConfig();
   const { getToken } = useAuth();
 
   const hasCodes = product.guestlists.some((list) => list.typeCode);

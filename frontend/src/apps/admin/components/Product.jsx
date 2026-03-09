@@ -21,7 +21,7 @@ import {
   RadioButtonGroupInput,
 } from "react-admin";
 import InventoryIcon from "@mui/icons-material/Inventory";
-import { useConfig } from "../../../core/config/providers/config-provider";
+import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import DecimalInput from "./DecimalInput";
 import GrossPriceInput from "./GrossPriceInput";
 

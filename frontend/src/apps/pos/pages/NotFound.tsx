@@ -1,4 +1,3 @@
-import React from "react";
 import BaseCard from "../components/BaseCard";
 
 const NotFound = () => {

@@ -12,7 +12,7 @@ import {
   TableBody,
 } from "flowbite-react";
 import PropTypes from "prop-types";
-import { useConfig } from "../../../../../core/config/providers/config-provider";
+import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import "animate.css";
 import Button from "../../../components/Button";
 
@@ -20,7 +20,7 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
   const [openModal, setOpenModal] = useState({ show: false, purchase: null });
   const [processing, setProcessing] = useState(false);
 
-  const paymentMethods = useConfig().paymentMethods;
+  const { currency, dateLocale, dateOptions, paymentMethods } = useConfig();
 
   const findPaymentMethod = (code) => {
     const paymentMethod = paymentMethods.find((method) => method.code === code);
@@ -71,10 +71,6 @@ const PurchaseHistory = ({ history, removeFromPurchaseHistory }) => {
 
     prevHistoryIds.current = currentHistoryIds;
   }, [history]);
-
-  const currency = useConfig().currency;
-  const dateLocale = useConfig().dateLocale;
-  const dateOptions = useConfig().dateOptions;
 
   const formatDate = (date) => {
     return new Date(date).toLocaleString(dateLocale, dateOptions);

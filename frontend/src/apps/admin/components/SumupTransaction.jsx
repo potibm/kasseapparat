@@ -12,7 +12,7 @@ import {
   SelectInput,
   ArrayField,
 } from "react-admin";
-import { useConfig } from "../../../core/config/providers/config-provider";
+import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import { Box } from "@mui/material";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";

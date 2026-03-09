@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import * as Sentry from "@sentry/react";
-import { useConfig } from "../config/providers/config-provider";
+import { useConfig } from "../config/providers/ConfigProvider";
 import { useAuth } from "../../apps/pos/features/auth/providers/auth-provider";
 
 const SentryProvider = ({ children }) => {

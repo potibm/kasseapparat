@@ -13,7 +13,14 @@ export interface Product {
   apiExport: boolean;
   pos: number;
   totalStock: number;
-  guestlists?: any[];
+  guestlists?: Guestlist[];
   unitsSold: number;
   soldOutRequestCount: number;
+}
+
+export interface Guestlist {
+  id: number;
+  name: string;
+  typeCode: boolean;
+  productId: number;
 }

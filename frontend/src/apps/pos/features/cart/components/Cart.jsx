@@ -10,10 +10,9 @@ import {
   TableCell,
 } from "flowbite-react";
 import PropTypes from "prop-types";
-import { useConfig } from "../../../../../core/config/providers/config-provider";
+import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import "animate.css";
 import Button from "../../../components/Button";
-import Decimal from "decimal.js";
 import CheckoutButtons from "./_internal/CheckoutButtons";
 
 const Cart = ({

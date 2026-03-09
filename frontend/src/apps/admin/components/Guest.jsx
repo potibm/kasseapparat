@@ -37,7 +37,7 @@ import { GuestFilters } from "./GuestFilters";
 import { useLocation } from "react-router";
 import { useFormContext } from "react-hook-form";
 import { Box } from "@mui/material";
-import { useConfig } from "../../../core/config/providers/config-provider";
+import { useConfig } from "../../../core/config/providers/ConfigProvider";
 
 const ConditionalDeleteButton = (props) => {
   const record = useRecordContext(props);
