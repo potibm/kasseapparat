@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  linter:
-    name: linter
+  type-check: # Neuer Job: Der Türsteher für deine Typen
+    name: type-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -24,15 +24,34 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "25"
-      - name: Cache node_modules
-        uses: actions/cache@v5
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('frontend/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node_modules-
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
       - name: install
-        run: yarn install
+        run: yarn install --immutable
+        working-directory: frontend
+      - name: Run Type Check
+        run: yarn run tsc --noEmit
+        working-directory: frontend
+
+  linter:
+    name: linter
+    runs-on: ubuntu-latest
+    needs: type-check
+    steps:
+      - uses: actions/checkout@v6
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          yarn set version stable
+        working-directory: frontend
+      - name: Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "25"
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
+      - name: install
+        run: yarn install --immutable
         working-directory: frontend
       - name: prettier
         run: yarn run prettier .. --check
@@ -58,9 +77,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "25"
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
 
       - name: install
-        run: yarn install
+        run: yarn install --immutable
         working-directory: frontend
 
       - name: build
