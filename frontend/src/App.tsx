@@ -1,16 +1,19 @@
 import ConfigProvider from "./core/config/providers/ConfigProvider";
 import AuthProvider from "./apps/pos/features/auth/providers/auth-provider";
-import SentryProvider from "./core/monitoring/SentryProvider";
+import SentryInitializer from "./core/monitoring/SentryInitializer";
+import SentryUserWatcher from "./core/monitoring/SentryUserWatcher";
 import Routes from "./routes";
 
 function App() {
   return (
     <ConfigProvider>
-      <SentryProvider>
+      <SentryInitializer>
         <AuthProvider>
+          <SentryUserWatcher />
+          <div onClick={() => console.log("Provider ist da!")}>Test</div>
           <Routes />
         </AuthProvider>
-      </SentryProvider>
+      </SentryInitializer>
     </ConfigProvider>
   );
 }

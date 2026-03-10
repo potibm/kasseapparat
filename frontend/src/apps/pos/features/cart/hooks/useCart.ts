@@ -2,10 +2,12 @@
 import { useState, useCallback } from "react";
 import { Cart } from "../services/Cart";
 import { storePurchase } from "../../../utils/api";
-import { Product } from "../../product-list/types/product.types";
 import { Purchase } from "../../../utils/api.schemas";
 import { PaymentMethodData } from "../types/cart.types";
-import { Guest } from "../../guestlist/types/guest.types";
+import {
+  Product as ProductType,
+  Guest as GuestType,
+} from "../../../utils/api.schemas";
 
 interface EnrichedPurchase extends Purchase {
   onComplete: (success: boolean) => void;
@@ -21,13 +23,13 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
   );
 
   const add = useCallback(
-    (product: Product, count: number, listItem: Guest | null) => {
+    (product: ProductType, count: number, listItem: GuestType | null) => {
       setCart((prevCart) => prevCart.add(product, count, listItem));
     },
     [],
   );
 
-  const remove = useCallback((product: Product) => {
+  const remove = useCallback((product: ProductType) => {
     setCart((prevCart) => prevCart.remove(product.id));
   }, []);
 

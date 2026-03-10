@@ -18,13 +18,15 @@ import { useProducts } from "../features/product-list/hooks/useProducts";
 import { useCart } from "../features/cart/hooks/useCart";
 import { usePurchaseHistory } from "../features/purchase-history/hooks/usePurchaseHistory";
 // types
-import { Product } from "../features/product-list/types/product.types";
-import { Purchase } from "../features/purchase-history/types/purchase.types";
 import { PaymentMethodData } from "../features/cart/types/cart.types";
+import {
+  Product as ProductType,
+  Purchase as PurchaseType,
+} from "../utils/api.schemas";
 
 const Kasseapparat = () => {
   const { apiHost, environmentMessage } = useConfig();
-  const { username, getToken, id: userId } = useAuth();
+  const { username, getSafeToken, id: userId } = useAuth();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -41,7 +43,7 @@ const Kasseapparat = () => {
     loading: _productsLoading,
     refreshProducts,
     addInterest,
-  } = useProducts(apiHost, getToken, showError);
+  } = useProducts(apiHost, getSafeToken, showError);
 
   const {
     cart,
@@ -53,11 +55,11 @@ const Kasseapparat = () => {
     isPolling,
     pendingPurchase,
     setIsPolling,
-  } = useCart(apiHost, getToken);
+  } = useCart(apiHost, getSafeToken);
 
   const { history, refreshHistory, refundPurchase } = usePurchaseHistory(
     apiHost,
-    getToken,
+    getSafeToken,
     userId,
     showError,
   );
@@ -109,7 +111,7 @@ const Kasseapparat = () => {
           />
           <PurchaseHistory
             history={history}
-            removeFromPurchaseHistory={(p: Purchase) => handleRefund(p.id)}
+            removeFromPurchaseHistory={(p: PurchaseType) => handleRefund(p.id)}
           />
           <Menu username={username} />
           <p className="text-xs mt-10 dark:text-white">
@@ -134,9 +136,9 @@ const Kasseapparat = () => {
       <ProductList
         products={products}
         addToCart={add}
-        hasListItem={(id: number) => cart.hasListItem(id)}
-        quantityByProductInCart={(p: Product) => cart.getQuantity(p.id)}
-        addProductInterest={(p: Product) => addInterest(p.id)}
+        hasListItem={(p: ProductType) => cart.hasListItem(p.id)}
+        quantityByProductInCart={(p: ProductType) => cart.getQuantity(p.id)}
+        addProductInterest={(p: ProductType) => addInterest(p.id)}
       />
     </PosLayout>
   );

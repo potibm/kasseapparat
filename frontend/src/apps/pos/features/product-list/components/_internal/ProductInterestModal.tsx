@@ -1,9 +1,16 @@
 import { Modal, Spinner, ModalBody, ModalHeader } from "flowbite-react";
 import Button from "../../../../components/Button";
 import React, { useState } from "react";
-import PropTypes from "prop-types";
+import { Product as ProductType } from "../../../../utils/api.schemas";
 
-const ProductInterestModal = ({
+interface ProductInterestModalProps {
+  show: boolean;
+  onClose: () => void;
+  product: ProductType;
+  addProductInterest: (product: ProductType) => Promise<void>;
+}
+
+const ProductInterestModal: React.FC<ProductInterestModalProps> = ({
   show,
   onClose,
   product,
@@ -11,19 +18,16 @@ const ProductInterestModal = ({
 }) => {
   const [processing, setProcessing] = useState(false);
 
-  const handleRegisterInterest = () => {
+  const handleRegisterInterest = async () => {
     setProcessing(true);
-
-    // Simulate API call
-    addProductInterest(product)
-      .then(() => {
-        setProcessing(false);
-        onClose();
-      })
-      .catch((error) => {
-        console.error("Error registering interest: ", error);
-        setProcessing(false);
-      });
+    try {
+      await addProductInterest(product);
+      onClose();
+    } catch (error) {
+      console.error("Error registering interest: ", error);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -60,13 +64,6 @@ const ProductInterestModal = ({
       </ModalBody>
     </Modal>
   );
-};
-
-ProductInterestModal.propTypes = {
-  show: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  product: PropTypes.object.isRequired,
-  addProductInterest: PropTypes.func.isRequired,
 };
 
 export default ProductInterestModal;

@@ -1,7 +1,7 @@
 // src/apps/pos/features/purchase-history/hooks/usePurchaseHistory.ts
 import { useState, useEffect, useCallback } from "react";
 import { fetchPurchases, refundPurchaseById } from "../../../utils/api";
-import { Purchase } from "../types/purchase.types";
+import { Purchase as PurchaseType } from "../../../utils/api.schemas";
 
 export const usePurchaseHistory = (
   apiHost: string,
@@ -9,7 +9,7 @@ export const usePurchaseHistory = (
   userId: number,
   onError: (msg: string) => void,
 ) => {
-  const [history, setHistory] = useState<Purchase[] | null>(null);
+  const [history, setHistory] = useState<PurchaseType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const loadHistory = useCallback(async () => {

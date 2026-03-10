@@ -1,8 +1,23 @@
 import React from "react";
 import Product from "./_internal/Product";
-import PropTypes from "prop-types";
+import {
+  Product as ProductType,
+  Guest as GuestType,
+} from "../../../utils/api.schemas";
 
-const ProductList = ({
+interface ProductListProps {
+  products: ProductType[] | null;
+  addToCart: (
+    product: ProductType,
+    quantity: number,
+    listItem: GuestType | null,
+  ) => void;
+  hasListItem: (product: ProductType) => boolean;
+  quantityByProductInCart: (product: ProductType) => number;
+  addProductInterest: (product: ProductType) => Promise<void>;
+}
+
+const ProductList: React.FC<ProductListProps> = ({
   products,
   addToCart,
   hasListItem,
@@ -27,14 +42,6 @@ const ProductList = ({
       ))}
     </div>
   );
-};
-
-ProductList.propTypes = {
-  products: PropTypes.array.isRequired,
-  addToCart: PropTypes.func.isRequired,
-  hasListItem: PropTypes.func.isRequired,
-  quantityByProductInCart: PropTypes.func.isRequired,
-  addProductInterest: PropTypes.func.isRequired,
 };
 
 export default ProductList;

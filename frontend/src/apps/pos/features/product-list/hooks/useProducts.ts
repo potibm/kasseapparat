@@ -1,14 +1,14 @@
 // src/apps/pos/features/product-list/hooks/useProducts.ts
 import { useState, useEffect, useCallback } from "react";
 import { fetchProducts, addProductInterest } from "../../../utils/api";
-import { Product } from "../types/product.types";
+import { Product as ProductType } from "../../../utils/api.schemas";
 
 export const useProducts = (
   apiHost: string,
   getToken: () => Promise<string>,
   onError: (msg: string) => void,
 ) => {
-  const [products, setProducts] = useState<Product[] | null>(null);
+  const [products, setProducts] = useState<ProductType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const loadProducts = useCallback(async () => {

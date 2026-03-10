@@ -1,8 +1,10 @@
 import Decimal from "decimal.js";
 import { CartItem, PaymentMethodData } from "../types/cart.types";
-import { Guest } from "../../guestlist/types/guest.types";
-import { Product } from "../../product-list/types/product.types";
 import { ApiCreatePayloadPurchase } from "../../../utils/api.types";
+import {
+  Product as ProductType,
+  Guest as GuestType,
+} from "../../../utils/api.schemas";
 
 export class Cart {
   public readonly items: readonly CartItem[];
@@ -12,9 +14,9 @@ export class Cart {
   }
 
   public add(
-    product: Product,
+    product: ProductType,
     count: number = 1,
-    listItem: Guest | null = null,
+    listItem: GuestType | null = null,
   ): Cart {
     const existingIndex = this.items.findIndex(
       (item) => item.id === product.id,

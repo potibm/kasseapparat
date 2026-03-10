@@ -46,9 +46,6 @@ const GuestlistModal = ({
           product.id,
           query,
         );
-        if (response === null) {
-          response = [];
-        }
         setGuestlistEntries(response);
         setError(null);
         setLoading(false);

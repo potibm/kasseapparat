@@ -1,10 +1,12 @@
 import Decimal from "decimal.js";
-import { Product } from "../../product-list/types/product.types";
-import { Guest } from "../../guestlist/types/guest.types";
+import {
+  Product as ProductType,
+  Guest as GuestType,
+} from "../../../utils/api.schemas";
 
-export interface CartItem extends Product {
+export interface CartItem extends ProductType {
   quantity: number;
-  listItems: Guest[];
+  listItems: GuestType[];
   totalNetPrice: Decimal;
   totalGrossPrice: Decimal;
   totalVatAmount: Decimal;
