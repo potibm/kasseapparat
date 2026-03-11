@@ -10,7 +10,10 @@ function App() {
       <SentryInitializer>
         <AuthProvider>
           <SentryUserWatcher />
-          <div onClick={() => console.log("Provider ist da!")}>Test</div>
+         <AuthProvider>
+           <SentryUserWatcher />
+           <Routes />
+         </AuthProvider>
           <Routes />
         </AuthProvider>
       </SentryInitializer>
