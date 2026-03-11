@@ -40,7 +40,7 @@ export const ConfigContext = createContext<AppConfig | null>(null);
 
 interface ConfigProviderProps {
   children: ReactNode;
-  fetchUrl?: string; // Optional für Tests injected
+  fetchUrl?: string;
 }
 
 export const ConfigProvider: React.FC<ConfigProviderProps> = ({

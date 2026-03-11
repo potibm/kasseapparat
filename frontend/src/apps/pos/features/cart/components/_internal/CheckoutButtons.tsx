@@ -8,7 +8,7 @@ import { PaymentMethodData } from "../../types/cart.types";
 
 interface CheckoutButtonsProps {
   cart: Cart;
-  checkoutProcessing: string | boolean;
+  checkoutProcessing: string | null;
   handleCheckoutCart: (code: string, data: PaymentMethodData) => void;
 }
 

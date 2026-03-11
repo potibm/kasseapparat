@@ -6,7 +6,7 @@ export interface ApiCreatePayloadPurchase {
   sumupReaderId?: string;
 }
 
-interface CartItem {
+export interface CartItem {
   id: number;
   quantity: number;
   lists: null;

@@ -18,11 +18,11 @@ export default defineConfig({
     },
   },
   test: {
-    // 👋 add the line below to add jsdom to vite
     environment: "jsdom",
     globals: true,
-    setupFiles: "./tests/setup.js",
+    setupFiles: "./tests/setup.ts",
     teardownTimeout: 1000,
+    pool: "threads",
     coverage: {
       reporter: ["text", "html", "lcov"],
     },

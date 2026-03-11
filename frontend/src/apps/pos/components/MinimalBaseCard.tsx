@@ -1,8 +1,17 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { Card } from "flowbite-react";
-import PropTypes from "prop-types";
 
-const MinimalBaseCard = ({ children, title = null }) => {
+interface MinimalBaseCardProps {
+  children: ReactNode;
+  title?: string;
+  navigation?: ReactNode;
+}
+
+const MinimalBaseCard: React.FC<MinimalBaseCardProps> = ({
+  children,
+  title = null,
+  navigation,
+}) => {
   return (
     <div className="flex justify-center items-center h-screen">
       <Card className="max-w-sm ">
@@ -20,14 +29,15 @@ const MinimalBaseCard = ({ children, title = null }) => {
 
           {children}
         </div>
+        {navigation && (
+          <>
+            <hr />
+            <p className="text-xs dark:text-gray-200">{navigation}</p>
+          </>
+        )}
       </Card>
     </div>
   );
-};
-
-MinimalBaseCard.propTypes = {
-  children: PropTypes.node.isRequired,
-  title: PropTypes.string,
 };
 
 export default MinimalBaseCard;

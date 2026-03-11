@@ -70,6 +70,7 @@ linter-fix:
 	mkdir -p $(BACKEND_DIR)/cmd/assets
 	touch $(BACKEND_DIR)/cmd/assets/index.html
 	cd $(FRONTEND_DIR) && corepack yarn run prettier .. --write
+	cd $(FRONTEND_DIR) && corepack yarn run tsc --noEmit
 	cd $(FRONTEND_DIR) && corepack yarn run eslint --fix
 	cd $(FRONTEND_DIR) && dotenv-linter fix . --no-backup
 	cd $(BACKEND_DIR) && go fmt ./...
