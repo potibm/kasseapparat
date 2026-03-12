@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../providers/auth-provider";
 import BaseCard from "../../../components/BaseCard";
 import { Spinner } from "flowbite-react";
-import { logout } from "../hooks/api";
+import { logout } from "../../../../../core/api/auth";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 
 const Logout: React.FC = () => {

@@ -1,38 +1,55 @@
 import jsonServerProvider from "ra-data-json-server";
-import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
+import {
+  fetchUtils,
+  addRefreshAuthToDataProvider,
+  DataProvider,
+} from "react-admin";
 import * as Sentry from "@sentry/react";
 import { refreshToken } from "./refresh-token";
+import { getSessionToken } from "../utils/auth-utils";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 
-const resourceAlias = {
+const resourceAlias: Record<string, string> = {
   sumupReaders: "sumup/readers",
   sumupTransactions: "sumup/transactions",
 };
 
-const resolveResource = (resource) => resourceAlias[resource] || resource;
+const resolveResource = (resource: string) =>
+  resourceAlias[resource] || resource;
 
-const httpClient = async (url, options = {}) => {
+const httpClient = async (url: string, options: fetchUtils.Options = {}) => {
   if (!options.headers) {
-    options.headers = new Headers();
-    options.headers.set("Accept", "application/json");
+    options.headers = new Headers({ Accept: "application/json" });
+  } else if (!(options.headers instanceof Headers)) {
+    options.headers = new Headers(options.headers);
   }
-  if (!options.isUpload) {
-    options.headers.set("Content-Type", "application/json");
+
+  const headers = options.headers as Headers;
+
+  if (!(options as any).isUpload) {
+    headers.set("Content-Type", "application/json");
   }
-  // add your own headers here
-  const adminData = localStorage.getItem("kasseapparat.admin.auth");
-  if (adminData) {
-    const parsedAdminData = JSON.parse(adminData);
-    if (parsedAdminData?.token) {
-      options.headers.set("Authorization", `Bearer ${parsedAdminData.token}`);
-    }
+
+  const token = getSessionToken();
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
   }
 
   try {
     return await fetchUtils.fetchJson(url, options);
-  } catch (error) {
-    const normalizedMessage = error?.message?.toLowerCase() || "";
+  } catch (error: unknown) {
+    let normalizedMessage = "";
+
+    if (error instanceof Error) {
+      normalizedMessage = error.message.toLowerCase();
+    } else if (
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error
+    ) {
+      normalizedMessage = String((error as any).message).toLowerCase();
+    }
 
     // 🧽 Filter known, non-critical messages
     const knownNonCritical = ["cookie token is empty"];
@@ -62,7 +79,7 @@ const httpClient = async (url, options = {}) => {
 
 const baseProvider = jsonServerProvider(`${API_HOST}/api/v2`, httpClient);
 
-const dataProvider = {
+const dataProvider: DataProvider = {
   ...baseProvider,
 
   getList: (resource, params) =>
@@ -92,19 +109,18 @@ const dataProvider = {
   deleteMany: (resource, params) =>
     baseProvider.deleteMany(resolveResource(resource), params),
 
-  upload: (resource, params) => {
+  upload: async (resource: string, params: any) => {
     const url = `${API_HOST}/api/v2/${resolveResource(resource)}`;
     const options = {
       method: "POST",
       body: params.data,
       isUpload: true,
     };
-    return httpClient(url, options).then(({ json }) => ({
-      data: json,
-    }));
+    const { json } = await httpClient(url, options);
+    return { data: json };
   },
 
-  refund: (resource, params) => {
+  refund: async (resource: string, params: any) => {
     if (!["purchases"].includes(resource)) {
       throw new Error(`Refund is not supported for resource: ${resource}`);
     }
@@ -117,9 +133,9 @@ const dataProvider = {
       method: "POST",
       body: JSON.stringify(params.data),
     };
-    return httpClient(url, options).then(({ json }) => ({
-      data: json,
-    }));
+
+    const { json } = await httpClient(url, options);
+    return { data: json };
   },
 };
 

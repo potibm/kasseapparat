@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/react";
 import { z } from "zod";
+import { refreshJwtToken } from "../../../core/api/auth";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "https://localhost:3000";
 const LOCALSTORAGE_KEY = "kasseapparat.admin.auth";
@@ -78,6 +79,11 @@ export const getSession = (): SessionData | null => {
   }
 };
 
+export const getSessionToken = (): string | null => {
+  const session = getSession();
+  return session ? session.token : null;
+};
+
 export const clearSession = (): void => {
   localStorage.removeItem(LOCALSTORAGE_KEY);
 };
@@ -88,29 +94,18 @@ export const updateToken = async (): Promise<void> => {
   }
 
   refreshingPromise = (async (): Promise<void> => {
-    const request = new Request(`${API_HOST}/api/v2/auth/refresh`, {
-      method: "POST",
-      headers: new Headers({
-        "Content-Type": "application/json",
-      }),
-      credentials: "include",
-    });
-
     try {
-      const response = await fetch(request);
-      if (response.status < 200 || response.status >= 300) {
-        throw new Error(response.statusText);
-      }
+      const res = await refreshJwtToken(API_HOST);
 
-      const { access_token, expires_in } = await response.json();
-
-      return updateSession(access_token, expires_in);
-    } catch (error) {
+      updateSession(res.access_token, res.expires_in);
+    } catch (error: unknown) {
+      // Sentry Logging
       Sentry.captureException(error, {
         tags: { auth: "refresh_token" },
       });
 
       clearSession();
+
       throw new Error("Token refresh error. Please log in again.", {
         cause: error,
       });

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Label, Button, TextInput, Alert, Spinner } from "flowbite-react";
 import BaseCard from "../../../components/BaseCard";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
-import { requestChangePasswordToken } from "../hooks/api";
+import { requestChangePasswordToken } from "../../../../../core/api/auth";
 
 const RequestToken: React.FC = () => {
   const [loginInput, setLoginInput] = useState<string>("");

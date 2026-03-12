@@ -9,7 +9,7 @@ import {
   StringResponse,
   RefreshTokenResponseSchema,
   RefreshTokenResponse,
-} from "./api.schemas";
+} from "./auth.schemas";
 
 const authPost = async <S extends z.ZodTypeAny>(
   url: string,

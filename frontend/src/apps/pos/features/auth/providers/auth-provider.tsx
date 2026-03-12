@@ -6,7 +6,7 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { refreshJwtToken } from "../hooks/api";
+import { refreshJwtToken } from "../../../../../core/api/auth";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import {
   AuthContextType,

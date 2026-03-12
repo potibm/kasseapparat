@@ -10,8 +10,8 @@ import {
   clearSession,
   initializeSession,
 } from "../utils/auth-utils";
-import { getJwtToken, logout } from "../../pos/features/auth/hooks/api";
-import { LoginResponse as LoginResponseType } from "../../pos/features/auth/hooks/api.schemas";
+import { getJwtToken, logout } from "../../../core/api/auth";
+import { LoginResponse as LoginResponseType } from "../../../core/api/auth.schemas";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "https://localhost:3000";
 

@@ -11,7 +11,7 @@ import {
   ModalHeader,
   Spinner,
 } from "flowbite-react";
-import { changePassword } from "../hooks/api";
+import { changePassword } from "../../../../../core/api/auth";
 import BaseCard from "../../../components/BaseCard";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import { z } from "zod";
