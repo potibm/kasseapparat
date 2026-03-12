@@ -47,8 +47,8 @@ export const Version: React.FC<VersionProps> = ({ url = VERSION_URL }) => {
           sessionStorage.setItem(LS_KEY_LATEST_VERSION, result.data.tag_name);
           setLatestVersion(result.data.tag_name);
         }
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== "AbortError") {
           console.error("Error loading version from GitHub:", err);
         }
       }

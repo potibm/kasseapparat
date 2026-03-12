@@ -86,7 +86,6 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
 
   return {
     cart,
-    items: cart.items,
     add,
     remove,
     clear,

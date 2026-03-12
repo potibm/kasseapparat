@@ -6,7 +6,7 @@ import { Spinner } from "flowbite-react";
 import { logout } from "../hooks/api";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 
-const Logout = () => {
+const Logout: React.FC = () => {
   const { removeSession } = useAuth();
   const navigate = useNavigate();
   const apiHost = useConfig().apiHost;
@@ -23,7 +23,7 @@ const Logout = () => {
   }, [removeSession, navigate, apiHost]);
 
   return (
-    <BaseCard>
+    <BaseCard title="">
       Logging you out...
       <br />
       <Spinner className="mt-3" />

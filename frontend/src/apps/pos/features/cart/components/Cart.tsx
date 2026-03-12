@@ -9,13 +9,30 @@ import {
   TableRow,
   TableCell,
 } from "flowbite-react";
-import PropTypes from "prop-types";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import "animate.css";
 import Button from "../../../components/Button";
 import CheckoutButtons from "./_internal/CheckoutButtons";
+import { Cart as CartObject } from "../services/Cart";
+import {
+  CartItem as CartItemType,
+  PaymentMethodData as PaymentMethodDataType,
+} from "../types/cart.types";
+import { Product as ProductType } from "../../../utils/api.schemas";
+import CartRow from "./_internal/CartRow.tsx";
 
-const Cart = ({
+interface CartProps {
+  cart: CartObject;
+  removeFromCart: (item: ProductType) => void;
+  removeAllFromCart: () => void;
+  checkoutCart: (
+    paymentMethodCode: string,
+    paymentMethodData: PaymentMethodDataType,
+  ) => Promise<void>;
+  checkoutProcessing: string | null;
+}
+
+const Cart: React.FC<CartProps> = ({
   cart,
   removeFromCart,
   removeAllFromCart,
@@ -38,10 +55,6 @@ const Cart = ({
     });
   };
 
-  const handleCheckoutCart = async (paymentMethodCode, paymentMethodData) => {
-    return checkoutCart(paymentMethodCode, paymentMethodData);
-  };
-
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -54,14 +67,6 @@ const Cart = ({
 
     prevCartTotalQuantity.current = cart.totalQuantity;
   }, [cart]);
-
-  const displayListItem = (listItem) => {
-    if (listItem.code !== null) {
-      return listItem.code;
-    } else {
-      return listItem.name;
-    }
-  };
 
   const compactTableTheme = {
     head: {
@@ -96,49 +101,27 @@ const Cart = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {cart.items.map((cartElement) => (
-            <TableRow key={cartElement.id}>
-              <TableCell className="whitespace-normal px-4 py-2">
-                {cartElement.name}
-                {
-                  // iterate over cartElement.listItems and display them
-                  cartElement.listItems.map((listItem) => (
-                    <div key={listItem.id} className="text-xs text-gray-500">
-                      {displayListItem(listItem)}
-                    </div>
-                  ))
-                }
-              </TableCell>
-              <TableCell className="text-right">
-                {cartElement.quantity}
-              </TableCell>
-              <TableCell className="text-right">
-                {currency.format(cartElement.totalGrossPrice)}
-              </TableCell>
-              <TableCell className="flex justify-end">
-                <Button
-                  color="failure"
-                  onClick={() => removeFromCart(cartElement)}
-                >
-                  <HiXCircle />
-                </Button>
-              </TableCell>
-            </TableRow>
+          {cart.items.map((cartElement: CartItemType) => (
+            <CartRow
+              cartElement={cartElement}
+              currency={currency}
+              removeFromCart={removeFromCart}
+            />
           ))}
           <TableRow>
             <TableCell colSpan={2} className="uppercase font-bold">
               Total
             </TableCell>
             <TableCell className="font-bold text-right">
-              {currency.format(cart.totalGross)}
+              {currency.format(cart.totalGross.toNumber())}
             </TableCell>
             <TableCell className="flex justify-end">
-              {!cart.isEmpty ? (
-                <Button color="failure" onClick={() => removeAllFromCart()}>
+              {cart.isEmpty ? (
+                <Button disabled color="failure">
                   <HiXCircle />
                 </Button>
               ) : (
-                <Button disabled color="failure">
+                <Button color="failure" onClick={() => removeAllFromCart()}>
                   <HiXCircle />
                 </Button>
               )}
@@ -150,18 +133,10 @@ const Cart = ({
       <CheckoutButtons
         cart={cart}
         checkoutProcessing={checkoutProcessing}
-        handleCheckoutCart={handleCheckoutCart}
+        handleCheckoutCart={checkoutCart}
       />
     </div>
   );
-};
-
-Cart.propTypes = {
-  cart: PropTypes.array.isRequired,
-  removeFromCart: PropTypes.func.isRequired,
-  removeAllFromCart: PropTypes.func.isRequired,
-  checkoutCart: PropTypes.func.isRequired,
-  checkoutProcessing: PropTypes.string,
 };
 
 export default Cart;

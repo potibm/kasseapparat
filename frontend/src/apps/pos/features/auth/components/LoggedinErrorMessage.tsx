@@ -3,7 +3,7 @@ import MinimalBaseCard from "../../../components/MinimalBaseCard";
 import { Button } from "flowbite-react";
 import { Link } from "react-router";
 
-export const LoggedinErrorMessage = () => {
+export const LoggedinErrorMessage: React.FC = () => {
   return (
     <MinimalBaseCard title="Error">
       <p>This page is available for logged out users, only.</p>

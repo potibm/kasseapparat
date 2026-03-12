@@ -17,3 +17,13 @@ export interface ApiCreateResponseProductInterest {
   id: number;
   productID: number;
 }
+
+export interface AuthApiError {
+  message: string;
+  status?: number;
+  details?: string;
+  data?: {
+    details?: string;
+    message?: string;
+  };
+}

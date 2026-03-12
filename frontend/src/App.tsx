@@ -14,7 +14,6 @@ function App() {
             <SentryUserWatcher />
             <Routes />
           </AuthProvider>
-          <Routes />
         </AuthProvider>
       </SentryInitializer>
     </ConfigProvider>

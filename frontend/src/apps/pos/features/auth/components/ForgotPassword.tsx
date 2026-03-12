@@ -4,15 +4,15 @@ import BaseCard from "../../../components/BaseCard";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import { requestChangePasswordToken } from "../hooks/api";
 
-const RequestToken = () => {
-  const [login, setLogin] = useState("");
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [disabled, setDisabled] = useState(false);
+const RequestToken: React.FC = () => {
+  const [loginInput, setLoginInput] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [disabled, setDisabled] = useState<boolean>(false);
 
-  const apiHost = useConfig().apiHost;
+  const { apiHost } = useConfig();
 
-  const handleForgotPassword = (event) => {
+  const handleForgotPassword = (event: React.SubmitEvent<HTMLFormElement>) => {
     if (disabled) {
       return;
     }
@@ -20,7 +20,7 @@ const RequestToken = () => {
 
     event.preventDefault();
 
-    requestChangePasswordToken(apiHost, login)
+    requestChangePasswordToken(apiHost, loginInput)
       .then(() => {
         setSuccess(true);
       })
@@ -59,15 +59,15 @@ const RequestToken = () => {
             >
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="login" value="Your login" />
+                  <Label htmlFor="login">Your login</Label>
                 </div>
                 <TextInput
                   id="login"
                   type="text"
                   placeholder="login"
                   required
-                  value={login}
-                  onChange={(e) => setLogin(e.target.value)}
+                  value={loginInput}
+                  onChange={(e) => setLoginInput(e.target.value)}
                 />
               </div>
 

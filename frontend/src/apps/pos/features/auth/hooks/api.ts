@@ -45,7 +45,7 @@ const handleAuthError = async (response: Response): Promise<never> => {
 
   try {
     data = await response.json();
-    message = data?.message || data?.error || message;
+    message = data?.message || data?.error || response.statusText || message;
   } catch {
     /* ignore */
   }
@@ -66,8 +66,7 @@ const handleAuthError = async (response: Response): Promise<never> => {
     });
   }
 
-  // Wir werfen ein Objekt, das die UI abfangen kann
-  throw { message, status: response.status, data };
+  throw { message, status: response.status, data, details: data?.details };
 };
 
 // 🔐 Authenticate user and retrieve JWT token

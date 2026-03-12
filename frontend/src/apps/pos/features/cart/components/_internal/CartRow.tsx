@@ -20,17 +20,15 @@ const CartRow: React.FC<CartRowProps> = ({
   removeFromCart,
 }) => {
   const displayListItem = (listItem: GuestType) => {
-    return listItem.code !== null ? listItem.code : listItem.name;
+    return listItem.code == null ? listItem.name : listItem.code;
   };
 
   return (
     <TableRow key={cartElement.id}>
-      <TableCell className="whitespace-normal px-4 py-2 text-left">
-        <span className="font-medium text-gray-900 dark:text-white">
-          {cartElement.name}
-        </span>
+      <TableCell className="whitespace-normal px-4 py-2">
+        {cartElement.name}
         {cartElement.listItems.map((listItem: GuestType) => (
-          <div key={listItem.id} className="text-xs text-gray-500 italic">
+          <div key={listItem.id} className="text-xs text-gray-500">
             {displayListItem(listItem)}
           </div>
         ))}
@@ -40,12 +38,8 @@ const CartRow: React.FC<CartRowProps> = ({
         {currency.format(cartElement.totalGrossPrice.toNumber())}
       </TableCell>
       <TableCell className="flex justify-end">
-        <Button
-          color="failure"
-          size="xs"
-          onClick={() => removeFromCart(cartElement)}
-        >
-          <HiXCircle className="h-5 w-5" />
+        <Button color="failure" onClick={() => removeFromCart(cartElement)}>
+          <HiXCircle />
         </Button>
       </TableCell>
     </TableRow>

@@ -5,47 +5,56 @@ import { Label, Button, TextInput, Alert, Spinner } from "flowbite-react";
 import { getJwtToken } from "../hooks/api";
 import BaseCard from "../../../components/BaseCard";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
+import {
+  LoginError as LoginErrorType,
+  AuthUser as AuthUserType,
+} from "../types/auth.types";
 
-const Login = () => {
-  const [error, setError] = useState(null);
+const Login: React.FC = () => {
+  const [formData, setFormData] = useState<{
+    login: string;
+    password: string;
+  }>({
+    login: "",
+    password: "",
+  });
+  const [error, setError] = useState<LoginErrorType | null>(null);
   const [disabled, setDisabled] = useState(false);
 
   const { setSession, setUserdata } = useAuth();
   const navigate = useNavigate();
   const apiHost = useConfig().apiHost;
 
-  const handleLogin = (event) => {
+  const handleLogin = (event: React.SubmitEvent<HTMLFormElement>) => {
     if (disabled) {
       return;
     }
     setDisabled(true);
     event.preventDefault();
+    setError(null);
 
-    const login = event.target.login.value;
-    const password = event.target.password.value;
-
-    getJwtToken(apiHost, login, password)
+    getJwtToken(apiHost, formData.login, formData.password)
       .then((auth) => {
-        const token = auth.access_token;
-        const expiresIn = auth.expires_in;
-        setSession(token, expiresIn);
+        const { access_token, expires_in, ...userdata } = auth;
 
-        const userdata = auth;
-        delete userdata.token;
-        delete userdata.expire;
-        delete userdata.code;
-        setUserdata(userdata);
-        console.log("Logged in, expires in: " + expiresIn);
+        setSession(access_token, expires_in);
+        setUserdata(userdata as AuthUserType);
+        console.log("Logged in, expires in: " + expires_in);
 
         navigate("/", { replace: true });
       })
-      .catch((error) => {
+      .catch((error: Error) => {
         setError({
           message: "There was an error logging you in.",
           details: error.message,
         });
         setDisabled(false);
       });
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -64,19 +73,30 @@ const Login = () => {
       <form className="flex flex-col gap-4" onSubmit={handleLogin}>
         <div>
           <div className="mb-2 block">
-            <Label htmlFor="username" value="Your username" />
+            <Label htmlFor="login">Your username</Label>
           </div>
-          <TextInput id="login" type="text" placeholder="Username" required />
+          <TextInput
+            id="login"
+            name="login"
+            type="text"
+            placeholder="Username"
+            required
+            value={formData.login}
+            onChange={(e) => handleInputChange(e)}
+          />
         </div>
         <div>
           <div className="mb-2 block">
-            <Label htmlFor="password" value="Your password" />
+            <Label htmlFor="password">Your password</Label>
           </div>
           <TextInput
             id="password"
             type="password"
+            name="password"
             placeholder="Password"
             required
+            value={formData.password}
+            onChange={(e) => handleInputChange(e)}
           />
         </div>
         <Button type="submit" disabled={disabled}>

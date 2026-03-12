@@ -24,3 +24,8 @@ export interface Session {
   token: string | null;
   expiryDate: Date | null;
 }
+
+export interface LoginError {
+  message: string;
+  details?: string;
+}

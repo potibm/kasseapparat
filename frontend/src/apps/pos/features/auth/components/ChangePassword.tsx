@@ -14,27 +14,54 @@ import {
 import { changePassword } from "../hooks/api";
 import BaseCard from "../../../components/BaseCard";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
+import { z } from "zod";
+import { AuthApiError as AuthApiErrorType } from "../../../utils/api.types";
 
-const ChangePassword = () => {
-  const [password, setPassword] = useState("");
-  const [passwordRepeat, setPasswordRepeat] = useState("");
-  const [validationMessage, setValidationMessage] = useState(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [disabled, setDisabled] = useState(false);
+interface ValidationMessageType {
+  message: string;
+  details: string | null;
+  link?: string;
+  linkText?: string;
+}
+
+const QueryParamsSchema = z.object({
+  userId: z.string().regex(/^\d+$/).transform(Number),
+  token: z.string().length(32),
+});
+
+const PasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "The password must be at least 8 characters long."),
+    passwordRepeat: z.string(),
+  })
+  .refine((data) => data.password === data.passwordRepeat, {
+    message: "The passwords do not match.",
+    path: ["passwordRepeat"],
+  });
+
+const ChangePassword: React.FC = () => {
+  const [formData, setFormData] = useState<{
+    password: string;
+    passwordRepeat: string;
+  }>({
+    password: "",
+    passwordRepeat: "",
+  });
+  const [validationMessage, setValidationMessage] =
+    useState<ValidationMessageType | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [disabled, setDisabled] = useState<boolean>(false);
   const navigate = useNavigate();
   const apiHost = useConfig().apiHost;
 
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const userId = searchParams.get("userId");
-  const token = searchParams.get("token");
 
-  if (
-    userId === null ||
-    isNaN(userId) ||
-    token === null ||
-    token.length !== 32
-  ) {
+  const queryData = Object.fromEntries(new URLSearchParams(location.search));
+  const queryResult = QueryParamsSchema.safeParse(queryData);
+
+  if (!queryResult.success) {
     return (
       <BaseCard title="Change Password">
         <Alert color="failure">
@@ -45,58 +72,69 @@ const ChangePassword = () => {
     );
   }
 
-  const handleChangePassword = (e) => {
+  const { userId, token } = queryResult.data;
+
+  const handleChangePassword = (event: React.SubmitEvent<HTMLFormElement>) => {
     if (disabled) {
       return;
     }
+
+    event.preventDefault();
     setDisabled(true);
+    setValidationMessage(null);
 
-    e.preventDefault();
+    const formResult = PasswordSchema.safeParse({
+      password: formData.password,
+      passwordRepeat: formData.passwordRepeat,
+    });
 
-    if (password.length < 8) {
+    if (!formResult.success) {
       setValidationMessage({
-        message: "The password must be at least 8 characters long.",
+        message: formResult.error.issues[0].message,
         details: null,
       });
       setDisabled(false);
       return;
     }
-    if (password !== passwordRepeat) {
-      setValidationMessage({
-        message: "The passwords do not match.",
-        details: null,
-      });
-      setDisabled(false);
-      return;
-    }
 
-    changePassword(apiHost, userId, token, password)
+    changePassword(apiHost, userId, token, formData.password)
       .then(() => {
         setShowSuccessModal(true);
       })
-      .catch((error) => {
+      .catch((err: unknown) => {
         setDisabled(false);
-        if (error.details === "Token is invalid or has expired") {
+
+        const error = err as AuthApiErrorType;
+
+        const details = error.details || error.data?.details;
+        const message = error.message || "An error occurred";
+
+        if (details === "Token is invalid or has expired") {
           setValidationMessage({
             message: "The password could not be changed.",
-            details: error.message,
+            details: "The security token is no longer valid.",
             link: "/forgot-password",
             linkText: "Request new token",
           });
         } else {
           setValidationMessage({
-            message: "The password could not be changed. Please try again.",
-            details: error.message,
+            message: message,
+            details: details || null,
           });
         }
       });
 
-    setValidationMessage(null); // Zurücksetzen der Validierungsnachricht
+    setValidationMessage(null);
   };
 
   const handleModalClose = () => {
     setShowSuccessModal(false);
-    navigate("/logout"); // Weiterleitung zur Login-Seite
+    navigate("/logout");
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -112,7 +150,7 @@ const ChangePassword = () => {
               <Button
                 color="red"
                 className="mt-2"
-                onClick={() => navigate(validationMessage.link)}
+                onClick={() => navigate(validationMessage.link!)}
               >
                 {validationMessage.linkText}
               </Button>
@@ -124,36 +162,38 @@ const ChangePassword = () => {
       <form className="flex flex-col gap-4" onSubmit={handleChangePassword}>
         <div>
           <div className="mb-2 block">
-            <Label htmlFor="password" value="Your new password" />
+            <Label htmlFor="password">Your new password</Label>
           </div>
           <TextInput
             id="password"
+            name="password"
             type="password"
             placeholder="password"
             required
-            value={password}
-            onChange={(e) => setPassword(e.target.value.trim())}
+            value={formData.password}
+            onChange={(e) => handleInputChange(e)}
           />
         </div>
         <div>
           <div className="mb-2 block">
-            <Label htmlFor="passwordRepeat" value="Repeat your password" />
+            <Label htmlFor="passwordRepeat">Repeat your password</Label>
           </div>
           <TextInput
             id="passwordRepeat"
+            name="passwordRepeat"
             type="password"
             required
-            value={passwordRepeat}
-            onChange={(e) => setPasswordRepeat(e.target.value.trim())}
+            value={formData.passwordRepeat}
+            onChange={(e) => handleInputChange(e)}
           />
         </div>
         <Button type="submit" disabled={disabled}>
           Change password {disabled && <Spinner className="ml-3" />}
         </Button>
         <Button
-          type="cancel"
+          type="reset"
           disabled={disabled}
-          color="warning"
+          color="alternative"
           onClick={() => navigate("/")}
         >
           Cancel

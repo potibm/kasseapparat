@@ -11,13 +11,13 @@ import {
 } from "@mui/material";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { useConfig } from "../../../core/config/providers/ConfigProvider";
-import { getAdminData } from "../utils/auth-utils";
+import { getSession } from "../utils/auth-utils";
 import PropTypes from "prop-types";
 
 export const PurchaseExportButton = ({ paymentMethods }) => {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState([]);
-  const adminData = getAdminData();
+  const adminData = getSession();
   const token = adminData?.token;
 
   const { apiHost } = useConfig();

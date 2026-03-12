@@ -3,7 +3,7 @@ import {
   AuthUser as AuthUserType,
   Session as SessionType,
 } from "../types/auth.types";
-import { LoginResponseSchema } from "../hooks/api.schemas";
+import { UserDataSchema } from "../hooks/api.schemas";
 
 const LS_PREFIX = "kasseapparat.auth.";
 export const AUTH_KEYS = {
@@ -43,7 +43,7 @@ export const getInitialUser = (): AuthUserType | null => {
 
     const parsed = JSON.parse(data);
 
-    const result = LoginResponseSchema.safeParse(parsed);
+    const result = UserDataSchema.safeParse(parsed);
 
     if (!result.success) {
       console.warn("LocalStorage Userdata invalid. Clearing...");

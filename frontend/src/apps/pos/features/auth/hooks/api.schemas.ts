@@ -12,6 +12,13 @@ export const LoginResponseSchema = z.object({
   id: z.number(),
 });
 
+export const UserDataSchema = z.object({
+  role: UserRoleSchema,
+  username: z.string(),
+  gravatarUrl: z.string(),
+  id: z.number(),
+});
+
 export const RefreshTokenResponseSchema = z.object({
   access_token: z.jwt(),
   refresh_token: z.string(),

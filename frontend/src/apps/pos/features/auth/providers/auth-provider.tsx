@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const getSafeToken = React.useCallback(async () => {
     const token = await getToken();
     if (!token) throw new Error("Authentication required");
-    return token; // TS weiß jetzt: hier kommt nur string zurück
+    return token;
   }, [getToken]);
 
   const contextValue = useMemo<AuthContextType>(
