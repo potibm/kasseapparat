@@ -3,7 +3,7 @@ import { Menu as RaMenu, MenuItemLink, useSidebarState } from "react-admin";
 import { useConfig } from "@core/config/providers/ConfigProvider";
 import { MenuDivider, MenuMessage } from "./MenuComponents";
 import sumupreaders from "../resources/sumupreaders";
-import { SumupTransactionIcon } from "../components/SumupTransaction";
+import sumuptransactions from "../resources/sumuptransactions";
 
 export const Menu: React.FC = () => {
   const { environmentMessage, sumupEnabled } = useConfig();
@@ -43,7 +43,7 @@ export const Menu: React.FC = () => {
               key="sumupTransactionsDisabled"
               to="#"
               primaryText="Transactions (Disabled)"
-              leftIcon={<SumupTransactionIcon />}
+              leftIcon={<sumuptransactions.icon />}
               disabled
             />,
           ]}

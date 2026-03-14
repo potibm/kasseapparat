@@ -7,6 +7,7 @@ import productInterests from "./resources/productinterests";
 import purchases from "./resources/purchases";
 import guests from "./resources/guests";
 import sumupreaders from "./resources/sumupreaders";
+import sumuptransactions from "./resources/sumuptransactions";
 import { UserCreate, UserEdit, UserIcon, UserList } from "./components/User";
 import {
   GuestlistCreate,
@@ -14,11 +15,6 @@ import {
   GuestlistIcon,
   GuestlistList,
 } from "./components/Guestlist";
-import {
-  SumupTransactionIcon,
-  SumupTransactionList,
-  SumupTransactionShow,
-} from "./components/SumupTransaction";
 import Dashboard from "./components/Dashboard";
 import { Menu } from "./layouts/Menu";
 
@@ -50,9 +46,7 @@ const AdminPanel: React.FC = () => (
     />
     <Resource
       name="sumupTransactions"
-      list={SumupTransactionList}
-      show={SumupTransactionShow}
-      icon={SumupTransactionIcon}
+      {...sumuptransactions}
       options={{ label: "Transactions" }}
     />
     <Resource
