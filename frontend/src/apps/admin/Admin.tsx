@@ -6,15 +6,10 @@ import products from "./resources/products";
 import productInterests from "./resources/productinterests";
 import purchases from "./resources/purchases";
 import guests from "./resources/guests";
+import guestlists from "./resources/guestlists";
 import sumupreaders from "./resources/sumupreaders";
 import sumuptransactions from "./resources/sumuptransactions";
 import users from "./resources/users";
-import {
-  GuestlistCreate,
-  GuestlistEdit,
-  GuestlistIcon,
-  GuestlistList,
-} from "./components/Guestlist";
 import Dashboard from "./components/Dashboard";
 import { Menu } from "./layouts/Menu";
 
@@ -30,13 +25,7 @@ const AdminPanel: React.FC = () => (
   >
     <Resource name="products" {...products} />
     <Resource name="productInterests" {...productInterests} />
-    <Resource
-      name="guestlists"
-      list={GuestlistList}
-      edit={GuestlistEdit}
-      create={GuestlistCreate}
-      icon={GuestlistIcon}
-    />
+    <Resource name="guestlists" {...guestlists} />
     <Resource name="guests" {...guests} />
     <Resource name="purchases" {...purchases} />
     <Resource
