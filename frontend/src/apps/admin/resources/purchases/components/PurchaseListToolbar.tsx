@@ -8,12 +8,14 @@ import {
   FilterForm,
   FilterButton,
   ExportButton,
-  Toolbar,
+  TopToolbar,
+  ToolbarProps,
 } from "react-admin";
-import { useConfig } from "../../../core/config/providers/ConfigProvider";
+import { Box } from "@mui/material";
+import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import { PurchaseExportButton } from "./PurchaseExportButton";
 
-export const PurchaseListToolbar = (props) => {
+export const PurchaseListToolbar: React.FC<ToolbarProps> = () => {
   const { paymentMethods } = useConfig();
 
   const statusChoices = [
@@ -45,25 +47,35 @@ export const PurchaseListToolbar = (props) => {
       source="totalGrossPrice_gte"
       label="Min. total gross price"
       step={0.01}
-      resettable={"true"}
     />,
     <NumberInput
       key="total-gross-price-lte"
       source="totalGrossPrice_lte"
       label="Max. total gross price"
       step={0.01}
-      resettable={"true"}
     />,
   ];
 
   return (
-    <Toolbar {...props}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        width: "100%",
+      }}
+    >
+      {/* Left side: The active filters / search */}
       <FilterForm filters={purchaseFilters} />
-      <div className="MuiToolbar-root MuiToolbar-dense css-oynclu-MuiToolbar-root-RaTopToolbar-root">
+
+      {/* Right side: Actions like Filter-Add, Export, etc. */}
+      <TopToolbar sx={{ minHeight: "auto", p: 0 }}>
         <FilterButton filters={purchaseFilters} />
-        <PurchaseExportButton paymentMethods={paymentMethods} />
-        <ExportButton {...props} />
-      </div>
-    </Toolbar>
+        {paymentMethods && (
+          <PurchaseExportButton paymentMethods={paymentMethods} />
+        )}
+        <ExportButton />
+      </TopToolbar>
+    </Box>
   );
 };

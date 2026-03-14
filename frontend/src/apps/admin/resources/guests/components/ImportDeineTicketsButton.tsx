@@ -1,29 +1,21 @@
 import React, { useRef } from "react";
-import {
-  TopToolbar,
-  ExportButton,
-  useNotify,
-  FilterButton,
-  CreateButton,
-  Button,
-  useDataProvider,
-} from "react-admin";
+import { useNotify, Button, useDataProvider } from "react-admin";
 import UploadIcon from "@mui/icons-material/Upload";
 
-const ImportDeineTicketsButton = () => {
-  const fileInputRef = useRef(null);
+export const ImportDeineTicketsButton: React.FC = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const dataProvider = useDataProvider();
   const notify = useNotify();
 
   const handleButtonClick = () => {
-    fileInputRef.current.click();
+    fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (event) => {
-    const file = event.target.files[0];
-    if (!file) {
-      return;
-    }
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
     const formData = new FormData();
     formData.append("file", file);
@@ -35,17 +27,19 @@ const ImportDeineTicketsButton = () => {
       if (response.data.createdGuests) {
         notify(
           `Success! ${response.data.createdGuests} entries have been created.`,
-          "info",
+          { type: "info" },
         );
       } else {
         notify(
           "No entries have been created (as they might be dupes). Please check the file and try again.",
-          "warning",
+          { type: "warning" },
         );
       }
     } catch (error) {
       console.error(error);
-      notify("Error while uploading the file. Try again (later).", "warning");
+      notify("Error while uploading the file. Try again (later).", {
+        type: "warning",
+      });
     }
 
     event.target.value = "";
@@ -58,21 +52,15 @@ const ImportDeineTicketsButton = () => {
         ref={fileInputRef}
         onChange={handleFileChange}
         style={{ display: "none" }}
+        accept=".csv"
       />
-      <Button label="Import DeineTickets.de" onClick={handleButtonClick}>
-        <UploadIcon />
-      </Button>
+      <Button
+        label="Import DeineTickets.de"
+        startIcon={<UploadIcon />}
+        onClick={handleButtonClick}
+      />
     </>
   );
 };
 
-const GuestActions = (props) => (
-  <TopToolbar>
-    <FilterButton />
-    <CreateButton />
-    <ExportButton {...props} />
-    <ImportDeineTicketsButton />
-  </TopToolbar>
-);
-
-export default GuestActions;
+export default ImportDeineTicketsButton;

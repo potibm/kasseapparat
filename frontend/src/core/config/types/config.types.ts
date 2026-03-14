@@ -10,9 +10,10 @@ export interface AppConfig {
   currencyCode: string;
   currencyLocale: string;
   currency: Intl.NumberFormat;
+  currencyOptions: Intl.NumberFormatOptions;
   dateLocale: string;
   dateOptions: Intl.DateTimeFormatOptions;
-  vatRates: Record<string, number>;
+  vatRates: Array<{ rate: number; name: string }>;
   paymentMethods: Array<{ code: string; name: string }>;
   sumupEnabled: boolean;
   environmentMessage?: string;

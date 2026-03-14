@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Button,
   Confirm,
@@ -9,14 +10,20 @@ import {
 import { useState } from "react";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 
-const RefundWithConfirmButton = () => {
+const RefundWithConfirmButton: React.FC = () => {
   const [open, setOpen] = useState(false);
   const record = useRecordContext();
   const dataProvider = useDataProvider();
   const notify = useNotify();
   const refresh = useRefresh();
 
-  const handleClick = () => setOpen(true);
+  if (!record || record.status === "refunded") return null;
+
+  const handleClick = (event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent Datagrid rowClick
+    setOpen(true);
+  };
+
   const handleClose = () => setOpen(false);
 
   const handleConfirm = async () => {
@@ -24,9 +31,9 @@ const RefundWithConfirmButton = () => {
       await dataProvider.refund("purchases", { id: record.id });
       notify("Refund successful", { type: "success" });
       refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Refund error:", error);
-      notify("Refund failed", { type: "error" });
+      notify(error.message || "Refund failed", { type: "error" });
     } finally {
       setOpen(false);
     }
@@ -36,10 +43,7 @@ const RefundWithConfirmButton = () => {
     <>
       <Button
         label="Refund"
-        onClick={(event) => {
-          event.stopPropagation(); // prevent rowClick from triggering
-          handleClick();
-        }}
+        onClick={handleClick}
         startIcon={<CurrencyExchangeIcon />}
       />
       <Confirm

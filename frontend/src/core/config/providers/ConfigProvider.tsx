@@ -32,6 +32,7 @@ export const transformConfig = (
     apiHost,
     websocketHost,
     sumupEnabled,
+    currencyOptions,
     currency: new Intl.NumberFormat(rawData.currencyLocale, currencyOptions),
   };
 };

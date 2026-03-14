@@ -1,9 +1,12 @@
 import React from "react";
-import { TextInput } from "react-admin";
+import { TextInput, TextInputProps, Validator } from "react-admin";
 import Decimal from "decimal.js";
 
-const DecimalInput = (props) => {
-  const validate = (value) => {
+const DecimalInput: React.FC<TextInputProps> = (props) => {
+  const validate: Validator = (value: any) => {
+    if (!value && props.validate) {
+      return undefined;
+    }
     if (!value) return "Required";
 
     try {
@@ -22,19 +25,17 @@ const DecimalInput = (props) => {
     }
   };
 
-  const parse = (value) => {
+  const parse = (value: string | null): string | null => {
     if (!value) return null;
 
-    const normalizedValue = value
+    return value
       .trim()
-      .replace(/,/g, ".") // Replace all commas
-      .replace(/\.(?=.*\.)/g, ""); // Keep only last decimal point
-
-    return normalizedValue;
+      .replaceAll(",", ".") // Replace all commas
+      .replaceAll(/\.(?=.*\.)/g, ""); // Keep only last decimal point
   };
 
-  const format = (value) => {
-    if (!value) return "";
+  const format = (value: any) => {
+    if (value === null || value === undefined) return "";
     return value.toString().replace(",", ".");
   };
 
