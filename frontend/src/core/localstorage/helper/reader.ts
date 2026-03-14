@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const COOKIE_NAME = "sumup-reader-id";
+export const COOKIE_NAME = "kasseapparat.sumup.reader-id";
 
 const READER_ID_REGEX = /^rdr_[A-Z0-9]{26}$/;
 const ReaderIdSchema = z

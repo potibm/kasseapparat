@@ -6,6 +6,7 @@ import products from "./resources/products";
 import productInterests from "./resources/productinterests";
 import purchases from "./resources/purchases";
 import guests from "./resources/guests";
+import sumupreaders from "./resources/sumupreaders";
 import { UserCreate, UserEdit, UserIcon, UserList } from "./components/User";
 import {
   GuestlistCreate,
@@ -13,11 +14,6 @@ import {
   GuestlistIcon,
   GuestlistList,
 } from "./components/Guestlist";
-import {
-  SumupReaderCreate,
-  SumupReaderList,
-  SumupReaderIcon,
-} from "./components/SumupReader";
 import {
   SumupTransactionIcon,
   SumupTransactionList,
@@ -49,9 +45,7 @@ const AdminPanel: React.FC = () => (
     <Resource name="purchases" {...purchases} />
     <Resource
       name="sumupReaders"
-      list={SumupReaderList}
-      create={SumupReaderCreate}
-      icon={SumupReaderIcon}
+      {...sumupreaders}
       options={{ label: "Readers" }}
     />
     <Resource

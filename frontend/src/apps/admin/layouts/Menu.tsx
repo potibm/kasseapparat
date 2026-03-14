@@ -2,7 +2,7 @@ import React from "react";
 import { Menu as RaMenu, MenuItemLink, useSidebarState } from "react-admin";
 import { useConfig } from "@core/config/providers/ConfigProvider";
 import { MenuDivider, MenuMessage } from "./MenuComponents";
-import { SumupReaderIcon } from "../components/SumupReader";
+import sumupreaders from "../resources/sumupreaders";
 import { SumupTransactionIcon } from "../components/SumupTransaction";
 
 export const Menu: React.FC = () => {
@@ -36,7 +36,7 @@ export const Menu: React.FC = () => {
               key="sumupReadersDisabled"
               to="#"
               primaryText="Readers (Disabled)"
-              leftIcon={<SumupReaderIcon />}
+              leftIcon={<sumupreaders.icon />}
               disabled
             />,
             <MenuItemLink
