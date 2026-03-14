@@ -10,7 +10,7 @@ import guestlists from "./resources/guestlists";
 import sumupreaders from "./resources/sumupreaders";
 import sumuptransactions from "./resources/sumuptransactions";
 import users from "./resources/users";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./pages/dashboard/Dashboard";
 import { Menu } from "./layouts/Menu";
 
 const MyLayout = (props: LayoutProps) => <Layout {...props} menu={Menu} />;

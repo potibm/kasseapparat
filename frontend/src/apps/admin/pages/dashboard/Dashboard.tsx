@@ -1,21 +1,28 @@
-// src/MyDashboard.js
 import * as React from "react";
 import { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import { Title, useDataProvider } from "react-admin";
+import { Title, useDataProvider, RaRecord } from "react-admin";
 import {
   Table,
+  TableBody,
   TableCell,
   TableHead,
   TableHeadCell,
-  TableBody,
   TableRow,
 } from "flowbite-react";
-import { useConfig } from "../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/providers/ConfigProvider";
 import Decimal from "decimal.js";
+import { Typography } from "@mui/material";
 
-const Dashboard = () => {
+interface ProductStat extends RaRecord {
+  name: string;
+  soldItems: number;
+  totalNetPrice: string | number;
+  totalGrossPrice: string | number;
+}
+
+const Dashboard: React.FC = () => {
   return (
     <>
       <Title title="Kasseapparat" />
@@ -24,46 +31,53 @@ const Dashboard = () => {
   );
 };
 
-const ProductStatsCard = () => {
-  const [stats, setStats] = useState(null);
+const ProductStatsCard: React.FC = () => {
+  const [stats, setStats] = useState<ProductStat[] | null>(null);
   const dataProvider = useDataProvider();
-  const currency = useConfig().currency;
+  const { currency } = useConfig(); // Destructuring ist cleaner
 
   useEffect(() => {
-    // Fetch the stats
     dataProvider
-      .getList("productStats", {
+      .getList<ProductStat>("productStats", {
         pagination: { page: 1, perPage: 100 },
-        sort: { field: "date", order: "DESC" },
+        sort: { field: "name", order: "ASC" },
         filter: {},
       })
       .then(({ data }) => {
         setStats(data);
+      })
+      .catch((error) => {
+        console.error("Dashboard fetch failed", error);
+        setStats([]);
       });
   }, [dataProvider]);
 
-  if (stats === null) {
-    return <div>Loading...</div>;
-  } else if (stats.length === 0) {
-    return <div>No products, yet.</div>;
-  }
+  if (stats === null) return <Typography sx={{ p: 2 }}>Loading...</Typography>;
+  if (stats.length === 0)
+    return <Typography sx={{ p: 2 }}>No products yet.</Typography>;
 
   const customCompactTheme = {
-    head: {
-      cell: {
-        base: "px-3 py-2",
-      },
-    },
-    body: {
-      cell: {
-        base: "px-3 py-2",
-      },
-    },
+    head: { cell: { base: "px-3 py-2" } },
+    body: { cell: { base: "px-3 py-2" } },
   };
 
+  // Summen-Berechnung mit Decimal.js
+  const totalNet = stats.reduce(
+    (acc, stat) => acc.add(new Decimal(stat.totalNetPrice)),
+    new Decimal(0),
+  );
+
+  const totalGross = stats.reduce(
+    (acc, stat) => acc.add(new Decimal(stat.totalGrossPrice)),
+    new Decimal(0),
+  );
+
   return (
-    <Card>
+    <Card sx={{ mt: 2 }}>
       <CardContent>
+        <Typography variant="h6" gutterBottom>
+          Product Sales Stats
+        </Typography>
         <Table className="mt-5" theme={customCompactTheme}>
           <TableHead>
             <TableRow>
@@ -78,34 +92,26 @@ const ProductStatsCard = () => {
           <TableBody className="divide-y">
             {stats.map((stat) => (
               <TableRow key={stat.id}>
-                <TableCell>{stat.name}</TableCell>
+                <TableCell className="font-medium">{stat.name}</TableCell>
                 <TableCell className="text-right">{stat.soldItems}</TableCell>
                 <TableCell className="text-right">
-                  {currency.format(stat.totalNetPrice)}
+                  {currency.format(new Decimal(stat.totalNetPrice).toNumber())}
                 </TableCell>
                 <TableCell className="text-right">
-                  {currency.format(stat.totalGrossPrice)}
+                  {currency.format(
+                    new Decimal(stat.totalGrossPrice).toNumber(),
+                  )}
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow>
+            <TableRow className="bg-gray-50 dark:bg-gray-800">
               <TableCell className="font-bold">Total</TableCell>
-              <TableCell className="font-bold text-right">-</TableCell>
+              <TableCell className="text-right">-</TableCell>
               <TableCell className="font-bold text-right">
-                {currency.format(
-                  stats.reduce(
-                    (acc, stat) => acc.add(stat.totalNetPrice),
-                    new Decimal(0),
-                  ),
-                )}
+                {currency.format(totalNet.toNumber())}
               </TableCell>
               <TableCell className="font-bold text-right">
-                {currency.format(
-                  stats.reduce(
-                    (acc, stat) => acc.add(stat.totalGrossPrice),
-                    new Decimal(0),
-                  ),
-                )}
+                {currency.format(totalGross.toNumber())}
               </TableCell>
             </TableRow>
           </TableBody>
