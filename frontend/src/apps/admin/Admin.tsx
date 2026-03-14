@@ -8,7 +8,7 @@ import purchases from "./resources/purchases";
 import guests from "./resources/guests";
 import sumupreaders from "./resources/sumupreaders";
 import sumuptransactions from "./resources/sumuptransactions";
-import { UserCreate, UserEdit, UserIcon, UserList } from "./components/User";
+import users from "./resources/users";
 import {
   GuestlistCreate,
   GuestlistEdit,
@@ -49,13 +49,7 @@ const AdminPanel: React.FC = () => (
       {...sumuptransactions}
       options={{ label: "Transactions" }}
     />
-    <Resource
-      name="users"
-      list={UserList}
-      edit={UserEdit}
-      create={UserCreate}
-      icon={UserIcon}
-    />
+    <Resource name="users" {...users} />
   </Admin>
 );
 
