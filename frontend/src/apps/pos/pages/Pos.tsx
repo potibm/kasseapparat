@@ -22,6 +22,7 @@ import { PaymentMethodData } from "../features/cart/types/cart.types";
 import {
   Product as ProductType,
   Purchase as PurchaseType,
+  Guest as GuestType,
 } from "../utils/api.schemas";
 
 const Kasseapparat = () => {
@@ -136,7 +137,7 @@ const Kasseapparat = () => {
       <ProductList
         products={products}
         addToCart={add}
-        hasListItem={(p: ProductType) => cart.hasListItem(p.id)}
+        hasListItem={(g: GuestType) => cart.hasListItem(g.id)}
         quantityByProductInCart={(p: ProductType) => cart.getQuantity(p.id)}
         addProductInterest={(p: ProductType) => addInterest(p.id)}
       />

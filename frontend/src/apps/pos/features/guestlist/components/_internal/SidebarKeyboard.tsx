@@ -1,28 +1,14 @@
 import React from "react";
 import { HiBackspace, HiOutlineMinusSm, HiOutlineX } from "react-icons/hi";
-import PropTypes from "prop-types";
-import Button from "../../../../components/Button";
+import SidebarKeyboardKey from "./SidebarKeyboardKey";
 
-const SidebarKeyboardKey = ({ children, onClick, ...props }) => {
-  return (
-    <Button
-      onClick={onClick}
-      size="md"
-      className="min-w-12 max-w-12"
-      {...props}
-    >
-      {children}
-    </Button>
-  );
-};
+interface SidebarKeyboardProps {
+  term: string;
+  setTerm: (term: string) => void;
+}
 
-SidebarKeyboardKey.propTypes = {
-  children: PropTypes.node.isRequired,
-  onClick: PropTypes.func.isRequired,
-};
-
-const SidebarKeyboard = ({ term, setTerm }) => {
-  const addToSearchTerm = (letter) => {
+const SidebarKeyboard: React.FC<SidebarKeyboardProps> = ({ term, setTerm }) => {
+  const addToSearchTerm = (letter: string) => {
     setTerm(term + letter);
   };
 
@@ -34,8 +20,8 @@ const SidebarKeyboard = ({ term, setTerm }) => {
     setTerm("");
   };
 
-  const alphabet = Array.from(Array(26)).map((e, i) =>
-    String.fromCharCode(i + 65),
+  const alphabet = Array.from(new Array(26)).map((_e, i) =>
+    String.fromCodePoint(i + 65),
   );
 
   return (
@@ -59,11 +45,6 @@ const SidebarKeyboard = ({ term, setTerm }) => {
       </SidebarKeyboardKey>
     </div>
   );
-};
-
-SidebarKeyboard.propTypes = {
-  term: PropTypes.string.isRequired,
-  setTerm: PropTypes.func.isRequired,
 };
 
 export default SidebarKeyboard;

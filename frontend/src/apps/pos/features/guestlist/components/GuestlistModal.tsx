@@ -2,31 +2,48 @@ import React, { useEffect, useState, useCallback } from "react";
 import { FloatingLabel, Modal, ModalBody } from "flowbite-react";
 import { fetchGuestlistByProductId } from "../../../utils/api";
 import { HiOutlineX } from "react-icons/hi";
-import PropTypes from "prop-types";
 import SidebarKeyboard from "./_internal/SidebarKeyboard";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import { useAuth } from "../../auth/providers/auth-provider";
 import Button from "../../../components/Button";
-import GuestlistResultTable from "./_internal/ResultTable";
+import GuestlistResultTable from "./_internal/GuestlistResultTable";
+import {
+  Product as ProductType,
+  Guest as GuestType,
+} from "@pos/utils/api.schemas";
 
-const GuestlistModal = ({
+interface GuestlistModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  product: ProductType;
+  addToCart: (
+    product: ProductType,
+    quantity: number,
+    listEntry: GuestType | null,
+  ) => void;
+  hasListItem: (guest: GuestType) => boolean;
+}
+
+const GuestlistModal: React.FC<GuestlistModalProps> = ({
   isOpen,
   onClose,
   product,
   addToCart,
   hasListItem,
 }) => {
-  const [guestlistEntries, setGuestlistEntries] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loadedSearchQuery, setLoadedSearchQuery] = useState("");
+  const [guestlistEntries, setGuestlistEntries] = useState<GuestType[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [loadedSearchQuery, setLoadedSearchQuery] = useState<string>("");
+
   const { apiHost } = useConfig();
-  const { getToken } = useAuth();
+  const { getSafeToken } = useAuth();
 
-  const hasCodes = product.guestlists.some((list) => list.typeCode);
+  const hasCodes = product.guestlists?.some((list) => list.typeCode) ?? false;
 
-  const handleAddToCart = (listEntry, additionalGuests) => {
+  const handleAddToCart = (listEntry: GuestType, additionalGuests: number) => {
+    // Logic: total items = the guest themselves (1) + their allowed additional guests
     addToCart(product, additionalGuests + 1, listEntry);
     onClose();
   };
@@ -40,24 +57,26 @@ const GuestlistModal = ({
     async (query = "") => {
       setLoading(true);
       try {
+        const token = await getSafeToken();
+
         let response = await fetchGuestlistByProductId(
           apiHost,
-          await getToken(),
+          token,
           product.id,
           query,
         );
         setGuestlistEntries(response);
         setError(null);
-        setLoading(false);
         setLoadedSearchQuery(query);
-      } catch (error) {
-        setError("Error fetching list entries: " + error.message);
+      } catch (error: unknown) {
+        setError("Error fetching list entries: " + (error as Error).message);
         setGuestlistEntries([]);
-        setLoading(false);
         setLoadedSearchQuery("");
+      } finally {
+        setLoading(false);
       }
     },
-    [product.id, apiHost, getToken],
+    [product.id, apiHost, getSafeToken],
   );
 
   useEffect(() => {
@@ -122,13 +141,12 @@ const GuestlistModal = ({
 
             <div className="relative">
               <GuestlistResultTable
-                error={error}
                 loading={loading}
-                loadedSearchQuery={loadedSearchQuery}
+                error={error}
                 guestlistEntries={guestlistEntries}
-                hasListItem={hasListItem}
                 onAddToCart={handleAddToCart}
-                onClose={onClose}
+                hasListItem={hasListItem}
+                loadedSearchQuery={loadedSearchQuery}
               />
             </div>
           </div>
@@ -136,14 +154,6 @@ const GuestlistModal = ({
       </ModalBody>
     </Modal>
   );
-};
-
-GuestlistModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  product: PropTypes.object.isRequired,
-  addToCart: PropTypes.func.isRequired,
-  hasListItem: PropTypes.func.isRequired,
 };
 
 export default GuestlistModal;

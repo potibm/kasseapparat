@@ -12,7 +12,7 @@ interface ProductListProps {
     quantity: number,
     listItem: GuestType | null,
   ) => void;
-  hasListItem: (product: ProductType) => boolean;
+  hasListItem: (guest: GuestType) => boolean;
   quantityByProductInCart: (product: ProductType) => number;
   addProductInterest: (product: ProductType) => Promise<void>;
 }

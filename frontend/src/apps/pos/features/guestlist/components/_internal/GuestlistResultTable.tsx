@@ -9,10 +9,19 @@ import {
   TableRow,
 } from "flowbite-react";
 import { HiInformationCircle, HiXCircle } from "react-icons/hi";
-import PropTypes from "prop-types";
-import GuestlistResultTableRow from "./ResultTableRow";
+import GuestlistResultTableRow from "./GuestlistResultTableRow";
+import { Guest as GuestType } from "@pos/utils/api.schemas";
 
-const GuestlistResultTable = ({
+interface GuestlistResultTableProps {
+  loading: boolean;
+  error: string | null;
+  guestlistEntries: GuestType[];
+  onAddToCart: (listEntry: GuestType, additionalGuests: number) => void;
+  hasListItem: (guest: GuestType) => boolean;
+  loadedSearchQuery: string;
+}
+
+const GuestlistResultTable: React.FC<GuestlistResultTableProps> = ({
   loading,
   error,
   guestlistEntries,
@@ -66,15 +75,6 @@ const GuestlistResultTable = ({
       )}
     </>
   );
-};
-
-GuestlistResultTable.propTypes = {
-  loading: PropTypes.bool,
-  error: PropTypes.string,
-  guestlistEntries: PropTypes.array.isRequired,
-  onAddToCart: PropTypes.func.isRequired,
-  hasListItem: PropTypes.func.isRequired,
-  loadedSearchQuery: PropTypes.string.isRequired,
 };
 
 export default GuestlistResultTable;
