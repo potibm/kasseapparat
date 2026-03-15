@@ -1,11 +1,20 @@
 import React from "react";
-import { Button, ButtonGroup, DarkThemeToggle, Tooltip } from "flowbite-react";
+import {
+  Button,
+  ButtonGroup,
+  ButtonGroupProps,
+  DarkThemeToggle,
+  Tooltip,
+} from "flowbite-react";
 import { HiLogout, HiOutlineUserCircle } from "react-icons/hi";
 import { Link } from "react-router";
-import PropTypes from "prop-types";
 import AdminButton from "./_internal/AdminButton";
 
-const Menu = ({ username, ...props }) => {
+interface MenuProps extends ButtonGroupProps {
+  username: string;
+}
+
+const Menu: React.FC<MenuProps> = ({ username, ...props }) => {
   const buttonClass =
     "hover:bg-primary-800 dark:hover:bg-cyan-700 hover:text-white";
 
@@ -36,10 +45,6 @@ const Menu = ({ username, ...props }) => {
       />
     </ButtonGroup>
   );
-};
-
-Menu.propTypes = {
-  username: PropTypes.string.isRequired,
 };
 
 export default Menu;
