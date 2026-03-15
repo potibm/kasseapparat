@@ -1,8 +1,7 @@
-import React, { useState, Fragment } from "react";
+import React, { Fragment } from "react";
 import { TableCell, TableRow } from "flowbite-react";
 import { HiShoppingCart } from "react-icons/hi";
 import Button from "../../../../components/Button";
-import GuestlistArrivalNoteModal from "./GuestlistArrivalNoteModal";
 import { Guest as GuestType } from "@pos/utils/api.schemas";
 import { GuestlistAvatar } from "./GuestlistAvatar";
 
@@ -19,15 +18,10 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
   hasListItem,
   loadedSearchQuery,
 }) => {
-  const [showNote, setShowNote] = useState<boolean>(false);
   const isAlreadyInCart = hasListItem(entry);
 
   const handleAddToCart = (additionalGuests: number) => {
     onAddToCart(entry, additionalGuests);
-
-    if (entry.arrivalNote) {
-      setShowNote(true);
-    }
   };
 
   const highlightText = (text: string, highlight: string) => {
@@ -37,32 +31,31 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
     const regex = new RegExp(`(${highlight})`, "gi");
     const parts = text.split(regex);
 
-    return parts.map((part, i) => (
-      <Fragment key={`part-${i}`}>
-        {regex.test(part) ? (
-          <span className="font-bold underline">{part}</span>
-        ) : (
-          part
-        )}
-      </Fragment>
-    ));
+    return (
+      <span>
+        {parts.map((part, i) => (
+          <Fragment key={`hl-${i}`}>
+            {regex.test(part) ? (
+              <span className="font-bold underline">{part}</span>
+            ) : (
+              part
+            )}
+          </Fragment>
+        ))}
+      </span>
+    );
   };
 
   return (
-    <>
-      {entry.arrivalNote && (
-        <GuestlistArrivalNoteModal
-          isOpen={showNote}
-          onClose={() => setShowNote(false)}
-          arrivalNote={entry.arrivalNote}
-          name={entry.name}
-        />
-      )}
-      <TableRow key={entry.id}>
-        <TableCell>
-          {!entry.code && <GuestlistAvatar name={entry.name} />}
-        </TableCell>
-        <TableCell className="">
+    <TableRow
+      key={entry.id}
+      className="hover:bg-gray-100 dark:hover:bg-gray-700"
+    >
+      <TableCell>
+        {!entry.code && <GuestlistAvatar name={entry.name} />}
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col">
           {!entry.code && (
             <>
               <div className="text-xl">
@@ -76,32 +69,32 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
               {highlightText(String(entry.code), loadedSearchQuery)}
             </div>
           )}
-        </TableCell>
-        <TableCell className="flex gap-5">
-          <Button
-            className="float"
-            key={0}
-            disabled={isAlreadyInCart}
-            onClick={() => handleAddToCart(0)}
-          >
-            <HiShoppingCart />
-          </Button>
-          {Array.from({ length: entry.additionalGuests }, (_, i) => {
-            const count = i + 1;
-            return (
-              <Button
-                key={`add-${entry.id}-${count}`}
-                className="float"
-                disabled={isAlreadyInCart}
-                onClick={() => handleAddToCart(count)}
-              >
-                <div className="text-xs">+{count}</div>
-              </Button>
-            );
-          })}
-        </TableCell>
-      </TableRow>
-    </>
+        </div>
+      </TableCell>
+      <TableCell className="flex gap-5">
+        <Button
+          className="float"
+          key={`add-btn-${entry.id}-0`}
+          disabled={isAlreadyInCart}
+          onClick={() => handleAddToCart(0)}
+        >
+          <HiShoppingCart />
+        </Button>
+        {Array.from({ length: entry.additionalGuests }, (_, i) => {
+          const count = i + 1;
+          return (
+            <Button
+              key={`add-btn-${entry.id}-${count}`}
+              className="float"
+              disabled={isAlreadyInCart}
+              onClick={() => handleAddToCart(count)}
+            >
+              <div className="text-xs">+{count}</div>
+            </Button>
+          );
+        })}
+      </TableCell>
+    </TableRow>
   );
 };
 

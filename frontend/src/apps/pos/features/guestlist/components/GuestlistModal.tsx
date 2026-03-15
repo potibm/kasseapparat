@@ -11,6 +11,7 @@ import {
   Product as ProductType,
   Guest as GuestType,
 } from "@pos/utils/api.schemas";
+import GuestlistArrivalNoteModal from "./_internal/GuestlistArrivalNoteModal";
 
 interface GuestlistModalProps {
   isOpen: boolean;
@@ -36,6 +37,10 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loadedSearchQuery, setLoadedSearchQuery] = useState<string>("");
+  const [noteToDisplay, setNoteToDisplay] = useState<{
+    name: string;
+    note: string;
+  } | null>(null);
 
   const { apiHost } = useConfig();
   const { getSafeToken } = useAuth();
@@ -43,8 +48,20 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   const hasCodes = product.guestlists?.some((list) => list.typeCode) ?? false;
 
   const handleAddToCart = (listEntry: GuestType, additionalGuests: number) => {
-    // Logic: total items = the guest themselves (1) + their allowed additional guests
     addToCart(product, additionalGuests + 1, listEntry);
+
+    if (listEntry.arrivalNote) {
+      setNoteToDisplay({
+        name: listEntry.name,
+        note: listEntry.arrivalNote,
+      });
+    } else {
+      onClose();
+    }
+  };
+
+  const handleCloseNote = () => {
+    setNoteToDisplay(null);
     onClose();
   };
 
@@ -106,6 +123,14 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
       dismissible
     >
       <ModalBody className="overflow-hidden">
+        {noteToDisplay && (
+          <GuestlistArrivalNoteModal
+            isOpen={true}
+            onClose={handleCloseNote}
+            arrivalNote={noteToDisplay.note}
+            name={noteToDisplay.name}
+          />
+        )}
         <div className="flex h-[calc(100vh-6rem)]">
           {/* Sidebar */}
           <div className="w-4/12 bg-gray-100 dark:bg-gray-900 p-4">
