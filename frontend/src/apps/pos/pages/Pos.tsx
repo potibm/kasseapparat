@@ -8,7 +8,7 @@ import ProductList from "../features/product-list/components/ProductList";
 import PurchaseHistory from "../features/purchase-history/components/PurchaseHistory";
 import ErrorModal from "../components/ErrorModal";
 import Menu from "../features/menu/compontents/Menu";
-import PollingModal from "../features/purchase/components/PollingModal";
+import PollingModal from "@pos/features/payment/components/PollingModal";
 import Version from "../components/Version";
 import PosLayout from "../layouts/PosLayout";
 // hooks
