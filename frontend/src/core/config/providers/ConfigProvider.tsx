@@ -6,7 +6,7 @@ import React, {
   ReactNode,
 } from "react";
 import MinimalBaseCard from "../../../apps/pos/components/MinimalBaseCard";
-import { Alert, Spinner } from "flowbite-react";
+import { Alert } from "flowbite-react";
 import { HiInformationCircle } from "react-icons/hi";
 import { AppConfig } from "../types/config.types";
 import { ConfigSchema, RawConfig } from "../schemas/config.schemas";
@@ -78,9 +78,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
   }, [fetchUrl]);
 
   if (loading) {
-    return (
-      <div>⏳ Loading config...</div>
-    );
+    return <div>⏳ Loading config...</div>;
   }
 
   if (error) {
