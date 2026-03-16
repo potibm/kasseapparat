@@ -1,12 +1,13 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import flowbiteReact from "flowbite-react/plugin/vite";
 import basicSsl from "@vitejs/plugin-basic-ssl";
-import path from "path";
-const __dirname = import.meta.dirname;
+import path from "node:path";
 
-// https://vite.dev/config/
+const __dirname = path.resolve();
+
 export default defineConfig({
   plugins: [react(), tailwindcss(), flowbiteReact(), basicSsl()],
   server: {
@@ -26,6 +27,7 @@ export default defineConfig({
     teardownTimeout: 1000,
     pool: "threads",
     coverage: {
+      provider: "v8",
       reporter: ["text", "html", "lcov"],
     },
   },
