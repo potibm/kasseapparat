@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router";
 import { useAuth } from "../apps/pos/features/auth/providers/auth-provider";
 
-export const ProtectedRoute = () => {
+export const ProtectedRoute: React.FC = () => {
   const { isLoggedIn } = useAuth() || {};
-  const [loggedIn, setLoggedIn] = useState(null);
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!isLoggedIn) return;

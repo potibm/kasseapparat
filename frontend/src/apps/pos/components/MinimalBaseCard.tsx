@@ -24,7 +24,7 @@ const MinimalBaseCard: React.FC<MinimalBaseCardProps> = ({
           Kasseapparat
         </h5>
 
-        <div className="my-3">
+        <div className="my-3 dark:text-gray-200">
           {title && <h2 className="text-xl mb-2">{title}</h2>}
 
           {children}

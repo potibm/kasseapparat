@@ -79,11 +79,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
 
   if (loading) {
     return (
-      <MinimalBaseCard>
-        Loading Config...
-        <br />
-        <Spinner className="mt-3" />
-      </MinimalBaseCard>
+      <div>⏳ Loading config...</div>
     );
   }
 

@@ -10,10 +10,7 @@ function App() {
       <SentryInitializer>
         <AuthProvider>
           <SentryUserWatcher />
-          <AuthProvider>
-            <SentryUserWatcher />
-            <Routes />
-          </AuthProvider>
+          <Routes />
         </AuthProvider>
       </SentryInitializer>
     </ConfigProvider>
