@@ -22,8 +22,8 @@ require (
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
 	github.com/sumup/sumup-go v0.15.0
-	golang.org/x/crypto v0.48.0
-	golang.org/x/text v0.34.0
+	golang.org/x/crypto v0.49.0
+	golang.org/x/text v0.35.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.1
 )
@@ -87,7 +87,7 @@ require (
 	golang.org/x/arch v0.24.0 // indirect
 	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/oauth2 v0.35.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
