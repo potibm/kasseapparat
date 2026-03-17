@@ -1,16 +1,23 @@
-import React from "react";
 import { Chip, ChipProps } from "@mui/material";
 
-// We extend ChipProps to stay compatible with MUI
-interface QuickFilterProps extends ChipProps {
+// T ist der Typ des Filterwerts (z.B. boolean, string, etc.)
+// Wir nutzen Omit, um einen sauberen ChipProps-Typ ohne Konflikte zu haben
+interface QuickFilterProps<T = unknown> extends Omit<
+  ChipProps,
+  "defaultValue"
+> {
   label: string;
-  source?: string; // React-admin uses these props
-  defaultValue?: any; // to handle the filter logic
+  source?: string;
+  defaultValue?: T;
 }
 
-export const QuickFilter: React.FC<QuickFilterProps> = ({
+export const QuickFilter = <T,>({
   label,
-  ...props
-}) => {
-  return <Chip sx={{ marginBottom: 1 }} label={label} {...props} />;
+  source: _source,
+  defaultValue: _defaultValue,
+  ...rest
+}: QuickFilterProps<T>) => {
+  return <Chip sx={{ marginBottom: 1 }} label={label} {...rest} />;
 };
+
+export default QuickFilter;

@@ -47,7 +47,7 @@ export default defineConfig([
         { allowConstantExport: true },
       ],
       "react/jsx-uses-vars": "error",
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
     },
   },
 ]);

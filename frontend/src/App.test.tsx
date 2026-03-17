@@ -7,13 +7,14 @@ import Login from "./apps/pos/features/auth/components/Login";
 import App from "./App";
 import "@testing-library/jest-dom";
 import { ReactNode } from "react";
+import { AppConfig } from "@core/config/types/config.types";
 
 vi.stubGlobal(
   "fetch",
   vi.fn().mockResolvedValue({
     ok: true,
     json: () => Promise.resolve({}),
-  }),
+  } as Response),
 );
 
 describe("App", () => {
@@ -26,15 +27,14 @@ describe("App", () => {
     vi.clearAllMocks();
     vi.resetAllMocks();
     vi.restoreAllMocks();
-    vi.unstubAllGlobals(); // Extrem wichtig für stubGlobal('fetch')!
+    vi.unstubAllGlobals();
   });
 
   it("renders the App component before loading the config", async () => {
     const spy = vi.spyOn(ConfigProviderModule, "useConfig").mockReturnValue({
-      config: null,
       loading: true,
       error: null,
-    } as any);
+    } as unknown as AppConfig);
 
     render(<App />);
 
@@ -51,23 +51,24 @@ describe("App", () => {
 
   it("renders the Login component when config is loaded", async () => {
     const mockConfigValue = {
-      config: { version: "0.2.0" },
-      loading: false,
-      error: null,
       version: "0.2.0",
       apiHost: "http://localhost",
-      currency: { format: (v: number) => `${v} €` },
+      currency: new Intl.NumberFormat("de-DE", {
+        style: "currency",
+        currency: "EUR",
+      }),
       paymentMethods: [],
-    };
+      currencyOptions: {},
+      sumupEnabled: false,
+      websocketHost: "ws://localhost",
+    } as unknown as AppConfig;
 
     vi.spyOn(ConfigProviderModule, "useConfig").mockReturnValue(
-      mockConfigValue as any,
+      mockConfigValue,
     );
 
     const MockConfigProvider = ({ children }: { children: ReactNode }) => (
-      <ConfigProviderModule.ConfigContext.Provider
-        value={mockConfigValue as any}
-      >
+      <ConfigProviderModule.ConfigContext.Provider value={mockConfigValue}>
         {children}
       </ConfigProviderModule.ConfigContext.Provider>
     );

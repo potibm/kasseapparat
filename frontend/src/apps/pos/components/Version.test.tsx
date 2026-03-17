@@ -4,6 +4,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { Version } from "./Version";
 import * as ConfigModule from "../../../core/config/providers/ConfigProvider";
+import { AppConfig } from "../../../core/config/types/config.types";
 
 vi.mock("../../../core/config/providers/ConfigProvider", () => ({
   useConfig: vi.fn(),
@@ -17,7 +18,7 @@ const renderVersionWithMocks = async ({
   // Config Mock
   vi.mocked(ConfigModule.useConfig).mockReturnValue({
     version: localVersion,
-  } as any);
+  } as AppConfig);
 
   // Storage Stubbing
   vi.stubGlobal("sessionStorage", {
@@ -92,7 +93,7 @@ describe("Version", () => {
   it("shows plain text for internal version (no act warning here)", async () => {
     vi.mocked(ConfigModule.useConfig).mockReturnValue({
       version: "0.1.0",
-    } as any);
+    } as AppConfig);
 
     render(
       <MemoryRouter>
