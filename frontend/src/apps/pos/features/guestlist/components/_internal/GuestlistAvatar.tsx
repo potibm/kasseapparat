@@ -16,7 +16,7 @@ export const GuestlistAvatar: React.FC<{ name: string }> = ({ name }) => {
 
     // For multiple words, take the first letter of the first and last word
     const firstInitial = words[0][0].toUpperCase();
-    const lastInitial = words[words.length - 1][0].toUpperCase();
+    const lastInitial = words.at(-1)?.[0].toUpperCase();
 
     return firstInitial + lastInitial;
   };

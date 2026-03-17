@@ -67,13 +67,13 @@ export const PurchaseExportButton: React.FC<PurchaseExportButtonProps> = ({
 
       // Handling the file download
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const url = globalThis.URL.createObjectURL(blob);
 
       // Extract filename from header or fallback
       const contentDisposition = response.headers.get("Content-Disposition");
       const filenameMatch =
         contentDisposition &&
-        RegExp(/filename="([^"]+)"/).exec(contentDisposition);
+        new RegExp(/filename="([^"]+)"/).exec(contentDisposition);
       const filename = filenameMatch ? filenameMatch[1] : "purchases.csv";
 
       const a = document.createElement("a");
@@ -82,7 +82,7 @@ export const PurchaseExportButton: React.FC<PurchaseExportButtonProps> = ({
       document.body.appendChild(a);
       a.click();
       a.remove();
-      window.URL.revokeObjectURL(url);
+      globalThis.URL.revokeObjectURL(url);
 
       setOpen(false);
       notify("Export started successfully", { type: "info" });

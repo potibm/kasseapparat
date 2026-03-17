@@ -2,10 +2,9 @@ import React from "react";
 import { TextInput, TextInputProps, Validator } from "react-admin";
 import Decimal from "decimal.js";
 
-// Eigener Validator für Decimal-Logik
 const decimalValidator: Validator = (value: unknown) => {
   if (value === null || value === undefined || value === "") {
-    return undefined; // Überlass 'required' dem Standard-Validator
+    return undefined;
   }
 
   try {
@@ -33,7 +32,7 @@ const DecimalInput: React.FC<TextInputProps> = ({ validate, ...props }) => {
     const cleaned = value
       .trim()
       .replace(",", ".")
-      .replace(/[^\d.]/g, "");
+      .replaceAll(/[^\d.]/g, "");
 
     const parts = cleaned.split(".");
     return parts.length > 2

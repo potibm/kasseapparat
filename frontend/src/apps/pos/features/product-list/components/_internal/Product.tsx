@@ -37,6 +37,28 @@ const Product: React.FC<ProductProps> = ({
     product.totalStock - product.unitsSold - quantityByProductInCart(product);
   const hasGuestlist = product.guestlists && product.guestlists.length > 0;
 
+  const getActionButton = () => {
+    if (product.soldOut) {
+      return (
+        <Button aria-label="Register interest">
+          <HiOutlineThumbUp className="h-5 w-5" />
+        </Button>
+      );
+    } else if (hasGuestlist) {
+      return (
+        <Button aria-label="Show guestlist">
+          <HiUserAdd className="h-5 w-5" />
+        </Button>
+      );
+    } else {
+      return (
+        <Button aria-label="Add to cart">
+          <HiShoppingCart className="h-5 w-5" />
+        </Button>
+      );
+    }
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (product.soldOut) {
@@ -97,21 +119,7 @@ const Product: React.FC<ProductProps> = ({
             {currency.format(product.grossPrice.toNumber())}
           </p>
 
-          <div className="flex">
-            {product.soldOut ? (
-              <Button aria-label="Register interest">
-                <HiOutlineThumbUp className="h-5 w-5" />
-              </Button>
-            ) : hasGuestlist ? (
-              <Button aria-label="Show guestlist">
-                <HiUserAdd className="h-5 w-5" />
-              </Button>
-            ) : (
-              <Button aria-label="Add to cart">
-                <HiShoppingCart className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
+          <div className="flex">{getActionButton()}</div>
         </div>
       </Card>
 

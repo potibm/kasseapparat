@@ -88,7 +88,6 @@ export const SumupReaderListContent: React.FC<SumupReaderListContentProps> = ({
         <SumupReaderSelectionField
           selectedReaderId={selectedReaderId}
           onSelect={onSelect}
-          label="Action"
         />
 
         <DeleteWithConfirmButton

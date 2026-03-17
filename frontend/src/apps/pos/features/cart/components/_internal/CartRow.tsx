@@ -20,7 +20,7 @@ const CartRow: React.FC<CartRowProps> = ({
   removeFromCart,
 }) => {
   const displayListItem = (listItem: GuestType) => {
-    return listItem.code == null ? listItem.name : listItem.code;
+    return listItem.code ?? listItem.name;
   };
 
   return (

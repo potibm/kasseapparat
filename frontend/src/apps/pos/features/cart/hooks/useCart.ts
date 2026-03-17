@@ -1,15 +1,14 @@
-// src/apps/pos/features/cart/hooks/useCart.ts
 import { useState, useCallback } from "react";
 import { Cart } from "../services/Cart";
 import { storePurchase } from "../../../utils/api";
-import { Purchase } from "../../../utils/api.schemas";
 import { PaymentMethodData } from "../types/cart.types";
 import {
+  Purchase as PurchaseType,
   Product as ProductType,
   Guest as GuestType,
 } from "../../../utils/api.schemas";
 
-interface EnrichedPurchase extends Purchase {
+interface EnrichedPurchase extends PurchaseType {
   onComplete: (success: boolean) => void;
 }
 

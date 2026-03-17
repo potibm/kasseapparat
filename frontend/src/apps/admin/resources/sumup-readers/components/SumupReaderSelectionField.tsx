@@ -7,7 +7,6 @@ import TouchAppIcon from "@mui/icons-material/TouchApp";
 interface SumupReaderSelectionFieldProps {
   selectedReaderId: string | undefined;
   onSelect: (id: string) => void;
-  label?: string;
 }
 
 interface SumupReaderRecord extends RaRecord {

@@ -34,7 +34,7 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
     return (
       <span>
         {parts.map((part, i) => (
-          <Fragment key={`hl-${i}`}>
+          <Fragment key={`hl-${part}-${i}`}>
             {regex.test(part) ? (
               <span className="font-bold underline">{part}</span>
             ) : (

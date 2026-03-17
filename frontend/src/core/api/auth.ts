@@ -118,7 +118,7 @@ export const changePassword = (
   authPost(
     `${apiHost}/api/v2/auth/changePassword`,
     {
-      userId: typeof userId === "string" ? parseInt(userId) : userId,
+      userId: typeof userId === "string" ? Number.parseInt(userId) : userId,
       token,
       password,
     },

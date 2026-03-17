@@ -22,14 +22,15 @@ export class Cart {
       (item) => item.id === product.id,
     );
     const newItems = [...this.items];
+    const itemProductWasFoundInCart = existingIndex !== -1;
 
-    if (existingIndex !== -1) {
+    if (itemProductWasFoundInCart) {
       const existingItem = this.items[existingIndex];
 
       // Dubletten-Check für ListItems
       if (
         listItem &&
-        existingItem.listItems.find((li) => li.id === listItem.id)
+        existingItem.listItems.some((li) => li.id === listItem.id)
       ) {
         return this;
       }
