@@ -12,9 +12,12 @@ export interface CartItem extends ProductType {
   totalVatAmount: Decimal;
 }
 
-interface EmptyPaymentMethodData {}
+interface EmptyPaymentMethodData {
+  type: "empty";
+}
 
 interface SumUpPaymentMethodData {
+  type: "sumup";
   sumupReaderId: string;
 }
 

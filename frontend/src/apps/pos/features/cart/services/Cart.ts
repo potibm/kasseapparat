@@ -21,7 +21,7 @@ export class Cart {
     const existingIndex = this.items.findIndex(
       (item) => item.id === product.id,
     );
-    let newItems = [...this.items];
+    const newItems = [...this.items];
 
     if (existingIndex !== -1) {
       const existingItem = this.items[existingIndex];

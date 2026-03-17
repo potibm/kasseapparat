@@ -33,14 +33,19 @@ const CheckoutButtons = ({
     return true;
   };
 
-  const getPaymentMethodData = (paymentMethodCode: string) => {
+  const getPaymentMethodData = (
+    paymentMethodCode: string,
+  ): PaymentMethodData => {
     if (paymentMethodCode === "SUMUP") {
       return {
-        sumupReaderId: sumUpReaderId,
+        type: "sumup",
+        sumupReaderId: String(sumUpReaderId),
       };
     }
 
-    return {};
+    return {
+      type: "empty",
+    };
   };
 
   return (

@@ -76,7 +76,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
       try {
         const token = await getSafeToken();
 
-        let response = await fetchGuestlistByProductId(
+        const response = await fetchGuestlistByProductId(
           apiHost,
           token,
           product.id,

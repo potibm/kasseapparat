@@ -7,9 +7,10 @@ import tseslint from "typescript-eslint";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
-  { ignores: ["dist"] },
+  { ignores: ["dist", "coverage"] },
+  ...tseslint.configs.recommended,
   {
-    files: ["**/*.{js,jsx,ts,tsx}"],
+    files: ["**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -21,15 +22,14 @@ export default defineConfig([
       },
     },
     plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-      react: react,
+      "react-hooks": reactHooks as any,
+      "react-refresh": reactRefresh as any,
+      react: react as any,
       "@typescript-eslint": tseslint.plugin,
     },
     rules: {
       ...js.configs.recommended.rules,
-      ...tseslint.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
+      ...reactHooks.configs?.recommended?.rules,
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
