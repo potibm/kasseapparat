@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/react";
 import { z } from "zod";
-import { refreshJwtToken } from "../../../core/api/auth";
+import { refreshJwtToken } from "@core/api/auth";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "https://localhost:3000";
 const LOCALSTORAGE_KEY = "kasseapparat.admin.auth";

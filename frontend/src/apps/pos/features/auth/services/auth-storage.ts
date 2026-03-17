@@ -3,7 +3,7 @@ import {
   AuthUser as AuthUserType,
   Session as SessionType,
 } from "../types/auth.types";
-import { UserDataSchema } from "../../../../../core/api/auth.schemas";
+import { UserDataSchema } from "@core/api/auth.schemas";
 
 const LS_PREFIX = "kasseapparat.auth.";
 export const AUTH_KEYS = {
