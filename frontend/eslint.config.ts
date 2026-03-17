@@ -50,4 +50,17 @@ export default defineConfig([
       "@typescript-eslint/no-explicit-any": "error",
     },
   },
+  {
+    files: ["**/*.js", "**/*.jsx"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "Program",
+          message:
+            "New JavaScript files are not allowed. Please use .ts or .tsx.",
+        },
+      ],
+    },
+  },
 ]);
