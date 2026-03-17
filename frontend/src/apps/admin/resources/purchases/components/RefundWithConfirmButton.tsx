@@ -31,9 +31,11 @@ const RefundWithConfirmButton: React.FC = () => {
       await dataProvider.refund("purchases", { id: record.id });
       notify("Refund successful", { type: "success" });
       refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Refund error:", error);
-      notify(error.message || "Refund failed", { type: "error" });
+      notify(error instanceof Error ? error.message : "Refund failed", {
+        type: "error",
+      });
     } finally {
       setOpen(false);
     }

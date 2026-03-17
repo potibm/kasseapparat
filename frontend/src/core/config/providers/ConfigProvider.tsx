@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, {
   createContext,
   useContext,
@@ -9,33 +10,10 @@ import MinimalBaseCard from "../../../apps/pos/components/MinimalBaseCard";
 import { Alert } from "flowbite-react";
 import { HiInformationCircle } from "react-icons/hi";
 import { AppConfig } from "../types/config.types";
-import { ConfigSchema, RawConfig } from "../schemas/config.schemas";
+import { ConfigSchema } from "../schemas/config.schemas";
+import { transformConfig } from "../utils/config.transform";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
-
-export const transformConfig = (
-  rawData: RawConfig,
-  apiHost: string,
-): AppConfig => {
-  const sumupEnabled = rawData.paymentMethods.some((m) => m.code === "SUMUP");
-  const websocketHost = apiHost.replace(/^http/, "ws");
-
-  const currencyOptions: Intl.NumberFormatOptions = {
-    style: "currency",
-    currency: rawData.currencyCode,
-    minimumFractionDigits: rawData.fractionDigitsMin,
-    maximumFractionDigits: rawData.fractionDigitsMax,
-  };
-
-  return {
-    ...rawData,
-    apiHost,
-    websocketHost,
-    sumupEnabled,
-    currencyOptions,
-    currency: new Intl.NumberFormat(rawData.currencyLocale, currencyOptions),
-  };
-};
 
 export const ConfigContext = createContext<AppConfig | null>(null);
 

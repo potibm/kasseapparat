@@ -86,8 +86,11 @@ export const PurchaseExportButton: React.FC<PurchaseExportButtonProps> = ({
 
       setOpen(false);
       notify("Export started successfully", { type: "info" });
-    } catch (error: any) {
-      notify(`Export failed: ${error.message}`, { type: "error" });
+    } catch (error: unknown) {
+      notify(
+        `Export failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        { type: "error" },
+      );
     }
   };
 

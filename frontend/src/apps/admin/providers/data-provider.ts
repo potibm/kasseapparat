@@ -3,12 +3,18 @@ import {
   fetchUtils,
   addRefreshAuthToDataProvider,
   DataProvider,
+  CreateParams,
+  UpdateParams,
 } from "react-admin";
 import * as Sentry from "@sentry/react";
 import { refreshToken } from "./refresh-token";
 import { getSessionToken } from "../utils/auth-utils";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
+
+interface HttpClientOptions extends fetchUtils.Options {
+  isUpload?: boolean;
+}
 
 const resourceAlias: Record<string, string> = {
   sumupReaders: "sumup/readers",
@@ -18,16 +24,13 @@ const resourceAlias: Record<string, string> = {
 const resolveResource = (resource: string) =>
   resourceAlias[resource] || resource;
 
-const httpClient = async (url: string, options: fetchUtils.Options = {}) => {
-  if (!options.headers) {
-    options.headers = new Headers({ Accept: "application/json" });
-  } else if (!(options.headers instanceof Headers)) {
-    options.headers = new Headers(options.headers);
-  }
+const httpClient = async (url: string, options: HttpClientOptions = {}) => {
+  const headers =
+    options.headers instanceof Headers
+      ? options.headers
+      : new Headers(options.headers || { Accept: "application/json" });
 
-  const headers = options.headers as Headers;
-
-  if (!(options as any).isUpload) {
+  if (!options.isUpload) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -35,6 +38,7 @@ const httpClient = async (url: string, options: fetchUtils.Options = {}) => {
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
+  options.headers = headers;
 
   try {
     return await fetchUtils.fetchJson(url, options);
@@ -48,7 +52,9 @@ const httpClient = async (url: string, options: fetchUtils.Options = {}) => {
       error !== null &&
       "message" in error
     ) {
-      normalizedMessage = String((error as any).message).toLowerCase();
+      normalizedMessage = String(
+        (error as { message: unknown }).message,
+      ).toLowerCase();
     }
 
     // 🧽 Filter known, non-critical messages
@@ -60,15 +66,9 @@ const httpClient = async (url: string, options: fetchUtils.Options = {}) => {
 
     if (!isExpected) {
       Sentry.captureException(error, {
-        tags: {
-          url,
-          method: options.method || "GET",
-        },
+        tags: { url, method: options.method || "GET" },
         extra: {
-          request: {
-            url,
-            options,
-          },
+          request: { url, options },
         },
       });
     }
@@ -109,18 +109,18 @@ const dataProvider: DataProvider = {
   deleteMany: (resource, params) =>
     baseProvider.deleteMany(resolveResource(resource), params),
 
-  upload: async (resource: string, params: any) => {
+  upload: async (resource: string, params: CreateParams) => {
     const url = `${API_HOST}/api/v2/${resolveResource(resource)}`;
-    const options = {
+    const options: HttpClientOptions = {
       method: "POST",
-      body: params.data,
+      body: params.data as any,
       isUpload: true,
     };
     const { json } = await httpClient(url, options);
     return { data: json };
   },
 
-  refund: async (resource: string, params: any) => {
+  refund: async (resource: string, params: UpdateParams) => {
     if (!["purchases"].includes(resource)) {
       throw new Error(`Refund is not supported for resource: ${resource}`);
     }
@@ -129,7 +129,7 @@ const dataProvider: DataProvider = {
     }
 
     const url = `${API_HOST}/api/v2/${resolveResource(resource)}/${params.id}/refund`;
-    const options = {
+    const options: HttpClientOptions = {
       method: "POST",
       body: JSON.stringify(params.data),
     };

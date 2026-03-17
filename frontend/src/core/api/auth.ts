@@ -41,11 +41,16 @@ const authPost = async <S extends z.ZodTypeAny>(
 // 🔁 Shared error handler for failed fetch responses
 const handleAuthError = async (response: Response): Promise<never> => {
   let message = `HTTP ${response.status}`;
-  let data: any = null;
+  let data: unknown = null;
 
   try {
     data = await response.json();
-    message = data?.message || data?.error || response.statusText || message;
+    if (data && typeof data === "object") {
+      const errorObj = data as Record<string, unknown>;
+      message = String(
+        errorObj.message || errorObj.error || response.statusText || message,
+      );
+    }
   } catch {
     /* ignore */
   }
@@ -66,7 +71,19 @@ const handleAuthError = async (response: Response): Promise<never> => {
     });
   }
 
-  throw { message, status: response.status, data, details: data?.details };
+  const apiError = new ApiError(message, response.status, data);
+
+  if (!isExpected) {
+    Sentry.captureException(apiError, {
+      extra: {
+        url: response.url,
+        status: response.status,
+        data,
+      },
+    });
+  }
+
+  throw apiError;
 };
 
 // 🔐 Authenticate user and retrieve JWT token
@@ -118,3 +135,26 @@ export const requestChangePasswordToken = (
     { login },
     StringResponseSchema,
   );
+
+export class ApiError extends Error {
+  status: number;
+  data: unknown;
+  details: unknown;
+
+  constructor(message: string, status: number, data: unknown) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.data = data;
+
+    // Details extrahieren, falls vorhanden
+    if (data && typeof data === "object") {
+      this.details = (data as Record<string, unknown>).details;
+    }
+
+    // Sorgt dafür, dass der Stacktrace in modernen Browsern korrekt bleibt
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ApiError);
+    }
+  }
+}

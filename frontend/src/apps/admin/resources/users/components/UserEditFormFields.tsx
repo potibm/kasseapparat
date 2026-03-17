@@ -15,12 +15,17 @@ import {
 import { UserRecord } from "../types";
 import { UserEditToolbar } from "./UserEditToolbar";
 
-const validatePasswords = (value: string, allValues: any) => {
+const validatePasswords = (value: string, allValues: UserFormValues) => {
   if (value && value !== allValues.password) {
     return "The two passwords must match";
   }
   return undefined;
 };
+
+interface UserFormValues extends UserRecord {
+  confirm_password?: string;
+  password?: string;
+}
 
 export const UserEditFormFields: React.FC = () => {
   const record = useRecordContext<UserRecord>();

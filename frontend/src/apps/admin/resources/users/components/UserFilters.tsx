@@ -1,9 +1,14 @@
 import { SearchInput } from "react-admin";
 import { QuickFilter } from "@admin/ui/filters/QuickFilter";
 
-export const UserFilters = [
-  <SearchInput source="q" alwaysOn key="ID" />,
-  <QuickFilter source="isAdmin" label="Admin" defaultValue={true} key="ID" />,
+const UserFilters = [
+  <SearchInput source="q" alwaysOn key="search" />,
+  <QuickFilter
+    source="isAdmin"
+    label="Admin"
+    defaultValue={true}
+    key="admin"
+  />,
 ];
 
 export default UserFilters;

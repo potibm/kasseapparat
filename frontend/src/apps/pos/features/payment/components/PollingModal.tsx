@@ -5,12 +5,13 @@ import { getCurrentReaderId } from "@core/localstorage/helper/reader";
 import Button from "@pos/components/Button";
 import { usePaymentWebSocket } from "../hooks/usePaymentWebSocket";
 
-/**
- * Interface for the purchase object passed from the parent component.
- */
 interface PurchaseData {
   id: string;
   status: string;
+}
+
+interface PaymentConfirmation {
+  id: string;
 }
 
 /**
@@ -19,7 +20,7 @@ interface PurchaseData {
 interface PollingModalProps {
   purchase: PurchaseData;
   onClose: () => void;
-  onConfirmed: (data: any) => void;
+  onConfirmed: (data: PaymentConfirmation) => void;
   onComplete: (success: boolean) => void;
 }
 

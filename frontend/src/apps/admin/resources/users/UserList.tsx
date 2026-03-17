@@ -8,7 +8,7 @@ import {
   EmailField,
   ListProps,
 } from "react-admin";
-import { UserFilters } from "./components/UserFilters";
+import UserFilters from "./components/UserFilters";
 import { ConditionalDeleteButton } from "./components/ConditionalDeleteButton";
 
 export const UserList: React.FC<ListProps> = (props) => {

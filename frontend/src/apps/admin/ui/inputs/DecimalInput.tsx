@@ -2,45 +2,57 @@ import React from "react";
 import { TextInput, TextInputProps, Validator } from "react-admin";
 import Decimal from "decimal.js";
 
-const DecimalInput: React.FC<TextInputProps> = (props) => {
-  const validate: Validator = (value: any) => {
-    if (!value && props.validate) {
-      return undefined;
-    }
-    if (!value) return "Required";
+// Eigener Validator für Decimal-Logik
+const decimalValidator: Validator = (value: unknown) => {
+  if (value === null || value === undefined || value === "") {
+    return undefined; // Überlass 'required' dem Standard-Validator
+  }
 
-    try {
-      const decimalValue = new Decimal(value);
+  try {
+    const decimalValue = new Decimal(String(value));
 
-      if (decimalValue.isNaN()) {
-        return "Invalid number";
-      }
-      if (decimalValue.isNegative()) {
-        return "Negative number";
-      }
+    if (decimalValue.isNaN()) return "Invalid number";
+    if (decimalValue.isNegative()) return "Negative number";
 
-      return undefined;
-    } catch {
-      return "Invalid number";
-    }
-  };
+    return undefined;
+  } catch {
+    return "Invalid number";
+  }
+};
+
+const DecimalInput: React.FC<TextInputProps> = ({ validate, ...props }) => {
+  const compositeValidate = Array.isArray(validate)
+    ? [decimalValidator, ...validate]
+    : validate
+      ? [decimalValidator, validate]
+      : decimalValidator;
 
   const parse = (value: string | null): string | null => {
     if (!value) return null;
 
-    return value
+    const cleaned = value
       .trim()
-      .replaceAll(",", ".") // Replace all commas
-      .replaceAll(/\.(?=.*\.)/g, ""); // Keep only last decimal point
+      .replace(",", ".")
+      .replace(/[^\d.]/g, "");
+
+    const parts = cleaned.split(".");
+    return parts.length > 2
+      ? `${parts[0]}.${parts.slice(1).join("")}`
+      : cleaned;
   };
 
-  const format = (value: any) => {
+  const format = (value: unknown): string => {
     if (value === null || value === undefined) return "";
-    return value.toString().replace(",", ".");
+    return String(value).replace(".", ",");
   };
 
   return (
-    <TextInput {...props} parse={parse} format={format} validate={validate} />
+    <TextInput
+      {...props}
+      parse={parse}
+      format={format}
+      validate={compositeValidate}
+    />
   );
 };
 

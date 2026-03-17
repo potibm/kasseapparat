@@ -38,7 +38,7 @@ const GrossPriceInput: React.FC<GrossPriceInputProps> = ({
         console.error("Calculation error:", error);
       }
     }
-  }, [netPrice, vatRate, setValue, props.source]);
+  }, [netPrice, vatRate, setValue, precision, props.source]);
 
   return (
     <NumberInput

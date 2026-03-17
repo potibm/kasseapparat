@@ -108,9 +108,9 @@ export const usePaymentWebSocket = (
           console.error("WS: Error event", err);
           setError("A connection error occurred.");
         };
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (isMounted) {
-          setError(err.message || "Failed to initialize WebSocket");
+          setError((err as Error).message || "Failed to initialize WebSocket");
           setStatus("failed");
         }
       }
@@ -127,7 +127,7 @@ export const usePaymentWebSocket = (
         wsRef.current = null;
       }
     };
-  }, [purchaseId, getToken, websocketHost]);
+  }, [purchaseId, getToken, websocketHost, status]);
 
   return {
     status,

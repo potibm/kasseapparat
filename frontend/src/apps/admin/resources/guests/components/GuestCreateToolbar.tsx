@@ -5,20 +5,22 @@ import {
   useRedirect,
   useNotify,
   ToolbarProps,
+  RaRecord,
 } from "react-admin";
 import { useFormContext } from "react-hook-form";
+import { GuestRecord } from "../types";
 
 export const GuestCreateToolbar: React.FC<ToolbarProps> = ({ ...props }) => {
   const redirect = useRedirect();
   const { reset } = useFormContext();
   const notify = useNotify();
 
-  const handleSuccess = (data: any) => {
+  const handleSuccess = (data: RaRecord) => {
     notify(`Guest entry saved!`, { type: "info" });
     reset();
-    console.log("Created guest with data:", data);
 
-    const finalId = data.guestlistId;
+    const guest = data as GuestRecord;
+    const finalId = guest.guestlistId;
     if (finalId) {
       redirect(`/admin/guests/create?guestlist_id=${finalId}`);
     }
