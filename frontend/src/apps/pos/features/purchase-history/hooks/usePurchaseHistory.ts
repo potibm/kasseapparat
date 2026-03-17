@@ -24,7 +24,7 @@ export const usePurchaseHistory = (
       const errorMessage =
         error instanceof Error
           ? "Error while loading the purchase history: " + error.message
-          : "An unknown error has occured";
+          : "An unknown error has occurred";
 
       onError(errorMessage);
     } finally {
@@ -46,7 +46,7 @@ export const usePurchaseHistory = (
       const errorMessage =
         error instanceof Error
           ? "Error while refunding the purchase: " + error.message
-          : "An unknown error has occured";
+          : "An unknown error has occurred";
 
       onError(errorMessage);
       throw error;

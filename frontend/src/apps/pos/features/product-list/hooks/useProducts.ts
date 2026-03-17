@@ -22,7 +22,7 @@ export const useProducts = (
       const errorMessage =
         error instanceof Error
           ? "There was an error fetching the products: " + error.message
-          : "An unknown error has occured";
+          : "An unknown error has occurred";
 
       onError(errorMessage);
     } finally {
@@ -39,7 +39,7 @@ export const useProducts = (
       const errorMessage =
         error instanceof Error
           ? "Error on saving the interest: " + error.message
-          : "An unknown error has occured";
+          : "An unknown error has occurred";
 
       onError(errorMessage);
     }
