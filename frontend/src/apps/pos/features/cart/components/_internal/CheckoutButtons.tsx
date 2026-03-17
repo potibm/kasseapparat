@@ -12,11 +12,11 @@ interface CheckoutButtonsProps {
   handleCheckoutCart: (code: string, data: PaymentMethodData) => void;
 }
 
-const CheckoutButtons = ({
+const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
   cart,
   checkoutProcessing,
   handleCheckoutCart,
-}: CheckoutButtonsProps) => {
+}) => {
   const { currency, paymentMethods } = useConfig();
   const sumUpReaderId = getCurrentReaderId();
 

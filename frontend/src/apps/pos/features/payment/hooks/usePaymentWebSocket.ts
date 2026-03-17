@@ -4,6 +4,8 @@ import { useConfig } from "@core/config/providers/ConfigProvider";
 import {
   UsePaymentWebSocketReturn,
   PaymentStatus,
+  PaymentCommand,
+  PaymentMessagePayload,
 } from "../types/payment.types";
 
 export const usePaymentWebSocket = (
@@ -21,24 +23,27 @@ export const usePaymentWebSocket = (
   /**
    * Send message over websocket, when connection is open.
    */
-  const sendMessage = useCallback((type: string, payload: any) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({ type, ...payload });
-      console.log("WS Sending:", message);
-      wsRef.current.send(message);
-    } else {
-      console.warn(
-        "WS: Attempted to send message while connection was not open.",
-      );
-    }
-  }, []);
+  const sendMessage = useCallback(
+    (type: PaymentCommand, payload: PaymentMessagePayload) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        const message = JSON.stringify({ type, ...payload });
+        console.log("WS Sending:", message);
+        wsRef.current.send(message);
+      } else {
+        console.warn(
+          "WS: Attempted to send message while connection was not open.",
+        );
+      }
+    },
+    [],
+  );
 
   /**
    * Cancel the payment by sending a cancel message to the server. The server should respond with a cancel_ack which we handle in onmessage.
    */
   const cancel = useCallback(
     (readerId: string | undefined) => {
-      sendMessage("cancel_payment", { reader_id: readerId });
+      sendMessage("cancel_payment", { reader_id: String(readerId) });
     },
     [sendMessage],
   );

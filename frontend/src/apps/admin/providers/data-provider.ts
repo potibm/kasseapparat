@@ -113,7 +113,7 @@ const dataProvider: DataProvider = {
     const url = `${API_HOST}/api/v2/${resolveResource(resource)}`;
     const options: HttpClientOptions = {
       method: "POST",
-      body: params.data as any,
+      body: params.data as unknown as BodyInit,
       isUpload: true,
     };
     const { json } = await httpClient(url, options);

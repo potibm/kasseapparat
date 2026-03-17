@@ -103,6 +103,7 @@ const Cart: React.FC<CartProps> = ({
         <TableBody>
           {cart.items.map((cartElement: CartItemType) => (
             <CartRow
+              key={cartElement.id}
               cartElement={cartElement}
               currency={currency}
               removeFromCart={removeFromCart}

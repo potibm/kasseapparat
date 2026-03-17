@@ -1,6 +1,6 @@
 import "../assets/styles/pos-style.css";
 
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Alert } from "flowbite-react";
 // components & layouts
 import Cart from "../features/cart/components/Cart";
@@ -25,7 +25,7 @@ import {
   Guest as GuestType,
 } from "../utils/api.schemas";
 
-const Kasseapparat = () => {
+const Kasseapparat: React.FC = () => {
   const { apiHost, environmentMessage } = useConfig();
   const { username, getSafeToken, id: userId } = useAuth();
 
