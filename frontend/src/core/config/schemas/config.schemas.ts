@@ -6,7 +6,7 @@ export const ConfigSchema = z.object({
   sentryTraceSampleRate: z.number().min(0).max(1).optional(),
   sentryReplaySessionSampleRate: z.number().min(0).max(1).optional(),
   sentryReplayErrorSampleRate: z.number().min(0).max(1).optional(),
-  currencyLocale: z.string().default("dk-DK"),
+  currencyLocale: z.string().default("da-DK"),
   currencyCode: z.string().default("DKK"),
   fractionDigitsMin: z.number().default(0),
   fractionDigitsMax: z.number().default(2),
@@ -40,7 +40,7 @@ export const ConfigSchema = z.object({
     )
     .optional()
     .default([]),
-  locale: z.string().default("dk-DK"),
+  locale: z.string().default("da-DK"),
 });
 
 export type RawConfig = z.infer<typeof ConfigSchema>;

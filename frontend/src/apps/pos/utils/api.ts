@@ -94,7 +94,7 @@ export const fetchGuestlistByProductId = async (
   productId: number,
   query: string,
 ): Promise<Guest[]> => {
-  const url = `${apiHost}/api/v2/products/${productId}/guests?q=${query}`;
+  const url = `${apiHost}/api/v2/products/${productId}/guests?q=${encodeURIComponent(query)}`;
 
   const GuestListSchema = z.preprocess(
     (val) => (val === null ? [] : val),

@@ -126,6 +126,7 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
               <TableCell className="flex justify-end">
                 <Button
                   color="failure"
+                  aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
                   onClick={() => setModalState({ show: true, purchase })}
                 >
                   <HiReceiptRefund />

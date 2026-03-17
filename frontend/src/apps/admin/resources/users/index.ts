@@ -8,5 +8,5 @@ export default {
   edit: UserEdit,
   create: UserCreate,
   icon: PersonIcon,
-  recordRepresentation: "name",
+  recordRepresentation: "username",
 };
