@@ -2,8 +2,8 @@ import React from "react";
 import { Menu as RaMenu, MenuItemLink, useSidebarState } from "react-admin";
 import { useConfig } from "@core/config/providers/ConfigProvider";
 import { MenuDivider, MenuMessage } from "./MenuComponents";
-import sumupreaders from "../resources/sumupreaders";
-import sumuptransactions from "../resources/sumuptransactions";
+import sumupreaders from "../resources/sumup-readers";
+import sumuptransactions from "../resources/sumup-transactions";
 
 export const Menu: React.FC = () => {
   const { environmentMessage, sumupEnabled } = useConfig();

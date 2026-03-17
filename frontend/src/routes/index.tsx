@@ -5,7 +5,7 @@ import {
   RouterProvider,
   RouteObject,
 } from "react-router";
-import { useAuth } from "../apps/pos/features/auth/providers/auth-provider";
+import { useAuth } from "../apps/pos/features/auth/providers/AuthProvider";
 import { ProtectedRoute } from "./ProtectedRoute";
 import Kasseapparat from "../apps/pos/pages/Pos";
 import Admin from "../apps/admin/Admin";

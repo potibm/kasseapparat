@@ -1,7 +1,7 @@
 import { useConfig } from "../../../../../../core/config/providers/ConfigProvider";
 import Button from "../../../../components/Button";
 import { Spinner } from "flowbite-react";
-import { getCurrentReaderId } from "../../../../../../core/localstorage/helper/reader";
+import { getCurrentReaderId } from "../../../../../../core/localstorage/helper/local-storage-reader";
 import { Cart } from "../../services/Cart";
 import Decimal from "decimal.js";
 import { PaymentMethodData } from "../../types/cart.types";

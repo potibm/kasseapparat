@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "../providers/auth-provider";
+import { useAuth } from "../providers/AuthProvider";
 import BaseCard from "../../../components/BaseCard";
 import { Spinner } from "flowbite-react";
 import { logout } from "../../../../../core/api/auth";

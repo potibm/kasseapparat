@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "../providers/auth-provider";
+import { useAuth } from "../providers/AuthProvider";
 import { Label, Button, TextInput, Alert, Spinner } from "flowbite-react";
 import { getJwtToken } from "../../../../../core/api/auth";
 import BaseCard from "../../../components/BaseCard";

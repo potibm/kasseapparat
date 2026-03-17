@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { createRoutesStub } from "react-router";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import * as ConfigProviderModule from "./core/config/providers/ConfigProvider";
-import AuthProvider from "./apps/pos/features/auth/providers/auth-provider";
+import AuthProvider from "./apps/pos/features/auth/providers/AuthProvider";
 import Login from "./apps/pos/features/auth/components/Login";
 import App from "./App";
 import "@testing-library/jest-dom";

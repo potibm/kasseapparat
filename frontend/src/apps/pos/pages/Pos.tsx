@@ -7,12 +7,12 @@ import Cart from "../features/cart/components/Cart";
 import ProductList from "../features/product-list/components/ProductList";
 import PurchaseHistory from "../features/purchase-history/components/PurchaseHistory";
 import ErrorModal from "../components/ErrorModal";
-import Menu from "../features/menu/compontents/Menu";
+import Menu from "../features/menu/components/Menu";
 import PollingModal from "@pos/features/payment/components/PollingModal";
 import Version from "../components/Version";
 import PosLayout from "../layouts/PosLayout";
 // hooks
-import { useAuth } from "../features/auth/providers/auth-provider";
+import { useAuth } from "../features/auth/providers/AuthProvider";
 import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import { useProducts } from "../features/product-list/hooks/useProducts";
 import { useCart } from "../features/cart/hooks/useCart";

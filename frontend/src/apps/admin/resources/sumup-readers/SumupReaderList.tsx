@@ -5,7 +5,7 @@ import {
   getCurrentReaderId,
   setCurrentReaderId,
   clearCurrentReaderId,
-} from "@core/localstorage/helper/reader";
+} from "@core/localstorage/helper/local-storage-reader";
 import SumupReaderListContent from "./components/SumupReaderListContent";
 import SumupReaderListActions from "./components/SumupReaderListActions";
 import { Box, Typography } from "@mui/material";

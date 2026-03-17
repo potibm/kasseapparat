@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Modal, ModalBody, ModalFooter, Spinner } from "flowbite-react";
 import { HiClock, HiCheckCircle, HiXCircle, HiBan } from "react-icons/hi";
-import { getCurrentReaderId } from "@core/localstorage/helper/reader";
+import { getCurrentReaderId } from "@core/localstorage/helper/local-storage-reader";
 import Button from "@pos/components/Button";
 import { usePaymentWebSocket } from "../hooks/usePaymentWebSocket";
 
