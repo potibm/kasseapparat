@@ -30,7 +30,7 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
 
     const escapedHighlight = highlight.replaceAll(
       /[.*+?^${}()|[\]\\]/g,
-      "\\$&",
+      String.raw`\$&`,
     );
 
     const regex = new RegExp(`(${escapedHighlight})`, "gi");
