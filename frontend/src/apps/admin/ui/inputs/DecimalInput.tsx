@@ -1,55 +1,23 @@
 import React from "react";
 import { TextInput, TextInputProps, Validator } from "react-admin";
-import Decimal from "decimal.js";
-
-const decimalValidator: Validator = (value: unknown) => {
-  if (value === null || value === undefined || value === "") {
-    return undefined;
-  }
-
-  try {
-    const decimalValue = new Decimal(String(value));
-
-    if (decimalValue.isNaN()) return "Invalid number";
-    if (decimalValue.isNegative()) return "Negative number";
-
-    return undefined;
-  } catch {
-    return "Invalid number";
-  }
-};
+import { parseDecimal, formatDecimal, decimalValidator } from "../../utils/decimal-utils"; 
 
 const DecimalInput: React.FC<TextInputProps> = ({ validate, ...props }) => {
-  const compositeValidate = Array.isArray(validate)
-    ? [decimalValidator, ...validate]
-    : validate
-      ? [decimalValidator, validate]
-      : decimalValidator;
+  let additionalValidators: Validator[] = [];
 
-  const parse = (value: string | null): string | null => {
-    if (!value) return null;
+  if (Array.isArray(validate)) {
+    additionalValidators = validate;
+  } else if (validate) {
+    additionalValidators = [validate];
+  }
 
-    const cleaned = value
-      .trim()
-      .replace(",", ".")
-      .replaceAll(/[^\d.]/g, "");
-
-    const parts = cleaned.split(".");
-    return parts.length > 2
-      ? `${parts[0]}.${parts.slice(1).join("")}`
-      : cleaned;
-  };
-
-  const format = (value: unknown): string => {
-    if (value === null || value === undefined) return "";
-    return String(value).replace(".", ",");
-  };
+  const compositeValidate = [decimalValidator, ...additionalValidators];
 
   return (
     <TextInput
       {...props}
-      parse={parse}
-      format={format}
+      parse={parseDecimal}
+      format={formatDecimal}
       validate={compositeValidate}
     />
   );
