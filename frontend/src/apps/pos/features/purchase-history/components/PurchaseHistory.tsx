@@ -59,7 +59,7 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
     const currentTopId = history[0].id;
     if (lastTopId.current === null) {
       lastTopId.current = currentTopId;
-    } else {
+    } else if (lastTopId.current !== currentTopId) {
       requestAnimationFrame(() => {
         setFlash(true);
         setTimeout(() => setFlash(false), 500);

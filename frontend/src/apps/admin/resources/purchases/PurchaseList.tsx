@@ -15,7 +15,7 @@ import { ConditionalDeleteOnAdminButton } from "../../ui/buttons/ConditionalDele
 import { ConditionalRefundButton } from "./components/ConditionalRefundButton";
 
 export const PurchaseList: React.FC = () => {
-  const { currencyOptions, locale } = useConfig();
+  const { currencyOptions, currencyLocale, dateLocale } = useConfig();
 
   return (
     <List sort={{ field: "createdAt", order: "DESC" }} actions={false}>
@@ -35,12 +35,12 @@ export const PurchaseList: React.FC = () => {
         <DateField
           source="createdAt"
           showTime={true}
-          locales={locale}
+          locales={dateLocale}
           options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
         />
         <NumberField
           source="totalGrossPrice"
-          locales={locale}
+          locales={currencyLocale}
           options={currencyOptions}
         />
         <TextField source="createdBy.username" />

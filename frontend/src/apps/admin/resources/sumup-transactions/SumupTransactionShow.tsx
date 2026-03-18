@@ -14,7 +14,7 @@ import SumupTransactionStatusField from "./components/SumupTransactionStatusFiel
 
 export const SumupTransactionShow: React.FC<ShowProps> = (props) => {
   const currency = useConfig().currencyOptions;
-  const { locale } = useConfig();
+  const { currencyLocale, dateLocale } = useConfig();
 
   return (
     <Show {...props}>
@@ -22,14 +22,18 @@ export const SumupTransactionShow: React.FC<ShowProps> = (props) => {
         <TextField source="transactionId" />
         <TextField source="transactionCode" />
         <SimpleShowLayout direction="row">
-          <NumberField source="amount" locales={locale} options={currency} />
+          <NumberField
+            source="amount"
+            locales={currencyLocale}
+            options={currency}
+          />
           <TextField source="currency" />
         </SimpleShowLayout>
         <DateField
           source="createdAt"
           showDate={true}
           showTime={true}
-          locales={locale}
+          locales={dateLocale}
           options={{
             weekday: "long",
             year: "numeric",
@@ -51,7 +55,7 @@ export const SumupTransactionShow: React.FC<ShowProps> = (props) => {
               source="timestamp"
               showDate={true}
               showTime={true}
-              locales={locale}
+              locales={dateLocale}
               options={{
                 weekday: "long",
                 year: "numeric",

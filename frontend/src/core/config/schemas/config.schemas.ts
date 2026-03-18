@@ -36,6 +36,7 @@ export const ConfigSchema = z.object({
       }),
     )
     .default([]),
+  /** @deprecated: Will be removed in favor of dateLocale or currencyLocale */
   locale: z.string().default("da-DK"),
 });
 

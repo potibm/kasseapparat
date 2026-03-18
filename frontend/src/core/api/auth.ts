@@ -114,16 +114,23 @@ export const changePassword = (
   userId: string | number,
   token: string,
   password: string,
-): Promise<SimpleResponse> =>
-  authPost(
+): Promise<SimpleResponse> => {
+  const normalizedUserId = typeof userId === "string" ? Number(userId) : userId;
+
+  if (!Number.isInteger(normalizedUserId)) {
+    throw new TypeError("Invalid userId");
+  }
+
+  return authPost(
     `${apiHost}/api/v2/auth/changePassword`,
     {
-      userId: typeof userId === "string" ? Number.parseInt(userId) : userId,
+      userId: normalizedUserId,
       token,
       password,
     },
     SimpleResponseSchema,
   );
+};
 
 // 📧 Request password reset token for login name
 export const requestChangePasswordToken = (

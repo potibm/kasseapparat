@@ -9,7 +9,12 @@ export const GuestlistAvatar: React.FC<{ name: string }> = ({ name }) => {
     // Split the cleaned name into words
     const words = cleanedName.split(" ").filter((word) => word.length > 0);
 
-    // If there's only one word, take the first letter twice
+    // Fallback when no usable letters remain
+    if (words.length === 0) {
+      return "?";
+    }
+
+    // If there's only one word, take the first letter
     if (words.length === 1) {
       return words[0][0].toUpperCase();
     }

@@ -12,7 +12,7 @@ import { useConfig } from "../../../../core/config/providers/ConfigProvider";
 import { Product } from "./types";
 
 export const ProductList: React.FC = () => {
-  const { currencyOptions, locale } = useConfig();
+  const { currencyOptions, currencyLocale } = useConfig();
   const { permissions, isLoading: permissionsLoading } = usePermissions();
 
   if (permissionsLoading) return <>Loading...</>;
@@ -25,7 +25,7 @@ export const ProductList: React.FC = () => {
         <NumberField source="vatRate" />
         <NumberField
           source="grossPrice"
-          locales={locale}
+          locales={currencyLocale}
           options={currencyOptions}
         />
         <NumberField source="pos" />

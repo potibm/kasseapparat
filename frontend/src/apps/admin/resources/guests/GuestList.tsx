@@ -8,7 +8,7 @@ import { AttendedGuestsBooleanField } from "./components/AttendedGuestsBooleanFi
 import { ListProps } from "flowbite-react";
 
 export const GuestList: React.FC<ListProps> = (props) => {
-  const { locale } = useConfig();
+  const { dateLocale } = useConfig();
 
   return (
     <List
@@ -27,7 +27,7 @@ export const GuestList: React.FC<ListProps> = (props) => {
           source="arrivedAt"
           showTime={true}
           emptyText="-"
-          locales={locale}
+          locales={dateLocale}
           options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
         />
         <ConditionalDeleteOnOwnershipButton mutationMode="pessimistic" />

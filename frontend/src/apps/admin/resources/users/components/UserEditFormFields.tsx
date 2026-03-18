@@ -16,6 +16,9 @@ import { UserRecord } from "../types";
 import { UserEditToolbar } from "./UserEditToolbar";
 
 const validatePasswords = (value: string, allValues: UserFormValues) => {
+  if (allValues.password && !value) {
+    return "Please confirm your new password";
+  }
   if (value && value !== allValues.password) {
     return "The two passwords must match";
   }

@@ -11,16 +11,15 @@ import { ProductInterest } from "./types";
 import { useConfig } from "../../../../core/config/providers/ConfigProvider";
 
 export const ProductInterestList: React.FC = () => {
-  const { locale } = useConfig();
+  const { dateLocale } = useConfig();
 
   return (
-    <List<ProductInterest> sort={{ field: "pos", order: "ASC" }}>
+    <List<ProductInterest> sort={{ field: "createdAt", order: "DESC" }}>
       <Datagrid rowClick="" bulkActionButtons={false}>
         <NumberField source="id" />
-        <NumberField source="wuff" />
         <DateField
           showTime={true}
-          locales={locale}
+          locales={dateLocale}
           options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
           source="createdAt"
         />

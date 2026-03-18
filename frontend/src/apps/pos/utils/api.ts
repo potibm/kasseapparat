@@ -22,10 +22,11 @@ const handleFetchError = async (response: Response): Promise<never> => {
     // Ignore invalid JSON
   }
   const error = new Error(message);
+  const path = response.url ? new URL(response.url).pathname : undefined;
   Sentry.captureException(error, {
     extra: {
-      url: response.url,
       status: response.status,
+      path,
     },
   });
   throw error;

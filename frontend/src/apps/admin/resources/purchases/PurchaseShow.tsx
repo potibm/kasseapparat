@@ -14,7 +14,7 @@ import { PurchaseStatusField } from "./components/PurchaseStatusField";
 import { PaymentMethodField } from "./components/PaymentMethodField";
 
 export const PurchaseShow: React.FC = (props) => {
-  const { currencyOptions: currency, locale } = useConfig();
+  const { currencyOptions: currency, currencyLocale } = useConfig();
 
   return (
     <Show {...props}>
@@ -25,17 +25,17 @@ export const PurchaseShow: React.FC = (props) => {
         <PaymentMethodField source="paymentMethod" />
         <NumberField
           source="totalNetPrice"
-          locales={locale}
+          locales={currencyLocale}
           options={currency}
         />
         <NumberField
           source="totalVatAmount"
-          locales={locale}
+          locales={currencyLocale}
           options={currency}
         />
         <NumberField
           source="totalGrossPrice"
-          locales={locale}
+          locales={currencyLocale}
           options={currency}
         />
         <ReferenceField
@@ -53,12 +53,12 @@ export const PurchaseShow: React.FC = (props) => {
             <TextField source="product.name" />
             <NumberField
               source="totalNetPrice"
-              locales={locale}
+              locales={currencyLocale}
               options={currency}
             />
             <NumberField
               source="totalGrossPrice"
-              locales={locale}
+              locales={currencyLocale}
               options={currency}
             />
           </Datagrid>

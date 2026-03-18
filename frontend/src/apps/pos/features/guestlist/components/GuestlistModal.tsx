@@ -100,6 +100,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
     if (isOpen) {
       const handle = requestAnimationFrame(() => {
         fetchGuestEntries(searchQuery);
+        setNoteToDisplay(null);
       });
       return () => cancelAnimationFrame(handle);
     }
@@ -109,6 +110,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
     if (!isOpen) {
       const handle = requestAnimationFrame(() => {
         setSearchQuery("");
+        setNoteToDisplay(null);
       });
       return () => cancelAnimationFrame(handle);
     }

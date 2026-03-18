@@ -38,7 +38,11 @@ const CartRow: React.FC<CartRowProps> = ({
         {currency.format(cartElement.totalGrossPrice.toNumber())}
       </TableCell>
       <TableCell className="flex justify-end">
-        <Button color="failure" onClick={() => removeFromCart(cartElement)}>
+        <Button
+          color="failure"
+          aria-label={`Remove ${cartElement.name}`}
+          onClick={() => removeFromCart(cartElement)}
+        >
           <HiXCircle />
         </Button>
       </TableCell>

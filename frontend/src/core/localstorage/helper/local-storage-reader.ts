@@ -15,7 +15,12 @@ export function getCurrentReaderId(): string | undefined {
   const match = cookies.find((c) => c.startsWith(COOKIE_NAME + "="));
   if (!match) return undefined;
 
-  const rawValue = decodeURIComponent(match.split("=")[1]);
+  let rawValue: string;
+  try {
+    rawValue = decodeURIComponent(match.slice(COOKIE_NAME.length + 1));
+  } catch {
+    return undefined;
+  }
 
   const result = ReaderIdSchema.safeParse(rawValue);
   return result.success ? result.data : undefined;

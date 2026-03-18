@@ -18,9 +18,7 @@ export const SumupReaderPairingCodeInput: React.FC<Partial<TextInputProps>> = (
       label="Pairing Code"
       validate={[required(), validatePairingCode]}
       helperText="Enter the 9-character code using only uppercase letters and digits."
-      onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
-        e.target.value = e.target.value.toUpperCase();
-      }}
+      parse={(value: string) => value?.toUpperCase()}
       slotProps={{
         htmlInput: {
           maxLength: 9,

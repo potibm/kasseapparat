@@ -44,6 +44,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
         const finalConfig = transformConfig(parsedData, API_HOST);
 
         setConfig(finalConfig);
+        console.log("Config loaded successfully:", finalConfig);
       } catch (err) {
         console.error("Config loading failed:", err);
         setError(err instanceof Error ? err.message : "Unknown error");

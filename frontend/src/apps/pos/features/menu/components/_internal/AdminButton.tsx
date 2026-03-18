@@ -25,7 +25,7 @@ const AdminButton: React.FC<ButtonProps> = ({ ...props }) => {
         gravatarUrl: userdata.gravatarUrl ?? "",
       };
 
-      await initializeSession(data, token, 5);
+      initializeSession(data, token, 5);
     }
 
     window.open("/admin", "_blank", "noopener,noreferrer");

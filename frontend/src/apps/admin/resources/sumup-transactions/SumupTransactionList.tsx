@@ -12,7 +12,12 @@ import { SumupTransactionTimeRangeFilter } from "./components/SumupTransactionTi
 import { SumupTransactionStatusField } from "./components/SumupTransactionStatusField";
 
 export const SumupTransactionList: React.FC<ListProps> = (props) => {
-  const { sumupEnabled, currencyOptions: currency, locale } = useConfig();
+  const {
+    sumupEnabled,
+    currencyOptions: currency,
+    currencyLocale,
+    dateLocale,
+  } = useConfig();
 
   if (!sumupEnabled) {
     return (
@@ -38,7 +43,7 @@ export const SumupTransactionList: React.FC<ListProps> = (props) => {
         <TextField source="transactionCode" sortable={false} />
         <NumberField
           source="amount"
-          locales={locale}
+          locales={currencyLocale}
           options={currency}
           sortable={false}
         />
@@ -46,7 +51,7 @@ export const SumupTransactionList: React.FC<ListProps> = (props) => {
         <DateField
           source="createdAt"
           showTime={true}
-          locales={locale}
+          locales={dateLocale}
           options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
           sortable={false}
         />

@@ -49,7 +49,11 @@ export const usePaymentWebSocket = (
    */
   const cancel = useCallback(
     (readerId: string | undefined) => {
-      sendMessage("cancel_payment", { reader_id: String(readerId) });
+      if (!readerId) {
+        console.warn("Cannot cancel payment: no reader ID provided");
+        return;
+      }
+      sendMessage("cancel_payment", { reader_id: readerId });
     },
     [sendMessage],
   );

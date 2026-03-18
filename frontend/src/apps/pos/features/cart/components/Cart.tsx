@@ -118,11 +118,15 @@ const Cart: React.FC<CartProps> = ({
             </TableCell>
             <TableCell className="flex justify-end">
               {cart.isEmpty ? (
-                <Button disabled color="failure">
+                <Button disabled color="failure" aria-label="Clear cart">
                   <HiXCircle />
                 </Button>
               ) : (
-                <Button color="failure" onClick={() => removeAllFromCart()}>
+                <Button
+                  color="failure"
+                  onClick={() => removeAllFromCart()}
+                  aria-label="Clear cart"
+                >
                   <HiXCircle />
                 </Button>
               )}

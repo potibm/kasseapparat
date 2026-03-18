@@ -65,10 +65,18 @@ const httpClient = async (url: string, options: HttpClientOptions = {}) => {
     );
 
     if (!isExpected) {
+      const safeHeaders = new Headers(headers);
+      safeHeaders.delete("Authorization");
+
       Sentry.captureException(error, {
         tags: { url, method: options.method || "GET" },
         extra: {
-          request: { url, options },
+          request: {
+            url,
+            method: options.method || "GET",
+            headers: Object.fromEntries(safeHeaders.entries()),
+            hasBody: options.body != null,
+          },
         },
       });
     }
