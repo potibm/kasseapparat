@@ -73,7 +73,9 @@ const Kasseapparat: React.FC = () => {
       await checkout(paymentMethodCode, paymentMethodData);
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "An unknown error has occurred";
+        error instanceof Error
+          ? error.message
+          : "An unknown error has occurred";
 
       showError(errorMessage);
     } finally {
@@ -90,7 +92,9 @@ const Kasseapparat: React.FC = () => {
       await refreshProducts();
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "An unknown error has occurred";
+        error instanceof Error
+          ? error.message
+          : "An unknown error has occurred";
 
       showError(errorMessage);
     }
