@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Cart } from "../services/Cart";
 import { storePurchase } from "../../../utils/api";
 import { PaymentMethodData } from "../types/cart.types";
@@ -20,6 +20,13 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
   const [checkoutProcessing, setCheckoutProcessing] = useState<string | null>(
     null,
   );
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const add = useCallback(
     (product: ProductType, count: number, listItem: GuestType | null) => {
@@ -52,6 +59,11 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
           const enrichedPurchase = {
             ...createdPurchase,
             onComplete: (success: boolean) => {
+              if (!isMounted.current) {
+                reject(new Error("Component unmounted during polling"));
+                return;
+              }
+
               setIsPolling(false);
               setPendingPurchase(null);
               setCheckoutProcessing(null);
@@ -70,15 +82,19 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
         });
       }
 
-      if (createdPurchase.status === "confirmed") {
-        clear();
-        setCheckoutProcessing(null);
+      if (isMounted.current) {
+        if (createdPurchase.status === "confirmed") {
+          clear();
+          setCheckoutProcessing(null);
+        }
         return createdPurchase;
       }
 
       throw new Error("Unknown purchase status: " + createdPurchase.status);
     } catch (error: unknown) {
-      setCheckoutProcessing(null);
+      if (isMounted.current) {
+        setCheckoutProcessing(null);
+      }
       throw error;
     }
   };
