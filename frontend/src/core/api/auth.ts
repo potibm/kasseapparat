@@ -48,7 +48,7 @@ const handleAuthError = async (response: Response): Promise<never> => {
     if (data && typeof data === "object") {
       const errorObj = data as Record<string, unknown>;
       const rawMessage = errorObj.message ?? errorObj.error;
-      
+
       if (typeof rawMessage === "string") {
         message = rawMessage;
       } else if (response.statusText) {
@@ -158,12 +158,10 @@ export class ApiError extends Error {
     this.status = status;
     this.data = data;
 
-    // Details extrahieren, falls vorhanden
     if (data && typeof data === "object") {
       this.details = (data as Record<string, unknown>).details;
     }
 
-    // Sorgt dafür, dass der Stacktrace in modernen Browsern korrekt bleibt
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ApiError);
     }

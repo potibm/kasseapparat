@@ -79,10 +79,7 @@ const Kasseapparat: React.FC = () => {
 
       showError(errorMessage);
     } finally {
-      await Promise.all([
-        refreshHistory(), // Historie neu vom Server laden
-        refreshProducts(), // Lagerbestände/Produkte aktualisieren
-      ]);
+      await Promise.all([refreshHistory(), refreshProducts()]);
     }
   };
 
