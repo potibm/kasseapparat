@@ -1,0 +1,150 @@
+import jsonServerProvider from "ra-data-json-server";
+import {
+  fetchUtils,
+  addRefreshAuthToDataProvider,
+  DataProvider,
+  CreateParams,
+  UpdateParams,
+} from "react-admin";
+import * as Sentry from "@sentry/react";
+import { refreshToken } from "./refresh-token";
+import { getSessionToken } from "../utils/auth-utils";
+
+const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
+
+interface HttpClientOptions extends fetchUtils.Options {
+  isUpload?: boolean;
+}
+
+const resourceAlias: Record<string, string> = {
+  sumupReaders: "sumup/readers",
+  sumupTransactions: "sumup/transactions",
+};
+
+const resolveResource = (resource: string) =>
+  resourceAlias[resource] || resource;
+
+const httpClient = async (url: string, options: HttpClientOptions = {}) => {
+  const headers =
+    options.headers instanceof Headers
+      ? options.headers
+      : new Headers(options.headers || { Accept: "application/json" });
+
+  if (!options.isUpload) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const token = getSessionToken();
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  options.headers = headers;
+
+  try {
+    return await fetchUtils.fetchJson(url, options);
+  } catch (error: unknown) {
+    let normalizedMessage = "";
+
+    if (error instanceof Error) {
+      normalizedMessage = error.message.toLowerCase();
+    } else if (
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error
+    ) {
+      normalizedMessage = String(
+        (error as { message: unknown }).message,
+      ).toLowerCase();
+    }
+
+    // 🧽 Filter known, non-critical messages
+    const knownNonCritical = ["cookie token is empty"];
+
+    const isExpected = knownNonCritical.some((msg) =>
+      normalizedMessage.includes(msg),
+    );
+
+    if (!isExpected) {
+      const safeHeaders = new Headers(headers);
+      safeHeaders.delete("Authorization");
+
+      Sentry.captureException(error, {
+        tags: { url, method: options.method || "GET" },
+        extra: {
+          request: {
+            url,
+            method: options.method || "GET",
+            headers: Object.fromEntries(safeHeaders.entries()),
+            hasBody: options.body != null,
+          },
+        },
+      });
+    }
+
+    throw error;
+  }
+};
+
+const baseProvider = jsonServerProvider(`${API_HOST}/api/v2`, httpClient);
+
+const dataProvider: DataProvider = {
+  ...baseProvider,
+
+  getList: (resource, params) =>
+    baseProvider.getList(resolveResource(resource), params),
+
+  getOne: (resource, params) =>
+    baseProvider.getOne(resolveResource(resource), params),
+
+  getMany: (resource, params) =>
+    baseProvider.getMany(resolveResource(resource), params),
+
+  getManyReference: (resource, params) =>
+    baseProvider.getManyReference(resolveResource(resource), params),
+
+  create: (resource, params) =>
+    baseProvider.create(resolveResource(resource), params),
+
+  update: (resource, params) =>
+    baseProvider.update(resolveResource(resource), params),
+
+  updateMany: (resource, params) =>
+    baseProvider.updateMany(resolveResource(resource), params),
+
+  delete: (resource, params) =>
+    baseProvider.delete(resolveResource(resource), params),
+
+  deleteMany: (resource, params) =>
+    baseProvider.deleteMany(resolveResource(resource), params),
+
+  upload: async (resource: string, params: CreateParams) => {
+    const url = `${API_HOST}/api/v2/${resolveResource(resource)}`;
+    const options: HttpClientOptions = {
+      method: "POST",
+      body: params.data as unknown as BodyInit,
+      isUpload: true,
+    };
+    const { json } = await httpClient(url, options);
+    return { data: json };
+  },
+
+  refund: async (resource: string, params: UpdateParams) => {
+    if (!["purchases"].includes(resource)) {
+      throw new Error(`Refund is not supported for resource: ${resource}`);
+    }
+    if (!params.id) {
+      throw new Error("Refund requires an id");
+    }
+
+    const url = `${API_HOST}/api/v2/${resolveResource(resource)}/${params.id}/refund`;
+    const options: HttpClientOptions = {
+      method: "POST",
+      body: JSON.stringify(params.data),
+    };
+
+    const { json } = await httpClient(url, options);
+    return { data: json };
+  },
+};
+
+export default addRefreshAuthToDataProvider(dataProvider, refreshToken);
