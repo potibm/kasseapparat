@@ -47,9 +47,13 @@ const handleAuthError = async (response: Response): Promise<never> => {
     data = await response.json();
     if (data && typeof data === "object") {
       const errorObj = data as Record<string, unknown>;
-      message = String(
-        errorObj.message || errorObj.error || response.statusText || message,
-      );
+      const rawMessage = errorObj.message ?? errorObj.error;
+      
+      if (typeof rawMessage === "string") {
+        message = rawMessage;
+      } else if (response.statusText) {
+        message = response.statusText;
+      }
     }
   } catch {
     /* ignore */

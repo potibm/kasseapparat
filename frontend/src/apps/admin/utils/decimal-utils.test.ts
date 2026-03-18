@@ -4,7 +4,7 @@ import { parseDecimal, formatDecimal, decimalValidator } from "./decimal-utils";
 describe("Decimal Utils", () => {
   it("should parse various inputs to a clean dot-separated string", () => {
     expect(parseDecimal("12,34")).toBe("12.34");
-    expect(parseDecimal("1.234,56")).toBe("1.23456"); 
+    expect(parseDecimal("1.234,56")).toBe("1.23456");
     expect(parseDecimal("abc 12.3")).toBe("12.3");
   });
 

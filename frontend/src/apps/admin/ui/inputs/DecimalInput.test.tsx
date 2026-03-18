@@ -9,7 +9,7 @@ it("should integrate with react-admin context", () => {
       <SimpleForm record={{ price: "100.5" }} toolbar={false}>
         <DecimalInput source="price" label="Price" />
       </SimpleForm>
-    </AdminContext>
+    </AdminContext>,
   );
 
   expect(screen.getByLabelText("Price")).toHaveValue("100,5");

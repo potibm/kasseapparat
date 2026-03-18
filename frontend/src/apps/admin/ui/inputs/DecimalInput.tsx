@@ -1,6 +1,10 @@
 import React from "react";
 import { TextInput, TextInputProps, Validator } from "react-admin";
-import { parseDecimal, formatDecimal, decimalValidator } from "../../utils/decimal-utils"; 
+import {
+  parseDecimal,
+  formatDecimal,
+  decimalValidator,
+} from "../../utils/decimal-utils";
 
 const DecimalInput: React.FC<TextInputProps> = ({ validate, ...props }) => {
   let additionalValidators: Validator[] = [];

@@ -150,7 +150,11 @@ const ChangePassword: React.FC = () => {
               <Button
                 color="red"
                 className="mt-2"
-                onClick={() => navigate(validationMessage.link!)}
+                onClick={() => {
+                  if (validationMessage.link) {
+                    navigate(validationMessage.link);
+                  }
+                }}
               >
                 {validationMessage.linkText}
               </Button>
