@@ -9,8 +9,12 @@ import RefundWithConfirmButton from "./RefundWithConfirmButton";
 export const ConditionalRefundButton: React.FC<DeleteWithConfirmButtonProps> = (
   props,
 ) => {
-  const { permissions } = usePermissions();
+  const { permissions, isLoading } = usePermissions();
   const record = useRecordContext(props);
+
+  if (isLoading || !record) {
+    return null;
+  }
 
   if (
     permissions === "admin" &&

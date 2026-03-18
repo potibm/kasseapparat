@@ -1,11 +1,17 @@
 import React from "react";
-import { List, Datagrid, TextField, NumberField, DateField } from "react-admin";
+import {
+  List,
+  Datagrid,
+  TextField,
+  NumberField,
+  DateField,
+  ListProps,
+} from "react-admin";
 import GuestActions from "./components/GuestActions";
 import { GuestFilters } from "./components/GuestFilters";
 import { useConfig } from "../../../../core/config/providers/ConfigProvider";
 import { ConditionalDeleteOnOwnershipButton } from "../../ui/buttons/ConditionalDeleteOnOwnershipButton";
 import { AttendedGuestsBooleanField } from "./components/AttendedGuestsBooleanField";
-import { ListProps } from "flowbite-react";
 
 export const GuestList: React.FC<ListProps> = (props) => {
   const { dateLocale } = useConfig();

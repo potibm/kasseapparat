@@ -1,4 +1,4 @@
-import ListIcon from "@mui/icons-material/Inventory";
+import ListIcon from "@mui/icons-material/List";
 import { PurchaseList } from "./PurchaseList";
 import { PurchaseShow } from "./PurchaseShow";
 

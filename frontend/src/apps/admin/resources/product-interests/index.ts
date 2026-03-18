@@ -1,4 +1,4 @@
-import ThumbUpIcon from "@mui/icons-material/Inventory";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import { ProductInterestList } from "./ProductInterestList";
 
 export default {

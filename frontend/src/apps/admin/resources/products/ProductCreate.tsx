@@ -32,12 +32,12 @@ export const ProductCreate: React.FC = () => {
         <h6>Layout</h6>
         <NumberInput
           source="pos"
-          helperText="The products will shown in this order"
+          helperText="The products will be shown in this order"
           validate={[required()]}
         />
         <BooleanInput
           source="wrapAfter"
-          helperText="Create a line break afther this product"
+          helperText="Create a line break after this product"
         />
       </SimpleForm>
     </Create>

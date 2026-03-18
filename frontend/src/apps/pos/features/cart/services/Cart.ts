@@ -111,6 +111,8 @@ export class Cart {
     paymentMethodCode: string,
     paymentMethodData: PaymentMethodData,
   ): ApiCreatePayloadPurchase {
+    const { type: _type, ...cleanPaymentData } = paymentMethodData;
+
     return {
       paymentMethod: paymentMethodCode,
       cart: this.items.map((item) => ({
@@ -120,7 +122,7 @@ export class Cart {
       })),
       totalGrossPrice: this.totalGross.toString(),
       totalNetPrice: this.totalNet.toString(),
-      ...paymentMethodData,
+      ...cleanPaymentData,
     };
   }
 }

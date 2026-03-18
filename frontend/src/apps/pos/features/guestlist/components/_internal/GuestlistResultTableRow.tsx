@@ -28,20 +28,29 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
     if (!text) return "";
     if (!highlight.trim()) return text;
 
-    const regex = new RegExp(`(${highlight})`, "gi");
+    const escapedHighlight = highlight.replaceAll(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&",
+    );
+
+    const regex = new RegExp(`(${escapedHighlight})`, "gi");
     const parts = text.split(regex);
 
     return (
       <span>
-        {parts.map((part, i) => (
-          <Fragment key={`hl-${part}-${i}`}>
-            {regex.test(part) ? (
-              <span className="font-bold underline">{part}</span>
-            ) : (
-              part
-            )}
-          </Fragment>
-        ))}
+        {parts.map((part, i) => {
+          const isMatch = part.toLowerCase() === highlight.toLowerCase();
+
+          return (
+            <Fragment key={`hl-${part}-${i}`}>
+              {isMatch ? (
+                <span className="font-bold underline">{part}</span>
+              ) : (
+                part
+              )}
+            </Fragment>
+          );
+        })}
       </span>
     );
   };

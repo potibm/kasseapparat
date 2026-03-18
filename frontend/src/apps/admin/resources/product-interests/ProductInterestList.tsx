@@ -15,7 +15,7 @@ export const ProductInterestList: React.FC = () => {
 
   return (
     <List<ProductInterest> sort={{ field: "createdAt", order: "DESC" }}>
-      <Datagrid rowClick="" bulkActionButtons={false}>
+      <Datagrid rowClick={false} bulkActionButtons={false}>
         <NumberField source="id" />
         <DateField
           showTime={true}
