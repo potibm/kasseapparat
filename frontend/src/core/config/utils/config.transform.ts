@@ -6,6 +6,7 @@ export const transformConfig = (
   apiHost: string,
 ): AppConfig => {
   const sumupEnabled = rawData.paymentMethods.some((m) => m.code === "SUMUP");
+  // Converts http:// -> ws:// and https:// -> wss:// for the websocket endpoint.
   const websocketHost = apiHost.replace(/^http/, "ws");
 
   const currencyOptions: Intl.NumberFormatOptions = {

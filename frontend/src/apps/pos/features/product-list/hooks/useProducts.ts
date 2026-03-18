@@ -15,9 +15,9 @@ export const useProducts = (
     setLoading(true);
     try {
       const token = await getToken();
-      const products = await fetchProducts(apiHost, token);
+      const fetchedProducts = await fetchProducts(apiHost, token);
 
-      setProducts(products);
+      setProducts(fetchedProducts);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error

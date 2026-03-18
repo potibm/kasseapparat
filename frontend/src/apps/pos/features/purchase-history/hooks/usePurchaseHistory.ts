@@ -32,7 +32,6 @@ export const usePurchaseHistory = (
     }
   }, [apiHost, getToken, userId, onError]);
 
-  // Initiales Laden beim Mounten oder wenn sich die UserID ändert
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);

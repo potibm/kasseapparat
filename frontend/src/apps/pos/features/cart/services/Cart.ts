@@ -27,7 +27,7 @@ export class Cart {
     if (itemProductWasFoundInCart) {
       const existingItem = this.items[existingIndex];
 
-      // Dubletten-Check für ListItems
+      // Duplicate prevention for list items
       if (
         listItem &&
         existingItem.listItems.some((li) => li.id === listItem.id)
@@ -52,7 +52,7 @@ export class Cart {
       };
       newItems[existingIndex] = updatedItem;
     } else {
-      // Neues Item erstellen
+      // Create new item
       const newItem: CartItem = {
         ...product,
         quantity: count,
