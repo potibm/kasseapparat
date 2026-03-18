@@ -16,6 +16,12 @@ export const usePaymentWebSocket = (
   const [lastMessageAt, setLastMessageAt] = useState<number>(Date.now());
   const [isConnected, setIsConnected] = useState(false);
 
+  const statusRef = useRef<PaymentStatus>(status);
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
   const wsRef = useRef<WebSocket | null>(null);
   const { getToken } = useAuth();
   const { websocketHost } = useConfig();
@@ -103,7 +109,7 @@ export const usePaymentWebSocket = (
           console.log("WS: Connection closed", event.code);
 
           // when still pending, a close usually indicates an error or network issue
-          if (status === "pending" && !event.wasClean) {
+          if (statusRef.current === "pending" && !event.wasClean) {
             setStatus("connection_lost");
           }
         };
@@ -126,13 +132,14 @@ export const usePaymentWebSocket = (
     // Cleanup on unmount or id-change
     return () => {
       isMounted = false;
-      clearTimeout(connectionTimeout);
+      if (connectionTimeout) clearTimeout(connectionTimeout);
       if (wsRef.current) {
+        wsRef.current.onclose = null;
         wsRef.current.close();
         wsRef.current = null;
       }
     };
-  }, [purchaseId, getToken, websocketHost, status]);
+  }, [purchaseId, getToken, websocketHost]);
 
   return {
     status,
