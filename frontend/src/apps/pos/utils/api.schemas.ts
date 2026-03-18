@@ -1,7 +1,21 @@
 import { z } from "zod";
 import Decimal from "decimal.js";
 
-const DecimalSchema = z.string().transform((val) => new Decimal(val));
+const DecimalSchema = z.string().transform((val, ctx) => {
+  try {
+    return new Decimal(val);
+  } catch {
+    ctx.addIssue({
+      code: "custom",
+      message: "Invalid decimal value",
+      params: {
+        input: val,
+        format: "decimal",
+      },
+    });
+    return z.NEVER;
+  }
+});
 
 export const ProductSchema = z.object({
   id: z.number(),

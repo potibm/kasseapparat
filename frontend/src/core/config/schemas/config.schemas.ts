@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+const JsonObjectSchema = z
+  .string()
+  .transform((str, ctx) => {
+    try {
+      return JSON.parse(str);
+    } catch {
+      ctx.addIssue({
+        code: "custom",
+        message: "Invalid JSON",
+      });
+      return z.NEVER;
+    }
+  })
+  .prefault("{}");
+
 export const ConfigSchema = z.object({
   version: z.string().default("1.0.0"),
   sentryDSN: z.url().or(z.literal("")).optional(),
@@ -11,26 +26,8 @@ export const ConfigSchema = z.object({
   fractionDigitsMin: z.number().default(0),
   fractionDigitsMax: z.number().default(2),
   dateLocale: z.string().default("en-US"),
-  dateOptions: z
-    .string()
-    .transform((str) => {
-      try {
-        return JSON.parse(str);
-      } catch {
-        return {};
-      }
-    })
-    .default("{}"),
-  vatRates: z
-    .string()
-    .transform((str) => {
-      try {
-        return JSON.parse(str);
-      } catch {
-        return {};
-      }
-    })
-    .default("{}"),
+  dateOptions: JsonObjectSchema,
+  vatRates: JsonObjectSchema,
   paymentMethods: z
     .array(
       z.object({
@@ -38,7 +35,6 @@ export const ConfigSchema = z.object({
         name: z.string(),
       }),
     )
-    .optional()
     .default([]),
   locale: z.string().default("da-DK"),
 });
