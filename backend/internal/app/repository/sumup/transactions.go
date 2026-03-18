@@ -70,7 +70,7 @@ func (r *Repository) fetchPagedTransactions(
 		allItems = append(allItems, ptrSliceToSlice(&resp.Items)...)
 		sortTransactionsByCreatedAt(allItems)
 
-		nextHref := findNextHref(&resp.Links)
+		nextHref := findNextHref(resp.Links)
 		if nextHref == "" {
 			return allItems, nil
 		}
@@ -113,14 +113,14 @@ func ptrSliceToSlice(ptrSlice *[]sumup.TransactionHistory) []*sumup.TransactionH
 	return out
 }
 
-func findNextHref(links *[]sumup.Link) string {
+func findNextHref(links []sumup.TransactionsHistoryLink) string {
 	if links == nil {
 		return ""
 	}
 
-	for _, link := range *links {
-		if link.Rel != nil && *link.Rel == "next" && link.Href != nil {
-			return *link.Href
+	for _, link := range links {
+		if link.Rel == "next" {
+			return link.Href
 		}
 	}
 
