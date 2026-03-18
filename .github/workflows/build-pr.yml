@@ -20,7 +20,7 @@ jobs:
         run: echo "value=$(date --iso-8601=seconds)" >> "$GITHUB_OUTPUT"
 
       - name: Build Docker image (without pushing)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: false

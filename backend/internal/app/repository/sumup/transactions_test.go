@@ -58,21 +58,17 @@ func TestParseHrefToListTransactionsParams(t *testing.T) {
 }
 
 func TestFindNextHref(t *testing.T) {
-	links := []sumup.Link{
-		{Rel: nil, Href: nil},
-		{Rel: nil, Href: nil},
-		{Rel: nil, Href: nil},
-	}
+	links := []sumup.TransactionsHistoryLink{}
 
-	nextHref := findNextHref(&links)
+	nextHref := findNextHref(links)
 	assert.Equal(t, "", nextHref)
 
-	links = []sumup.Link{
-		{Rel: nil, Href: nil},
-		{Rel: &[]string{"next"}[0], Href: &[]string{"https://example.com/next"}[0]},
+	links = []sumup.TransactionsHistoryLink{
+		{Rel: "other", Href: "https://example.com/other"},
+		{Rel: "next", Href: "https://example.com/next"},
 	}
 
-	nextHref = findNextHref(&links)
+	nextHref = findNextHref(links)
 	assert.Equal(t, "https://example.com/next", nextHref)
 }
 
