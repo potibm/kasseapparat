@@ -18,6 +18,10 @@ export class Cart {
     count: number = 1,
     listItem: GuestType | null = null,
   ): Cart {
+    if (count <= 0 || !Number.isFinite(count) || !Number.isInteger(count)) {
+      return this;
+    }
+
     const existingIndex = this.items.findIndex(
       (item) => item.id === product.id,
     );

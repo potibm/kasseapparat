@@ -16,6 +16,7 @@ import { RefundModal } from "./_internal/RefundModal";
 
 interface PurchaseHistoryProps {
   history: Purchase[] | null;
+  loading: boolean;
   removeFromPurchaseHistory: (purchase: Purchase) => Promise<void>;
 }
 
@@ -34,6 +35,7 @@ const compactTableTheme = {
 
 const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
   history,
+  loading,
   removeFromPurchaseHistory,
 }) => {
   const { currency, dateLocale, dateOptions } = useConfig();
@@ -103,37 +105,39 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {history === null && (
+          {loading && (!history || history.length === 0) && (
             <TableRow>
               <TableCell colSpan={3}>
                 Loading... <Spinner size="sm" />
               </TableCell>
             </TableRow>
           )}
-          {history?.length === 0 && (
+          {!loading && history?.length === 0 && (
             <TableRow>
               <TableCell colSpan={3}>No purchases yet.</TableCell>
             </TableRow>
           )}
-          {history?.slice(0, 3).map((purchase) => (
-            <TableRow key={purchase.id}>
-              <TableCell className="whitespace-nowrap">
-                {formatDate(purchase.createdAt)}
-              </TableCell>
-              <TableCell className="text-right">
-                {currency.format(purchase.totalGrossPrice.toNumber())}
-              </TableCell>
-              <TableCell className="flex justify-end">
-                <Button
-                  color="failure"
-                  aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
-                  onClick={() => setModalState({ show: true, purchase })}
-                >
-                  <HiReceiptRefund />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {history &&
+            history.length > 0 &&
+            history.slice(0, 3).map((purchase) => (
+              <TableRow key={purchase.id}>
+                <TableCell className="whitespace-nowrap">
+                  {formatDate(purchase.createdAt)}
+                </TableCell>
+                <TableCell className="text-right">
+                  {currency.format(purchase.totalGrossPrice.toNumber())}
+                </TableCell>
+                <TableCell className="flex justify-end">
+                  <Button
+                    color="failure"
+                    aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
+                    onClick={() => setModalState({ show: true, purchase })}
+                  >
+                    <HiReceiptRefund />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
     </div>

@@ -58,12 +58,12 @@ const Kasseapparat: React.FC = () => {
     setIsPolling,
   } = useCart(apiHost, getSafeToken);
 
-  const { history, refreshHistory, refundPurchase } = usePurchaseHistory(
-    apiHost,
-    getSafeToken,
-    userId,
-    showError,
-  );
+  const {
+    history,
+    refreshHistory,
+    refundPurchase,
+    loading: historyLoading,
+  } = usePurchaseHistory(apiHost, getSafeToken, userId, showError);
 
   const handleCheckout = async (
     paymentMethodCode: string,
@@ -116,6 +116,7 @@ const Kasseapparat: React.FC = () => {
           />
           <PurchaseHistory
             history={history}
+            loading={historyLoading}
             removeFromPurchaseHistory={(p: PurchaseType) => handleRefund(p.id)}
           />
           <Menu username={username} />

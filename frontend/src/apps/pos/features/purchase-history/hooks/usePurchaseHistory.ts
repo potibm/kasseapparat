@@ -13,8 +13,15 @@ export const usePurchaseHistory = (
   const [loading, setLoading] = useState<boolean>(false);
 
   const loadHistory = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setHistory([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setHistory([]);
+
     try {
       const token = await getToken();
       const purchases = await fetchPurchases(apiHost, token, userId);
@@ -27,6 +34,7 @@ export const usePurchaseHistory = (
           : "An unknown error has occurred";
 
       onError(errorMessage);
+      setHistory([]);
     } finally {
       setLoading(false);
     }
