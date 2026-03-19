@@ -21,6 +21,9 @@ import {
   storeSession,
   storeUser,
 } from "../services/auth-storage";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Auth");
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -35,8 +38,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const updateSession = React.useCallback(
     (token: string, expiresIn: number) => {
       const expiryDate = new Date(Date.now() + (expiresIn - 30) * 1000);
-      console.log(
-        "Updating session with new expiry date: " + expiryDate.toISOString(),
+      log.debug(
+        "Updating session with new expiry date",
+        expiryDate.toISOString(),
       );
 
       setSession({ token: token, expiryDate: expiryDate });
@@ -51,6 +55,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setSession({ token: null, expiryDate: null });
     setUser(null);
     clearAuthStorage();
+    log.debug("User logged out, session cleared");
   }, []);
 
   const updateUser = React.useCallback((userdata: AuthUserType) => {
@@ -70,7 +75,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     if (refreshingPromise.current) return refreshingPromise.current;
 
-    console.log("Token expired or missing, starting refresh...");
+    log.debug("Token expired or missing, starting refresh...");
 
     refreshingPromise.current = refreshJwtToken(apiHost)
       .then((res) => updateSession(res.access_token, res.expires_in))

@@ -9,6 +9,9 @@ import {
   LoginError as LoginErrorType,
   AuthUser as AuthUserType,
 } from "../types/auth.types";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Auth");
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState<{
@@ -39,11 +42,12 @@ const Login: React.FC = () => {
 
         setSession(access_token, expires_in);
         setUserdata(userdata as AuthUserType);
-        console.log("Logged in, expires in: " + expires_in);
+        log.debug("Logged in, expires in", expires_in);
 
         navigate("/", { replace: true });
       })
       .catch((error: Error) => {
+        log.error("Login failed", error);
         setError({
           message: "There was an error logging you in.",
           details: error.message,

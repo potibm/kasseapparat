@@ -3,6 +3,9 @@ import { useFormContext, useWatch } from "react-hook-form";
 import { NumberInput, NumberInputProps } from "react-admin";
 import Decimal from "decimal.js";
 import PropTypes from "prop-types";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Admin");
 
 interface GrossPriceInputProps extends NumberInputProps {
   netSource: string;
@@ -35,7 +38,7 @@ const GrossPriceInput: React.FC<GrossPriceInputProps> = ({
         setValue(props.source, gross.toNumber(), { shouldDirty: true });
       } catch (error) {
         // Silently fail if decimal conversion fails during typing
-        console.error("Calculation error:", error);
+        log.error("Calculation error", error);
       }
     }
   }, [netPrice, vatRate, setValue, precision, props.source]);

@@ -4,6 +4,9 @@ import {
   Session as SessionType,
 } from "../types/auth.types";
 import { UserDataSchema } from "@core/api/auth.schemas";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Auth");
 
 const LS_PREFIX = "kasseapparat.auth.";
 export const AUTH_KEYS = {
@@ -30,6 +33,7 @@ export const getInitialSession = (): SessionType => {
       return { token: null, expiryDate: null };
     }
 
+    log.debug("LocalStorage Session restored", result.data);
     return result.data;
   } catch {
     return { token: null, expiryDate: null };
@@ -46,10 +50,11 @@ export const getInitialUser = (): AuthUserType | null => {
     const result = UserDataSchema.safeParse(parsed);
 
     if (!result.success) {
-      console.warn("LocalStorage Userdata invalid. Clearing...");
+      log.warn("LocalStorage Userdata invalid. Clearing...");
       return null;
     }
 
+    log.debug("LocalStorage Userdata restored", result.data);
     return result.data;
   } catch {
     return null;

@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import * as Sentry from "@sentry/react";
 import { useConfig } from "../config/providers/ConfigProvider";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Core");
 
 const SentryInitializer: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -29,7 +32,7 @@ const SentryInitializer: React.FC<{ children: React.ReactNode }> = ({
           replaysOnErrorSampleRate: sentryReplayErrorSampleRate ?? 1,
         });
       } catch (error: unknown) {
-        console.error("Error initializing Sentry:", error);
+        log.error("Error initializing Sentry", error);
       }
     }
   }, [

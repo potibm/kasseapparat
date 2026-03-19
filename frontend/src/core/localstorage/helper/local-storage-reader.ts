@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Config");
 
 export const COOKIE_NAME = "kasseapparat.sumup.reader-id";
 
@@ -30,7 +33,7 @@ export function setCurrentReaderId(readerId: string): void {
   const result = ReaderIdSchema.safeParse(readerId);
 
   if (!result.success) {
-    console.error("Invalid Reader ID provided:", result.error.format);
+    log.error("Invalid Reader ID provided", result.error.format);
     return;
   }
   document.cookie = `${COOKIE_NAME}=${encodeURIComponent(readerId)}; path=/; SameSite=Lax`;

@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/react";
 import { z } from "zod";
-
+import { createLogger } from "@core/logger/logger";
 import {
   Product,
   ProductSchema,
@@ -11,6 +11,8 @@ import {
   ProductInterest,
   ProductInterestSchema,
 } from "./api.schemas";
+
+const log = createLogger("Api");
 
 // Unified error handler for failed fetch responses
 const handleFetchError = async (response: Response): Promise<never> => {
@@ -29,6 +31,7 @@ const handleFetchError = async (response: Response): Promise<never> => {
       path,
     },
   });
+  log.warn("API request failed", { status: response.status, path, message });
   throw error;
 };
 
@@ -52,7 +55,7 @@ const postValidated = async <S extends z.ZodTypeAny>(
 
   const result = schema.safeParse(rawData);
   if (!result.success) {
-    console.error("Zod Validation Error:", result.error);
+    log.error("Zod Validation Error", result.error);
     throw new Error("API Response format mismatch");
   }
   return result.data;
@@ -72,7 +75,7 @@ const getValidated = async <S extends z.ZodTypeAny>(
 
   const result = schema.safeParse(rawData);
   if (!result.success) {
-    console.error("Zod Validation Error:", result.error);
+    log.error("Zod Validation Error", result.error);
     throw new Error("API Response format mismatch");
   }
   return result.data;

@@ -1,6 +1,9 @@
 import * as Sentry from "@sentry/react";
 import { z } from "zod";
 import { refreshJwtToken } from "@core/api/auth";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Auth");
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "https://localhost:3000";
 const LOCALSTORAGE_KEY = "kasseapparat.admin.auth";
@@ -69,12 +72,12 @@ export const getSession = (): SessionData | null => {
     if (result.success) {
       return result.data;
     } else {
-      console.warn("Invalid admin data in localStorage, clearing...");
+      log.warn("Invalid admin data in localStorage, clearing...");
       clearSession();
       return null;
     }
   } catch (error) {
-    console.error("Error parsing admin data from localStorage:", error);
+    log.error("Error parsing admin data from localStorage:", error);
     return null;
   }
 };

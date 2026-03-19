@@ -2,6 +2,10 @@
  * Initializes the theme (dark/light mode) based on localStorage or system preferences.
  * This should run as early as possible to prevent "Flash of Unstyled Content" (FOUC).
  */
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Core");
+
 export const initTheme = (): void => {
   try {
     if (
@@ -26,7 +30,7 @@ export const initTheme = (): void => {
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.warn("[theme-init] Theme detection failed:", message);
+    log.warn("Theme detection failed:", message);
   }
 };
 

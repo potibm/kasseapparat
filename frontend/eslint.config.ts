@@ -31,6 +31,8 @@ export default defineConfig([
       },
     },
     rules: {
+      "no-console": "error",
+      "no-alert": "error",
       "react/react-in-jsx-scope": "off",
       "react/jsx-uses-react": "off",
       "react/prop-types": "off",

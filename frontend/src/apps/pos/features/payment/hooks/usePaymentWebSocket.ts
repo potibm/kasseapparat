@@ -7,6 +7,9 @@ import {
   PaymentCommand,
   PaymentMessagePayload,
 } from "../types/payment.types";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("PaymentWebsocket");
 
 export const usePaymentWebSocket = (
   purchaseId: string,
@@ -33,15 +36,13 @@ export const usePaymentWebSocket = (
     (type: PaymentCommand, payload: PaymentMessagePayload) => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         const message = JSON.stringify({ type, ...payload });
-        console.log("WS Sending:", message);
+        log.debug("Sending", purchaseId, message);
         wsRef.current.send(message);
       } else {
-        console.warn(
-          "WS: Attempted to send message while connection was not open.",
-        );
+        log.warn("Attempted to send message while connection was not open.");
       }
     },
-    [],
+    [purchaseId],
   );
 
   /**
@@ -50,12 +51,16 @@ export const usePaymentWebSocket = (
   const cancel = useCallback(
     (readerId: string | undefined) => {
       if (!readerId) {
-        console.warn("Cannot cancel payment: no reader ID provided");
+        log.warn(
+          "Cannot cancel payment: no reader ID provided",
+          purchaseId,
+          readerId,
+        );
         return;
       }
       sendMessage("cancel_payment", { reader_id: readerId });
     },
-    [sendMessage],
+    [sendMessage, purchaseId],
   );
 
   useEffect(() => {
@@ -74,7 +79,7 @@ export const usePaymentWebSocket = (
         // security timeout
         connectionTimeout = globalThis.setTimeout(() => {
           if (ws.readyState !== WebSocket.OPEN && isMounted) {
-            console.error("WS: Connection timeout");
+            log.error("Connection timeout", purchaseId);
             setError("Could not reach the payment server.");
             setStatus("timeout");
           }
@@ -82,7 +87,7 @@ export const usePaymentWebSocket = (
 
         ws.onopen = () => {
           if (!isMounted) return;
-          console.log(`WS: Connected to purchase ${purchaseId}`);
+          log.info("Connected to purchase", purchaseId);
           setIsConnected(true);
           clearTimeout(connectionTimeout);
           setError(null);
@@ -96,21 +101,28 @@ export const usePaymentWebSocket = (
 
             // central logic for handling different message types from the server
             if (data.type === "status_update") {
-              if (data.status === "confirmed") setStatus("confirmed");
-              else if (data.status === "failed") setStatus("failed");
-              else console.log("WS: Status Update:", data.status);
+              if (data.status === "confirmed") {
+                log.info("Payment confirmed", purchaseId, data);
+                setStatus("confirmed");
+              } else if (data.status === "failed") {
+                log.warn("Payment failed", purchaseId, data);
+                setStatus("failed");
+              } else {
+                log.debug("Status Update", purchaseId, data.status);
+              }
             } else if (data.type === "cancel_ack") {
+              log.info("Cancel acknowledged", purchaseId, data);
               setStatus("cancelled");
             }
           } catch (e) {
-            console.error("WS: Message parse error", e);
+            log.error("Message parse error", purchaseId, e);
           }
         };
 
         ws.onclose = (event) => {
           if (!isMounted) return;
           setIsConnected(false);
-          console.log("WS: Connection closed", event.code);
+          log.info("Connection closed", purchaseId, event.code);
 
           // when still pending, a close usually indicates an error or network issue
           if (statusRef.current === "pending" && !event.wasClean) {
@@ -120,11 +132,12 @@ export const usePaymentWebSocket = (
 
         ws.onerror = (err) => {
           if (!isMounted) return;
-          console.error("WS: Error event", err);
+          log.error("Error event", purchaseId, err);
           setError("A connection error occurred.");
         };
       } catch (err: unknown) {
         if (isMounted) {
+          log.error("Initialization failed", purchaseId, err);
           setError((err as Error).message || "Failed to initialize WebSocket");
           setStatus("failed");
         }

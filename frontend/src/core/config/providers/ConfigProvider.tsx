@@ -12,7 +12,9 @@ import { HiInformationCircle } from "react-icons/hi";
 import { AppConfig } from "../types/config.types";
 import { ConfigSchema } from "../schemas/config.schemas";
 import { transformConfig } from "../utils/config.transform";
+import { createLogger } from "@core/logger/logger";
 
+const log = createLogger("Config");
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 
 export const ConfigContext = createContext<AppConfig | null>(null);
@@ -44,9 +46,9 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
         const finalConfig = transformConfig(parsedData, API_HOST);
 
         setConfig(finalConfig);
-        console.log("Config loaded successfully:", finalConfig);
+        log.debug("Config loaded successfully", finalConfig);
       } catch (err) {
-        console.error("Config loading failed:", err);
+        log.error("Config loading failed", err);
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
