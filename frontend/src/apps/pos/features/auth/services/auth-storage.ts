@@ -6,7 +6,7 @@ import {
 import { UserDataSchema } from "@core/api/auth.schemas";
 import { createLogger } from "@core/logger/logger";
 
-const log = createLogger('Auth');
+const log = createLogger("Auth");
 
 const LS_PREFIX = "kasseapparat.auth.";
 export const AUTH_KEYS = {

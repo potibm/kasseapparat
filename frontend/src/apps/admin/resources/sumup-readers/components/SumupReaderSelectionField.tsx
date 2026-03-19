@@ -3,6 +3,9 @@ import { useRecordContext, Button, RaRecord } from "react-admin";
 import { Box, Tooltip } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import TouchAppIcon from "@mui/icons-material/TouchApp";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Payment");
 
 interface SumupReaderSelectionFieldProps {
   selectedReaderId: string | undefined;
@@ -44,7 +47,7 @@ export const SumupReaderSelectionField: React.FC<
         <Button
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
             e.stopPropagation();
-            console.log("Selecting reader with id:", record.id);
+            log.debug("Selecting reader with id", record.id);
             onSelect(String(record.id));
           }}
           size="small"

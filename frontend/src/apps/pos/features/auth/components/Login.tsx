@@ -11,7 +11,7 @@ import {
 } from "../types/auth.types";
 import { createLogger } from "@core/logger/logger";
 
-const log = createLogger('Auth');
+const log = createLogger("Auth");
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState<{

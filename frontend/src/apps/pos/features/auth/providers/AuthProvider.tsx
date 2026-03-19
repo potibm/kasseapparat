@@ -23,7 +23,7 @@ import {
 } from "../services/auth-storage";
 import { createLogger } from "@core/logger/logger";
 
-const log = createLogger('Auth');
+const log = createLogger("Auth");
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -38,7 +38,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const updateSession = React.useCallback(
     (token: string, expiresIn: number) => {
       const expiryDate = new Date(Date.now() + (expiresIn - 30) * 1000);
-      log.debug("Updating session with new expiry date",  expiryDate.toISOString());
+      log.debug(
+        "Updating session with new expiry date",
+        expiryDate.toISOString(),
+      );
 
       setSession({ token: token, expiryDate: expiryDate });
       storeSession(token, expiryDate);

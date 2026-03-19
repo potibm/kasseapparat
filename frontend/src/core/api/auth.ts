@@ -10,6 +10,9 @@ import {
   RefreshTokenResponseSchema,
   RefreshTokenResponse,
 } from "./auth.schemas";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Auth");
 
 const authPost = async <S extends z.ZodTypeAny>(
   url: string,
@@ -31,7 +34,7 @@ const authPost = async <S extends z.ZodTypeAny>(
   const result = schema.safeParse(data);
 
   if (!result.success) {
-    console.error("Auth API Validation Error:", result.error);
+    log.error("Auth API Validation Error", result.error);
     throw new Error("Invalid response format from Auth API");
   }
 

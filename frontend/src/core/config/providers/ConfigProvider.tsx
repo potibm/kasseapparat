@@ -14,7 +14,7 @@ import { ConfigSchema } from "../schemas/config.schemas";
 import { transformConfig } from "../utils/config.transform";
 import { createLogger } from "@core/logger/logger";
 
-const log = createLogger('Config');
+const log = createLogger("Config");
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 
 export const ConfigContext = createContext<AppConfig | null>(null);
