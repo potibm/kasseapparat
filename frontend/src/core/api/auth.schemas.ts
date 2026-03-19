@@ -31,6 +31,7 @@ export const StringResponseSchema = z.string();
 export const SimpleResponseSchema = z.object({
   message: z.string().optional(),
   status: z.string().optional(),
+  code: z.number().optional(),
 });
 
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
