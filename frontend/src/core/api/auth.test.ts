@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as Sentry from "@sentry/react";
-import { getJwtToken, ApiError, changePassword, refreshJwtToken, requestChangePasswordToken, logout } from "./auth"; 
+import {
+  getJwtToken,
+  ApiError,
+  changePassword,
+  refreshJwtToken,
+  requestChangePasswordToken,
+  logout,
+} from "./auth";
 
 const minimalValidJwt =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.8VKCTiBegJPuPIZlp0wbV0Sbdn5BS6TE5DCx6oYNc5o";
 
-// 1. Mock External Dependencies
+// mock external dependencies
 vi.mock("@sentry/react", () => ({
   captureException: vi.fn(),
 }));
@@ -95,9 +102,7 @@ describe("Auth Service", () => {
         json: async () => undefined, // No JSON body
       } as Response);
 
-      await expect(getJwtToken(apiHost, "u", "p")).rejects.toThrow(
-        "HTTP 500",
-      );
+      await expect(getJwtToken(apiHost, "u", "p")).rejects.toThrow("HTTP 500");
 
       // Sentry should be called for critical/unexpected errors
       expect(Sentry.captureException).toHaveBeenCalled();
@@ -159,20 +164,19 @@ describe("Auth Service", () => {
     });
 
     it("should throw an error if Zod validation fails", async () => {
-    vi.mocked(fetch).mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: true,
         json: async () => ({ mesage: 12, status: false }), // Invalid according to SimpleResponseSchema
       } as Response);
 
-      await expect(
-        refreshJwtToken(apiHost),
-      ).rejects.toThrow("Invalid response format from Auth API");
+      await expect(refreshJwtToken(apiHost)).rejects.toThrow(
+        "Invalid response format from Auth API",
+      );
     });
   });
 
   describe("requestChangePasswordToken", () => {
     it("should return data when the response is successful and valid", async () => {
-
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
         json: async () => "OK",
@@ -180,13 +184,13 @@ describe("Auth Service", () => {
 
       const result = await requestChangePasswordToken(apiHost, "my-login");
 
-       expect(fetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         `${apiHost}/api/v2/auth/changePasswordToken`,
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ login: "my-login" }),
         }),
-      );  
+      );
 
       expect(result).toBe("OK");
     });
@@ -206,13 +210,17 @@ describe("Auth Service", () => {
 
       await changePassword(apiHost, "123", "token", "pass");
 
-       expect(fetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         `${apiHost}/api/v2/auth/changePassword`,
         expect.objectContaining({
           method: "POST",
-          body: JSON.stringify({ userId: 123, token: "token", password: "pass" }), 
+          body: JSON.stringify({
+            userId: 123,
+            token: "token",
+            password: "pass",
+          }),
         }),
-      );  
+      );
 
       const callBody = JSON.parse(
         vi.mocked(fetch).mock.calls[0][1]?.body as string,
@@ -237,12 +245,12 @@ describe("Auth Service", () => {
       ).rejects.toThrow("Invalid response format from Auth API");
     });
   });
- 
+
   describe("logout", () => {
     it("should return data when the response is successful and valid", async () => {
-        const mockResponse = {
-            code: 200
-        };
+      const mockResponse = {
+        code: 200,
+      };
 
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
@@ -251,16 +259,15 @@ describe("Auth Service", () => {
 
       const result = await logout(apiHost);
 
-       expect(fetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         `${apiHost}/api/v2/auth/logout`,
         expect.objectContaining({
           method: "POST",
           body: undefined,
         }),
-      );  
+      );
 
       expect(result).toStrictEqual(mockResponse);
     });
   });
-
 });

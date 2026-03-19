@@ -11,6 +11,7 @@ import {
   ProductInterest,
   ProductInterestSchema,
 } from "./api.schemas";
+import { ApiCreatePayloadPurchase } from "./api.types";
 
 const log = createLogger("Api");
 
@@ -41,24 +42,7 @@ const postValidated = async <S extends z.ZodTypeAny>(
   body: object,
   schema: S,
 ): Promise<z.infer<S>> => {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) await handleFetchError(response);
-
-  const rawData = await response.json();
-
-  const result = schema.safeParse(rawData);
-  if (!result.success) {
-    log.error("Zod Validation Error", result.error);
-    throw new Error("API Response format mismatch");
-  }
-  return result.data;
+  return performFetch(url, token, schema, "POST", body);
 };
 
 const getValidated = async <S extends z.ZodTypeAny>(
@@ -66,8 +50,23 @@ const getValidated = async <S extends z.ZodTypeAny>(
   token: string,
   schema: S,
 ): Promise<z.infer<S>> => {
+  return performFetch(url, token, schema, "GET");
+};
+
+const performFetch = async <S extends z.ZodTypeAny>(
+  url: string,
+  token: string,
+  schema: S,
+  method: string,
+  body?: object,
+): Promise<z.infer<S>> => {
   const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
   });
   if (!response.ok) await handleFetchError(response);
 
@@ -112,7 +111,7 @@ export const fetchGuestlistByProductId = async (
 export const storePurchase = async (
   apiHost: string,
   jwtToken: string,
-  payload: object,
+  payload: ApiCreatePayloadPurchase,
 ): Promise<Purchase> => {
   return postValidated(
     `${apiHost}/api/v2/purchases`,
