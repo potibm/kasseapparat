@@ -6,9 +6,9 @@ import {
   Guest as GuestType,
 } from "../../../utils/api.schemas";
 import { PaymentMethodData } from "../types/cart.types";
-import { createLogger } from '@core/logger/logger';
+import { createLogger } from "@core/logger/logger";
 
-vi.mock('@core/logger/logger', () => {
+vi.mock("@core/logger/logger", () => {
   const mockLogger = {
     warn: vi.fn(),
     debug: vi.fn(),
@@ -19,44 +19,46 @@ vi.mock('@core/logger/logger', () => {
   };
 });
 
-const createMockProduct = (id: number, price: number) => ({
-  id,
-  netPrice: new Decimal(price),
-  grossPrice: new Decimal(price * 1.19), // Beispiel 19% MwSt.
-  vatAmount: new Decimal(price * 0.19),
-} as any);
+const createMockProduct = (id: number, price: number) =>
+  ({
+    id,
+    netPrice: new Decimal(price),
+    grossPrice: new Decimal(price * 1.19), // Beispiel 19% MwSt.
+    vatAmount: new Decimal(price * 0.19),
+  }) as any;
 
-const createMockGuest = (id: number) => ({
-  id,
-  name: `Guest ${id}`,
-} as any);
+const createMockGuest = (id: number) =>
+  ({
+    id,
+    name: `Guest ${id}`,
+  }) as any;
 
-describe('Cart', () => {
-  const mockLogger = createLogger('Cart');
+describe("Cart", () => {
+  const mockLogger = createLogger("Cart");
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Initializing', () => {
-    it('should initialize with an empty cart', () => {
+  describe("Initializing", () => {
+    it("should initialize with an empty cart", () => {
       const cart = new Cart();
       expect(cart.isEmpty).toBe(true);
       expect(cart.items).toEqual([]);
       expect(cart.totalQuantity).toBe(0);
     });
 
-    it('should freeze the items array (immutable)', () => {
+    it("should freeze the items array (immutable)", () => {
       const cart = new Cart();
       expect(Object.isFrozen(cart.items)).toBe(true);
     });
   });
 
-  describe('add()', () => {
-    it('should add a new product to the cart', () => {
+  describe("add()", () => {
+    it("should add a new product to the cart", () => {
       const cart = new Cart();
       const product = createMockProduct(1, 100);
-      
+
       const updatedCart = cart.add(product, 2);
 
       // the original cart should still be empty
@@ -67,14 +69,17 @@ describe('Cart', () => {
       expect(updatedCart.items[0].id).toBe(1);
       expect(updatedCart.items[0].quantity).toBe(2);
       expect(updatedCart.items[0].totalNetPrice).toEqual(new Decimal(200));
-      
-      expect(mockLogger.debug).toHaveBeenCalledWith("Adding new product to cart", expect.any(Object));
+
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        "Adding new product to cart",
+        expect.any(Object),
+      );
     });
 
-    it('should increase the quantity and prices when the product is already in the cart', () => {
+    it("should increase the quantity and prices when the product is already in the cart", () => {
       const product = createMockProduct(1, 100);
       let cart = new Cart().add(product, 1);
-      
+
       // Add again
       cart = cart.add(product, 2);
 
@@ -82,10 +87,13 @@ describe('Cart', () => {
       expect(cart.items[0].quantity).toBe(3); // 1 + 2
       expect(cart.items[0].totalNetPrice).toEqual(new Decimal(300));
 
-      expect(mockLogger.debug).toHaveBeenCalledWith("Product already in cart, updating quantity", expect.any(Object));
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        "Product already in cart, updating quantity",
+        expect.any(Object),
+      );
     });
 
-    it('should block and warn when an invalid quantity is provided', () => {
+    it("should block and warn when an invalid quantity is provided", () => {
       const cart = new Cart();
       const product = createMockProduct(1, 100);
 
@@ -94,19 +102,19 @@ describe('Cart', () => {
 
       invalidCounts.forEach((count) => {
         const unchangedCart = cart.add(product, count);
-        
+
         // Die Cart-Instanz sollte die gleiche bleiben
         expect(unchangedCart).toBe(cart);
         expect(mockLogger.warn).toHaveBeenCalledWith(
-          "Invalid quantity provided, skipping add to cart", 
-          expect.any(Object)
+          "Invalid quantity provided, skipping add to cart",
+          expect.any(Object),
         );
       });
     });
   });
 
-  describe('add() - list items (guests) ', () => {
-    it('should add a guest to a new product', () => {
+  describe("add() - list items (guests) ", () => {
+    it("should add a guest to a new product", () => {
       const cart = new Cart();
       const product = createMockProduct(1, 100);
       const guest = createMockGuest(99);
@@ -118,24 +126,27 @@ describe('Cart', () => {
       expect(newCart.items[0].listItems[0].attendedGuests).toBe(1);
     });
 
-    it('should warn and abort when the guest is already assigned to the product', () => {
+    it("should warn and abort when the guest is already assigned to the product", () => {
       const product = createMockProduct(1, 100);
       const guest = createMockGuest(99);
-      
-      let cart = new Cart().add(product, 1, guest);
+
+      const cart = new Cart().add(product, 1, guest);
       // Try to assign the same guest again
       const unchangedCart = cart.add(product, 1, guest);
 
       expect(unchangedCart).toBe(cart); // Reference equality due to early return
-      expect(mockLogger.warn).toHaveBeenCalledWith("Guest was already in cart", expect.any(Object));
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        "Guest was already in cart",
+        expect.any(Object),
+      );
     });
   });
 
-  describe('remove()', () => {
-    it('should remove a product by ID', () => {
+  describe("remove()", () => {
+    it("should remove a product by ID", () => {
       const product1 = createMockProduct(1, 100);
       const product2 = createMockProduct(2, 200);
-      let cart = new Cart().add(product1).add(product2);
+      const cart = new Cart().add(product1).add(product2);
 
       const newCart = cart.remove(1);
 
@@ -144,8 +155,8 @@ describe('Cart', () => {
     });
   });
 
-  describe('Getters und Helfer (totalGross, totalNet, getQuantity, etc.)', () => {
-    it('should calculate the correct totals for all items', () => {
+  describe("Getters und Helfer (totalGross, totalNet, getQuantity, etc.)", () => {
+    it("should calculate the correct totals for all items", () => {
       const cart = new Cart()
         .add(createMockProduct(1, 100), 2) // 200 Netto
         .add(createMockProduct(2, 50), 1); // 50 Netto
@@ -156,33 +167,36 @@ describe('Cart', () => {
       expect(cart.getQuantity(999)).toBe(0); // Existiert nicht
     });
 
-    it('should be able to check if a ListItem (guest) exists in the entire cart', () => {
-      const cart = new Cart().add(createMockProduct(1, 100), 1, createMockGuest(42));
+    it("should be able to check if a ListItem (guest) exists in the entire cart", () => {
+      const cart = new Cart().add(
+        createMockProduct(1, 100),
+        1,
+        createMockGuest(42),
+      );
 
       expect(cart.hasListItem(42)).toBe(true);
       expect(cart.hasListItem(99)).toBe(false);
     });
   });
 
-  describe('toApiPayload()', () => {
-    it('should format the payload correctly for the API', () => {
+  describe("toApiPayload()", () => {
+    it("should format the payload correctly for the API", () => {
       const cart = new Cart().add(createMockProduct(1, 100));
       const paymentData = {
-        type: 'CREDIT_CARD', // Sollte gefiltert werden
-        token: 'tok_123',    // Sollte bleiben
+        type: "CREDIT_CARD", // Sollte gefiltert werden
+        token: "tok_123", // Sollte bleiben
       };
 
-      const payload = cart.toApiPayload('cc', paymentData as any);
+      const payload = cart.toApiPayload("cc", paymentData as any);
 
       expect(payload).toEqual(
         expect.objectContaining({
-          paymentMethod: 'cc',
-          token: 'tok_123',
+          paymentMethod: "cc",
+          token: "tok_123",
           totalNetPrice: "100", // Decimal.toString()
-         
-        })
+        }),
       );
-      
+
       // type should be removed from the payload
       expect((payload as any).type).toBeUndefined();
 
