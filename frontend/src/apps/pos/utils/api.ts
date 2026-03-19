@@ -1,9 +1,6 @@
 import * as Sentry from "@sentry/react";
 import { z } from "zod";
 import { createLogger } from "@core/logger/logger";
-
-const log = createLogger("Api");
-
 import {
   Product,
   ProductSchema,
@@ -14,6 +11,8 @@ import {
   ProductInterest,
   ProductInterestSchema,
 } from "./api.schemas";
+
+const log = createLogger("Api");
 
 // Unified error handler for failed fetch responses
 const handleFetchError = async (response: Response): Promise<never> => {

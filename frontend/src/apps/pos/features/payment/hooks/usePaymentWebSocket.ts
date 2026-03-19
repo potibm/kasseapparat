@@ -42,7 +42,7 @@ export const usePaymentWebSocket = (
         log.warn("Attempted to send message while connection was not open.");
       }
     },
-    [],
+    [purchaseId],
   );
 
   /**
@@ -60,7 +60,7 @@ export const usePaymentWebSocket = (
       }
       sendMessage("cancel_payment", { reader_id: readerId });
     },
-    [sendMessage],
+    [sendMessage, purchaseId],
   );
 
   useEffect(() => {

@@ -3,6 +3,9 @@ import { Button, Tooltip, ButtonProps } from "flowbite-react";
 import { useAuth } from "../../../auth/providers/AuthProvider";
 import { HiShieldCheck } from "react-icons/hi";
 import { getSession, initializeSession } from "@admin/utils/auth-utils";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Core");
 
 const AdminButton: React.FC<ButtonProps> = ({ ...props }) => {
   const { getSafeToken, userdata } = useAuth();
@@ -14,7 +17,7 @@ const AdminButton: React.FC<ButtonProps> = ({ ...props }) => {
       const token = await getSafeToken();
 
       if (!userdata?.id || !userdata?.username) {
-        console.error("Cannot initialize admin session: User data missing.");
+        log.error("Cannot initialize admin session: User data missing.");
         return;
       }
 

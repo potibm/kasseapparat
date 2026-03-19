@@ -1,6 +1,9 @@
 import React, { useRef } from "react";
 import { useNotify, Button, useDataProvider } from "react-admin";
 import UploadIcon from "@mui/icons-material/Upload";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Admin");
 
 export const ImportDeineTicketsButton: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,7 +39,7 @@ export const ImportDeineTicketsButton: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error(error);
+      log.error("Error while uploading the file", error);
       notify("Error while uploading the file. Try again (later).", {
         type: "warning",
       });

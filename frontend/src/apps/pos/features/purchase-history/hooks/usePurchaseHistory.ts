@@ -2,6 +2,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchPurchases, refundPurchaseById } from "../../../utils/api";
 import { Purchase as PurchaseType } from "../../../utils/api.schemas";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Purchase");
 
 export const usePurchaseHistory = (
   apiHost: string,
@@ -27,7 +30,14 @@ export const usePurchaseHistory = (
       const purchases = await fetchPurchases(apiHost, token, userId);
 
       setHistory(purchases);
+      log.debug("Purchase history fetched successfully", {
+        purchaseCount: purchases.length,
+      });
     } catch (error: unknown) {
+      log.error(
+        "Error fetching purchase history",
+        error instanceof Error ? { message: error.message } : { error },
+      );
       const errorMessage =
         error instanceof Error
           ? "Error while loading the purchase history: " + error.message

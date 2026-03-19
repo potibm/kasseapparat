@@ -2,6 +2,9 @@ import { Modal, Spinner, ModalBody, ModalHeader } from "flowbite-react";
 import Button from "../../../../components/Button";
 import React, { useState } from "react";
 import { Product as ProductType } from "../../../../utils/api.schemas";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Product");
 
 interface ProductInterestModalProps {
   show: boolean;
@@ -22,9 +25,10 @@ const ProductInterestModal: React.FC<ProductInterestModalProps> = ({
     setProcessing(true);
     try {
       await addProductInterest(product);
+      log.info("Interest registered for product", { productId: product.id });
       onClose();
     } catch (error) {
-      console.error("Error registering interest: ", error);
+      log.error("Error registering interest", { productId: product.id }, error);
     } finally {
       setProcessing(false);
     }

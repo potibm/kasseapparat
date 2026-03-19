@@ -7,6 +7,10 @@ import {
   Product as ProductType,
   Guest as GuestType,
 } from "../../../utils/api.schemas";
+import { createLogger } from "@core/logger/logger";
+
+const cartLog = createLogger("Cart");
+const purchaseLog = createLogger("Purchase");
 
 interface EnrichedPurchase extends PurchaseType {
   onComplete: (success: boolean) => void;
@@ -30,16 +34,19 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
 
   const add = useCallback(
     (product: ProductType, count: number, listItem: GuestType | null) => {
+      cartLog.debug("Adding product to cart", { productId: product.id, count });
       setCart((prevCart) => prevCart.add(product, count, listItem));
     },
     [],
   );
 
   const remove = useCallback((product: ProductType) => {
+    cartLog.debug("Removing product from cart", { productId: product.id });
     setCart((prevCart) => prevCart.remove(product.id));
   }, []);
 
   const clear = useCallback(() => {
+    cartLog.debug("Clearing cart");
     setCart(new Cart());
   }, []);
 
@@ -48,6 +55,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
     paymentMethodData: PaymentMethodData,
   ) => {
     setCheckoutProcessing(paymentMethodCode);
+    purchaseLog.debug("Initiating purchase", { paymentMethodCode });
 
     try {
       const token = await getToken();
@@ -69,9 +77,11 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
               setCheckoutProcessing(null);
 
               if (success) {
+                purchaseLog.info("Purchase completed successfully");
                 clear();
                 resolve(createdPurchase);
               } else {
+                purchaseLog.error("Purchase failed or cancelled");
                 reject(new Error("Payment failed or cancelled"));
               }
             },
@@ -86,12 +96,20 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
         if (createdPurchase.status === "confirmed") {
           clear();
           setCheckoutProcessing(null);
+          purchaseLog.info("Purchase confirmed immediately", {
+            purchaseId: createdPurchase.id,
+          });
         }
         return createdPurchase;
       }
 
+      purchaseLog.error("Unknown purchase status", createdPurchase.status);
       throw new Error("Unknown purchase status: " + createdPurchase.status);
     } catch (error: unknown) {
+      purchaseLog.error(
+        "Error during checkout",
+        error instanceof Error ? { message: error.message } : { error },
+      );
       if (isMounted.current) {
         setCheckoutProcessing(null);
       }

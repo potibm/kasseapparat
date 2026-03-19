@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useConfig } from "../../../core/config/providers/ConfigProvider";
 import { Link } from "react-router-dom";
 import { z } from "zod";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Api");
 
 const VERSION_URL =
   "https://api.github.com/repos/potibm/kasseapparat/releases/latest";
@@ -49,7 +52,7 @@ export const Version: React.FC<VersionProps> = ({ url = VERSION_URL }) => {
         }
       } catch (err: unknown) {
         if (err instanceof Error && err.name !== "AbortError") {
-          console.error("Error loading version from GitHub:", err);
+          log.error("Error loading version from GitHub:", err);
         }
       }
     };

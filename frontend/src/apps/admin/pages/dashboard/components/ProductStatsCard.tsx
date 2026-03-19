@@ -15,6 +15,9 @@ import {
 } from "@mui/material";
 import { useConfig } from "@core/config/providers/ConfigProvider";
 import Decimal from "decimal.js";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Admin");
 
 interface ProductStat extends RaRecord {
   name: string;
@@ -39,7 +42,7 @@ const ProductStatsCard: React.FC = () => {
         setStats(data);
       })
       .catch((error) => {
-        console.error("Dashboard fetch failed", error);
+        log.error("Dashboard fetch failed", error);
         setStats([]);
       });
   }, [dataProvider]);

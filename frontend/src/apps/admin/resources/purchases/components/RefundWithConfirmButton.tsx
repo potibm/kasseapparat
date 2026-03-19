@@ -8,6 +8,9 @@ import {
   useDataProvider,
 } from "react-admin";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Admin");
 
 const RefundWithConfirmButton: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -31,7 +34,7 @@ const RefundWithConfirmButton: React.FC = () => {
       notify("Refund successful", { type: "success" });
       refresh();
     } catch (error: unknown) {
-      console.error("Refund error:", error);
+      log.error("Refund error", error);
       notify(error instanceof Error ? error.message : "Refund failed", {
         type: "error",
       });

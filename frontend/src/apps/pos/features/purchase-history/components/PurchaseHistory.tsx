@@ -13,6 +13,9 @@ import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import { Purchase } from "../../../utils/api.schemas";
 import Button from "../../../components/Button";
 import { RefundModal } from "./_internal/RefundModal";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Purchase");
 
 interface PurchaseHistoryProps {
   history: Purchase[] | null;
@@ -73,6 +76,7 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
     setProcessingRefund(true);
     try {
       await removeFromPurchaseHistory(purchase);
+      log.info("Purchase refunded successfully", { purchaseId: purchase.id });
       setModalState({ show: false, purchase: null });
     } finally {
       setProcessingRefund(false);

@@ -3,6 +3,9 @@ import { Label, Button, TextInput, Alert, Spinner } from "flowbite-react";
 import BaseCard from "../../../components/BaseCard";
 import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
 import { requestChangePasswordToken } from "../../../../../core/api/auth";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Auth");
 
 const RequestToken: React.FC = () => {
   const [loginInput, setLoginInput] = useState<string>("");
@@ -25,7 +28,7 @@ const RequestToken: React.FC = () => {
         setSuccess(true);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        log.error("Error requesting password change token", error);
         setError("There was an unknown error to request a password change.");
         setDisabled(false);
       });

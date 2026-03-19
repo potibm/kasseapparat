@@ -5,6 +5,9 @@ import {
   Product as ProductType,
   Guest as GuestType,
 } from "../../../utils/api.schemas";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Cart");
 
 export class Cart {
   public readonly items: readonly CartItem[];
@@ -19,6 +22,10 @@ export class Cart {
     listItem: GuestType | null = null,
   ): Cart {
     if (count <= 0 || !Number.isFinite(count) || !Number.isInteger(count)) {
+      log.warn("Invalid quantity provided, skipping add to cart", {
+        productId: product.id,
+        count,
+      });
       return this;
     }
 
@@ -31,11 +38,15 @@ export class Cart {
     if (itemProductWasFoundInCart) {
       const existingItem = this.items[existingIndex];
 
-      // Duplicate prevention for list items
+      // Duplicate prevention for list items (guests)
       if (
         listItem &&
         existingItem.listItems.some((li) => li.id === listItem.id)
       ) {
+        log.warn("Guest was already in cart", {
+          productId: product.id,
+          listItemId: listItem.id,
+        });
         return this;
       }
 
@@ -54,6 +65,12 @@ export class Cart {
           existingItem.quantity + count,
         ),
       };
+
+      log.debug("Product already in cart, updating quantity", {
+        productId: product.id,
+        existingQuantity: existingItem.quantity,
+        addedQuantity: count,
+      });
       newItems[existingIndex] = updatedItem;
     } else {
       // Create new item
@@ -65,6 +82,11 @@ export class Cart {
         totalGrossPrice: product.grossPrice.mul(count),
         totalVatAmount: product.vatAmount.mul(count),
       };
+
+      log.debug("Adding new product to cart", {
+        productId: product.id,
+        quantity: count,
+      });
       newItems.push(newItem);
     }
 

@@ -2,6 +2,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchProducts, addProductInterest } from "../../../utils/api";
 import { Product as ProductType } from "../../../utils/api.schemas";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Product");
 
 export const useProducts = (
   apiHost: string,
@@ -18,7 +21,14 @@ export const useProducts = (
       const fetchedProducts = await fetchProducts(apiHost, token);
 
       setProducts(fetchedProducts);
+      log.debug("Products fetched successfully", {
+        productCount: fetchedProducts.length,
+      });
     } catch (error: unknown) {
+      log.error(
+        "Error fetching products",
+        error instanceof Error ? { message: error.message } : { error },
+      );
       const errorMessage =
         error instanceof Error
           ? "There was an error fetching the products: " + error.message
