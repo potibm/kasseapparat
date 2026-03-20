@@ -35,6 +35,7 @@ export const SimpleResponseSchema = z.object({
 });
 
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
+export type UserData = z.infer<typeof UserDataSchema>;
 export type RefreshTokenResponse = z.infer<typeof RefreshTokenResponseSchema>;
 export type SimpleResponse = z.infer<typeof SimpleResponseSchema>;
 export type StringResponse = z.infer<typeof StringResponseSchema>;
