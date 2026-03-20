@@ -55,7 +55,7 @@ const Kasseapparat: React.FC = () => {
     checkoutProcessing,
     isPolling,
     pendingPurchase,
-    setIsPolling,
+    finalizeCheckout,
   } = useCart(apiHost, getSafeToken);
 
   const {
@@ -128,9 +128,7 @@ const Kasseapparat: React.FC = () => {
           {isPolling && pendingPurchase && (
             <PollingModal
               purchase={pendingPurchase}
-              onComplete={pendingPurchase.onComplete}
-              onConfirmed={() => setIsPolling(false)}
-              onClose={() => setIsPolling(false)}
+              onComplete={(success) => finalizeCheckout(success)}
             />
           )}
         </>

@@ -1,6 +1,15 @@
 import { z } from "zod";
 import { DecimalSchema } from "@core/schemas/zod-schemas";
 
+export const UserSchema = z.object({
+  id: z.number(),
+  username: z.string(),
+  email: z.string(),
+  admin: z.boolean(),
+});
+
+export type User = z.infer<typeof UserSchema>;
+
 export const ProductSchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -58,14 +67,7 @@ export const PurchaseSchema = z.object({
   id: z.uuid(),
   createdAt: z.string(),
   createdById: z.number(),
-  createdBy: z
-    .object({
-      id: z.number(),
-      username: z.string(),
-      email: z.string(),
-      admin: z.boolean(),
-    })
-    .nullable(),
+  createdBy: UserSchema.nullable(),
   paymentMethod: z.string(),
   totalNetPrice: DecimalSchema,
   totalGrossPrice: DecimalSchema,

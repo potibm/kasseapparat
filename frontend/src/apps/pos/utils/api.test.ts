@@ -8,13 +8,14 @@ import {
   refundPurchaseById,
   addProductInterest,
 } from "./api";
-import {
-  Product as ProductType,
-  Guest as GuestType,
-  Purchase as PurchaseType,
-} from "./api.schemas";
+import { Purchase as PurchaseType } from "./api.schemas";
 import Decimal from "decimal.js";
 import { ApiCreatePayloadPurchase } from "./api.types";
+import {
+  createMockProduct,
+  createMockGuest,
+  createMockPurchase,
+} from "./api.schemas.mocks";
 
 // mock external dependencies
 vi.mock("@sentry/react", () => ({
@@ -43,65 +44,6 @@ const convertDecimalsToStrings = (obj: any): any => {
     return converted;
   }
   return obj;
-};
-
-const createMockProduct = (overrides?: Partial<ProductType>): ProductType => {
-  return {
-    id: 1,
-    name: "Test Product",
-    netPrice: new Decimal("10.00"),
-    grossPrice: new Decimal("12.00"),
-    vatRate: new Decimal("20.00"),
-    vatAmount: new Decimal("2.00"),
-    wrapAfter: false,
-    hidden: false,
-    soldOut: false,
-    apiExport: true,
-    pos: 1,
-    totalStock: 100,
-    guestlists: null,
-    unitsSold: 0,
-    soldOutRequestCount: 0,
-    ...overrides,
-  };
-};
-
-const createMockGuest = (overrides?: Partial<GuestType>): GuestType => {
-  return {
-    id: 1,
-    name: "Test Guest",
-    code: null,
-    listName: "Test List",
-    additionalGuests: 0,
-    arrivalNote: null,
-    attendedGuests: 0,
-    ...overrides,
-  };
-};
-
-const createRawMockPurchase = (
-  overrides?: Partial<PurchaseType>,
-): PurchaseType => {
-  return {
-    id: "123e4567-e89b-12d3-a456-426614174000",
-    createdAt: new Date().toISOString(),
-    createdById: 1,
-    createdBy: {
-      id: 1,
-      username: "testuser",
-      email: "test@example.com",
-      admin: false,
-    },
-    paymentMethod: "cash",
-    totalNetPrice: new Decimal("80.00"),
-    totalGrossPrice: new Decimal("100.00"),
-    totalVatAmount: new Decimal("20.00"),
-    sumupTransactionId: null,
-    sumupClientTransactionId: null,
-    status: "pending",
-    purchaseItems: [],
-    ...overrides,
-  };
 };
 
 describe("Api Service", () => {
@@ -207,7 +149,7 @@ describe("Api Service", () => {
 
   describe("storePurchase", () => {
     it("should return purchase on successful response ", async () => {
-      const mockPurchase = createRawMockPurchase();
+      const mockPurchase = createMockPurchase();
       const requestPurchase = convertDecimalsToStrings(mockPurchase);
 
       const createPurchasePayload: ApiCreatePayloadPurchase = {
@@ -258,8 +200,8 @@ describe("Api Service", () => {
   describe("fetchPurchases", () => {
     it("should return purchases on successful response", async () => {
       const mockPurchases: PurchaseType[] = [
-        createRawMockPurchase({ id: "123e4567-e89b-12d3-a456-426614174000" }),
-        createRawMockPurchase({ id: "123e4567-e89b-12d3-a456-426614174001" }),
+        createMockPurchase({ id: "123e4567-e89b-12d3-a456-426614174000" }),
+        createMockPurchase({ id: "123e4567-e89b-12d3-a456-426614174001" }),
       ];
       const requestPurchase = convertDecimalsToStrings(mockPurchases);
 
@@ -292,7 +234,7 @@ describe("Api Service", () => {
   describe("refundPurchaseById", () => {
     it("should return purchase on successful response", async () => {
       const purchaseId = "123e4567-e89b-12d3-a456-426614174000";
-      const mockPurchase = createRawMockPurchase({
+      const mockPurchase = createMockPurchase({
         id: purchaseId,
         status: "refunded",
       });

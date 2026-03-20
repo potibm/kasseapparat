@@ -78,6 +78,7 @@ export const getSession = (): SessionData | null => {
     }
   } catch (error) {
     log.error("Error parsing admin data from localStorage:", error);
+    clearSession();
     return null;
   }
 };
