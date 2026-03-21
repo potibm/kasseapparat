@@ -3,8 +3,9 @@ import { refreshToken, TOKEN_REFRESH_THRESHOLD } from "./refresh-token"; // Adju
 import { getSession, updateToken } from "../utils/auth-utils";
 
 function addSeconds(date: Date, seconds: number): Date {
-  date.setSeconds(date.getSeconds() + seconds);
-  return date;
+  const copy = new Date(date);
+  copy.setSeconds(copy.getSeconds() + seconds);
+  return copy;
 }
 
 // --- 1. MOCKS ---

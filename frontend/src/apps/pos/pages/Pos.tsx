@@ -24,6 +24,7 @@ import {
   Purchase as PurchaseType,
   Guest as GuestType,
 } from "../utils/api.schemas";
+import { createLogger } from "@core/logger/logger";
 
 const Kasseapparat: React.FC = () => {
   const { apiHost, environmentMessage } = useConfig();
@@ -65,53 +66,65 @@ const Kasseapparat: React.FC = () => {
     loading: historyLoading,
   } = usePurchaseHistory(apiHost, getSafeToken, userId, showError);
 
-  const handleCheckout = async (
-    paymentMethodCode: string,
-    paymentMethodData: PaymentMethodData,
-  ) => {
-    try {
-      const purchase = await checkout(paymentMethodCode, paymentMethodData);
-
-      // refresh directly when we know the purchase is successful, otherwise we wait for the polling to confirm it
-      if (purchase.status === "confirmed") {
-        await handlePurchaseSuccess();
-      }
-      // on pending we wait for the PollingModal to confirm the purchase before refreshing
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "An unknown error has occurred";
-
-      showError(errorMessage);
-    }
-  };
-
-  const handleRefund = async (purchaseId: string) => {
-    try {
-      await refundPurchase(purchaseId);
-      await refreshProducts();
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "An unknown error has occurred";
-
-      showError(errorMessage);
-    }
-  };
-
-  const handlePurchaseSuccess = async () => {
+  const handlePurchaseSuccess = useCallback(async () => {
     await Promise.all([refreshHistory(), refreshProducts()]);
-  };
+  }, [refreshHistory, refreshProducts]);
 
-  const handlePurchaseModalComplete = async (success: boolean) => {
-    finalizeCheckout(success);
+  const handleCheckout = useCallback(
+    async (paymentMethodCode: string, paymentMethodData: PaymentMethodData) => {
+      try {
+        const purchase = await checkout(paymentMethodCode, paymentMethodData);
 
-    if (success) {
-      await handlePurchaseSuccess();
-    }
-  };
+        // refresh directly when we know the purchase is successful, otherwise we wait for the polling to confirm it
+        if (purchase.status === "confirmed") {
+          await handlePurchaseSuccess();
+        }
+        // on pending we wait for the PollingModal to confirm the purchase before refreshing
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unknown error has occurred";
+
+        showError(errorMessage);
+      }
+    },
+    [checkout, handlePurchaseSuccess, showError],
+  );
+
+  const handleRefund = useCallback(
+    async (purchaseId: string) => {
+      try {
+        await refundPurchase(purchaseId);
+        await refreshProducts();
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unknown error has occurred";
+
+        showError(errorMessage);
+      }
+    },
+    [refundPurchase, refreshProducts, showError],
+  );
+
+  const handlePurchaseModalComplete = useCallback(
+    (success: boolean) => {
+      finalizeCheckout(success);
+
+      if (success) {
+        handlePurchaseSuccess().catch((error: unknown) => {
+          const log = createLogger("Purchase");
+          log.error("Refresh failed after polling:", error);
+          showError(
+            "Purchase was successful, but refreshing data failed. Please refresh the page.",
+          );
+        });
+      }
+    },
+    [finalizeCheckout, handlePurchaseSuccess, showError],
+  );
 
   return (
     <PosLayout
