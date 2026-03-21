@@ -26,6 +26,8 @@ import {
 } from "../utils/api.schemas";
 import { createLogger } from "@core/logger/logger";
 
+const logPurchase = createLogger("Purchase");
+
 const Kasseapparat: React.FC = () => {
   const { apiHost, environmentMessage } = useConfig();
   const { username, getSafeToken, id: userId } = useAuth();
@@ -77,7 +79,17 @@ const Kasseapparat: React.FC = () => {
 
         // refresh directly when we know the purchase is successful, otherwise we wait for the polling to confirm it
         if (purchase.status === "confirmed") {
-          await handlePurchaseSuccess();
+          try {
+            await handlePurchaseSuccess();
+          } catch (error: unknown) {
+            logPurchase.error(
+              "Refresh failed after immediate confirmation:",
+              error,
+            );
+            showError(
+              "Purchase was successful, but refreshing data failed. Please refresh the page.",
+            );
+          }
         }
         // on pending we wait for the PollingModal to confirm the purchase before refreshing
       } catch (error: unknown) {
@@ -115,8 +127,7 @@ const Kasseapparat: React.FC = () => {
 
       if (success) {
         handlePurchaseSuccess().catch((error: unknown) => {
-          const log = createLogger("Purchase");
-          log.error("Refresh failed after polling:", error);
+          logPurchase.error("Refresh failed after polling:", error);
           showError(
             "Purchase was successful, but refreshing data failed. Please refresh the page.",
           );
