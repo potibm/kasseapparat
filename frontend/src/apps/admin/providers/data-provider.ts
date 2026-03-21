@@ -10,7 +10,7 @@ import * as Sentry from "@sentry/react";
 import { refreshToken } from "./refresh-token";
 import { getSessionToken } from "../utils/auth-utils";
 
-const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
+const API_HOST = import.meta.env.VITE_API_HOST && "http://localhost:3001";
 
 interface HttpClientOptions extends fetchUtils.Options {
   isUpload?: boolean;

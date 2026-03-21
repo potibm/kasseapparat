@@ -24,6 +24,9 @@ import {
   Purchase as PurchaseType,
   Guest as GuestType,
 } from "../utils/api.schemas";
+import { createLogger } from "@core/logger/logger";
+
+const logPurchase = createLogger("Purchase");
 
 const Kasseapparat: React.FC = () => {
   const { apiHost, environmentMessage } = useConfig();
@@ -55,7 +58,7 @@ const Kasseapparat: React.FC = () => {
     checkoutProcessing,
     isPolling,
     pendingPurchase,
-    setIsPolling,
+    finalizeCheckout,
   } = useCart(apiHost, getSafeToken);
 
   const {
@@ -65,37 +68,74 @@ const Kasseapparat: React.FC = () => {
     loading: historyLoading,
   } = usePurchaseHistory(apiHost, getSafeToken, userId, showError);
 
-  const handleCheckout = async (
-    paymentMethodCode: string,
-    paymentMethodData: PaymentMethodData,
-  ) => {
-    try {
-      await checkout(paymentMethodCode, paymentMethodData);
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "An unknown error has occurred";
+  const handlePurchaseSuccess = useCallback(async () => {
+    await Promise.all([refreshHistory(), refreshProducts()]);
+  }, [refreshHistory, refreshProducts]);
 
-      showError(errorMessage);
-    } finally {
-      await Promise.all([refreshHistory(), refreshProducts()]);
-    }
-  };
+  const handleCheckout = useCallback(
+    async (paymentMethodCode: string, paymentMethodData: PaymentMethodData) => {
+      try {
+        const purchase = await checkout(paymentMethodCode, paymentMethodData);
 
-  const handleRefund = async (purchaseId: string) => {
-    try {
-      await refundPurchase(purchaseId);
-      await refreshProducts();
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "An unknown error has occurred";
+        // refresh directly when we know the purchase is successful, otherwise we wait for the polling to confirm it
+        if (purchase.status === "confirmed") {
+          try {
+            await handlePurchaseSuccess();
+          } catch (error: unknown) {
+            logPurchase.error(
+              "Refresh failed after immediate confirmation:",
+              error,
+            );
+            showError(
+              "Purchase was successful, but refreshing data failed. Please refresh the page.",
+            );
+          }
+        }
+        // on pending we wait for the PollingModal to confirm the purchase before refreshing
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unknown error has occurred";
 
-      showError(errorMessage);
-    }
-  };
+        showError(errorMessage);
+      }
+    },
+    [checkout, handlePurchaseSuccess, showError],
+  );
+
+  const handleRefund = useCallback(
+    async (purchaseId: string) => {
+      try {
+        await refundPurchase(purchaseId);
+        await refreshProducts();
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unknown error has occurred";
+
+        showError(errorMessage);
+      }
+    },
+    [refundPurchase, refreshProducts, showError],
+  );
+
+  const handlePurchaseModalComplete = useCallback(
+    (success: boolean) => {
+      finalizeCheckout(success);
+
+      if (success) {
+        handlePurchaseSuccess().catch((error: unknown) => {
+          logPurchase.error("Refresh failed after polling:", error);
+          showError(
+            "Purchase was successful, but refreshing data failed. Please refresh the page.",
+          );
+        });
+      }
+    },
+    [finalizeCheckout, handlePurchaseSuccess, showError],
+  );
 
   return (
     <PosLayout
@@ -128,9 +168,7 @@ const Kasseapparat: React.FC = () => {
           {isPolling && pendingPurchase && (
             <PollingModal
               purchase={pendingPurchase}
-              onComplete={pendingPurchase.onComplete}
-              onConfirmed={() => setIsPolling(false)}
-              onClose={() => setIsPolling(false)}
+              onComplete={handlePurchaseModalComplete}
             />
           )}
         </>

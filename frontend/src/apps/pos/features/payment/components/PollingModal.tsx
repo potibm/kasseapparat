@@ -4,14 +4,13 @@ import { HiClock, HiCheckCircle, HiXCircle, HiBan } from "react-icons/hi";
 import { getCurrentReaderId } from "@core/localstorage/helper/local-storage-reader";
 import Button from "@pos/components/Button";
 import { usePaymentWebSocket } from "../hooks/usePaymentWebSocket";
+import { createLogger } from "@core/logger/logger";
+
+const log = createLogger("Payment");
 
 interface PurchaseData {
   id: string;
   status: string;
-}
-
-interface PaymentConfirmation {
-  id: string;
 }
 
 /**
@@ -19,8 +18,6 @@ interface PaymentConfirmation {
  */
 interface PollingModalProps {
   purchase: PurchaseData;
-  onClose: () => void;
-  onConfirmed: (data: PaymentConfirmation) => void;
   onComplete: (success: boolean) => void;
 }
 
@@ -30,8 +27,6 @@ interface PollingModalProps {
  */
 export const PollingModal: React.FC<PollingModalProps> = ({
   purchase,
-  onClose,
-  onConfirmed,
   onComplete,
 }) => {
   // Connect to the WebSocket logic via our custom hook
@@ -41,6 +36,12 @@ export const PollingModal: React.FC<PollingModalProps> = ({
 
   const [isAborting, setIsAborting] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const isTerminalError = [
+    "failed",
+    "cancelled",
+    "connection_lost",
+    "timeout",
+  ].includes(status);
 
   // Local timer to refresh the "seconds ago" display every second
   useEffect(() => {
@@ -94,27 +95,25 @@ export const PollingModal: React.FC<PollingModalProps> = ({
    */
   useEffect(() => {
     if (status === "confirmed") {
+      log.info("Purchase confirmed", purchase.id);
       onComplete(true);
-      // Brief delay to allow the user to see the success state before closing
-      const timer = setTimeout(() => onConfirmed({ id: purchase.id }), 2500);
-      return () => clearTimeout(timer);
     }
 
-    const terminalStates: string[] = [
-      "failed",
-      "cancelled",
-      "connection_lost",
-      "timeout",
-    ];
-    if (terminalStates.includes(status)) {
-      onComplete(false);
+    if (isTerminalError) {
+      log.error("Terminal process ended with status", purchase.id, status);
+      const timeoutId = setTimeout(() => {
+        onComplete(false);
+      }, 3000);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [status, purchase.id, onComplete, onConfirmed]);
+  }, [status, isTerminalError, purchase.id, onComplete]);
 
   /**
    * Triggers the cancellation process via WebSocket.
    */
   const handleAbort = () => {
+    log.info("User initiated purchase cancellation", { purchaseId });
     setIsAborting(true);
     cancel(getCurrentReaderId());
   };
@@ -157,10 +156,9 @@ export const PollingModal: React.FC<PollingModalProps> = ({
               )}
             </Button>
           )}
-          {(status === "failed" ||
-            status === "cancelled" ||
-            status === "connection_lost" ||
-            status === "timeout") && <Button onClick={onClose}>Close</Button>}
+          {isTerminalError && (
+            <Button onClick={() => onComplete(false)}>Close</Button>
+          )}
         </div>
       </ModalFooter>
     </Modal>

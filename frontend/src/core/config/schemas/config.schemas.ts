@@ -1,19 +1,5 @@
 import { z } from "zod";
-
-const JsonObjectSchema = z
-  .string()
-  .transform((str, ctx) => {
-    try {
-      return JSON.parse(str);
-    } catch {
-      ctx.addIssue({
-        code: "custom",
-        message: "Invalid JSON",
-      });
-      return z.NEVER;
-    }
-  })
-  .prefault("{}");
+import { JsonObjectSchema } from "@core/schemas/zod-schemas";
 
 export const ConfigSchema = z.object({
   version: z.string().default("1.0.0"),

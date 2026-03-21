@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Cart } from "../services/Cart";
 import { storePurchase } from "../../../utils/api";
 import { PaymentMethodData } from "../types/cart.types";
@@ -12,25 +12,15 @@ import { createLogger } from "@core/logger/logger";
 const cartLog = createLogger("Cart");
 const purchaseLog = createLogger("Purchase");
 
-interface EnrichedPurchase extends PurchaseType {
-  onComplete: (success: boolean) => void;
-}
-
 export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
   const [cart, setCart] = useState(new Cart());
   const [isPolling, setIsPolling] = useState(false);
-  const [pendingPurchase, setPendingPurchase] =
-    useState<EnrichedPurchase | null>(null);
+  const [pendingPurchase, setPendingPurchase] = useState<PurchaseType | null>(
+    null,
+  );
   const [checkoutProcessing, setCheckoutProcessing] = useState<string | null>(
     null,
   );
-  const isMounted = useRef(true);
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
 
   const add = useCallback(
     (product: ProductType, count: number, listItem: GuestType | null) => {
@@ -50,6 +40,22 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
     setCart(new Cart());
   }, []);
 
+  const finalizeCheckout = useCallback(
+    (success: boolean) => {
+      setIsPolling(false);
+      setPendingPurchase(null);
+      setCheckoutProcessing(null);
+
+      if (success) {
+        purchaseLog.info("Purchase completed successfully via polling");
+        clear();
+      } else {
+        purchaseLog.error("Purchase failed or cancelled during polling");
+      }
+    },
+    [clear],
+  );
+
   const checkout = async (
     paymentMethodCode: string,
     paymentMethodData: PaymentMethodData,
@@ -63,43 +69,17 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
       const createdPurchase = await storePurchase(apiHost, token, payload);
 
       if (createdPurchase.status === "pending") {
-        return new Promise((resolve, reject) => {
-          const enrichedPurchase = {
-            ...createdPurchase,
-            onComplete: (success: boolean) => {
-              if (!isMounted.current) {
-                reject(new Error("Component unmounted during polling"));
-                return;
-              }
-
-              setIsPolling(false);
-              setPendingPurchase(null);
-              setCheckoutProcessing(null);
-
-              if (success) {
-                purchaseLog.info("Purchase completed successfully");
-                clear();
-                resolve(createdPurchase);
-              } else {
-                purchaseLog.error("Purchase failed or cancelled");
-                reject(new Error("Payment failed or cancelled"));
-              }
-            },
-          };
-
-          setPendingPurchase(enrichedPurchase);
-          setIsPolling(true);
-        });
+        setPendingPurchase(createdPurchase);
+        setIsPolling(true);
+        return createdPurchase;
       }
 
-      if (isMounted.current) {
-        if (createdPurchase.status === "confirmed") {
-          clear();
-          setCheckoutProcessing(null);
-          purchaseLog.info("Purchase confirmed immediately", {
-            purchaseId: createdPurchase.id,
-          });
-        }
+      if (createdPurchase.status === "confirmed") {
+        clear();
+        setCheckoutProcessing(null);
+        purchaseLog.info("Purchase confirmed immediately", {
+          purchaseId: createdPurchase.id,
+        });
         return createdPurchase;
       }
 
@@ -110,9 +90,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
         "Error during checkout",
         error instanceof Error ? { message: error.message } : { error },
       );
-      if (isMounted.current) {
-        setCheckoutProcessing(null);
-      }
+      setCheckoutProcessing(null);
       throw error;
     }
   };
@@ -123,10 +101,10 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
     remove,
     clear,
     checkout,
+    finalizeCheckout,
     checkoutProcessing,
     isPolling,
     pendingPurchase,
-    setIsPolling,
   };
 };
 

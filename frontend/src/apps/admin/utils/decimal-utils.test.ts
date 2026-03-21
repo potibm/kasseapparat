@@ -17,6 +17,7 @@ describe("Decimal Utils", () => {
   it("should validate correctly", () => {
     expect(decimalValidator("-1")).toBe("Negative number");
     expect(decimalValidator("abc")).toBe("Invalid number");
+    expect(decimalValidator({})).toBe("Invalid input type");
     expect(decimalValidator("12.34")).toBeUndefined();
   });
 });
