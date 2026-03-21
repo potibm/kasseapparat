@@ -70,7 +70,13 @@ const Kasseapparat: React.FC = () => {
     paymentMethodData: PaymentMethodData,
   ) => {
     try {
-      await checkout(paymentMethodCode, paymentMethodData);
+      const purchase = await checkout(paymentMethodCode, paymentMethodData);
+
+      // refresh directly when we know the purchase is successful, otherwise we wait for the polling to confirm it
+      if (purchase.status === "confirmed") {
+        await handlePurchaseSuccess();
+      }
+      // on pending we wait for the PollingModal to confirm the purchase before refreshing
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
@@ -78,8 +84,6 @@ const Kasseapparat: React.FC = () => {
           : "An unknown error has occurred";
 
       showError(errorMessage);
-    } finally {
-      await Promise.all([refreshHistory(), refreshProducts()]);
     }
   };
 
@@ -94,6 +98,18 @@ const Kasseapparat: React.FC = () => {
           : "An unknown error has occurred";
 
       showError(errorMessage);
+    }
+  };
+
+  const handlePurchaseSuccess = async () => {
+    await Promise.all([refreshHistory(), refreshProducts()]);
+  };
+
+  const handlePurchaseModalComplete = async (success: boolean) => {
+    finalizeCheckout(success);
+
+    if (success) {
+      await handlePurchaseSuccess();
     }
   };
 
@@ -128,7 +144,7 @@ const Kasseapparat: React.FC = () => {
           {isPolling && pendingPurchase && (
             <PollingModal
               purchase={pendingPurchase}
-              onComplete={(success) => finalizeCheckout(success)}
+              onComplete={handlePurchaseModalComplete}
             />
           )}
         </>

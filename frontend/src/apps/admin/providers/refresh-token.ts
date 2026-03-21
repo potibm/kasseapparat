@@ -1,5 +1,7 @@
 import { getSession, updateToken } from "../utils/auth-utils";
 
+export const TOKEN_REFRESH_THRESHOLD = 10 * 1000;
+
 export const refreshToken = async (): Promise<void> => {
   // get current token and expiry from local storage
   const session = getSession();
@@ -11,7 +13,7 @@ export const refreshToken = async (): Promise<void> => {
   const expiry = new Date(session.expiryDate);
 
   // Check if token is still valid for at least 10 seconds
-  if (expiry.getTime() - now.getTime() > 10 * 1000) {
+  if (expiry.getTime() - now.getTime() > TOKEN_REFRESH_THRESHOLD) {
     return;
   }
 

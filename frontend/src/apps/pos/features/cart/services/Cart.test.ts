@@ -83,13 +83,11 @@ describe("Cart", () => {
       const cart = new Cart();
       const product = createMockProduct({ id: 1, netPrice: new Decimal(100) });
 
-      // Wir prüfen verschiedene ungültige Inputs
-      const invalidCounts = [0, -5, 1.5, Infinity, NaN];
+      const invalidCounts = [0, -5, 1.5, Infinity, Number.NaN];
 
       invalidCounts.forEach((count) => {
         const unchangedCart = cart.add(product, count);
 
-        // Die Cart-Instanz sollte die gleiche bleiben
         expect(unchangedCart).toBe(cart);
         expect(mockLogger.warn).toHaveBeenCalledWith(
           "Invalid quantity provided, skipping add to cart",

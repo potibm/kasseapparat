@@ -1,13 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { fetchUtils } from "react-admin";
+import {
+  fetchUtils,
+  GetListParams,
+  GetOneParams,
+  CreateParams,
+  UpdateParams,
+} from "react-admin";
 import * as Sentry from "@sentry/react";
-import { GetListParams, GetOneParams, CreateParams } from "react-admin";
-
-// 1. ADD THIS IMPORT: We need it to read the arguments it was called with
 import jsonServerProvider from "ra-data-json-server";
 
-// 2. USE vi.hoisted(): This tells Vitest to hoist these variables
-// alongside the vi.mock() calls, preventing the ReferenceError.
 const { mockBaseProvider } = vi.hoisted(() => ({
   mockBaseProvider: {
     getList: vi.fn(),
@@ -22,7 +23,6 @@ const { mockBaseProvider } = vi.hoisted(() => ({
   },
 }));
 
-// 3. SIMPLIFIED MOCK: Just return the hoisted provider
 vi.mock("ra-data-json-server", () => ({
   default: vi.fn(() => mockBaseProvider),
 }));
@@ -50,12 +50,8 @@ vi.mock("./refresh-token", () => ({
   refreshToken: vi.fn(),
 }));
 
-// 4. IMPORTANT: Import the file under test AFTER the mocks are defined
 import dataProvider from "./data-provider";
 import { getSessionToken } from "../utils/auth-utils";
-
-// 5. EXTRACT THE CLIENT: Since dataProvider is now imported and executed,
-// jsonServerProvider was called. We simply extract the 2nd argument (index 1).
 
 interface HttpClientOptions extends fetchUtils.Options {
   isUpload?: boolean;
@@ -71,7 +67,7 @@ const capturedHttpClient = vi.mocked(jsonServerProvider).mock
 const mockFetchResponse = (jsonPayload: unknown) =>
   ({ json: jsonPayload }) as Awaited<ReturnType<typeof fetchUtils.fetchJson>>;
 
-// --- 2. TESTS ---
+// tests
 
 describe("Data Provider", () => {
   beforeEach(() => {
@@ -238,7 +234,8 @@ describe("Data Provider", () => {
       const result = await dataProvider.refund("purchases", {
         id: 123,
         data: payload,
-      } as GetOneParams);
+        previousData: { id: 123, amount: 1000 },
+      } as UpdateParams);
 
       expect(result.data).toEqual({ refunded: true });
 
