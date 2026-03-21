@@ -12,11 +12,17 @@ import { faker } from "@faker-js/faker";
 import { createMockUserData } from "@core/api/auth.schemas.mock";
 
 // mocks
+const { mockDebug, mockWarn, mockError } = vi.hoisted(() => ({
+  mockDebug: vi.fn(),
+  mockWarn: vi.fn(),
+  mockError: vi.fn(),
+}));
+
 vi.mock("@core/logger/logger", () => ({
   createLogger: () => ({
-    debug: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
+    debug: mockDebug,
+    warn: mockWarn,
+    error: mockError,
   }),
 }));
 
@@ -54,6 +60,10 @@ describe("Auth Storage Service", () => {
       expect(session.token).toBe(VALID_JWT_MOCK);
       expect(session.expiryDate).toBeInstanceOf(Date);
       expect(session.expiryDate?.toISOString()).toBe(mockDateStr);
+      expect(mockDebug).toHaveBeenCalledWith("LocalStorage Session restored", {
+        token: VALID_JWT_MOCK,
+        expiryDate: session.expiryDate,
+      });
     });
 
     it("should return nulls if Zod parsing fails (e.g. invalid token format)", () => {
@@ -85,6 +95,10 @@ describe("Auth Storage Service", () => {
       const user = getInitialUser();
 
       expect(user).toEqual(mockUserData);
+      expect(mockDebug).toHaveBeenCalledWith(
+        "LocalStorage Userdata restored",
+        mockUserData,
+      );
     });
 
     it("should return null if there is no data in localStorage", () => {
@@ -98,6 +112,9 @@ describe("Auth Storage Service", () => {
       const user = getInitialUser();
 
       expect(user).toBeNull();
+      expect(mockWarn).toHaveBeenCalledWith(
+        "LocalStorage Userdata invalid. Clearing...",
+      );
     });
 
     it("should return null if JSON parsing throws an error (catch block)", () => {
