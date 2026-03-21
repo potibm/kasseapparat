@@ -36,7 +36,7 @@ const mockPurchases = [
     totalGrossPrice: new Decimal("25.50"),
     status: "pending",
   }),
-] as PurchaseType[];
+];
 
 describe("usePurchaseHistory Hook", () => {
   beforeEach(() => {

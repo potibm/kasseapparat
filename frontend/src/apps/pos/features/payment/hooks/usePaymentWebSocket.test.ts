@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react"; // <-- NEU: waitFor
+import { renderHook, act, waitFor } from "@testing-library/react";
 import { usePaymentWebSocket } from "./usePaymentWebSocket";
 import { useAuth } from "@pos/features/auth/providers/AuthProvider";
 import { useConfig } from "@core/config/providers/ConfigProvider";
@@ -34,7 +34,7 @@ class MockWebSocket {
   onopen: (() => void) | null = null;
   onmessage: ((event: { data: string }) => void) | null = null;
   onclose: ((event: { wasClean: boolean; code: number }) => void) | null = null;
-  onerror: ((event: Error | unknown) => void) | null = null;
+  onerror: ((event: unknown) => void) | null = null;
 
   constructor(url: string, protocols: string | string[]) {
     this.url = url;

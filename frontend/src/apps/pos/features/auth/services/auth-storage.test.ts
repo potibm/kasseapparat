@@ -101,7 +101,7 @@ describe("Auth Storage Service", () => {
     });
 
     it("should return null if JSON parsing throws an error (catch block)", () => {
-      // corrup json
+      // corrupt json
       localStorage.setItem(AUTH_KEYS.USER, "invalid-json-{");
 
       const user = getInitialUser();
