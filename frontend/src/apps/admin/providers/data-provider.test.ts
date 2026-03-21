@@ -70,6 +70,8 @@ const mockFetchResponse = (jsonPayload: unknown) =>
 // tests
 
 describe("Data Provider", () => {
+  const API_HOST = "";
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -100,7 +102,7 @@ describe("Data Provider", () => {
     it("should set default headers and Content-Type", async () => {
       vi.mocked(fetchUtils.fetchJson).mockResolvedValue(mockFetchResponse({}));
 
-      await capturedHttpClient("http://localhost:3001/api/v2/test");
+      await capturedHttpClient(`${API_HOST}/api/v2/test`);
 
       const calledOptions = vi.mocked(fetchUtils.fetchJson).mock.calls[0][1];
       const headers = calledOptions?.headers as Headers;
@@ -112,7 +114,7 @@ describe("Data Provider", () => {
     it("should skip Content-Type if isUpload is true", async () => {
       vi.mocked(fetchUtils.fetchJson).mockResolvedValue(mockFetchResponse({}));
 
-      await capturedHttpClient("http://localhost:3001/api/v2/test", {
+      await capturedHttpClient("${API_HOST/api/v2/test", {
         isUpload: true,
       });
 
@@ -125,7 +127,7 @@ describe("Data Provider", () => {
       vi.mocked(getSessionToken).mockReturnValue("valid-test-token");
       vi.mocked(fetchUtils.fetchJson).mockResolvedValue(mockFetchResponse({}));
 
-      await capturedHttpClient("http://localhost:3001/api/v2/test");
+      await capturedHttpClient("${API_HOST/api/v2/test");
 
       const calledOptions = vi.mocked(fetchUtils.fetchJson).mock.calls[0][1];
       const headers = calledOptions?.headers as Headers;
@@ -140,7 +142,7 @@ describe("Data Provider", () => {
       vi.mocked(getSessionToken).mockReturnValue("secret-token");
 
       await expect(
-        capturedHttpClient("http://localhost:3001/api/v2/test"),
+        capturedHttpClient(`${API_HOST}/api/v2/test`),
       ).rejects.toThrow("Database connection failed");
 
       expect(Sentry.captureException).toHaveBeenCalledTimes(1);
@@ -151,7 +153,7 @@ describe("Data Provider", () => {
       vi.mocked(fetchUtils.fetchJson).mockRejectedValue(expectedError);
 
       await expect(
-        capturedHttpClient("http://localhost:3001/api/v2/test"),
+        capturedHttpClient(`${API_HOST}/api/v2/test`),
       ).rejects.toThrow("Cookie token is empty");
 
       // The filter logic should prevent Sentry from being called
@@ -166,7 +168,7 @@ describe("Data Provider", () => {
       );
 
       await expect(
-        capturedHttpClient("http://localhost:3001/api/v2/test"),
+        capturedHttpClient(`${API_HOST}/api/v2/test`),
       ).rejects.toThrow();
 
       // Check the exact payload sent to Sentry
@@ -204,7 +206,7 @@ describe("Data Provider", () => {
       const [url, options] = vi.mocked(fetchUtils.fetchJson).mock.calls[0];
       const headers = options?.headers as Headers;
 
-      expect(url).toBe("http://localhost:3001/api/v2/images");
+      expect(url).toBe(`${API_HOST}/api/v2/images`);
       expect(options?.method).toBe("POST");
       expect(options?.body).toBe(fileBody);
       // isUpload flag is stripped before passing to fetchJson, but we know it bypassed Content-Type
@@ -240,7 +242,7 @@ describe("Data Provider", () => {
       expect(result.data).toEqual({ refunded: true });
 
       const [url, options] = vi.mocked(fetchUtils.fetchJson).mock.calls[0];
-      expect(url).toBe("http://localhost:3001/api/v2/purchases/123/refund");
+      expect(url).toBe(`${API_HOST}/api/v2/purchases/123/refund`);
       expect(options?.method).toBe("POST");
       expect(options?.body).toBe(JSON.stringify(payload));
     });
