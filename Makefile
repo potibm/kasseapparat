@@ -162,3 +162,9 @@ e2e-setup:
 	cd $(BACKEND_DIR) && go run ./tools/main.go --seed-with-test --purge --db-file "e2e-clean"
 	@echo "Copying test database to active location..."
 	cd $(BACKEND_DIR) && cp data/e2e-clean.db data/e2e-work.db
+
+e2e-run: e2e-setup
+	cd $(FRONTEND_DIR) && corepack yarn playwright test
+
+e2e-report:
+	cd $(FRONTEND_DIR) && corepack yarn playwright show-report

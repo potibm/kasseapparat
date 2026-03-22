@@ -271,7 +271,7 @@ func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, max
 			ds.db.Create(
 				&models.Guest{
 					Name:             gofakeit.Name(),
-					GuestlistID:      userGuestlist.ID,
+					GuestlistID:      userGuestlistId,
 					AdditionalGuests: uint(gofakeit.Number(0, 2)),
 				},
 			)
