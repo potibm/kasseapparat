@@ -1,8 +1,26 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
+import { PosPage } from "./pages/PosPage";
 import { resetDatabase } from "./helpers/db";
 
-test.describe("Kassiervorgänge", () => {
+interface Product {
+  id: number;
+  name: string;
+  price: string;
+}
+
+test.describe("checkout", () => {
+  const regularTicketProduct: Product = {
+    id: 1,
+    name: "🎟️ Regular",
+    price: "40 €",
+  };
+  const coffeeMugProduct: Product = {
+    id: 16,
+    name: "☕ Coffee Mug",
+    price: "1 €",
+  };
+
   test.beforeEach(async ({ page }) => {
     resetDatabase();
 
@@ -10,31 +28,56 @@ test.describe("Kassiervorgänge", () => {
     await loginPage.loginSuccessfully("demo", "demo");
   });
 
-  test("should perform a standard checkout", async ({ page }) => {
-    // check that cart is empty
-    const cartItems = page.getByTestId("cart-items");
-    await expect(cartItems).toBeEmpty();
+  test("should have an empty cart on start", async ({ page }) => {
+    const pos = new PosPage(page);
+    await pos.expectEmptyCart();
+  });
 
-    // check that purchase history is empty
-    const purchaseHistory = page.getByTestId("purchase-history");
-    await expect(purchaseHistory).toBeEmpty();
+  test("should add a product to the cart and remove it", async ({ page }) => {
+    const pos = new PosPage(page);
 
-    // add something to the cart
-    await page
-      .getByRole("button", { name: "Add 🎟️ Regular for 40 € to" })
-      .click();
-    await page
-      .getByRole("button", { name: "Add ☕ Coffee Mug for 1 € to" })
-      .click();
+    await pos.expectEmptyCart();
+    await pos.addProduct(regularTicketProduct);
 
-    // ckech that cart has the items
-    await expect(cartItems).toContainText("Regular");
-    await expect(cartItems).toContainText("Coffee Mug");
+    await pos.expectProductInCart(regularTicketProduct);
+    await expect(pos.cartItems).toHaveCount(1);
 
-    // checkout
-    await page.getByTestId("checkout-button-CASH").click();
+    await pos.removeProductFromCart(regularTicketProduct.name);
 
-    // check if purchase history has the new entry
-    await expect(purchaseHistory).not.toBeEmpty();
+    await pos.expectEmptyCart();
+  });
+
+  test("should add multiple products to the cart and remove all", async ({
+    page,
+  }) => {
+    const pos = new PosPage(page);
+
+    await pos.expectEmptyCart();
+    await pos.addProduct(regularTicketProduct);
+    await pos.addProduct(coffeeMugProduct);
+
+    await expect(pos.cartItems).toHaveCount(2);
+
+    await pos.removeAllProductsFromCart();
+
+    await pos.expectEmptyCart();
+  });
+
+  test("should add products to the cart and checkout", async ({ page }) => {
+    const pos = new PosPage(page);
+
+    await pos.expectEmptyCart();
+
+    await pos.addProduct(regularTicketProduct);
+    await pos.addProduct(coffeeMugProduct);
+
+    await pos.expectProductInCart(regularTicketProduct);
+    await pos.expectProductInCart(coffeeMugProduct);
+    await expect(pos.cartItems).toHaveCount(2);
+    await pos.expectTotal("41 €");
+
+    await pos.checkout("CASH");
+
+    await pos.expectEmptyCart();
   });
 });

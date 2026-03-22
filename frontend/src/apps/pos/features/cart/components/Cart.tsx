@@ -86,6 +86,7 @@ const Cart: React.FC<CartProps> = ({
       <Table
         striped
         theme={compactTableTheme}
+        data-testid="cart-table"
         className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
         <TableHead>
