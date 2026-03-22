@@ -1,11 +1,6 @@
 // tests/e2e/pages/PosPage.ts
 import { Page, Locator, expect } from "@playwright/test";
-
-export interface Product {
-  id: number;
-  name: string;
-  price: string;
-}
+import { Product } from "../fixtures/products";
 
 export class PosPage {
   readonly page: Page;
@@ -28,6 +23,16 @@ export class PosPage {
     await this.addProductByName(
       `Add ${product.name} for ${product.price} to cart`,
     );
+  }
+
+  async openGuestlistModalByName(productName: string) {
+    await this.page
+      .getByRole("button", { name: `Show guestlist for ${productName}` })
+      .click();
+  }
+
+  async openGuestlistModal(product: Product) {
+    await this.openGuestlistModalByName(product.name);
   }
 
   async checkout(method: "CASH" | "CC") {

@@ -2,24 +2,11 @@ import { test, expect } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
 import { PosPage } from "./pages/PosPage";
 import { resetDatabase } from "./helpers/db";
-
-interface Product {
-  id: number;
-  name: string;
-  price: string;
-}
+import { TEST_PRODUCTS } from "./fixtures/products";
 
 test.describe("checkout", () => {
-  const regularTicketProduct: Product = {
-    id: 1,
-    name: "🎟️ Regular",
-    price: "40 €",
-  };
-  const coffeeMugProduct: Product = {
-    id: 16,
-    name: "☕ Coffee Mug",
-    price: "1 €",
-  };
+  const regularTicketProduct = TEST_PRODUCTS.REGULAR_TICKET;
+  const coffeeMugProduct = TEST_PRODUCTS.COFFEE_MUG;
 
   test.beforeEach(async ({ page }) => {
     resetDatabase();

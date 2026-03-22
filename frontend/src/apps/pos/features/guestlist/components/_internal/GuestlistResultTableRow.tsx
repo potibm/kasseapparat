@@ -19,6 +19,7 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
   loadedSearchQuery,
 }) => {
   const isAlreadyInCart = hasListItem(entry);
+  const displayName = entry.code ?? entry.name;
 
   const handleAddToCart = (additionalGuests: number) => {
     onAddToCart(entry, additionalGuests);
@@ -58,6 +59,7 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
   return (
     <TableRow
       key={entry.id}
+      data-testid={"guestlist-result-" + entry.id}
       className="hover:bg-gray-100 dark:hover:bg-gray-700"
     >
       <TableCell>
@@ -86,6 +88,7 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
           key={`add-btn-${entry.id}-0`}
           disabled={isAlreadyInCart}
           onClick={() => handleAddToCart(0)}
+          aria-label={"Add " + displayName + " to cart"}
         >
           <HiShoppingCart />
         </Button>
@@ -97,6 +100,13 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
               className="float"
               disabled={isAlreadyInCart}
               onClick={() => handleAddToCart(count)}
+              aria-label={
+                "Add " +
+                displayName +
+                "  with " +
+                count +
+                " additional guest(s) to cart"
+              }
             >
               <div className="text-xs">+{count}</div>
             </Button>
