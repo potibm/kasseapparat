@@ -53,6 +53,13 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
       {paymentMethods.map((paymentMethod) => (
         <Button
           key={paymentMethod.code}
+          data-testid={"checkout-button-" + paymentMethod.code}
+          aria-label={
+            "Pay " +
+            (cart.isEmpty ? "" : currency.format(cartValue.toNumber())) +
+            " with " +
+            paymentMethod.name
+          }
           {...((cart.isEmpty ||
             checkoutProcessing ||
             !paymentMethodIsActive(paymentMethod.code, cartValue)) && {

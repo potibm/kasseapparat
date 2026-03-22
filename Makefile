@@ -156,3 +156,9 @@ check-go:
 	  echo "❌ Go $(GO_VERSION).x required. Current: $$(go version)"; \
 	  exit 1; \
 	fi
+
+e2e-setup:
+	@echo "Create test database..."
+	cd $(BACKEND_DIR) && go run ./tools/main.go --seed-with-test --purge --db-file "e2e-clean"
+	@echo "Copying test database to active location..."
+	cd $(BACKEND_DIR) && cp data/e2e-clean.db data/e2e-work.db

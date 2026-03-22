@@ -8,15 +8,22 @@ import path from "node:path";
 
 const __dirname = path.resolve();
 
+const frontendPort = process.env.E2E_PORT
+  ? parseInt(process.env.E2E_PORT)
+  : 3000;
+const backendTarget = process.env.E2E_API_TARGET || "http://localhost:3001";
+
 export default defineConfig({
   plugins: [react(), tailwindcss(), flowbiteReact(), basicSsl()],
   server: {
-    port: 3000,
+    port: frontendPort,
+    strictPort: true,
     proxy: {
       "/api": {
-        target: "http://localhost:3001",
+        target: backendTarget,
         changeOrigin: true,
         ws: true,
+        secure: false,
       },
     },
   },

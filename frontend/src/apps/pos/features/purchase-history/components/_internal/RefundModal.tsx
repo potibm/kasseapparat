@@ -67,11 +67,15 @@ export const RefundModal: React.FC<RefundModalProps> = ({
           </div>
 
           <div className="flex justify-center gap-4">
-            <Button disabled={processing} onClick={() => onConfirm(purchase)}>
+            <Button
+              disabled={processing}
+              onClick={() => onConfirm(purchase)}
+              aria-label="Confirm refund"
+            >
               Yes, I&apos;m sure{" "}
               {processing && <Spinner size="sm" className="ml-2" />}
             </Button>
-            <Button color="black" onClick={onClose}>
+            <Button color="black" onClick={onClose} aria-label="Cancel refund">
               No, cancel
             </Button>
           </div>

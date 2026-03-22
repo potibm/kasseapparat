@@ -6,8 +6,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func ConnectToDatabase() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("./data/kasseapparat.db"), &gorm.Config{})
+func ConnectToDatabase(filename string) *gorm.DB {
+	if filename == "" {
+		filename = "kasseapparat"
+	}
+
+	db, err := gorm.Open(sqlite.Open("./data/"+filename+".db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
