@@ -33,6 +33,7 @@ export default defineConfig({
     setupFiles: "./tests/setup.ts",
     teardownTimeout: 1000,
     pool: "threads",
+    include: ["src/**/*.{test,spec}.{ts,mts,cts,jsx,tsx}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
