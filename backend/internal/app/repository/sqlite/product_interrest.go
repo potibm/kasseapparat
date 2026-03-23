@@ -6,7 +6,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-func (repo *Repository) GetProductInterests(limit int, offset int, ids []int) ([]models.ProductInterest, error) {
+func (repo *Repository) GetProductInterests(limit, offset int, ids []int) ([]models.ProductInterest, error) {
 	query := repo.db.Preload("Product").Order("created_at DESC").Limit(limit).Offset(offset)
 
 	if len(ids) > 0 {

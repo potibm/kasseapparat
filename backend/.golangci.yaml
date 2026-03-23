@@ -13,11 +13,15 @@ linters:
     - tagalign
     - cyclop
     - sloglint
+    - gocritic
   disable:
     - wsl
     - testpackage
     - funlen
   settings:
+    gocritic:
+      enabled-tags:
+        - style
     wsl_v5:
       allow-first-in-block: true
       allow-whole-block: false

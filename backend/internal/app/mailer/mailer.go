@@ -99,15 +99,15 @@ func (m *Mailer) SetSubjectPrefix(prefix string) {
 	m.subjectPrefix = prefix
 }
 
-func (m *Mailer) SetFrontendBaseUrl(url string) {
-	m.frontendBaseUrl = url
+func (m *Mailer) SetFrontendBaseUrl(u string) {
+	m.frontendBaseUrl = u
 }
 
 func (m *Mailer) SetDisabled(disabled bool) {
 	m.disabled = disabled
 }
 
-func (m *Mailer) SendMail(to string, subject string, body string) error {
+func (m *Mailer) SendMail(to, subject, body string) error {
 	if m.disabled {
 		slog.Info("Mailer is disabled, not sending email")
 

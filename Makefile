@@ -6,7 +6,7 @@ BACKEND_BUILD_CMD = go build -ldflags "-X main.version=$(VERSION)" -o ../$(DIST_
 NODE_MAJOR := 25
 GO_VERSION := 1.26
 
-.PHONY: list run run-fe run-be deps-be deps-fe run-tool linter linter-fix test test-fe test-be build docker-build docker-run manual e2e-setup e2e-run e2e-report 
+.PHONY: list run run-fe run-be deps-be deps-fe deps-actions run-tool linter linter-fix test test-fe test-be build docker-build docker-run manual e2e-setup e2e-run e2e-report 
 
 list:
 	@LC_ALL=C $(MAKE) -pRrq -f $(firstword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/(^|\n)# Files(\n|$$)/,/(^|\n)# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$'
@@ -55,6 +55,9 @@ deps-fe: check-node
 deps-install:
 	cd $(FRONTEND_DIR) && corepack yarn install
 	cd $(BACKEND_DIR) && go mod download
+
+deps-actions:
+	npx actions-up	
 
 linter:
 	mkdir -p $(BACKEND_DIR)/cmd/assets

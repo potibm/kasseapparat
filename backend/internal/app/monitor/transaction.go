@@ -31,7 +31,7 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 		defer ticker.Stop()
 
 		for range ticker.C {
-			if done := n.handleTransactionPolling(transactionID); done {
+			if n.handleTransactionPolling(transactionID) {
 				slog.Debug("Polling ended for transaction", "transaction_id", transactionID)
 
 				return

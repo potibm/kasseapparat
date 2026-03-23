@@ -93,7 +93,7 @@ func (m *MockSumUpRepository) GetReader(readerId string) (*sumup.Reader, error) 
 	return m.GetReaderFunc(readerId)
 }
 
-func (m *MockSumUpRepository) CreateReader(pairingCode string, readerName string) (*sumup.Reader, error) {
+func (m *MockSumUpRepository) CreateReader(pairingCode, readerName string) (*sumup.Reader, error) {
 	return m.CreateReaderFunc(pairingCode, readerName)
 }
 

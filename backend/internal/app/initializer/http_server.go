@@ -1,3 +1,4 @@
+//nolint:gocritic // unnecessary blocks are more readable with the grouping of routes
 package initializer
 
 import (
@@ -30,15 +31,15 @@ var (
 const API_VERSION = "v2"
 
 func InitializeHttpServer(
-	httpHandler httpHandler.Handler,
-	websocketHandler websocket.HandlerInterface,
+	httpHdlr httpHandler.Handler,
+	websocketHdlr websocket.TransactionWebSocketHandler,
 	repository sqliteRepo.Repository,
 	staticFiles embed.FS,
 	jwtMiddleware *jwt.GinJWTMiddleware,
-	config config.Config,
+	cfg config.Config,
 	logger *slog.Logger,
 ) (*gin.Engine, error) {
-	gin.SetMode(config.AppConfig.GinMode)
+	gin.SetMode(cfg.AppConfig.GinMode)
 
 	r = gin.New()
 	r.Use(
@@ -50,9 +51,9 @@ func InitializeHttpServer(
 		middleware.ErrorHandlingMiddleware(),
 	)
 
-	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHandler.GetPurchaseStats)
+	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHdlr.GetPurchaseStats)
 
-	r.Use(CreateCorsMiddleware(config.CorsAllowOrigins))
+	r.Use(CreateCorsMiddleware(cfg.CorsAllowOrigins))
 
 	folder, err := static.EmbedFolder(staticFiles, "assets")
 	if err != nil {
@@ -62,7 +63,7 @@ func InitializeHttpServer(
 	r.Use(static.Serve("/", folder))
 
 	registerAuthMiddleware(jwtMiddleware)
-	registerApiRoutes(httpHandler, websocketHandler, jwtMiddleware)
+	registerApiRoutes(httpHdlr, websocketHdlr, jwtMiddleware)
 
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
@@ -130,40 +131,40 @@ func SentryMiddleware() gin.HandlerFunc {
 }
 
 func registerApiRoutes(
-	httpHandler httpHandler.Handler,
-	websocketHandler websocket.HandlerInterface,
+	httpHdlr httpHandler.Handler,
+	websocketHdlr websocket.TransactionWebSocketHandler,
 	authMiddleware *jwt.GinJWTMiddleware,
 
 ) {
 	protectedApiRouter := r.Group("/api/" + API_VERSION)
 	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware(), SlogUserID())
 	{
-		registerProductRoutes(protectedApiRouter, httpHandler)
-		registerProductInterestRoutes(protectedApiRouter, httpHandler)
-		protectedApiRouter.GET("/productStats", httpHandler.GetProductStats)
+		registerProductRoutes(protectedApiRouter, httpHdlr)
+		registerProductInterestRoutes(protectedApiRouter, httpHdlr)
+		protectedApiRouter.GET("/productStats", httpHdlr.GetProductStats)
 
-		registerGuestlistRoutes(protectedApiRouter, httpHandler)
-		registerGuestRoutes(protectedApiRouter, httpHandler)
-		protectedApiRouter.POST("/guestsUpload", httpHandler.ImportGuestsFromDeineTicketsCsv)
+		registerGuestlistRoutes(protectedApiRouter, httpHdlr)
+		registerGuestRoutes(protectedApiRouter, httpHdlr)
+		protectedApiRouter.POST("/guestsUpload", httpHdlr.ImportGuestsFromDeineTicketsCsv)
 
-		registerPurchaseRoutes(protectedApiRouter, httpHandler)
-		registerUserRoutes(protectedApiRouter, httpHandler)
+		registerPurchaseRoutes(protectedApiRouter, httpHdlr)
+		registerUserRoutes(protectedApiRouter, httpHdlr)
 
-		registerSumupReadersRoutes(protectedApiRouter, httpHandler)
-		registerSumupTransactionRoutes(protectedApiRouter, httpHandler)
+		registerSumupReadersRoutes(protectedApiRouter, httpHdlr)
+		registerSumupTransactionRoutes(protectedApiRouter, httpHdlr)
 	}
 
 	// unprotected routes
 	unprotectedApiRouter := r.Group("/api/" + API_VERSION)
 	{
-		unprotectedApiRouter.GET("/config", httpHandler.GetConfig)
+		unprotectedApiRouter.GET("/config", httpHdlr.GetConfig)
 
-		unprotectedApiRouter.POST("/auth/changePasswordToken", httpHandler.RequestChangePasswordToken)
-		unprotectedApiRouter.POST("/auth/changePassword", httpHandler.UpdateUserPassword)
+		unprotectedApiRouter.POST("/auth/changePasswordToken", httpHdlr.RequestChangePasswordToken)
+		unprotectedApiRouter.POST("/auth/changePassword", httpHdlr.UpdateUserPassword)
 
-		unprotectedApiRouter.POST("/sumup/webhook", httpHandler.GetSumupTransactionWebhook)
+		unprotectedApiRouter.POST("/sumup/webhook", httpHdlr.GetSumupTransactionWebhook)
 
-		unprotectedApiRouter.GET("/purchases/:id/ws", websocketHandler.HandleTransactionWebSocket)
+		unprotectedApiRouter.GET("/purchases/:id/ws", websocketHdlr.HandleTransactionWebSocket)
 	}
 }
 
