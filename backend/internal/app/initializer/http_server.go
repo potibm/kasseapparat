@@ -1,4 +1,4 @@
-//nolint:gocritic // unnessary blocks are more readable with the grouping of routes
+//nolint:gocritic // unnecessary blocks are more readable with the grouping of routes
 package initializer
 
 import (
