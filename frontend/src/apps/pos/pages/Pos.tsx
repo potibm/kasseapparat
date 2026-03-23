@@ -25,18 +25,25 @@ import {
   Guest as GuestType,
 } from "../utils/api.schemas";
 import { createLogger } from "@core/logger/logger";
+import { ToastProvider } from "@pos/features/ui/toast/providers/ToastProvider";
+import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 
 const logPurchase = createLogger("Purchase");
 
-const Kasseapparat: React.FC = () => {
+const KasseapparatContent: React.FC = () => {
   const { apiHost, environmentMessage } = useConfig();
   const { username, getSafeToken, id: userId } = useAuth();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const { showToast } = useToast();
 
-  const showError = useCallback((message: string) => {
-    setErrorMessage(message);
-  }, []);
+  const showError = useCallback(
+    (message: string) => {
+      setErrorMessage(message);
+      showToast({ type: "error", message });
+    },
+    [showToast],
+  );
 
   const handleCloseError = () => {
     setErrorMessage("");
@@ -81,6 +88,7 @@ const Kasseapparat: React.FC = () => {
         if (purchase.status === "confirmed") {
           try {
             await handlePurchaseSuccess();
+            showToast({ type: "success", message: "Purchase confirmed!" });
           } catch (error: unknown) {
             logPurchase.error(
               "Refresh failed after immediate confirmation:",
@@ -126,11 +134,18 @@ const Kasseapparat: React.FC = () => {
       finalizeCheckout(success);
 
       if (success) {
+        showToast({ type: "success", message: "Purchase confirmed!" });
         handlePurchaseSuccess().catch((error: unknown) => {
           logPurchase.error("Refresh failed after polling:", error);
           showError(
             "Purchase was successful, but refreshing data failed. Please refresh the page.",
           );
+        });
+      } else {
+        showToast({
+          type: "error",
+          message: "Purchase failed during payment process.",
+          autoClose: false,
         });
       }
     },
@@ -182,6 +197,14 @@ const Kasseapparat: React.FC = () => {
         addProductInterest={(p: ProductType) => addInterest(p.id)}
       />
     </PosLayout>
+  );
+};
+
+export const Kasseapparat: React.FC = () => {
+  return (
+    <ToastProvider>
+      <KasseapparatContent />
+    </ToastProvider>
   );
 };
 
