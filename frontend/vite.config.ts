@@ -9,7 +9,7 @@ import path from "node:path";
 const __dirname = path.resolve();
 
 const frontendPort = process.env.E2E_PORT
-  ? parseInt(process.env.E2E_PORT)
+  ? Number.parseInt(process.env.E2E_PORT)
   : 3000;
 const backendTarget = process.env.E2E_API_TARGET || "http://localhost:3001";
 

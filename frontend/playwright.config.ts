@@ -33,8 +33,8 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       stdout: "pipe",
       env: {
-        CORS_ALLOW_ORIGINS: 'https://localhost:4000', 
-      }
+        CORS_ALLOW_ORIGINS: "https://localhost:4000",
+      },
     },
     {
       command:
