@@ -31,7 +31,7 @@ const API_VERSION = "v2"
 
 func InitializeHttpServer(
 	httpHandler httpHandler.Handler,
-	websocketHandler websocket.HandlerInterface,
+	websocketHandler websocket.TransactionWebSocketHandler,
 	repository sqliteRepo.Repository,
 	staticFiles embed.FS,
 	jwtMiddleware *jwt.GinJWTMiddleware,
@@ -131,7 +131,7 @@ func SentryMiddleware() gin.HandlerFunc {
 
 func registerApiRoutes(
 	httpHandler httpHandler.Handler,
-	websocketHandler websocket.HandlerInterface,
+	websocketHandler websocket.TransactionWebSocketHandler,
 	authMiddleware *jwt.GinJWTMiddleware,
 
 ) {

@@ -18,9 +18,9 @@ type StatusPublisher interface {
 	PushUpdate(purchaseID uuid.UUID, status models.PurchaseStatus)
 }
 
-var _ HandlerInterface = (*Handler)(nil)
+var _ TransactionWebSocketHandler = (*Handler)(nil)
 
-type HandlerInterface interface {
+type TransactionWebSocketHandler interface {
 	HandleTransactionWebSocket(c *gin.Context)
 }
 
@@ -32,18 +32,18 @@ func (w *WebsocketPublisher) PushUpdate(purchaseID uuid.UUID, status models.Purc
 
 type Handler struct {
 	sumupRepository  sumupRepo.RepositoryInterface
-	sqliteRepository sqliteRepository
+	sqliteRepository PurchaseGetter
 	purchaseService  purchaseService.Service
 	upgrader         websocket.Upgrader
 	jwtMiddleware    *jwt.GinJWTMiddleware
 }
 
-type sqliteRepository interface {
+type PurchaseGetter interface {
 	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
 }
 
 func NewHandler(
-	sqliteRepository sqliteRepository,
+	sqliteRepository PurchaseGetter,
 	sumupRepository sumupRepo.RepositoryInterface,
 	purchaseService purchaseService.Service,
 	jwtMiddleware *jwt.GinJWTMiddleware,
