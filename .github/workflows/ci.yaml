@@ -151,6 +151,9 @@ jobs:
         run: cp .env.example .env
         working-directory: backend
 
+      - name: Create database directory
+        run: mkdir -p backend/data
+
       - name: Create Test Database
         run: make e2e-setup
 
