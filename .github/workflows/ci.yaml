@@ -151,6 +151,9 @@ jobs:
         run: cp .env.example .env
         working-directory: backend
 
+      - name: Create assets file
+        run: mkdir -p backend/cmd/assets && touch backend/cmd/assets/index.html
+
       - name: Create database directory
         run: mkdir -p backend/data
 

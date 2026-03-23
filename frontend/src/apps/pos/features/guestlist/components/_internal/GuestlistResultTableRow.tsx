@@ -59,7 +59,7 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
   return (
     <TableRow
       key={entry.id}
-      data-testid={"guestlist-result-" + entry.id}
+      data-testid={"guestlist-result-id-" + entry.id}
       className="hover:bg-gray-100 dark:hover:bg-gray-700"
     >
       <TableCell>
@@ -103,7 +103,7 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
               aria-label={
                 "Add " +
                 displayName +
-                "  with " +
+                " with " +
                 count +
                 " additional guest(s) to cart"
               }

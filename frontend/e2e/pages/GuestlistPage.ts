@@ -6,7 +6,7 @@ export class GuestlistPage {
   readonly searchInput: Locator;
 
   constructor(page: Page) {
-    this.guestItems = page.getByTestId(/^guestlist-result-/);
+    this.guestItems = page.getByTestId(/^guestlist-result-id/);
     this.guestListTable = page.getByTestId("guestlist-result-table");
     this.searchInput = page.getByTestId("guestlist-search-input");
   }
@@ -20,8 +20,7 @@ export class GuestlistPage {
   }
 
   async expectListNotToBeEmpty() {
-    const count = await this.guestItems.count();
-    expect(count).toBeGreaterThan(0);
+    await expect(this.guestItems.first()).toBeVisible();
   }
 
   async expectListToContain(name: string) {

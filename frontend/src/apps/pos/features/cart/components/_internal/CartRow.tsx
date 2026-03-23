@@ -43,7 +43,7 @@ const CartRow: React.FC<CartRowProps> = ({
       <TableCell className="flex justify-end">
         <Button
           color="failure"
-          aria-label={`Remove ${cartElement.name} from Cart`}
+          aria-label={`Remove ${cartElement.name} from cart`}
           onClick={() => removeFromCart(cartElement)}
         >
           <HiXCircle />
