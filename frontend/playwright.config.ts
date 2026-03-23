@@ -32,6 +32,9 @@ export default defineConfig({
       port: 4001,
       reuseExistingServer: !process.env.CI,
       stdout: "pipe",
+      env: {
+        CORS_ALLOW_ORIGINS: 'https://localhost:4000', 
+      }
     },
     {
       command:
