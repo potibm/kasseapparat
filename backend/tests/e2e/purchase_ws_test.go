@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const originUrl = "http://localhost:3000"
+
 func TestGetPurchaseWebsocketWithInvalidToken(t *testing.T) {
 	ts, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -16,12 +18,12 @@ func TestGetPurchaseWebsocketWithInvalidToken(t *testing.T) {
 	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/api/v2/purchases/123/ws"
 
 	// no token provided
-	_, resp, err := connectWS(t, wsURL, "", "http://localhost:3000")
+	_, resp, err := connectWS(t, wsURL, "", originUrl)
 	require.Error(t, err)
 	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
 	// with invalid token
-	_, resp, err = connectWS(t, wsURL, "invalid.token.here", "http://localhost:3000")
+	_, resp, err = connectWS(t, wsURL, "invalid.token.here", originUrl)
 	require.Error(t, err)
 	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 }
@@ -33,7 +35,7 @@ func TestGetPurchaseWebsocketWithInvalidOrigin(t *testing.T) {
 	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/api/v2/purchases/01982971-a954-74ed-9735-a75e08efa8f6/ws"
 	token := getJwtForDemoUser()
 
-	conn, resp, err := connectWS(t, wsURL, token, "http://example.com:3000")
+	conn, resp, err := connectWS(t, wsURL, token, originUrl)
 	require.Error(t, err)
 	require.NotNil(t, resp)
 	require.Equal(t, http.StatusForbidden, resp.StatusCode)
@@ -50,7 +52,7 @@ func TestGetPurchaseWebsocketWithValidToken(t *testing.T) {
 	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/api/v2/purchases/01982971-a954-74ed-9735-a75e08efa8f6/ws"
 	token := getJwtForDemoUser()
 
-	conn, resp, err := connectWS(t, wsURL, token, "http://localhost:3000")
+	conn, resp, err := connectWS(t, wsURL, token, originUrl)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
 
