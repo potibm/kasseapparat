@@ -8,15 +8,22 @@ import path from "node:path";
 
 const __dirname = path.resolve();
 
+const frontendPort = process.env.E2E_PORT
+  ? Number.parseInt(process.env.E2E_PORT)
+  : 3000;
+const backendTarget = process.env.E2E_API_TARGET || "http://localhost:3001";
+
 export default defineConfig({
   plugins: [react(), tailwindcss(), flowbiteReact(), basicSsl()],
   server: {
-    port: 3000,
+    port: frontendPort,
+    strictPort: true,
     proxy: {
       "/api": {
-        target: "http://localhost:3001",
+        target: backendTarget,
         changeOrigin: true,
         ws: true,
+        secure: false,
       },
     },
   },
@@ -26,6 +33,7 @@ export default defineConfig({
     setupFiles: "./tests/setup.ts",
     teardownTimeout: 1000,
     pool: "threads",
+    include: ["src/**/*.{test,spec}.{ts,mts,cts,jsx,tsx}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],

@@ -256,6 +256,17 @@ func (ds *DatabaseSeed) seedGuests() {
 			},
 		)
 	}
+
+	// for e2e test: create a guest with a known code in the deineTicketsGuestlist
+	code := "ABCDEFGHI"
+	ds.db.Create(
+		&models.Guest{
+			Name:             "Jan Jansen",
+			Code:             &code,
+			GuestlistID:      ds.deineTicketsGuestlist.ID,
+			AdditionalGuests: 0,
+		},
+	)
 }
 
 func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, maxPresentEntries int) {
@@ -290,6 +301,28 @@ func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, max
 			)
 		}
 	}
+
+	// for e2e test: create two guests with known names ia a special guestlist
+	userGuestlist := &models.Guestlist{Name: "E2E Guestlist " + gofakeit.FirstName(), ProductID: ds.freeProduct.ID}
+	ds.db.Create(userGuestlist)
+
+	ds.db.Create(
+		&models.Guest{
+			Name:             "Jean Dupont",
+			GuestlistID:      userGuestlist.ID,
+			AdditionalGuests: uint(gofakeit.Number(0, 2)),
+		},
+	)
+
+	note := "Ciao Mario!"
+	ds.db.Create(
+		&models.Guest{
+			Name:             "Mario Rossi",
+			GuestlistID:      userGuestlist.ID,
+			AdditionalGuests: uint(gofakeit.Number(0, 2)),
+			ArrivalNote:      &note,
+		},
+	)
 }
 
 func (ds *DatabaseSeed) seedPurchases(purchaseCount int) {

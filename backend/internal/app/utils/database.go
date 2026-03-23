@@ -1,13 +1,28 @@
 package utils
 
 import (
+	"fmt"
+	"path/filepath"
+	"regexp"
+
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func ConnectToDatabase() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("./data/kasseapparat.db"), &gorm.Config{})
+func ConnectToDatabase(filename string) *gorm.DB {
+	if filename == "" {
+		filename = "kasseapparat"
+	}
+
+	validName := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+	if !validName.MatchString(filename) {
+		panic(fmt.Sprintf("invalid database filename: %q", filename))
+	}
+
+	dbPath := filepath.Join("data", filename+".db")
+
+	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

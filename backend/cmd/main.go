@@ -29,11 +29,13 @@ var (
 )
 
 const defaultPort = 3000
+const defaultDbFilename = "kasseapparat"
 
 func main() {
 	logLevel := flag.String("log-level", "info", "Set the log level (debug, info, warn, error)")
 	logFormat := flag.String("log-format", "json", "Set the log format (json, text)")
 	port := flag.Int("port", defaultPort, "Set the port number for the server to listen on")
+	dbFilename := flag.String("db-file", defaultDbFilename, "Set the name for the database file")
 
 	flag.Parse()
 
@@ -48,7 +50,7 @@ func main() {
 	cfg.SetVersion(version)
 	cfg.OutputVersion()
 
-	db := utils.ConnectToDatabase()
+	db := utils.ConnectToDatabase(*dbFilename)
 
 	initializer.InitializeSentry(cfg.SentryConfig)
 	initializer.InitializeSumup(cfg.SumupConfig)
