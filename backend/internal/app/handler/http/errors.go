@@ -6,7 +6,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/errors"
 )
 
-func NewHttpError(code int, message string, detail string) *errors.BasicError {
+func NewHttpError(code int, message, detail string) *errors.BasicError {
 	return &errors.BasicError{
 		Code:    code,
 		Message: message,

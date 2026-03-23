@@ -57,7 +57,7 @@ func TestGetPurchaseWebsocketWithValidToken(t *testing.T) {
 	defer conn.Close()
 }
 
-func connectWS(t *testing.T, url string, token string, origin string) (*websocket.Conn, *http.Response, error) {
+func connectWS(t *testing.T, url, token, origin string) (*websocket.Conn, *http.Response, error) {
 	t.Helper()
 
 	dialer := websocket.Dialer{

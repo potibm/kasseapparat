@@ -25,7 +25,7 @@ type deineTicketsRecord struct {
 
 const expectedCsvColumns = 6
 
-func (r *deineTicketsRecord) Validate(repo sqliteRepo.GuestRepository) (bool, string) {
+func (r *deineTicketsRecord) Validate(repo sqliteRepo.GuestRepository) (valid bool, message string) {
 	if !r.validateCode() {
 		return false, "Invalid code"
 	}

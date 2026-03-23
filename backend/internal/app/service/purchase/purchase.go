@@ -88,7 +88,9 @@ func NewPurchaseService(
 	}
 }
 
-func (s *PurchaseService) ValidateAndCalculatePrices(input PurchaseInput) (decimal.Decimal, decimal.Decimal, error) {
+func (s *PurchaseService) ValidateAndCalculatePrices(
+	input PurchaseInput,
+) (totalNetResult, totalGrossResult decimal.Decimal, err error) {
 	totalNet := decimal.NewFromInt(0)
 	totalGross := decimal.NewFromInt(0)
 

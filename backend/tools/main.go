@@ -168,7 +168,7 @@ func importUsers(logger *slog.Logger, filename string) {
 	}
 }
 
-func createUser(username string, email string, isAdmin bool) error {
+func createUser(username, email string, isAdmin bool) error {
 	user := models.User{
 		Username: username,
 		Email:    email,

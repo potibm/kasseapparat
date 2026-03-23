@@ -37,7 +37,7 @@ func TestGetPurchaseExport(t *testing.T) {
 
 	lines := strings.Split(raw, "\n")
 	for i, line := range lines {
-		if i == 0 || len(line) == 0 {
+		if i == 0 || line == "" {
 			continue
 		}
 
@@ -91,7 +91,7 @@ func testGetPurchaseExportFilterOnPaymentMethod(t *testing.T, paymentMethod stri
 
 	lines := strings.Split(raw, "\n")
 	for i, line := range lines {
-		if i == 0 || len(line) == 0 {
+		if i == 0 || line == "" {
 			continue
 		}
 

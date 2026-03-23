@@ -96,7 +96,7 @@ func (repo *Repository) GetPurchaseBySumupClientTransactionID(
 	return repo.getPurchaseByQueryAndValue("sumup_client_transaction_id = ?", sumupClientTransactionID.String())
 }
 
-func (repo *Repository) getPurchaseByQueryAndValue(query string, value string) (*models.Purchase, error) {
+func (repo *Repository) getPurchaseByQueryAndValue(query, value string) (*models.Purchase, error) {
 	var purchase models.Purchase
 	if err := repo.db.Model(&models.Purchase{}).
 		Preload("PurchaseItems").

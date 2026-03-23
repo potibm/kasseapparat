@@ -173,7 +173,7 @@ func (m *MockRepository) CreateGuestlist(guestlist models.Guestlist) (models.Gue
 func (m *MockRepository) DeleteGuestlist(guestlist models.Guestlist, deletedBy models.User) {
 	panic(errNotImplemented)
 }
-func (m *MockRepository) GetProductInterests(limit int, offset int, ids []int) ([]models.ProductInterest, error) {
+func (m *MockRepository) GetProductInterests(limit, offset int, ids []int) ([]models.ProductInterest, error) {
 	panic(errNotImplemented)
 }
 func (m *MockRepository) GetTotalProductInterests() (int64, error) {

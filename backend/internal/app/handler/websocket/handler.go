@@ -45,7 +45,7 @@ type PurchaseGetter interface {
 func NewHandler(
 	sqliteRepository PurchaseGetter,
 	sumupRepository sumupRepo.RepositoryInterface,
-	purchaseService purchaseService.Service,
+	purchaseSvc purchaseService.Service,
 	jwtMiddleware *jwt.GinJWTMiddleware,
 	corsAllowOrigins *config.CorsAllowOriginsConfig,
 ) *Handler {
@@ -56,7 +56,7 @@ func NewHandler(
 	return &Handler{
 		sqliteRepository: sqliteRepository,
 		sumupRepository:  sumupRepository,
-		purchaseService:  purchaseService,
+		purchaseService:  purchaseSvc,
 		upgrader:         upgrader,
 		jwtMiddleware:    jwtMiddleware,
 	}

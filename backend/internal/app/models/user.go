@@ -42,10 +42,10 @@ func (u *User) GravatarURL() string {
 	return "https://www.gravatar.com/avatar/" + hash
 }
 
-func (u *User) SetPassword(password string) error {
+func (u *User) SetPassword(pass string) error {
 	var err error
 
-	u.Password, err = hashPassword(password)
+	u.Password, err = hashPassword(pass)
 	if err != nil {
 		return err
 	}
@@ -53,8 +53,8 @@ func (u *User) SetPassword(password string) error {
 	return nil
 }
 
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcryptCost)
+func hashPassword(pass string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(pass), bcryptCost)
 	if err != nil {
 		return "", err
 	}
@@ -62,8 +62,8 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), nil
 }
 
-func (u *User) ComparePassword(password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+func (u *User) ComparePassword(pass string) error {
+	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pass))
 }
 
 func (u *User) ChangePasswordTokenIsValid(token string) bool {

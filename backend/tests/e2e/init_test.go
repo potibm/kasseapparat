@@ -45,7 +45,7 @@ func setup() {
 	utils.SeedDatabase(db, true)
 }
 
-func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
+func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFunc func()) {
 	cfg := config.Config{
 		AppConfig: config.AppConfig{
 			Version: "0.1.2",
@@ -73,45 +73,45 @@ func setupTestEnvironment(t *testing.T) (*httptest.Server, func()) {
 		},
 	}
 
-	sqliteRepo := sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
-	sumupRepo := NewMockSumUpRepository()
-	mailer, _ := mailer.NewMailer("smtp://127.0.0.1:1025")
-	mailer.SetDisabled(true)
+	sqliteRp := sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
+	sumupRp := NewMockSumUpRepository()
+	mail, _ := mailer.NewMailer("smtp://127.0.0.1:1025")
+	mail.SetDisabled(true)
 
-	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepo, cfg.JwtConfig)
+	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRp, cfg.JwtConfig)
 
-	purchaseService := purchaseService.NewPurchaseService(
-		sqliteRepo,
-		sumupRepo,
-		mailer,
+	purchaseSrvc := purchaseService.NewPurchaseService(
+		sqliteRp,
+		sumupRp,
+		mail,
 		int32(cfg.FormatConfig.FractionDigitsMax),
 	)
 
 	statusPublisher := MockStatusPublisher{}
-	poller := monitor.NewPoller(sumupRepo, sqliteRepo, purchaseService, &statusPublisher)
+	poller := monitor.NewPoller(sumupRp, sqliteRp, purchaseSrvc, &statusPublisher)
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	httpHandlerConfig := handlerHttp.HandlerConfig{
-		Repo:            sqliteRepo,
-		SumupRepository: sumupRepo,
-		PurchaseService: purchaseService,
+		Repo:            sqliteRp,
+		SumupRepository: sumupRp,
+		PurchaseService: purchaseSrvc,
 		Monitor:         poller,
-		Mailer:          *mailer,
+		Mailer:          *mail,
 		AppConfig:       cfg,
 	}
-	handlerHttp := handlerHttp.NewHandler(httpHandlerConfig)
+	handlerHttpObj := handlerHttp.NewHandler(httpHandlerConfig)
 	websocketHandler := websocket.NewHandler(
-		sqliteRepo,
-		sumupRepo,
-		purchaseService,
+		sqliteRp,
+		sumupRp,
+		purchaseSrvc,
 		jwtMiddleware,
 		&cfg.CorsAllowOrigins,
 	)
 
 	router, _ := initializer.InitializeHttpServer(
-		*handlerHttp,
+		*handlerHttpObj,
 		websocketHandler,
-		*sqliteRepo,
+		*sqliteRp,
 		embed.FS{},
 		jwtMiddleware,
 		cfg,
@@ -183,7 +183,7 @@ func withAdminUserAuthToken(req *httpexpect.Request) *httpexpect.Request {
 	return withAuthToken(req, getJwtForAdminUser())
 }
 
-func testAuthenticationForEntityEndpoints(t *testing.T, baseUrl string, urlWithId string) {
+func testAuthenticationForEntityEndpoints(t *testing.T, baseUrl, urlWithId string) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 

@@ -90,7 +90,7 @@ func (repo *Repository) GetUserByUsernameOrEmail(login string) (*models.User, er
 	return &user, nil
 }
 
-func (repo *Repository) GetUserByLoginAndPassword(login string, password string) (*models.User, error) {
+func (repo *Repository) GetUserByLoginAndPassword(login, password string) (*models.User, error) {
 	user, err := repo.GetUserByUsernameOrEmail(login)
 	if err != nil {
 		return nil, err

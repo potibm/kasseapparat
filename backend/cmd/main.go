@@ -60,7 +60,7 @@ func main() {
 	mailer := initializer.InitializeMailer(cfg.MailerConfig)
 	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, cfg.JwtConfig)
 
-	purchaseService := purchaseService.NewPurchaseService(
+	purchaseSvc := purchaseService.NewPurchaseService(
 		sqliteRepository,
 		sumupRepository,
 		&mailer,
@@ -70,17 +70,17 @@ func main() {
 	websocketHandler := websocket.NewHandler(
 		sqliteRepository,
 		sumupRepository,
-		purchaseService,
+		purchaseSvc,
 		jwtMiddleware,
 		&cfg.CorsAllowOrigins,
 	)
 	publisher := &websocket.WebsocketPublisher{}
-	poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseService, publisher)
+	poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseSvc, publisher)
 
 	httpHandlerConfig := handlerHttp.HandlerConfig{
 		Repo:            sqliteRepository,
 		SumupRepository: sumupRepository,
-		PurchaseService: purchaseService,
+		PurchaseService: purchaseSvc,
 		Monitor:         poller,
 		StatusPublisher: publisher,
 		Mailer:          mailer,
