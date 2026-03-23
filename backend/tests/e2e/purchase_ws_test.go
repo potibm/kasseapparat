@@ -35,7 +35,7 @@ func TestGetPurchaseWebsocketWithInvalidOrigin(t *testing.T) {
 	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/api/v2/purchases/01982971-a954-74ed-9735-a75e08efa8f6/ws"
 	token := getJwtForDemoUser()
 
-	conn, resp, err := connectWS(t, wsURL, token, originUrl)
+	conn, resp, err := connectWS(t, wsURL, token, "http://example.com:3000")
 	require.Error(t, err)
 	require.NotNil(t, resp)
 	require.Equal(t, http.StatusForbidden, resp.StatusCode)
