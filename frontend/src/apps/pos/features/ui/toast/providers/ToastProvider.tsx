@@ -20,9 +20,6 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   const showToast = useCallback(
     (newToast: Omit<ToastType, "id">) => {
       if (newToast.type === "debug" && !isDev) return;
-      console.log(
-        `[Toast] ${newToast.type.toUpperCase()}: ${newToast.message}`,
-      );
 
       const id = Math.random().toString(36).substring(2, 9);
       setToasts((prev) => [...prev, { ...newToast, id }]);
@@ -30,7 +27,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
       if (newToast.autoClose !== false) {
         setTimeout(() => {
           setToasts((prev) => prev.filter((t) => t.id !== id));
-        }, newToast.duration || 5000);
+        }, newToast.duration || 10000);
       }
     },
     [isDev],

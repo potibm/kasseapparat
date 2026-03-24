@@ -26,7 +26,6 @@ import {
 } from "../utils/api.schemas";
 import { createLogger } from "@core/logger/logger";
 import { ToastProvider } from "@pos/features/ui/toast/providers/ToastProvider";
-import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 
 const logPurchase = createLogger("Purchase");
 
@@ -35,15 +34,10 @@ const KasseapparatContent: React.FC = () => {
   const { username, getSafeToken, id: userId } = useAuth();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const { showToast } = useToast();
 
-  const showError = useCallback(
-    (message: string) => {
-      setErrorMessage(message);
-      showToast({ type: "error", message });
-    },
-    [showToast],
-  );
+  const showError = useCallback((message: string) => {
+    setErrorMessage(message);
+  }, []);
 
   const handleCloseError = () => {
     setErrorMessage("");
@@ -54,7 +48,7 @@ const KasseapparatContent: React.FC = () => {
     loading: _productsLoading,
     refreshProducts,
     addInterest,
-  } = useProducts(apiHost, getSafeToken, showError);
+  } = useProducts(apiHost, getSafeToken);
 
   const {
     cart,
@@ -73,7 +67,7 @@ const KasseapparatContent: React.FC = () => {
     refreshHistory,
     refundPurchase,
     loading: historyLoading,
-  } = usePurchaseHistory(apiHost, getSafeToken, userId, showError);
+  } = usePurchaseHistory(apiHost, getSafeToken, userId);
 
   const handlePurchaseSuccess = useCallback(async () => {
     await Promise.all([refreshHistory(), refreshProducts()]);
@@ -88,7 +82,6 @@ const KasseapparatContent: React.FC = () => {
         if (purchase.status === "confirmed") {
           try {
             await handlePurchaseSuccess();
-            showToast({ type: "success", message: "Purchase confirmed!" });
           } catch (error: unknown) {
             logPurchase.error(
               "Refresh failed after immediate confirmation:",
@@ -134,18 +127,11 @@ const KasseapparatContent: React.FC = () => {
       finalizeCheckout(success);
 
       if (success) {
-        showToast({ type: "success", message: "Purchase confirmed!" });
         handlePurchaseSuccess().catch((error: unknown) => {
           logPurchase.error("Refresh failed after polling:", error);
           showError(
             "Purchase was successful, but refreshing data failed. Please refresh the page.",
           );
-        });
-      } else {
-        showToast({
-          type: "error",
-          message: "Purchase failed during payment process.",
-          autoClose: false,
         });
       }
     },

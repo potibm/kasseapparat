@@ -21,10 +21,16 @@ vi.mock("@core/logger/logger", () => ({
   }),
 }));
 
+const mockShowToast = vi.fn();
+vi.mock("@pos/features/ui/toast/hooks/useToast", () => ({
+  useToast: () => ({
+    showToast: mockShowToast,
+  }),
+}));
+
 // fixtures
 const mockApiHost = "https://api.example.com";
 const mockGetToken = vi.fn(async () => "fake-token");
-const mockOnError = vi.fn();
 
 const mockProducts = [
   createMockProduct({ id: 1, name: "Product A" }),
@@ -41,7 +47,7 @@ describe("useProducts Hook", () => {
       vi.mocked(fetchProducts).mockResolvedValue(mockProducts);
 
       const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken, mockOnError),
+        useProducts(mockApiHost, mockGetToken),
       );
 
       expect(result.current.loading).toBe(true);
@@ -52,7 +58,7 @@ describe("useProducts Hook", () => {
 
       expect(fetchProducts).toHaveBeenCalledWith(mockApiHost, "fake-token");
       expect(result.current.products).toEqual(mockProducts);
-      expect(mockOnError).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
     });
 
     it("should trigger onError and set loading to false if fetching throws an Error object", async () => {
@@ -60,7 +66,7 @@ describe("useProducts Hook", () => {
       vi.mocked(fetchProducts).mockRejectedValue(apiError);
 
       const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken, mockOnError),
+        useProducts(mockApiHost, mockGetToken),
       );
 
       await waitFor(() => {
@@ -68,23 +74,29 @@ describe("useProducts Hook", () => {
       });
 
       expect(result.current.products).toBeNull();
-      expect(mockOnError).toHaveBeenCalledWith(
-        "There was an error fetching the products: Network offline",
-      );
+      expect(mockShowToast).toHaveBeenCalledWith({
+        autoClose: false,
+        message: "There was an error fetching the products: Network offline",
+        type: "error",
+      });
     });
 
     it("should trigger onError with a fallback message if fetching throws a non-Error (unknown)", async () => {
       vi.mocked(fetchProducts).mockRejectedValue("Some weird string error");
 
       const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken, mockOnError),
+        useProducts(mockApiHost, mockGetToken),
       );
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(mockOnError).toHaveBeenCalledWith("An unknown error has occurred");
+      expect(mockShowToast).toHaveBeenCalledWith({
+        autoClose: false,
+        message: "An unknown error has occurred",
+        type: "error",
+      });
     });
   });
 
@@ -96,7 +108,7 @@ describe("useProducts Hook", () => {
       );
 
       const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken, mockOnError),
+        useProducts(mockApiHost, mockGetToken),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -123,7 +135,7 @@ describe("useProducts Hook", () => {
       );
 
       const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken, mockOnError),
+        useProducts(mockApiHost, mockGetToken),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -132,9 +144,11 @@ describe("useProducts Hook", () => {
         await result.current.addInterest(99);
       });
 
-      expect(mockOnError).toHaveBeenCalledWith(
-        "Error on saving the interest: Item not found",
-      );
+      expect(mockShowToast).toHaveBeenCalledWith({
+        message: "Error on saving the interest: Item not found",
+        autoClose: false,
+        type: "error",
+      });
     });
 
     it("should trigger onError with a fallback message if adding interest throws a non-Error", async () => {
@@ -142,7 +156,7 @@ describe("useProducts Hook", () => {
       vi.mocked(addProductInterest).mockRejectedValue(12345);
 
       const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken, mockOnError),
+        useProducts(mockApiHost, mockGetToken),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -151,7 +165,11 @@ describe("useProducts Hook", () => {
         await result.current.addInterest(99);
       });
 
-      expect(mockOnError).toHaveBeenCalledWith("An unknown error has occurred");
+      expect(mockShowToast).toHaveBeenCalledWith({
+        autoClose: false,
+        message: "An unknown error has occurred",
+        type: "error",
+      });
     });
   });
 });
