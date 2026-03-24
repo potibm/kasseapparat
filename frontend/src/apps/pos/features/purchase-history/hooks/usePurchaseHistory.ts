@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { fetchPurchases, refundPurchaseById } from "../../../utils/api";
 import { Purchase as PurchaseType } from "../../../utils/api.schemas";
 import { createLogger } from "@core/logger/logger";
+import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 
 const log = createLogger("Purchase");
 
@@ -10,10 +11,10 @@ export const usePurchaseHistory = (
   apiHost: string,
   getToken: () => Promise<string>,
   userId: number,
-  onError: (msg: string) => void,
 ) => {
   const [history, setHistory] = useState<PurchaseType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const { showToast } = useToast();
 
   const loadHistory = useCallback(async () => {
     if (!userId) {
@@ -43,12 +44,12 @@ export const usePurchaseHistory = (
           ? "Error while loading the purchase history: " + error.message
           : "An unknown error has occurred";
 
-      onError(errorMessage);
+      showToast({ type: "error", message: errorMessage, autoClose: false });
       setHistory([]);
     } finally {
       setLoading(false);
     }
-  }, [apiHost, getToken, userId, onError]);
+  }, [apiHost, getToken, userId, showToast]);
 
   useEffect(() => {
     loadHistory();
@@ -58,6 +59,10 @@ export const usePurchaseHistory = (
     try {
       const token = await getToken();
       await refundPurchaseById(apiHost, token, purchaseId);
+      showToast({
+        type: "success",
+        message: "Purchase refunded successfully!",
+      });
       await loadHistory();
     } catch (error: unknown) {
       const errorMessage =
@@ -65,7 +70,7 @@ export const usePurchaseHistory = (
           ? "Error while refunding the purchase: " + error.message
           : "An unknown error has occurred";
 
-      onError(errorMessage);
+      showToast({ type: "error", message: errorMessage, autoClose: false });
       throw error;
     }
   };

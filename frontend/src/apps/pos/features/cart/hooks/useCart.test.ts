@@ -25,6 +25,13 @@ vi.mock("@core/logger/logger", () => ({
   })),
 }));
 
+const mockShowToast = vi.fn();
+vi.mock("@pos/features/ui/toast/hooks/useToast", () => ({
+  useToast: () => ({
+    showToast: mockShowToast,
+  }),
+}));
+
 // --- 2. FIXTURES (Dummy Data) ---
 const mockApiHost = "https://api.example.com";
 const mockGetToken = vi.fn(async () => "fake-token");
@@ -139,6 +146,11 @@ describe("useCart Hook", () => {
       expect(result.current.isPolling).toBe(false);
       expect(result.current.checkoutProcessing).toBeNull();
       expect(result.current.cart.isEmpty).toBe(true);
+
+      expect(mockShowToast).toHaveBeenCalledWith({
+        type: "success",
+        message: "Purchase completed successfully!",
+      });
     });
 
     it("should handle a pending purchase (triggering polling)", async () => {
@@ -198,7 +210,6 @@ describe("useCart Hook", () => {
         ).rejects.toThrow("Network timeout");
       });
 
-      // Nach einem Fehler darf er nicht im "Processing" State festhängen
       expect(result.current.checkoutProcessing).toBeNull();
     });
   });
