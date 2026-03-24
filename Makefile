@@ -21,27 +21,23 @@ prepare-buildx:
 		docker buildx inspect --bootstrap > /dev/null; \
 	fi
 
-run: check-go check-node
-	cd $(BACKEND_DIR) && go run ./cmd/main.go 3001 &
-	docker run -d -p 8025:8025 -p 2025:1025 --platform "linux/amd64" mailhog/mailhog
-	cd $(FRONTEND_DIR) && yarn start &
+run: check-go check-node infra-up run-be run-fe
+	@echo "🏃 Starte Application..."
 
-stop:
+stop: infra-down
+	@echo "🎯 Stop local processes..."
 	lsof -t -i:3000 | xargs kill -9
 	lsof -t -i:3001 | xargs kill -9
-	docker ps -q --filter "ancestor=mailhog/mailhog" | xargs docker kill
+	rm -rf $(BACKEND_DIR)/logs/app.json
 
 run-be: check-go
-	cd $(BACKEND_DIR) && go run ./cmd/main.go --port=3001 --log-level=debug
+	cd $(BACKEND_DIR) && go run ./cmd/main.go --port=3001 --log-level=debug 2>&1 | tee /dev/tty | nc localhost 5452
 
 run-tool: check-go
 	cd $(BACKEND_DIR) && go run ./tools/main.go --seed --purge
 
 run-fe: check-node
 	cd $(FRONTEND_DIR) && corepack yarn dev
-
-run-mailhog:
-	docker run -d -p 8025:8025 -p 2025:1025 --platform "linux/amd64" mailhog/mailhog
 
 deps-be: check-go
 	cd $(BACKEND_DIR) && go get -u -t ./...
@@ -171,3 +167,13 @@ e2e-run: e2e-setup
 
 e2e-report:
 	cd $(FRONTEND_DIR) && corepack yarn playwright show-report
+
+infra-up:
+	@echo "🚀 Start up infrastructure (Mailhog, OpenObserve, Collector)..."
+	docker compose up -d
+	@echo "📧 Mailhog is available at http://localhost:8025"
+	@echo "📊 OpenObserve is available at http://localhost:5080"
+
+infra-down:
+	@echo "🛑 Stop infrastructure..."
+	docker compose down

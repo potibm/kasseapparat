@@ -1,0 +1,36 @@
+receivers:
+  otlp:
+    protocols:
+      grpc: 
+      http:
+  tcplog:
+    listen_address: "0.0.0.0:5452"
+    operators:
+      - type: json_parser 
+        timestamp:
+          parse_from: attributes.time
+          layout: '%Y-%m-%dT%H:%M:%S.%L%z'
+        severity:
+          parse_from: attributes.level
+        on_error: drop
+
+exporters:
+  otlphttp/openobserve:
+    endpoint: "http://openobserve:5080/api/default"
+    headers:
+      Authorization: "Basic YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQxMjM=" # admin@example.com:password123
+
+  debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    logs:
+      receivers: [tcplog]
+      exporters: [otlphttp/openobserve, debug]
+    metrics:
+      receivers: [otlp]
+      exporters: [otlphttp/openobserve, debug]
+    traces:
+      receivers: [otlp]
+      exporters: [otlphttp/openobserve, debug]
