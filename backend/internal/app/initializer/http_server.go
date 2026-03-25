@@ -22,6 +22,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	sloggin "github.com/samber/slog-gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 var (
@@ -49,6 +50,7 @@ func InitializeHttpServer(
 		}),
 		sloggin.New(logger),
 		middleware.ErrorHandlingMiddleware(),
+		otelgin.Middleware("kasseapparat-backend"),
 	)
 
 	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHdlr.GetPurchaseStats)

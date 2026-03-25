@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"flag"
+	"log"
 	"log/slog"
 	"os"
 	"strconv"
@@ -32,6 +34,8 @@ const defaultPort = 3000
 const defaultDbFilename = "kasseapparat"
 
 func main() {
+	ctx := context.Background()
+	
 	logLevel := flag.String("log-level", "info", "Set the log level (debug, info, warn, error)")
 	logFormat := flag.String("log-format", "json", "Set the log format (json, text)")
 	port := flag.Int("port", defaultPort, "Set the port number for the server to listen on")
@@ -39,7 +43,14 @@ func main() {
 
 	flag.Parse()
 
-	logger := initializer.InitLogger(*logFormat, *logLevel)
+	shutdownFn, err := initializer.InitTelemetry(ctx, "localhost:4317", version)
+	if err != nil {
+		log.Fatalf("Failed to initialize telemetry: %v", err)
+	}
+	if shutdownFn != nil {
+		defer shutdownFn()
+	}
+	logger := initializer.InitLogger(ctx, *logFormat, *logLevel)
 
 	cfg, err := config.Load(logger)
 	if err != nil {
@@ -59,7 +70,7 @@ func main() {
 	sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
 	mailer := initializer.InitializeMailer(cfg.MailerConfig)
 	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, cfg.JwtConfig)
-
+	
 	purchaseSvc := purchaseService.NewPurchaseService(
 		sqliteRepository,
 		sumupRepository,

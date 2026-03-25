@@ -1,9 +1,14 @@
 package initializer
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"strings"
+
+	"github.com/potibm/kasseapparat/internal/app/config"
+	slogmulti "github.com/samber/slog-multi"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 )
 
 func logLevelFromString(level string) slog.Level {
@@ -23,33 +28,38 @@ func logLevelFromString(level string) slog.Level {
 	}
 }
 
-func InitLogger(loggerType, level string) *slog.Logger {
+func InitLogger(ctx context.Context, loggerType, level string) *slog.Logger {
 	if loggerType == "text" {
-		return InitTxtLogger(level)
+		return InitTxtLogger(ctx, level)
 	}
 
-	return InitJsonLogger(level) // default to JSON logger
+	return InitJsonLogger(ctx, level) // default to JSON logger
 }
 
-func InitJsonLogger(level string) *slog.Logger {
+func InitJsonLogger(ctx context.Context, level string) *slog.Logger {
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logLevelFromString(level),
 	})
 
-	return initializeLogger(handler)
+	return initializeLogger(ctx, handler)
 }
 
-func InitTxtLogger(level string) *slog.Logger {
+func InitTxtLogger(ctx context.Context, level string) *slog.Logger {
 	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logLevelFromString(level),
 	})
 
-	return initializeLogger(handler)
+	return initializeLogger(ctx, handler)
 }
 
-func initializeLogger(handler slog.Handler) *slog.Logger {
-	logger := slog.New(handler)
+func initializeLogger(ctx context.Context, cmdlineHandler slog.Handler) *slog.Logger {
+	otelHandler := otelslog.NewHandler(config.OtelServiceName);
 
+	var finalHandler slog.Handler
+	
+	finalHandler = slogmulti.Fanout(cmdlineHandler, otelHandler)
+	
+	logger := slog.New(finalHandler)
 	slog.SetDefault(logger)
 
 	return logger

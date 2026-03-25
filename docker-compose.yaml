@@ -3,8 +3,8 @@ services:
     image: mailhog/mailhog:latest
     platform: linux/amd64
     ports:
-      - "8025:8025" # Web UI 
-      - "1025:1025" # SMTP Port 
+      - "8025:8025" # Web UI
+      - "1025:1025" # SMTP Port
 
   # Monitoring & logging backend
   openobserve:
@@ -24,7 +24,7 @@ services:
       - ./backend/logs:/etc/app/logs:ro
     command: ["--config=/etc/otel/config.yaml"]
     ports:
-      - "4317:4317" # OTLP gRPC 
+      - "4317:4317" # OTLP gRPC
       - "4318:4318" # OTLP HTTP
       - "5452:5452" # TCP Port for logs
     depends_on:

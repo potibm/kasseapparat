@@ -1,18 +1,10 @@
 receivers:
   otlp:
     protocols:
-      grpc: 
+      grpc:
+        endpoint: 0.0.0.0:4317
       http:
-  tcplog:
-    listen_address: "0.0.0.0:5452"
-    operators:
-      - type: json_parser 
-        timestamp:
-          parse_from: attributes.time
-          layout: '%Y-%m-%dT%H:%M:%S.%L%z'
-        severity:
-          parse_from: attributes.level
-        on_error: drop
+        endpoint: 0.0.0.0:4318
 
 exporters:
   otlphttp/openobserve:
@@ -26,7 +18,7 @@ exporters:
 service:
   pipelines:
     logs:
-      receivers: [tcplog]
+      receivers: [otlp]
       exporters: [otlphttp/openobserve, debug]
     metrics:
       receivers: [otlp]
