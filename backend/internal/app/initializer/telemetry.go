@@ -22,30 +22,30 @@ func InitTelemetry(ctx context.Context, endpoint, version string) (func(), error
 	}
 
 	res, err := resource.New(ctx, resource.WithAttributes(
-        semconv.ServiceName(config.OtelServiceName),
+		semconv.ServiceName(config.OtelServiceName),
 		semconv.ServiceVersion(version),
-    ))
-    if err != nil {
-        return nil, err
-    }
+	))
+	if err != nil {
+		return nil, err
+	}
 
 	// traces
 	traceExporter, _ := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure(), otlptracegrpc.WithEndpoint(endpoint))
-    tp := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(res))
-    otel.SetTracerProvider(tp)
+	tp := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(res))
+	otel.SetTracerProvider(tp)
 
 	// logs
 	logExporter, _ := otlploggrpc.New(ctx, otlploggrpc.WithInsecure(), otlploggrpc.WithEndpoint(endpoint))
-    lp := sdklog.NewLoggerProvider(sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)), sdklog.WithResource(res))
-    global.SetLoggerProvider(lp)
+	lp := sdklog.NewLoggerProvider(sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)), sdklog.WithResource(res))
+	global.SetLoggerProvider(lp)
 
 	// metrics
 	metricExporter, _ := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithInsecure(), otlpmetricgrpc.WithEndpoint(endpoint))
-    mp := sdkmetric.NewMeterProvider(
-		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter)), 
+	mp := sdkmetric.NewMeterProvider(
+		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter)),
 		sdkmetric.WithResource(res),
 	)
-    otel.SetMeterProvider(mp)
+	otel.SetMeterProvider(mp)
 
 	// Cleanup-Funktion zurückgeben
 	return func() {
