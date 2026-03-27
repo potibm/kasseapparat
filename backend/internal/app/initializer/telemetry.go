@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/potibm/kasseapparat/internal/app/config"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
@@ -30,22 +31,43 @@ func InitTelemetry(ctx context.Context, endpoint, version string) (func(), error
 	}
 
 	// traces
-	traceExporter, _ := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure(), otlptracegrpc.WithEndpoint(endpoint))
+	traceExporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure(), otlptracegrpc.WithEndpoint(endpoint))
+	if err != nil {
+		return nil, err
+	}
+
 	tp := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(res))
 	otel.SetTracerProvider(tp)
 
 	// logs
-	logExporter, _ := otlploggrpc.New(ctx, otlploggrpc.WithInsecure(), otlploggrpc.WithEndpoint(endpoint))
-	lp := sdklog.NewLoggerProvider(sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)), sdklog.WithResource(res))
+	logExporter, err := otlploggrpc.New(ctx, otlploggrpc.WithInsecure(), otlploggrpc.WithEndpoint(endpoint))
+	if err != nil {
+		return nil, err
+	}
+
+	lp := sdklog.NewLoggerProvider(
+		sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)),
+		sdklog.WithResource(res),
+	)
 	global.SetLoggerProvider(lp)
 
 	// metrics
-	metricExporter, _ := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithInsecure(), otlpmetricgrpc.WithEndpoint(endpoint))
+	metricExporter, err := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithInsecure(), otlpmetricgrpc.WithEndpoint(endpoint))
+	if err != nil {
+		return nil, err
+	}
+
 	mp := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter)),
 		sdkmetric.WithResource(res),
 	)
 	otel.SetMeterProvider(mp)
+
+	// add runtime metrics
+	err = runtime.Start(runtime.WithMeterProvider(mp))
+	if err != nil {
+		return nil, err
+	}
 
 	// Cleanup-Funktion zurückgeben
 	return func() {

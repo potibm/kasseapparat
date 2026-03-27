@@ -55,9 +55,7 @@ func InitTxtLogger(ctx context.Context, level string) *slog.Logger {
 func initializeLogger(ctx context.Context, cmdlineHandler slog.Handler) *slog.Logger {
 	otelHandler := otelslog.NewHandler(config.OtelServiceName)
 
-	var finalHandler slog.Handler
-
-	finalHandler = slogmulti.Fanout(cmdlineHandler, otelHandler)
+	var finalHandler = slogmulti.Fanout(cmdlineHandler, otelHandler)
 
 	logger := slog.New(finalHandler)
 	slog.SetDefault(logger)

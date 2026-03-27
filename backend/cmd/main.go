@@ -47,9 +47,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize telemetry: %v", err)
 	}
+
 	if shutdownFn != nil {
 		defer shutdownFn()
 	}
+
 	logger := initializer.InitLogger(ctx, *logFormat, *logLevel)
 
 	cfg, err := config.Load(logger)
