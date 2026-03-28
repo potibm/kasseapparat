@@ -34,6 +34,10 @@ const defaultPort = 3000
 const defaultDbFilename = "kasseapparat"
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
 	ctx := context.Background()
 
 	logLevel := flag.String("log-level", "info", "Set the log level (debug, info, warn, error)")
@@ -57,7 +61,8 @@ func main() {
 	cfg, err := config.Load(logger)
 	if err != nil {
 		logger.Error("Failed to load config", "error", err)
-		os.Exit(int(exitcode.Config))
+
+		return int(exitcode.Config)
 	}
 
 	cfg.SetVersion(version)
@@ -112,7 +117,8 @@ func main() {
 	)
 	if err != nil {
 		logger.Error("Failed to initialize HTTP server", "error", err)
-		os.Exit(int(exitcode.Software))
+
+		return int(exitcode.Software)
 	}
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
@@ -124,8 +130,11 @@ func main() {
 	err = router.Run(portStr)
 	if err != nil {
 		logger.Error("Failed to start server", "error", err)
-		os.Exit(int(exitcode.Software))
+
+		return int(exitcode.Software)
 	}
+
+	return 0
 }
 
 func startCleanupForWebsocketConnections() {

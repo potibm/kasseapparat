@@ -270,6 +270,7 @@ func (handler *Handler) processSumupCheckout(c *gin.Context, purchase *models.Pu
 
 		return InternalServerError.WithMsg("Failed to create SumUp reader checkout: " + err.Error()).WithCause(err)
 	}
+
 	clientTransactionIdStr := "nil"
 	if clientTransactionId != nil {
 		clientTransactionIdStr = clientTransactionId.String()

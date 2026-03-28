@@ -113,7 +113,6 @@ func sendWSMessage(conn *websocket.Conn, msgType string, data gin.H, transaction
 			),
 		)
 	}
-
 }
 
 func StartCleanupRoutine(timeout time.Duration) {
@@ -142,7 +141,15 @@ func cleanupStaleConnections(timeout time.Duration) {
 		conn.mu.Lock()
 		inactive := now.Sub(conn.lastSeen) > timeout
 		conn.mu.Unlock()
-		slog.Debug("Checking connection activity", "transaction_id", id, "last_seen", conn.lastSeen, "inactive", inactive)
+		slog.Debug(
+			"Checking connection activity",
+			"transaction_id",
+			id,
+			"last_seen",
+			conn.lastSeen,
+			"inactive",
+			inactive,
+		)
 
 		if inactive {
 			staleIDs = append(staleIDs, id)

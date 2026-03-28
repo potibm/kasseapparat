@@ -71,6 +71,7 @@ func (h *Handler) upgradeAndRegister(c *gin.Context) (uuid.UUID, *websocket.Conn
 	}
 
 	protocols := websocket.Subprotocols(c.Request)
+
 	var responseHeader http.Header
 	if len(protocols) > 0 {
 		responseHeader = http.Header{"Sec-WebSocket-Protocol": {protocols[0]}}
