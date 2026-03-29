@@ -162,6 +162,7 @@ func cleanupStaleConnections(timeout time.Duration) {
 	for _, id := range staleIDs {
 		delete(connections.clients, id)
 	}
+
 	connections.Unlock()
 
 	if numRemoved > 0 {
