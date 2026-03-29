@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/csv"
 	"flag"
 	"fmt"
@@ -53,8 +52,7 @@ func main() {
 	flag.StringVar(&dbFilename, "db-file", defaultDbFilename, "Set the name for the database file")
 	flag.Parse()
 
-	ctx := context.Background()
-	logger := initializer.InitTxtLogger(ctx, "debug")
+	logger := initializer.InitTxtLogger("debug")
 
 	cfg, err := config.Load(logger)
 	if err != nil {

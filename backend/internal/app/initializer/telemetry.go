@@ -69,7 +69,7 @@ func InitTelemetry(ctx context.Context, endpoint, version string) (func(), error
 		return nil, err
 	}
 
-	// Cleanup-Funktion zurückgeben
+	// return cleanup function
 	return func() {
 		_ = tp.Shutdown(ctx)
 		_ = lp.Shutdown(ctx)

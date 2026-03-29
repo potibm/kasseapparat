@@ -56,7 +56,7 @@ func run() int {
 		defer shutdownFn()
 	}
 
-	logger := initializer.InitLogger(ctx, *logFormat, *logLevel)
+	logger := initializer.InitLogger(*logFormat, *logLevel)
 
 	cfg, err := config.Load(logger)
 	if err != nil {
