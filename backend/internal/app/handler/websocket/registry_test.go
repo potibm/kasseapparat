@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// reset the global registry before each test to ensure test isolation
+// reset the global registry before each test to ensure test isolation.
 func resetRegistry() {
 	connections.Lock()
 	defer connections.Unlock()
@@ -26,7 +26,7 @@ func resetRegistry() {
 func getServerSideConn(t *testing.T) (conn *websocket.Conn, cleanupFunc func()) {
 	connCh := make(chan *websocket.Conn, 1)
 
-	// dummy http server, to upgrade incoming connections to websockets 
+	// dummy http server, to upgrade incoming connections to websockets
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		upgrader := websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
@@ -132,7 +132,7 @@ func TestPushUpdate_Success(t *testing.T) {
 
 func TestPushUpdate_UnknownTransaction(t *testing.T) {
 	resetRegistry()
-	
+
 	assert.NotPanics(t, func() {
 		PushUpdate(uuid.New(), models.PurchaseStatus("completed"))
 	})
