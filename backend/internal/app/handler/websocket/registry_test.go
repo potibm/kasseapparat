@@ -77,7 +77,7 @@ func TestRegisterAndUnregisterConnection(t *testing.T) {
 	connections.RUnlock()
 	assert.True(t, exists, "Connection should be registered")
 
-	// 2. Wieder abmelden
+	// 2. Disconnect
 	unregisterConnection(transactionID)
 
 	connections.RLock()
@@ -86,7 +86,7 @@ func TestRegisterAndUnregisterConnection(t *testing.T) {
 	assert.False(t, exists, "Connection should be unregistered")
 }
 
-func TestRegisterConnection_MaxLimit(t *testing.T) {
+func TestRegisterConnectionMaxLimit(t *testing.T) {
 	resetRegistry()
 
 	// fill the registry to its max capacity
@@ -100,7 +100,7 @@ func TestRegisterConnection_MaxLimit(t *testing.T) {
 	assert.False(t, success, "Connection should be rejected due to maxConnections limit")
 }
 
-func TestPushUpdate_Success(t *testing.T) {
+func TestPushUpdateSuccess(t *testing.T) {
 	resetRegistry()
 	gin.SetMode(gin.TestMode)
 
@@ -113,6 +113,7 @@ func TestPushUpdate_Success(t *testing.T) {
 
 	// manipulate lastSeen to test if it gets updated on PushUpdate
 	connections.Lock()
+
 	oldTime := time.Now().Add(-1 * time.Hour)
 	connections.clients[transactionID.String()].lastSeen = oldTime
 	connections.Unlock()
@@ -130,7 +131,7 @@ func TestPushUpdate_Success(t *testing.T) {
 	assert.True(t, client.lastSeen.After(oldTime), "lastSeen should be updated to Now()")
 }
 
-func TestPushUpdate_UnknownTransaction(t *testing.T) {
+func TestPushUpdateUnknownTransaction(t *testing.T) {
 	resetRegistry()
 
 	assert.NotPanics(t, func() {
@@ -138,7 +139,7 @@ func TestPushUpdate_UnknownTransaction(t *testing.T) {
 	})
 }
 
-func TestPushUpdate_SendError(t *testing.T) {
+func TestPushUpdateSendError(t *testing.T) {
 	resetRegistry()
 
 	// get a real server-side connection to test the full flow of PushUpdate
