@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -22,21 +23,34 @@ func ConnectToDatabase(filename string) *gorm.DB {
 
 	dbPath := filepath.Join("data", filename+".db")
 
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+	db, err := connectToSQLite(dbPath)
 	if err != nil {
-		panic("failed to connect database")
+		panic(fmt.Sprintf("failed to connect to database: %v", err))
 	}
 
 	return db
 }
 
 func ConnectToLocalDatabase() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	db, err := connectToSQLite("file::memory:?cache=shared")
 	if err != nil {
-		panic("failed to connect database")
+		panic(fmt.Sprintf("failed to connect to local database: %v", err))
 	}
 
 	return db
+}
+
+func connectToSQLite(dsn string) (*gorm.DB, error) {
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	if err := db.Use(otelgorm.NewPlugin()); err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
 func PurgeDatabase(db *gorm.DB) {

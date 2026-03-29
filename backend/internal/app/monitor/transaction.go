@@ -12,10 +12,10 @@ import (
 )
 
 func (n *transactionPoller) Start(transactionID uuid.UUID) {
-	slog.Debug("Starting polling for transaction", "transaction_id", transactionID)
+	slog.Debug("Starting polling for transaction", "transaction_id", transactionID.String())
 
 	if !registerPoller(transactionID) {
-		slog.Info("Polling already running for transaction", "transaction_id", transactionID)
+		slog.Info("Polling already running for transaction", "transaction_id", transactionID.String())
 
 		return // already running
 	}
@@ -23,7 +23,7 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 	go func() {
 		defer unregisterPoller(transactionID)
 
-		slog.Debug("Polling started for transaction", "transaction_id", transactionID)
+		slog.Debug("Polling started for transaction", "transaction_id", transactionID.String())
 
 		const pollingInterval = 5 * time.Second
 
@@ -32,7 +32,7 @@ func (n *transactionPoller) Start(transactionID uuid.UUID) {
 
 		for range ticker.C {
 			if n.handleTransactionPolling(transactionID) {
-				slog.Debug("Polling ended for transaction", "transaction_id", transactionID)
+				slog.Debug("Polling ended for transaction", "transaction_id", transactionID.String())
 
 				return
 			}
@@ -45,13 +45,13 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 
 	purchase, err := n.SqliteRepository.GetPurchaseByID(transactionID)
 	if err != nil {
-		slog.Error("Database error for transaction", "transaction_id", transactionID, "error", err)
+		slog.Error("Database error for transaction", "transaction_id", transactionID.String(), "error", err)
 
 		return false
 	}
 
 	if purchase.PaymentMethod != models.PaymentMethodSumUp {
-		slog.Info("Skipping polling for transaction, not a SumUp transaction", "transaction_id", transactionID)
+		slog.Info("Skipping polling for transaction, not a SumUp transaction", "transaction_id", transactionID.String())
 
 		return true
 	}
@@ -59,13 +59,13 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 	if isFinal(string(purchase.Status)) {
 		n.StatusPublisher.PushUpdate(transactionID, purchase.Status)
 
-		slog.Info("Polling ended for transaction", "transaction_id", transactionID)
+		slog.Info("Polling ended for transaction", "transaction_id", transactionID.String())
 
 		return true
 	}
 
 	if purchase.SumupClientTransactionID == nil {
-		slog.Info("No SumUp client transaction ID for transaction", "transaction_id", transactionID)
+		slog.Info("No SumUp client transaction ID for transaction", "transaction_id", transactionID.String())
 
 		return true
 	}
@@ -76,7 +76,7 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 		slog.Error(
 			"Error fetching transaction from SumUp",
 			"transaction_id",
-			purchase.SumupClientTransactionID,
+			purchase.SumupClientTransactionID.String(),
 			"error",
 			err,
 		)
@@ -85,12 +85,12 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 			slog.Info(
 				"Transaction not found in SumUp, stopping polling",
 				"transaction_id",
-				purchase.SumupClientTransactionID,
+				purchase.SumupClientTransactionID.String(),
 			)
 
 			_, err := n.PurchaseService.FailPurchase(ctx, transactionID)
 			if err != nil {
-				slog.Error("Error setting purchase to failed", "transaction_id", transactionID, "error", err)
+				slog.Error("Error setting purchase to failed", "transaction_id", transactionID.String(), "error", err)
 			}
 
 			n.StatusPublisher.PushUpdate(transactionID, models.PurchaseStatusFailed)
@@ -110,14 +110,14 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 			slog.Error(
 				"Error updating purchase with SumUp transaction ID",
 				"transaction_id",
-				transactionID,
+				transactionID.String(),
 				"error",
 				err,
 			)
 		}
 	}
 
-	slog.Info("Transaction status update", "transaction_id", transactionID, "status", transaction.Status)
+	slog.Info("Transaction status update", "transaction_id", transactionID.String(), "status", transaction.Status)
 
 	return n.handleStatusUpdate(ctx, transactionID, transaction.Status, purchase)
 }
@@ -135,7 +135,7 @@ func (n *transactionPoller) handleStatusUpdate(
 
 	switch status {
 	case "PENDING":
-		slog.Info("Transaction is still pending, continuing to poll", "transaction_id", transactionID)
+		slog.Info("Transaction is still pending, continuing to poll", "transaction_id", transactionID.String())
 		websocket.PushUpdate(transactionID, purchase.Status)
 
 		return false
@@ -146,13 +146,13 @@ func (n *transactionPoller) handleStatusUpdate(
 	case "CANCELED":
 		updatedPurchase, err = n.PurchaseService.CancelPurchase(ctx, transactionID)
 	default:
-		slog.Warn("Unknown transaction status", "status", status, "transaction_id", transactionID)
+		slog.Warn("Unknown transaction status", "status", status, "transaction_id", transactionID.String())
 
 		return false
 	}
 
 	if err != nil {
-		slog.Error("Error updating purchase status", "transaction_id", transactionID, "error", err)
+		slog.Error("Error updating purchase status", "transaction_id", transactionID.String(), "error", err)
 
 		return false
 	}

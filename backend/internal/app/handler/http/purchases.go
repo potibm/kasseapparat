@@ -271,11 +271,16 @@ func (handler *Handler) processSumupCheckout(c *gin.Context, purchase *models.Pu
 		return InternalServerError.WithMsg("Failed to create SumUp reader checkout: " + err.Error()).WithCause(err)
 	}
 
+	clientTransactionIdStr := "nil"
+	if clientTransactionId != nil {
+		clientTransactionIdStr = clientTransactionId.String()
+	}
+
 	slog.InfoContext(
 		c.Request.Context(),
 		"Created SumUp reader checkout",
 		"client_transaction_id",
-		*clientTransactionId,
+		clientTransactionIdStr,
 	)
 
 	_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(purchase.ID, *clientTransactionId)
@@ -286,7 +291,7 @@ func (handler *Handler) processSumupCheckout(c *gin.Context, purchase *models.Pu
 	slog.DebugContext(c.Request.Context(),
 		"Updated purchase with SumUp client transaction ID",
 		"purchase_id", purchase.ID,
-		"client_transaction_id", *clientTransactionId,
+		"client_transaction_id", clientTransactionIdStr,
 	)
 	slog.DebugContext(c.Request.Context(), "Monitor", "handler_monitor", handler.monitor)
 
