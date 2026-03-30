@@ -1,0 +1,28 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  otlphttp/openobserve:
+    endpoint: "http://openobserve:5080/api/default"
+    headers:
+      Authorization: "Basic YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQxMjM=" # admin@example.com:password123
+
+  debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      exporters: [otlphttp/openobserve, debug]
+    metrics:
+      receivers: [otlp]
+      exporters: [otlphttp/openobserve, debug]
+    traces:
+      receivers: [otlp]
+      exporters: [otlphttp/openobserve, debug]

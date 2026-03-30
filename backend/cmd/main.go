@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"flag"
+	"log"
 	"log/slog"
 	"os"
 	"strconv"
@@ -32,19 +34,38 @@ const defaultPort = 3000
 const defaultDbFilename = "kasseapparat"
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
+	ctx := context.Background()
+
 	logLevel := flag.String("log-level", "info", "Set the log level (debug, info, warn, error)")
 	logFormat := flag.String("log-format", "json", "Set the log format (json, text)")
 	port := flag.Int("port", defaultPort, "Set the port number for the server to listen on")
 	dbFilename := flag.String("db-file", defaultDbFilename, "Set the name for the database file")
+	otelEndpoint := flag.String("otel-endpoint", "", "Set the OpenTelemetry endpoint (e.g., localhost:4317)")
 
 	flag.Parse()
+
+	shutdownFn, err := initializer.InitTelemetry(ctx, *otelEndpoint, version)
+	if err != nil {
+		log.Fatalf("Failed to initialize telemetry: %v", err)
+
+		return int(exitcode.Software)
+	}
+
+	if shutdownFn != nil {
+		defer shutdownFn()
+	}
 
 	logger := initializer.InitLogger(*logFormat, *logLevel)
 
 	cfg, err := config.Load(logger)
 	if err != nil {
 		logger.Error("Failed to load config", "error", err)
-		os.Exit(int(exitcode.Config))
+
+		return int(exitcode.Config)
 	}
 
 	cfg.SetVersion(version)
@@ -65,6 +86,7 @@ func main() {
 		sumupRepository,
 		&mailer,
 		int32(cfg.FormatConfig.FractionDigitsMax),
+		cfg.FormatConfig.CurrencyCode,
 	)
 
 	websocketHandler := websocket.NewHandler(
@@ -99,7 +121,8 @@ func main() {
 	)
 	if err != nil {
 		logger.Error("Failed to initialize HTTP server", "error", err)
-		os.Exit(int(exitcode.Software))
+
+		return int(exitcode.Software)
 	}
 
 	startPollerForPendingPurchases(poller, sqliteRepository)
@@ -111,8 +134,11 @@ func main() {
 	err = router.Run(portStr)
 	if err != nil {
 		logger.Error("Failed to start server", "error", err)
-		os.Exit(int(exitcode.Software))
+
+		return int(exitcode.Software)
 	}
+
+	return 0
 }
 
 func startCleanupForWebsocketConnections() {

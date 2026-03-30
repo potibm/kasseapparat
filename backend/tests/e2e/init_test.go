@@ -85,6 +85,7 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		sumupRp,
 		mail,
 		int32(cfg.FormatConfig.FractionDigitsMax),
+		cfg.FormatConfig.CurrencyCode,
 	)
 
 	statusPublisher := MockStatusPublisher{}
