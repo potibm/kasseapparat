@@ -33,7 +33,7 @@ On startup you can override the defaults for the webserver port and logging.
 - --port=3000
 - --log-level=info (or debug, warn, error)
 - --log-format=json (or text)
-- --db-file="kasseapparat (to set the sqlite filename)
+- --db-file="kasseapparat" (to set the sqlite filename)
 - --otel-endpoint="localhost:4317" (to set an OpenTelemetry endpoint)
 
 ## create /app/kasseapparat/.env
@@ -316,7 +316,8 @@ Use the following metrics in your monitoring backend (e.g., OpenObserve) to trac
   - `go.sql.connections_open`: Current number of established database connections.
   - `go.sql.connections_in_use`: Number of connections currently processing queries.
   - `go.sql.connections_wait_duration`: Total time blocked waiting for a new connection (indicates SQLite bottlenecks).
-- **Performance:** \* `http_server_request_duration`: Measures API latency from the Gin router.
+- **Performance:**
+  - `http_server_request_duration`: Measures API latency from the Gin router.
 
 ### OpenObserve
 

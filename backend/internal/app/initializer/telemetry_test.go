@@ -6,9 +6,21 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/log/global"
 )
 
 func TestInitTelemetry(t *testing.T) {
+	oldTP := otel.GetTracerProvider()
+	oldMP := otel.GetMeterProvider()
+	oldLP := global.GetLoggerProvider()
+
+	t.Cleanup(func() {
+		otel.SetTracerProvider(oldTP)
+		otel.SetMeterProvider(oldMP)
+		global.SetLoggerProvider(oldLP)
+	})
+
 	ctx := context.Background()
 	version := "1.0.0"
 

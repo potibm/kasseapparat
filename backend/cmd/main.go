@@ -51,6 +51,8 @@ func run() int {
 	shutdownFn, err := initializer.InitTelemetry(ctx, *otelEndpoint, version)
 	if err != nil {
 		log.Fatalf("Failed to initialize telemetry: %v", err)
+
+		return int(exitcode.Software)
 	}
 
 	if shutdownFn != nil {

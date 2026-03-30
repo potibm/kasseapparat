@@ -135,13 +135,6 @@ func (h *Handler) listenAndHandleMessages(conn *websocket.Conn, transactionID uu
 
 		msgType, _ := msg["type"].(string)
 
-		msgRecvCounter.Add(ctx, 1,
-			metric.WithAttributes(
-				attribute.String("msg_type", msgType),
-				attribute.String("transaction_id", transactionID.String()),
-			),
-		)
-
 		slog.DebugContext(
 			ctx,
 			"Websocket message for transaction",

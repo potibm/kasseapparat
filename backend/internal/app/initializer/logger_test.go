@@ -28,6 +28,12 @@ func TestLogLevelFromString(t *testing.T) {
 }
 
 func TestInitLogger(t *testing.T) {
+	oldDefault := slog.Default()
+
+	t.Cleanup(func() {
+		slog.SetDefault(oldDefault)
+	})
+
 	t.Run("should set default logger and return it", func(t *testing.T) {
 		logger := InitLogger("json", "debug")
 

@@ -207,10 +207,10 @@ func loginResponse(c *gin.Context, token *ginjwtCore.Token) {
 		),
 	)
 
-	user, err := c.Get(IdentityKey)
+	user, exists := c.Get(IdentityKey)
 
 	var userObj *models.User = nil
-	if err {
+	if exists {
 		userObj = user.(*models.User)
 	}
 
@@ -220,7 +220,7 @@ func loginResponse(c *gin.Context, token *ginjwtCore.Token) {
 		ExpiresIn:   token.ExpiresIn(),
 	}
 
-	if user != nil {
+	if userObj != nil {
 		role := userObj.Role()
 		loginResponse.Role = &role
 

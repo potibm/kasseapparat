@@ -38,7 +38,7 @@ func TestRegisterPoller(t *testing.T) {
 	})
 }
 
-func TestRegisterPolle_Concurrency(t *testing.T) {
+func TestRegisterPollerConcurrency(t *testing.T) {
 	const goroutines = 100
 
 	id := uuid.New()

@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v3"
 	"github.com/gin-gonic/gin"
@@ -29,7 +28,9 @@ type mockSqliteRepo struct {
 func (m *mockSqliteRepo) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error) {
 	args := m.Called(id)
 
-	return args.Get(0).(*models.Purchase), args.Error(1)
+	purchase, _ := args.Get(0).(*models.Purchase)
+
+	return purchase, args.Error(1)
 }
 
 // Mock for the Sumup Repository.
@@ -169,8 +170,8 @@ func TestHandleTransactionWebSocketHappyPath(t *testing.T) {
 
 	err = conn.ReadJSON(&cancelAck)
 	require.NoError(t, err)
+	assert.Equal(t, "cancel_ack", cancelAck["type"])
 
-	time.Sleep(50 * time.Millisecond)
 	mockSqlite.AssertExpectations(t)
 	mockSumup.AssertExpectations(t)
 }
