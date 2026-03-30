@@ -21,7 +21,7 @@ import (
 
 // --- MOCKS ---
 
-// Mock für das SQLite Repository.
+// Mock for the SQLite Repository.
 type mockSqliteRepo struct {
 	mock.Mock
 }
@@ -32,7 +32,7 @@ func (m *mockSqliteRepo) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
 	return args.Get(0).(*models.Purchase), args.Error(1)
 }
 
-// Mock für das Sumup Repository.
+// Mock for the Sumup Repository.
 type mockSumupRepo struct {
 	sumup.RepositoryInterface
 	mock.Mock
@@ -52,14 +52,14 @@ func setupTestServer(t *testing.T) (*Handler, *httptest.Server, *mockSqliteRepo,
 	mockSqlite := new(mockSqliteRepo)
 	mockSumup := new(mockSumupRepo)
 
-	// Echtes JWT Middleware Setup zum Generieren valider Token
+	// Real JWT Middleware Setup to generate valid tokens for testing
 	jwtMid, err := jwt.New(&jwt.GinJWTMiddleware{
 		Key:         []byte("secret_test_key"),
 		IdentityKey: "id",
 	})
 	require.NoError(t, err)
 
-	// Valid Token generieren
+	// Generate valid token for testing
 	token, err := jwtMid.TokenGenerator(context.Background(), map[string]interface{}{"id": "test-user"})
 	require.NoError(t, err)
 

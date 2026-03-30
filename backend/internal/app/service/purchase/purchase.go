@@ -219,48 +219,6 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.
 	return purchase, nil
 }
 
-func (s *PurchaseService) recordTransactionMetrics(
-	ctx context.Context,
-	gross, net decimal.Decimal,
-	method string,
-	isRefund bool,
-) {
-	precision := s.DecimalPlaces
-	multiplier := decimal.New(1, int32(precision))
-
-	direction := int64(1)
-	entryType := "purchase"
-
-	if isRefund {
-		direction = -1
-		entryType = "refund"
-	}
-
-	grossSubUnits := gross.Mul(multiplier).IntPart() * direction
-	netSubUnits := net.Mul(multiplier).IntPart() * direction
-
-	commonAttrs := []attribute.KeyValue{
-		attribute.String("type", entryType),
-		attribute.String("currency", s.CurrencyCode),
-		attribute.String("payment_method", method),
-	}
-
-	// Gross
-	salesAmountCounter.Add(ctx, grossSubUnits, metric.WithAttributes(
-		append(commonAttrs, attribute.String("tax_status", "gross"))...,
-	))
-
-	// Net
-	salesAmountCounter.Add(ctx, netSubUnits, metric.WithAttributes(
-		append(commonAttrs, attribute.String("tax_status", "net"))...,
-	))
-
-	salesOrdersCounter.Add(ctx, 1, metric.WithAttributes(
-		attribute.String("payment_method", method),
-		attribute.String("type", entryType),
-	))
-}
-
 func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
 	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusCancelled)
 	if err != nil {
@@ -468,4 +426,46 @@ func (s *PurchaseService) createPurchaseWithStatus(
 	}
 
 	return savedPurchase, guests, nil
+}
+
+func (s *PurchaseService) recordTransactionMetrics(
+	ctx context.Context,
+	gross, net decimal.Decimal,
+	method string,
+	isRefund bool,
+) {
+	precision := s.DecimalPlaces
+	multiplier := decimal.New(1, int32(precision))
+
+	direction := int64(1)
+	entryType := "purchase"
+
+	if isRefund {
+		direction = -1
+		entryType = "refund"
+	}
+
+	grossSubUnits := gross.Mul(multiplier).IntPart() * direction
+	netSubUnits := net.Mul(multiplier).IntPart() * direction
+
+	commonAttrs := []attribute.KeyValue{
+		attribute.String("type", entryType),
+		attribute.String("currency", s.CurrencyCode),
+		attribute.String("payment_method", method),
+	}
+
+	// Gross
+	salesAmountCounter.Add(ctx, grossSubUnits, metric.WithAttributes(
+		append(commonAttrs, attribute.String("tax_status", "gross"))...,
+	))
+
+	// Net
+	salesAmountCounter.Add(ctx, netSubUnits, metric.WithAttributes(
+		append(commonAttrs, attribute.String("tax_status", "net"))...,
+	))
+
+	salesOrdersCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("payment_method", method),
+		attribute.String("type", entryType),
+	))
 }

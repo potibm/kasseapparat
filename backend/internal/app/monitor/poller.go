@@ -1,11 +1,11 @@
 package monitor
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	sumupRepo "github.com/potibm/kasseapparat/internal/app/repository/sumup"
-	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 )
 
 // List of final states where we can stop polling.
@@ -28,18 +28,33 @@ type StatusPublisher interface {
 	PushUpdate(purchaseID uuid.UUID, status models.PurchaseStatus)
 }
 
+type SumupTransactionReader interface {
+	GetTransactionByClientTransactionId(clientTransactionId uuid.UUID) (*sumupRepo.Transaction, error)
+}
+
+type PurchaseRepository interface {
+	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
+	UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error)
+}
+
+type PurchaseStatusService interface {
+	FinalizePurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
+	CancelPurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
+	FailPurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
+}
+
 type transactionPoller struct {
-	SumupRepository  sumupRepo.RepositoryInterface
-	SqliteRepository sqliteRepo.RepositoryInterface
-	PurchaseService  purchaseService.Service
+	SumupRepository  SumupTransactionReader
+	SqliteRepository PurchaseRepository
+	PurchaseService  PurchaseStatusService
 	StatusPublisher  StatusPublisher
 	active           map[string]struct{}
 }
 
 func NewPoller(
-	sumupRp sumupRepo.RepositoryInterface,
-	sqliteRp sqliteRepo.RepositoryInterface,
-	purchaseSrvc purchaseService.Service,
+	sumupRp SumupTransactionReader,
+	sqliteRp PurchaseRepository,
+	purchaseSrvc PurchaseStatusService,
 	statusPblshr StatusPublisher,
 ) Poller {
 	return &transactionPoller{
