@@ -33,6 +33,8 @@ On startup you can override the defaults for the webserver port and logging.
 - --port=3000
 - --log-level=info (or debug, warn, error)
 - --log-format=json (or text)
+- --db-file="kasseapparat (to set the sqlite filename)
+- --otel-endpoint="localhost:4317" (to set an OpenTelemetry endpoint)
 
 ## create /app/kasseapparat/.env
 
@@ -83,7 +85,7 @@ You can set LOCALE, CURRENCY_CODE, FRACTION_DIGITS_MIN and FRACTION_DIGITS_MAX t
 
 For generating correct urls (within mails e.g.) set the URL here.
 
-# MAIL
+### MAIL
 
 We will need the SMTP login for the mail account in MAIL_DSN.
 
@@ -293,3 +295,31 @@ docker compose up -d
 ## Update
 
 To update the docker image call the update.sh. A backup is performed and stored in the backup directory.
+
+## OpenTelemetry & Monitoring
+
+Kasseapparat natively supports **OpenTelemetry (OTel)**. You can enable the export of Traces, Logs, and Metrics by providing the OTLP endpoint:
+
+`--otel-endpoint="localhost:4317"` (compatible with backends like **OpenObserve**, Grafana, or Jaeger).
+
+### Key Metrics & Dashboards
+
+Use the following metrics in your monitoring backend (e.g., OpenObserve) to track system health:
+
+- **Go Runtime:**
+  - `go_goroutine_count`: Number of active goroutines (essential to identify connection leaks).
+  - `go_memory_count`: Current memory usage/statistics.
+- **WebSockets:**
+  - `ws_active_connections`: Current number of connected terminals/iPads (Gauge).
+  - `ws_messages_sent_total`: Data throughput (use the `msg_type` attribute for filtering).
+- **Database (SQL & GORM):**
+  - `go.sql.connections_open`: Current number of established database connections.
+  - `go.sql.connections_in_use`: Number of connections currently processing queries.
+  - `go.sql.connections_wait_duration`: Total time blocked waiting for a new connection (indicates SQLite bottlenecks).
+- **Performance:** \* `http_server_request_duration`: Measures API latency from the Gin router.
+
+### OpenObserve
+
+For local development we provide [OpenObserve](https://github.com/openobserve/openobserve) at [localhost:5080](localhost:5080) by running `make infra-up`.
+
+Sample dashboard templates can be found at `infra/openobserve`.

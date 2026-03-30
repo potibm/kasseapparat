@@ -6,6 +6,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+)
+
+var meter = otel.Meter("kasseapparat")
+var (
+	productInterestCounter, _ = meter.Int64Counter("kasseapparat_product_interest_total",
+		metric.WithDescription("Total number of interests shown in out-of-stock products"))
 )
 
 type ProductInterestCreateRequest struct {
@@ -89,6 +98,13 @@ func (handler *Handler) CreateProductInterest(c *gin.Context) {
 
 		return
 	}
+
+	productInterestCounter.Add(c.Request.Context(), 1,
+		metric.WithAttributes(
+			attribute.Int("product_id", int(productInterest.ProductID)),
+			attribute.String("product_name", product.Name),
+		),
+	)
 
 	c.JSON(http.StatusCreated, productInterest)
 }

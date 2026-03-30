@@ -1,0 +1,1026 @@
+{
+  "version": 8,
+  "dashboardId": "7444287573024833536",
+  "title": "Kasseapparat",
+  "description": "",
+  "role": "",
+  "owner": "",
+  "created": "2026-03-30T07:41:05.581Z",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "Default",
+      "panels": [
+        {
+          "id": "Panel_ID978010",
+          "type": "line",
+          "title": "Login",
+          "description": "",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "decimals": 0,
+            "line_thickness": 1.5,
+            "step_value": "0",
+            "top_results_others": false,
+            "axis_width": 0,
+            "axis_border_show": false,
+            "label_option": {
+              "rotate": 0
+            },
+            "axis_label_rotate": 0,
+            "show_symbol": false,
+            "line_interpolation": "step-middle",
+            "legend_width": {
+              "unit": "px"
+            },
+            "legend_height": {
+              "unit": "px"
+            },
+            "base_map": {
+              "type": "osm"
+            },
+            "map_type": {
+              "type": "world"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "map_symbol_style": {
+              "size": "by Value",
+              "size_by_value": {
+                "min": 1,
+                "max": 100
+              },
+              "size_fixed": 2
+            },
+            "drilldown": [],
+            "mark_line": [],
+            "override_config": [],
+            "connect_nulls": false,
+            "no_value_replacement": "",
+            "wrap_table_cells": false,
+            "table_transpose": false,
+            "table_dynamic_columns": false,
+            "mappings": [],
+            "color": {
+              "mode": "palette-classic-by-series",
+              "fixedColor": ["#53ca53"],
+              "seriesBy": "last",
+              "colorBySeries": []
+            },
+            "trellis": {
+              "layout": null,
+              "num_of_columns": 1,
+              "group_by_y_axis": false
+            },
+            "show_gridlines": true,
+            "aggregation": "last",
+            "lat_label": "latitude",
+            "lon_label": "longitude",
+            "weight_label": "weight",
+            "name_label": "name",
+            "table_aggregations": ["last"],
+            "promql_table_mode": "single",
+            "visible_columns": [],
+            "hidden_columns": [],
+            "sticky_columns": [],
+            "sticky_first_column": false,
+            "column_order": [],
+            "table_pagination": false,
+            "panel_time_enabled": false
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT \n    histogram(_timestamp, \"5m\") as x_axis_1, \n    MAX(value)-MIN(value) as y_axis_1,\n    status as breakdown_1 \nFROM \n    \"kasseapparat_auth_events_total\" \nWHERE \n    event_type = 'login' \nGROUP BY \n    x_axis_1, \n    breakdown_1 \nORDER BY \n    x_axis_1 ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "kasseapparat_auth_events_total",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Timestamp",
+                    "alias": "x_axis_1",
+                    "type": "build",
+                    "color": null,
+                    "functionName": "histogram",
+                    "sortBy": "ASC",
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "_timestamp",
+                          "streamAlias": null
+                        }
+                      },
+                      {
+                        "type": "histogramInterval"
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": [],
+                    "treatAsNonTimestamp": false,
+                    "showFieldAsJson": false
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Value",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "type": "build",
+                    "color": "#5960b2",
+                    "functionName": "count",
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "value",
+                          "streamAlias": null
+                        }
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": [],
+                    "treatAsNonTimestamp": true,
+                    "showFieldAsJson": false
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Status",
+                    "alias": "breakdown_1",
+                    "type": "build",
+                    "color": null,
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "status",
+                          "streamAlias": null
+                        }
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": []
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": [
+                    {
+                      "type": "list",
+                      "values": ["login"],
+                      "column": {
+                        "field": "event_type",
+                        "streamAlias": null
+                      },
+                      "operator": null,
+                      "value": null,
+                      "logicalOperator": "AND",
+                      "filterType": "condition"
+                    }
+                  ]
+                },
+                "promql_labels": [
+                  {
+                    "label": "event_type",
+                    "op": "=",
+                    "value": "login"
+                  }
+                ],
+                "promql_operations": [
+                  {
+                    "id": "rate",
+                    "params": ["$__rate_interval"]
+                  }
+                ]
+              },
+              "config": {
+                "promql_legend": "{status}",
+                "layer_type": "scatter",
+                "weight_fixed": 1,
+                "limit": 0,
+                "min": 0,
+                "max": 100,
+                "time_shift": []
+              },
+              "joins": []
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 18,
+            "i": 1
+          },
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": " // To know more about ECharts , \n// visit: https://echarts.apache.org/examples/en/index.html \n// Example: https://echarts.apache.org/examples/en/editor.html?c=line-simple \n// Define your ECharts 'option' here. \n// 'data' variable is available for use and contains the response data from the search result and it is an array.\noption = {  \n \n};\n  "
+        },
+        {
+          "id": "Panel_ID6179310",
+          "type": "line",
+          "title": "Login Types",
+          "description": "",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "decimals": 2,
+            "line_thickness": 1.5,
+            "step_value": "0",
+            "top_results_others": false,
+            "axis_border_show": false,
+            "label_option": {
+              "rotate": 0
+            },
+            "axis_label_rotate": 0,
+            "show_symbol": false,
+            "line_interpolation": "step-middle",
+            "legend_width": {
+              "unit": "px"
+            },
+            "legend_height": {
+              "unit": "px"
+            },
+            "base_map": {
+              "type": "osm"
+            },
+            "map_type": {
+              "type": "world"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "map_symbol_style": {
+              "size": "by Value",
+              "size_by_value": {
+                "min": 1,
+                "max": 100
+              },
+              "size_fixed": 2
+            },
+            "drilldown": [],
+            "mark_line": [],
+            "override_config": [],
+            "connect_nulls": true,
+            "no_value_replacement": "",
+            "wrap_table_cells": false,
+            "table_transpose": false,
+            "table_dynamic_columns": false,
+            "mappings": [],
+            "color": {
+              "mode": "palette-classic-by-series",
+              "fixedColor": ["#53ca53"],
+              "seriesBy": "last",
+              "colorBySeries": []
+            },
+            "trellis": {
+              "layout": null,
+              "num_of_columns": 1,
+              "group_by_y_axis": false
+            },
+            "show_gridlines": true,
+            "aggregation": "last",
+            "lat_label": "latitude",
+            "lon_label": "longitude",
+            "weight_label": "weight",
+            "name_label": "name",
+            "table_aggregations": ["last"],
+            "promql_table_mode": "single",
+            "visible_columns": [],
+            "hidden_columns": [],
+            "sticky_columns": [],
+            "sticky_first_column": false,
+            "column_order": [],
+            "table_pagination": false,
+            "panel_time_enabled": false
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp, \"5m\") as \"x_axis_1\", max(value)-min(value) as \"y_axis_1\", event_type as \"breakdown_1\" FROM \"kasseapparat_auth_events_total\"  WHERE status IN ('success')  GROUP BY x_axis_1, breakdown_1 ORDER BY x_axis_1 ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "kasseapparat_auth_events_total",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Timestamp",
+                    "alias": "x_axis_1",
+                    "type": "build",
+                    "color": null,
+                    "functionName": "histogram",
+                    "sortBy": "ASC",
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "_timestamp",
+                          "streamAlias": null
+                        }
+                      },
+                      {
+                        "type": "histogramInterval"
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": [],
+                    "treatAsNonTimestamp": false,
+                    "showFieldAsJson": false
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Value",
+                    "alias": "y_axis_1",
+                    "type": "build",
+                    "color": "#5960b2",
+                    "functionName": "sum",
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "value",
+                          "streamAlias": null
+                        }
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": [],
+                    "treatAsNonTimestamp": true,
+                    "showFieldAsJson": false
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Event Type",
+                    "alias": "breakdown_1",
+                    "type": "build",
+                    "color": null,
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "event_type",
+                          "streamAlias": null
+                        }
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": []
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": [
+                    {
+                      "type": "list",
+                      "values": ["success"],
+                      "column": {
+                        "field": "status",
+                        "streamAlias": null
+                      },
+                      "operator": null,
+                      "value": null,
+                      "logicalOperator": "AND",
+                      "filterType": "condition"
+                    }
+                  ]
+                }
+              },
+              "config": {
+                "promql_legend": "",
+                "layer_type": "scatter",
+                "weight_fixed": 1,
+                "limit": 0,
+                "min": 0,
+                "max": 100,
+                "time_shift": []
+              },
+              "joins": []
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 18,
+            "i": 2
+          },
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": " // To know more about ECharts , \n// visit: https://echarts.apache.org/examples/en/index.html \n// Example: https://echarts.apache.org/examples/en/editor.html?c=line-simple \n// Define your ECharts 'option' here. \n// 'data' variable is available for use and contains the response data from the search result and it is an array.\noption = {  \n \n};\n  "
+        },
+        {
+          "id": "Panel_ID9412410",
+          "type": "stacked",
+          "title": "Gross Purchases by Payment Type",
+          "description": "",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "unit": "currency-euro",
+            "decimals": 2,
+            "line_thickness": 1.5,
+            "step_value": "0",
+            "top_results_others": false,
+            "axis_border_show": false,
+            "label_option": {
+              "rotate": 0
+            },
+            "axis_label_rotate": 0,
+            "show_symbol": false,
+            "line_interpolation": "smooth",
+            "legend_width": {
+              "unit": "px"
+            },
+            "legend_height": {
+              "unit": "px"
+            },
+            "base_map": {
+              "type": "osm"
+            },
+            "map_type": {
+              "type": "world"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "map_symbol_style": {
+              "size": "by Value",
+              "size_by_value": {
+                "min": 1,
+                "max": 100
+              },
+              "size_fixed": 2
+            },
+            "drilldown": [],
+            "mark_line": [],
+            "override_config": [],
+            "connect_nulls": false,
+            "no_value_replacement": "",
+            "wrap_table_cells": false,
+            "table_transpose": false,
+            "table_dynamic_columns": false,
+            "mappings": [],
+            "color": {
+              "mode": "palette-classic-by-series",
+              "fixedColor": ["#53ca53"],
+              "seriesBy": "last",
+              "colorBySeries": []
+            },
+            "trellis": {
+              "layout": null,
+              "num_of_columns": 1,
+              "group_by_y_axis": false
+            },
+            "show_gridlines": true,
+            "aggregation": "last",
+            "lat_label": "latitude",
+            "lon_label": "longitude",
+            "weight_label": "weight",
+            "name_label": "name",
+            "table_aggregations": ["last"],
+            "promql_table_mode": "single",
+            "visible_columns": [],
+            "hidden_columns": [],
+            "sticky_columns": [],
+            "sticky_first_column": false,
+            "column_order": [],
+            "table_pagination": false,
+            "panel_time_enabled": false
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp, '5 minutes') as \"x_axis_1\", SUM(value)/100 as \"y_axis_1\", payment_method as \"breakdown_1\" FROM \"kasseapparat_sales_amount_total\"  WHERE type IN ('purchase') AND tax_status IN ('gross')  GROUP BY x_axis_1, breakdown_1 ORDER BY x_axis_1 ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": false,
+              "fields": {
+                "stream": "kasseapparat_sales_amount_total",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Timestamp",
+                    "alias": "x_axis_1",
+                    "type": "build",
+                    "color": null,
+                    "functionName": "histogram",
+                    "sortBy": "ASC",
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "_timestamp",
+                          "streamAlias": null
+                        }
+                      },
+                      {
+                        "type": "histogramInterval",
+                        "value": "5 minutes"
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": [],
+                    "treatAsNonTimestamp": true,
+                    "showFieldAsJson": false
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Value",
+                    "alias": "y_axis_1",
+                    "type": "raw",
+                    "color": "#5960b2",
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": null,
+                          "streamAlias": null
+                        }
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": [],
+                    "treatAsNonTimestamp": true,
+                    "showFieldAsJson": false,
+                    "rawQuery": "SUM(value)/100"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Payment Method",
+                    "alias": "breakdown_1",
+                    "type": "build",
+                    "color": null,
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "payment_method",
+                          "streamAlias": null
+                        }
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": []
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": [
+                    {
+                      "type": "list",
+                      "values": ["purchase"],
+                      "column": {
+                        "field": "type",
+                        "streamAlias": null
+                      },
+                      "operator": null,
+                      "value": null,
+                      "logicalOperator": "AND",
+                      "filterType": "condition"
+                    },
+                    {
+                      "type": "list",
+                      "values": ["gross"],
+                      "column": {
+                        "field": "tax_status",
+                        "streamAlias": null
+                      },
+                      "operator": null,
+                      "value": null,
+                      "logicalOperator": "AND",
+                      "filterType": "condition"
+                    }
+                  ]
+                }
+              },
+              "config": {
+                "promql_legend": "",
+                "layer_type": "scatter",
+                "weight_fixed": 1,
+                "limit": 0,
+                "min": 0,
+                "max": 100,
+                "time_shift": []
+              },
+              "joins": []
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 20,
+            "w": 96,
+            "h": 18,
+            "i": 3
+          },
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": " // To know more about ECharts , \n// visit: https://echarts.apache.org/examples/en/index.html \n// Example: https://echarts.apache.org/examples/en/editor.html?c=line-simple \n// Define your ECharts 'option' here. \n// 'data' variable is available for use and contains the response data from the search result and it is an array.\noption = {  \n \n};\n  "
+        },
+        {
+          "id": "Panel_ID7033610",
+          "type": "line",
+          "title": "Purchases",
+          "description": "",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "unit": "numbers",
+            "decimals": 0,
+            "line_thickness": 1.5,
+            "step_value": "0",
+            "top_results_others": false,
+            "axis_border_show": false,
+            "label_option": {
+              "rotate": 0
+            },
+            "axis_label_rotate": 0,
+            "show_symbol": false,
+            "line_interpolation": "step-middle",
+            "legend_width": {
+              "unit": "px"
+            },
+            "legend_height": {
+              "unit": "px"
+            },
+            "base_map": {
+              "type": "osm"
+            },
+            "map_type": {
+              "type": "world"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "map_symbol_style": {
+              "size": "by Value",
+              "size_by_value": {
+                "min": 1,
+                "max": 100
+              },
+              "size_fixed": 2
+            },
+            "drilldown": [],
+            "mark_line": [],
+            "override_config": [],
+            "connect_nulls": false,
+            "no_value_replacement": "",
+            "wrap_table_cells": false,
+            "table_transpose": false,
+            "table_dynamic_columns": false,
+            "mappings": [],
+            "color": {
+              "mode": "palette-classic-by-series",
+              "fixedColor": ["#53ca53"],
+              "seriesBy": "last",
+              "colorBySeries": []
+            },
+            "trellis": {
+              "layout": null,
+              "num_of_columns": 1,
+              "group_by_y_axis": false
+            },
+            "show_gridlines": true,
+            "aggregation": "last",
+            "lat_label": "latitude",
+            "lon_label": "longitude",
+            "weight_label": "weight",
+            "name_label": "name",
+            "table_aggregations": ["last"],
+            "promql_table_mode": "single",
+            "visible_columns": [],
+            "hidden_columns": [],
+            "sticky_columns": [],
+            "sticky_first_column": false,
+            "column_order": [],
+            "table_pagination": false,
+            "panel_time_enabled": false
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp, '5 minutes') as \"x_axis_1\", sum(value) as \"y_axis_1\", type as \"breakdown_1\" FROM \"kasseapparat_sales_orders_total\"  GROUP BY x_axis_1, breakdown_1 ORDER BY x_axis_1 ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": false,
+              "fields": {
+                "stream": "kasseapparat_sales_orders_total",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Timestamp",
+                    "alias": "x_axis_1",
+                    "type": "build",
+                    "color": null,
+                    "functionName": "histogram",
+                    "sortBy": "ASC",
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "_timestamp",
+                          "streamAlias": null
+                        }
+                      },
+                      {
+                        "type": "histogramInterval",
+                        "value": "5 minutes"
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": [],
+                    "treatAsNonTimestamp": false,
+                    "showFieldAsJson": false
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Value",
+                    "alias": "y_axis_1",
+                    "type": "build",
+                    "color": "#5960b2",
+                    "functionName": "sum",
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "value",
+                          "streamAlias": null
+                        }
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": [],
+                    "treatAsNonTimestamp": true,
+                    "showFieldAsJson": false
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Type",
+                    "alias": "breakdown_1",
+                    "type": "build",
+                    "color": null,
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "type",
+                          "streamAlias": null
+                        }
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": []
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": "",
+                "layer_type": "scatter",
+                "weight_fixed": 1,
+                "limit": 0,
+                "min": 0,
+                "max": 100,
+                "time_shift": []
+              },
+              "joins": []
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 20,
+            "w": 96,
+            "h": 18,
+            "i": 4
+          },
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": " // To know more about ECharts , \n// visit: https://echarts.apache.org/examples/en/index.html \n// Example: https://echarts.apache.org/examples/en/editor.html?c=line-simple \n// Define your ECharts 'option' here. \n// 'data' variable is available for use and contains the response data from the search result and it is an array.\noption = {  \n \n};\n  "
+        },
+        {
+          "id": "Panel_ID1854910",
+          "type": "bar",
+          "title": "Product Interest",
+          "description": "",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "decimals": 0,
+            "line_thickness": 1.5,
+            "step_value": "0",
+            "top_results_others": false,
+            "axis_border_show": false,
+            "label_option": {
+              "rotate": 0
+            },
+            "axis_label_rotate": 0,
+            "show_symbol": false,
+            "line_interpolation": "smooth",
+            "legend_width": {
+              "unit": "px"
+            },
+            "legend_height": {
+              "unit": "px"
+            },
+            "base_map": {
+              "type": "osm"
+            },
+            "map_type": {
+              "type": "world"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "map_symbol_style": {
+              "size": "by Value",
+              "size_by_value": {
+                "min": 1,
+                "max": 100
+              },
+              "size_fixed": 2
+            },
+            "drilldown": [],
+            "mark_line": [],
+            "override_config": [],
+            "connect_nulls": false,
+            "no_value_replacement": "",
+            "wrap_table_cells": false,
+            "table_transpose": false,
+            "table_dynamic_columns": false,
+            "mappings": [],
+            "color": {
+              "mode": "palette-classic-by-series",
+              "fixedColor": ["#53ca53"],
+              "seriesBy": "last",
+              "colorBySeries": []
+            },
+            "trellis": {
+              "layout": null,
+              "num_of_columns": 1,
+              "group_by_y_axis": false
+            },
+            "show_gridlines": true,
+            "aggregation": "last",
+            "lat_label": "latitude",
+            "lon_label": "longitude",
+            "weight_label": "weight",
+            "name_label": "name",
+            "table_aggregations": ["last"],
+            "promql_table_mode": "single",
+            "visible_columns": [],
+            "hidden_columns": [],
+            "sticky_columns": [],
+            "sticky_first_column": false,
+            "column_order": [],
+            "table_pagination": false,
+            "panel_time_enabled": false
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp, '5 minutes') as \"x_axis_1\", SUM(value) as \"y_axis_1\", product_name as \"breakdown_1\" FROM \"kasseapparat_product_interest_total\"  GROUP BY x_axis_1, breakdown_1 ORDER BY x_axis_1 ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "kasseapparat_product_interest_total",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Timestamp",
+                    "alias": "x_axis_1",
+                    "type": "build",
+                    "color": null,
+                    "functionName": "histogram",
+                    "sortBy": "ASC",
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "_timestamp",
+                          "streamAlias": null
+                        }
+                      },
+                      {
+                        "type": "histogramInterval",
+                        "value": "5 minutes"
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": [],
+                    "treatAsNonTimestamp": false,
+                    "showFieldAsJson": false
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Value",
+                    "alias": "y_axis_1",
+                    "type": "build",
+                    "color": "#5960b2",
+                    "functionName": "count",
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "value",
+                          "streamAlias": null
+                        }
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": [],
+                    "treatAsNonTimestamp": true,
+                    "showFieldAsJson": false
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Product Name",
+                    "alias": "breakdown_1",
+                    "type": "build",
+                    "color": null,
+                    "args": [
+                      {
+                        "type": "field",
+                        "value": {
+                          "field": "product_name",
+                          "streamAlias": null
+                        }
+                      }
+                    ],
+                    "isDerived": false,
+                    "havingConditions": []
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": "",
+                "layer_type": "scatter",
+                "weight_fixed": 1,
+                "limit": 0,
+                "min": 0,
+                "max": 100,
+                "time_shift": []
+              },
+              "joins": []
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 40,
+            "w": 96,
+            "h": 18,
+            "i": 5
+          },
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": " // To know more about ECharts , \n// visit: https://echarts.apache.org/examples/en/index.html \n// Example: https://echarts.apache.org/examples/en/editor.html?c=line-simple \n// Define your ECharts 'option' here. \n// 'data' variable is available for use and contains the response data from the search result and it is an array.\noption = {  \n \n};\n  "
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": [],
+    "showDynamicFilters": true
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "15m"
+  }
+}

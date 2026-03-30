@@ -31,7 +31,7 @@ stop: infra-down
 	rm -rf $(BACKEND_DIR)/logs/app.json
 
 run-be: check-go
-	cd $(BACKEND_DIR) && go run ./cmd/main.go --port=3001 --log-level=debug 
+	cd $(BACKEND_DIR) && go run ./cmd/main.go --port=3001 --log-level=debug --otel-endpoint=localhost:4317
 
 run-tool: check-go
 	cd $(BACKEND_DIR) && go run ./tools/main.go --seed --purge

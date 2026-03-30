@@ -44,10 +44,11 @@ func run() int {
 	logFormat := flag.String("log-format", "json", "Set the log format (json, text)")
 	port := flag.Int("port", defaultPort, "Set the port number for the server to listen on")
 	dbFilename := flag.String("db-file", defaultDbFilename, "Set the name for the database file")
+	otelEndpoint := flag.String("otel-endpoint", "", "Set the OpenTelemetry endpoint (e.g., localhost:4317)")
 
 	flag.Parse()
 
-	shutdownFn, err := initializer.InitTelemetry(ctx, "localhost:4317", version)
+	shutdownFn, err := initializer.InitTelemetry(ctx, *otelEndpoint, version)
 	if err != nil {
 		log.Fatalf("Failed to initialize telemetry: %v", err)
 	}
@@ -83,6 +84,7 @@ func run() int {
 		sumupRepository,
 		&mailer,
 		int32(cfg.FormatConfig.FractionDigitsMax),
+		cfg.FormatConfig.CurrencyCode,
 	)
 
 	websocketHandler := websocket.NewHandler(
