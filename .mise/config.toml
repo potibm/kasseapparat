@@ -12,8 +12,8 @@ tmux = "latest"
 description = "Initial project setup"
 run = """
   # ensure .env files exist
-  cd $BACKEND_DIR && [ -f .env ] || cp .env.example .env
-  cd $BACKEND_DIR && [ -d data ] || mkdir data
+  cd backend && [ -f .env ] || cp .env.example .env
+  cd backend && [ -d data ] || mkdir data
 
   # Dependencies
   mise run deps:install
@@ -31,7 +31,7 @@ run = "overmind s"
 description = "Start backend in development mode with hot reload"
 run = """
   cd backend &&
-  go run ./cmd/main.go --port=3001 --log-level=debug --otel-endpoint=localhost:4317
+  air
 """
 
 [tasks."fe:dev"]
