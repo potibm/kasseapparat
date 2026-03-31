@@ -10,5 +10,6 @@ backend/.env
 backend/.env.backup.*
 backend/VERSION
 backend/coverage.*
+backend/tmp
 VERSION
 *.log

@@ -10,6 +10,7 @@ import (
 
 	ginjwt "github.com/appleboy/gin-jwt/v3"
 	ginjwtCore "github.com/appleboy/gin-jwt/v3/core"
+	"github.com/appleboy/gin-jwt/v3/store"
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/potibm/kasseapparat/internal/app/exitcode"
@@ -93,12 +94,15 @@ func InitParams(
 	secret string,
 	timeout int,
 	secureCookie bool,
+	redisConfig *store.RedisConfig,
 ) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		slog.Warn("JWT_SECRET is not set, using default value")
 
 		secret = "secret"
 	}
+
+	useRedisStore := redisConfig != nil
 
 	return &ginjwt.GinJWTMiddleware{
 		Realm:      realm,
@@ -118,6 +122,9 @@ func InitParams(
 		Authorizer:      authorizer(),
 		Unauthorized:    unauthorized(),
 		LoginResponse:   loginResponse,
+
+		UseRedisStore: useRedisStore,
+		RedisConfig:   redisConfig,
 	}
 }
 

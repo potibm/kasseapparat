@@ -13,7 +13,7 @@ services:
       - ZO_ROOT_USER_EMAIL=admin@example.com
       - ZO_ROOT_USER_PASSWORD=password123
     ports:
-      - "5080:5080" # Web UI
+      - "8027:5080" # Web UI
     volumes:
       - o2_data:/data
 
@@ -29,5 +29,27 @@ services:
     depends_on:
       - openobserve
 
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    user: root
+    environment:
+      - REDISINSIGHT_HOST=0.0.0.0
+      - RI_ACCEPT_TERMS_AND_CONDITIONS=true
+      - RI_REDIS_ALIAS0=Kasseapparat-Redis
+      - RI_REDIS_HOST0=redis
+      - RI_REDIS_PORT0=6379
+    ports:
+      - "8026:5540"
+    volumes:
+      - ri_data:/data
+    depends_on:
+      - redis
+
 volumes:
   o2_data:
+  ri_data:

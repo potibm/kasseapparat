@@ -79,7 +79,7 @@ func run() int {
 	sqliteRepository := sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
 	sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
 	mailer := initializer.InitializeMailer(cfg.MailerConfig)
-	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, cfg.JwtConfig)
+	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, cfg.JwtConfig, cfg.RedisConfig)
 
 	purchaseSvc := purchaseService.NewPurchaseService(
 		sqliteRepository,

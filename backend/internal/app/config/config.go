@@ -67,6 +67,7 @@ type Config struct {
 	FrontendURL        string
 	MailerConfig       MailerConfig
 	SumupConfig        SumupConfig
+	RedisConfig        *RedisConfig
 }
 
 func (cfg Config) OutputVersion() {
@@ -93,6 +94,11 @@ func loadConfig(logger *slog.Logger) (*Config, error) {
 		return nil, err
 	}
 
+	redisConfig, err := loadRedisConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Config{
 		AppConfig:          loadAppConfig(),
 		FormatConfig:       loadFormatConfig(logger),
@@ -104,6 +110,7 @@ func loadConfig(logger *slog.Logger) (*Config, error) {
 		CorsAllowOrigins:   corsAllowOriginsConfig,
 		MailerConfig:       loadMailerConfig(),
 		SumupConfig:        loadSumupConfig(),
+		RedisConfig:        redisConfig,
 	}, nil
 }
 

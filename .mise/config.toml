@@ -1,0 +1,66 @@
+[tools]
+node = "25"
+go = "1.26"
+golangci-lint = "latest"
+dotenv-linter = "latest"
+air = "latest"
+overmind = "latest"
+docker-cli = "latest"
+tmux = "latest"
+
+[tasks.setup]
+description = "Initial project setup"
+run = """
+  # ensure .env files exist
+  cd $BACKEND_DIR && [ -f .env ] || cp .env.example .env
+  cd $BACKEND_DIR && [ -d data ] || mkdir data
+
+  # Dependencies
+  mise run deps:install
+
+  # Infra Check
+  docker info >/dev/null 2>&1 || (echo "❌ Docker is not running!" && exit 1)
+  mise run infra:up
+"""
+
+[tasks."dev"]
+description = "Start development environment with hot reload for backend and frontend"
+run = "overmind s"
+
+[tasks."be:dev"]
+description = "Start backend in development mode with hot reload"
+run = """
+  cd backend &&
+  go run ./cmd/main.go --port=3001 --log-level=debug --otel-endpoint=localhost:4317
+"""
+
+[tasks."fe:dev"]
+description = "Start frontend in development mode with hot reload"
+run = """
+  cd frontend &&
+  corepack yarn dev
+"""
+  
+[tasks."infra:up"]
+description = "Start infrastructure services"
+run = """	
+    docker compose up -d --force-recreate --remove-orphans
+    echo ""
+    echo "🚀 --- INFRASTRUCTURE DASHBOARD ---"
+    echo "📧 Mailhog:       http://localhost:8025"
+    echo "📊 OpenObserve:   http://localhost:8027 (admin@example.com / password123)"
+    echo "🔍 RedisInsight:  http://localhost:8026"
+    echo "📈 OTel gRPC:     localhost:4317"
+    echo "----------------------------------"
+"""
+
+[tasks."infra:down"]
+description = "Stop infrastructure services"
+run = "docker compose down"
+
+[tasks."infra:restart"]
+description = "Restart infrastructure services"
+run = """
+  mise run infra:down
+  mise run infra:up
+"""
