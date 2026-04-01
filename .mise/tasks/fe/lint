@@ -5,8 +5,10 @@
 
 set -e
 
-echo "🎨 Frontend (Auto-Fix: ${usage_fix:-false})"
-if [ "$usage_fix" = "true" ]; then
+FIX_MODE="${usage_fix:-false}"
+
+echo "🎨 Frontend (Auto-Fix: $FIX_MODE)"
+if [ "$FIX_MODE" = "true" ]; then
     corepack yarn run prettier .. --write
     corepack yarn run eslint --fix
     dotenv-linter fix . --no-backup

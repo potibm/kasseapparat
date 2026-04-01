@@ -17,7 +17,7 @@ To initialize the project, download all dependencies, and start the infrastructu
 
 ```bash
 mise run setup
-````
+```
 
 Afterward, boot up the entire stack (Backend + Frontend) with hot-reloading enabled:
 
@@ -57,5 +57,3 @@ We enforce strict code quality rules for both Go and TypeScript.
 - `mise run build` - Compile both frontend and backend into the /dist directory.
 - `mise run docker:build` - Build the production-ready Docker image (kasseapparat:latest).
 - `mise run docker:build --clean` - Force a fresh build without cache and pull the latest base images.
-
-

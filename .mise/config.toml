@@ -1,3 +1,6 @@
+[settings]
+node = { corepack = true }
+
 [tools]
 node = "25"
 go = "1.26"
@@ -8,25 +11,8 @@ overmind = "latest"
 docker-cli = "latest"
 tmux = "latest"
 "go:github.com/icholy/gomajor" = "latest"
-
-# ==========================================
-# ⚙️ SETUP & INITIALIZATION
-# ==========================================
-
-[tasks.setup]
-description = "Initial project setup"
-run = """
-  # ensure .env files exist
-  cd backend && [ -f .env ] || cp .env.example .env
-  cd backend && [ -d data ] || mkdir data
-
-  # Dependencies
-  mise run deps:install
-
-  # Infra Check
-  docker info >/dev/null 2>&1 || (echo "❌ Docker is not running!" && exit 1)
-  mise run infra:up
-"""
+actionlint = "latest"
+shellcheck = "latest"
 
 # ==========================================
 # 💻 DEVELOPMENT
@@ -97,10 +83,22 @@ flag "--fix" help="Automatically fix linting issues"
 run = """
   : "🚦 Orchestration (Auto-Fix: ${usage_fix:-false})"
   if [ "$usage_fix" = "true" ]; then
-    mise run be:lint --fix ::: fe:lint --fix
+    mise run be:lint --fix ::: fe:lint --fix ::: actions:lint ::: sh:lint
   else
-    mise run be:lint ::: fe:lint
+    mise run be:lint ::: fe:lint ::: actions:lint ::: sh:lint
   fi
+"""
+
+[tasks."actions:lint"]
+description = "Lint GitHub Actions workflows"
+dir = ".github/workflows"
+run = "actionlint"
+
+[tasks."sh:lint"]
+description = "Lint shell scripts using shellcheck"
+run = """
+  : "🐚 Shellcheck (Bash Scripts)"
+  find .mise/tasks -type f -exec shellcheck {} +
 """
 
 # ==========================================

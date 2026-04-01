@@ -4,12 +4,13 @@
 #USAGE flag "--fix" help="Automatically fix linting issues"
 
 set -e
+FIX_MODE="${usage_fix:-false}"
 
-echo "🚀 Backend (Auto-Fix: ${usage_fix:-false})"
+echo "🚀 Backend (Auto-Fix: $FIX_MODE)"
 mkdir -p cmd/assets
 touch cmd/assets/index.html
 
-if [ "$usage_fix" = "true" ]; then
+if [ "$FIX_MODE" = "true" ]; then
     go fmt ./...
     golangci-lint run --fix
     dotenv-linter fix . --no-backup --ignore-checks QuoteCharacter,ValueWithoutQuotes

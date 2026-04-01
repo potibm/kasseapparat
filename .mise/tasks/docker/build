@@ -5,16 +5,17 @@
 
 set -e 
 
-EXTRA_FLAGS=""
+CLEAN_MODE="${usage_clean:-false}"
 
-if [ "$usage_clean" = "true" ]; then
+EXTRA_FLAGS=()
+if [ "$CLEAN_MODE" = "true" ]; then
     echo "🧹 Clean-Mode aktiviert: Leere Docker Buildx Cache..."
     docker buildx prune -f
     
     echo "⬇️ Erzwinge Download der neuesten Base-Images..."
     # --pull zwingt Docker, online nach neueren Base-Images zu suchen
     # --no-cache ignoriert alle lokalen Build-Schritte und baut zu 100% neu
-    EXTRA_FLAGS="--pull --no-cache"
+    EXTRA_FLAGS=("--pull" "--no-cache")
 fi
 
 echo "🚀 Building Docker image 'kasseapparat'..."
@@ -31,7 +32,7 @@ docker buildx build \
     --build-arg BUILD_DATE="$BUILD_DATE" \
     --tag kasseapparat:latest \
     --tag "kasseapparat:$VERSION" \
-    $EXTRA_FLAGS \
+    "${EXTRA_FLAGS[@]}" \
     --load \
     .
 
