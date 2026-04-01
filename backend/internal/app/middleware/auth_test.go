@@ -29,15 +29,6 @@ func (m *MockAuthRepo) GetUserByLoginAndPassword(l, p string) (*models.User, err
 func TestAuthMethods(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	t.Run("PayloadFunc: Correct Mapping", func(t *testing.T) {
-		f := payloadFunc()
-		user := &models.User{ID: 123}
-
-		claims := f(user)
-
-		assert.Equal(t, uint(123), claims[IdentityKey])
-	})
-
 	t.Run("IdentityHandler: Extraction from Claims", func(t *testing.T) {
 		f := identityHandler()
 		w := httptest.NewRecorder()

@@ -44,12 +44,12 @@ func InitializeHttpServer(
 
 	r = gin.New()
 	r.Use(
+		middleware.ErrorHandlingMiddleware(),
 		gin.Recovery(),
 		sentrygin.New(sentrygin.Options{
 			Repanic: false,
 		}),
 		sloggin.New(logger),
-		middleware.ErrorHandlingMiddleware(),
 		otelgin.Middleware("kasseapparat-backend"),
 	)
 

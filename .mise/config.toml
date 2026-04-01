@@ -29,18 +29,33 @@ run = "overmind s"
 
 [tasks."be:dev"]
 description = "Start backend in development mode with hot reload"
-run = """
-  cd backend &&
-  air
-"""
+dir="backend"
+run = "exec air"
 
 [tasks."fe:dev"]
 description = "Start frontend in development mode with hot reload"
+dir="frontend"
+run = "exec corepack yarn dev"
+
+[tasks."be:test"]
+description = "Run backend tests with coverage"
+dir = "backend"
 run = """
-  cd frontend &&
-  corepack yarn dev
+  mkdir -p cmd/assets &&
+  touch cmd/assets/index.html &&
+  go test -v -coverprofile=coverage.out ./... &&
+  go tool cover -html=coverage.out -o coverage.html
 """
-  
+
+[tasks."fe:test"]
+description = "Run frontend tests with coverage"
+dir = "frontend"
+run = 'NODE_OPTIONS="--no-webstorage" corepack yarn vitest run --coverage'
+
+[tasks."test"]
+description = "Run all tests with coverage"
+run = "mise run be:test ::: fe:test"
+
 [tasks."infra:up"]
 description = "Start infrastructure services"
 run = """	
@@ -63,4 +78,65 @@ description = "Restart infrastructure services"
 run = """
   mise run infra:down
   mise run infra:up
+"""
+
+# ==========================================
+# 🔍 LINTING 
+# ==========================================
+
+[tasks."be:lint"]
+description = "Lint backend code (pass --fix to auto-fix)"
+dir = "backend"
+usage = """
+flag "--fix" help="Automatically fix linting issues"
+"""
+run = """
+  : "🚀 Backend (Auto-Fix: ${usage_fix:-false})"
+  mkdir -p cmd/assets
+  touch cmd/assets/index.html
+
+  if [ "$usage_fix" = "true" ]; then
+    go fmt ./...
+    golangci-lint run --fix
+    dotenv-linter fix . --no-backup --ignore-checks QuoteCharacter,ValueWithoutQuotes
+  
+  else
+    golangci-lint run
+    dotenv-linter check . --ignore-checks QuoteCharacter,ValueWithoutQuotes
+  fi
+"""
+
+[tasks."fe:lint"]
+description = "Lint frontend code (pass --fix to auto-fix)"
+dir = "frontend"
+usage = """
+flag "--fix" help="Automatically fix linting issues"
+"""
+run = """
+  : "🎨 Frontend (Auto-Fix: ${usage_fix:-false})"
+  if [ "$usage_fix" = "true" ]; then
+    corepack yarn run prettier .. --write
+    corepack yarn run eslint --fix
+    dotenv-linter fix . --no-backup
+    corepack yarn run tsc --noEmit
+  else
+    corepack yarn run tsc --noEmit
+    corepack yarn run eslint
+    corepack yarn run prettier .. --check
+    dotenv-linter check .
+  fi
+"""
+
+[tasks.lint]
+description = "Lint the whole project (pass --fix to auto-fix)"
+usage = """
+flag "--fix" help="Automatically fix linting issues"
+"""
+run = """
+  : "🚦 Orchestration (Auto-Fix: ${usage_fix:-false})"
+  if [ "$usage_fix" = "true" ]; then
+    mise run be:lint --fix ::: fe:lint --fix
+  else
+    mise run be:lint ::: fe:lint
+  fi
 """

@@ -12,7 +12,6 @@ import (
 	ginjwtCore "github.com/appleboy/gin-jwt/v3/core"
 	"github.com/appleboy/gin-jwt/v3/store"
 	"github.com/gin-gonic/gin"
-	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/potibm/kasseapparat/internal/app/exitcode"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
@@ -146,18 +145,6 @@ func authenticator(repo *sqliteRepo.Repository) func(c *gin.Context) (any, error
 		}
 
 		return nil, ginjwt.ErrFailedAuthentication
-	}
-}
-
-func payloadFunc() func(data any) jwt.MapClaims {
-	return func(data any) jwt.MapClaims {
-		if v, ok := data.(*models.User); ok {
-			return jwt.MapClaims{
-				IdentityKey: v.ID,
-			}
-		}
-
-		return jwt.MapClaims{}
 	}
 }
 
