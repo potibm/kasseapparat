@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	validRedisURL = "redis://:password@localhost:6379/0"
+	validRedisURL  = "redis://:password@localhost:6379/0"
+	validRedisHost = "localhost:6379"
 )
 
 func TestLoadRedisConfigWithEmptyEnv(t *testing.T) {
@@ -36,7 +37,7 @@ func TestLoadRedisConfigWithValidEnv(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, "localhost:6379", cfg.Host)
+	assert.Equal(t, validRedisHost, cfg.Host)
 	assert.Equal(t, "/0", cfg.Path)
 
 	if assert.NotNil(t, cfg.User) {
@@ -74,13 +75,13 @@ func TestJwtConfigWithValidRedisConfig(t *testing.T) {
 	redisConfig := RedisConfig{
 		Scheme: "redis",
 		User:   url.UserPassword("username", "password"),
-		Host:   "localhost:6379",
+		Host:   validRedisHost,
 		Path:   "/1",
 	}
 
 	jwtConfig := redisConfig.JwtConfig()
 
-	assert.Equal(t, "localhost:6379", jwtConfig.Addr)
+	assert.Equal(t, validRedisHost, jwtConfig.Addr)
 	assert.Equal(t, "password", jwtConfig.Password)
 	assert.Equal(t, 1, jwtConfig.DB)
 }
@@ -89,12 +90,12 @@ func TestJwtConfigWithMissingPath(t *testing.T) {
 	redisConfig := RedisConfig{
 		Scheme: "redis",
 		User:   url.UserPassword("username", "password"),
-		Host:   "localhost:6379",
+		Host:   validRedisHost,
 	}
 
 	jwtConfig := redisConfig.JwtConfig()
 
-	assert.Equal(t, "localhost:6379", jwtConfig.Addr)
+	assert.Equal(t, validRedisHost, jwtConfig.Addr)
 	assert.Equal(t, "password", jwtConfig.Password)
 	assert.Equal(t, 0, jwtConfig.DB)
 }
@@ -103,13 +104,13 @@ func TestJwtConfigWithInvalidPath(t *testing.T) {
 	redisConfig := RedisConfig{
 		Scheme: "redis",
 		User:   url.UserPassword("username", "password"),
-		Host:   "localhost:6379",
+		Host:   validRedisHost,
 		Path:   "/invalid",
 	}
 
 	jwtConfig := redisConfig.JwtConfig()
 
-	assert.Equal(t, "localhost:6379", jwtConfig.Addr)
+	assert.Equal(t, validRedisHost, jwtConfig.Addr)
 	assert.Equal(t, "password", jwtConfig.Password)
 	assert.Equal(t, 0, jwtConfig.DB)
 }
@@ -118,12 +119,12 @@ func TestJwtConfigWithoutPassword(t *testing.T) {
 	redisConfig := RedisConfig{
 		Scheme: "redis",
 		User:   url.User("username"),
-		Host:   "localhost:6379",
+		Host:   validRedisHost,
 		Path:   "/0",
 	}
 
 	jwtConfig := redisConfig.JwtConfig()
 
-	assert.Equal(t, "localhost:6379", jwtConfig.Addr)
+	assert.Equal(t, validRedisHost, jwtConfig.Addr)
 	assert.Equal(t, "", jwtConfig.Password)
 }

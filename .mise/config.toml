@@ -13,6 +13,7 @@ tmux = "latest"
 "go:github.com/icholy/gomajor" = "latest"
 actionlint = "latest"
 shellcheck = "latest"
+jq = "latest"
 
 # ==========================================
 # 💻 DEVELOPMENT
