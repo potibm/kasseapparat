@@ -14,6 +14,7 @@ tmux = "latest"
 actionlint = "latest"
 shellcheck = "latest"
 jq = "latest"
+"npm:prettier" = "latest"
 
 # ==========================================
 # 💻 DEVELOPMENT
@@ -84,9 +85,9 @@ flag "--fix" help="Automatically fix linting issues"
 run = """
   : "🚦 Orchestration (Auto-Fix: ${usage_fix:-false})"
   if [ "$usage_fix" = "true" ]; then
-    mise run be:lint --fix ::: fe:lint --fix ::: actions:lint ::: sh:lint
+    mise run be:lint --fix ::: fe:lint --fix ::: actions:lint ::: sh:lint ::: repo:lint --fix
   else
-    mise run be:lint ::: fe:lint ::: actions:lint ::: sh:lint
+    mise run be:lint ::: fe:lint ::: actions:lint ::: sh:lint ::: repo:lint
   fi
 """
 
