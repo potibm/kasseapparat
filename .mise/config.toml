@@ -7,6 +7,11 @@ air = "latest"
 overmind = "latest"
 docker-cli = "latest"
 tmux = "latest"
+"go:github.com/icholy/gomajor" = "latest"
+
+# ==========================================
+# ⚙️ SETUP & INITIALIZATION
+# ==========================================
 
 [tasks.setup]
 description = "Initial project setup"
@@ -23,6 +28,10 @@ run = """
   mise run infra:up
 """
 
+# ==========================================
+# 💻 DEVELOPMENT
+# ==========================================
+
 [tasks."dev"]
 description = "Start development environment with hot reload for backend and frontend"
 run = "overmind s"
@@ -36,6 +45,14 @@ run = "exec air"
 description = "Start frontend in development mode with hot reload"
 dir="frontend"
 run = "exec corepack yarn dev"
+
+# ==========================================
+# 🧪 TESTING
+# ==========================================
+
+[tasks."test"]
+description = "Run all tests with coverage"
+run = "mise run be:test ::: fe:test"
 
 [tasks."be:test"]
 description = "Run backend tests with coverage"
@@ -52,22 +69,10 @@ description = "Run frontend tests with coverage"
 dir = "frontend"
 run = 'NODE_OPTIONS="--no-webstorage" corepack yarn vitest run --coverage'
 
-[tasks."test"]
-description = "Run all tests with coverage"
-run = "mise run be:test ::: fe:test"
 
-[tasks."infra:up"]
-description = "Start infrastructure services"
-run = """	
-    docker compose up -d --force-recreate --remove-orphans
-    echo ""
-    echo "🚀 --- INFRASTRUCTURE DASHBOARD ---"
-    echo "📧 Mailhog:       http://localhost:8025"
-    echo "📊 OpenObserve:   http://localhost:8027 (admin@example.com / password123)"
-    echo "🔍 RedisInsight:  http://localhost:8026"
-    echo "📈 OTel gRPC:     localhost:4317"
-    echo "----------------------------------"
-"""
+# ==========================================
+# 🐳 INFRASTRUCTURE
+# ==========================================
 
 [tasks."infra:down"]
 description = "Stop infrastructure services"
@@ -84,49 +89,6 @@ run = """
 # 🔍 LINTING 
 # ==========================================
 
-[tasks."be:lint"]
-description = "Lint backend code (pass --fix to auto-fix)"
-dir = "backend"
-usage = """
-flag "--fix" help="Automatically fix linting issues"
-"""
-run = """
-  : "🚀 Backend (Auto-Fix: ${usage_fix:-false})"
-  mkdir -p cmd/assets
-  touch cmd/assets/index.html
-
-  if [ "$usage_fix" = "true" ]; then
-    go fmt ./...
-    golangci-lint run --fix
-    dotenv-linter fix . --no-backup --ignore-checks QuoteCharacter,ValueWithoutQuotes
-  
-  else
-    golangci-lint run
-    dotenv-linter check . --ignore-checks QuoteCharacter,ValueWithoutQuotes
-  fi
-"""
-
-[tasks."fe:lint"]
-description = "Lint frontend code (pass --fix to auto-fix)"
-dir = "frontend"
-usage = """
-flag "--fix" help="Automatically fix linting issues"
-"""
-run = """
-  : "🎨 Frontend (Auto-Fix: ${usage_fix:-false})"
-  if [ "$usage_fix" = "true" ]; then
-    corepack yarn run prettier .. --write
-    corepack yarn run eslint --fix
-    dotenv-linter fix . --no-backup
-    corepack yarn run tsc --noEmit
-  else
-    corepack yarn run tsc --noEmit
-    corepack yarn run eslint
-    corepack yarn run prettier .. --check
-    dotenv-linter check .
-  fi
-"""
-
 [tasks.lint]
 description = "Lint the whole project (pass --fix to auto-fix)"
 usage = """
@@ -139,4 +101,116 @@ run = """
   else
     mise run be:lint ::: fe:lint
   fi
+"""
+
+# ==========================================
+# 📦 DEPENDENCIES
+# ==========================================
+
+[tasks."deps:install"]
+description = "Install all dependencies (Backend & Frontend)"
+run = "mise run be:deps:install ::: fe:deps:install"
+
+[tasks."be:deps:install"]
+description = "Install backend dependencies"
+dir = "backend"
+run = """
+  : "🚀 Install Backend Deps"
+  go mod download
+"""
+
+[tasks."fe:deps:install"]
+description = "Install frontend dependencies"
+dir = "frontend"
+run = """
+  : "🎨 Install Frontend Deps"
+  corepack yarn install
+"""
+
+# --- UPDATE TASKS ---
+
+[tasks."deps:update"]
+description = "Update all dependencies across the project"
+run = """
+  mise run be:deps:update
+  mise run fe:deps:update
+  mise run actions:deps:update
+"""
+
+[tasks."be:deps:update"]
+description = "Update backend dependencies"
+dir = "backend"
+run = """
+  : "🚀 Update Backend Deps"
+  go get -u -t ./...
+  go mod tidy
+  gomajor list
+"""
+
+[tasks."fe:deps:update"]
+description = "Update frontend dependencies (Interactive)"
+dir = "frontend"
+run = """
+  : "🎨 Update Frontend Deps"
+  corepack yarn up -R
+  corepack yarn upgrade-interactive
+"""
+
+[tasks."actions:deps:update"]
+description = "Update GitHub Actions versions"
+run = """
+  : "🐙 Update GitHub Actions"
+  npx actions-up
+"""
+
+# ==========================================
+# 🎭 END-TO-END TESTS (Playwright)
+# ==========================================
+
+[tasks."e2e:install"]
+description = "Install Playwright browsers and system dependencies"
+dir = "frontend"
+run = """
+  : "🌍 Installing Playwright Browsers..."
+  corepack yarn playwright install
+"""
+
+[tasks."e2e:setup"]
+description = "Seed and prepare the E2E test database"
+dir = "backend"
+hide = true
+run = """
+  : "🛠️ Create and copy test database..."
+  go run ./tools/main.go --seed-with-test --purge --db-file "e2e-clean"
+  cp data/e2e-clean.db data/e2e-work.db
+"""
+
+[tasks."e2e:run"]
+description = "Run Playwright E2E tests"
+dir = "frontend"
+# mise wartet automatisch, bis das Setup fehlerfrei durchgelaufen ist!
+depends = ["e2e:install", "e2e:setup"]
+run = """
+  : "🎭 Running Playwright Tests..."
+  corepack yarn playwright test
+"""
+
+[tasks."e2e:report"]
+description = "Show Playwright E2E test report"
+dir = "frontend"
+run = """
+  : "📊 Opening Playwright Report..."
+  corepack yarn playwright show-report
+"""
+
+# ==========================================
+# 🛡️ SECURITY
+# ==========================================
+
+[tasks."be:sec"]
+description = "Run gosec security scanner for backend"
+dir = "backend"
+run = """
+  : "🕵️‍♂️ Running gosec..."
+  gosec ./...
 """

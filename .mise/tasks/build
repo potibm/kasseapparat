@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#MISE description="Build frontend and backend into dist directory"
+
+set -e 
+
+echo "🏗️ Starting full build process..."
+
+# 1. Generate Version
+VERSION="0.0.$(date +%y%m%d%H%M)"
+DIST_DIR="dist"
+echo "📦 Building Version: $VERSION"
+
+# 2. Build frontend
+rm -rf backend/cmd/assets
+mkdir -p backend/cmd/assets
+cd frontend 
+corepack yarn build --outDir ../backend/cmd/assets -m production
+cd ..
+
+# 3. Build backend
+mkdir -p $DIST_DIR
+cd backend
+go build -ldflags "-X main.version=$VERSION" -o ../$DIST_DIR/kasseapparat ./cmd/main.go
+go build -ldflags "-X main.version=$VERSION" -o ../$DIST_DIR/kasseapparat-tool ./tools/main.go
+cd ..
+
+# 4. Prepare artefacts
+[ -f $DIST_DIR/.env ] || cp backend/.env.example $DIST_DIR/.env
+mkdir -p $DIST_DIR/data
+cd $DIST_DIR 
+./kasseapparat-tool --seed --purge
+
+echo "✅ Build complete in ./$DIST_DIR"

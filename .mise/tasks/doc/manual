@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#MISE description="Generate manual.pdf from markdown using Docker"
+
+set -e
+
+echo "🧹 Removing old manual..."
+rm -f doc/manual.pdf
+
+echo "🐳 Building PDF converter image..."
+docker buildx build \
+    --platform linux/amd64 \
+    -t md-to-pdf-converter tools/md-to-pdf \
+    --load
+
+echo "📄 Generating manual.pdf..."
+docker run --platform linux/amd64 --rm \
+    -v "$PWD/doc:/app" \
+    --shm-size=1g \
+    md-to-pdf-converter manual.md
+
+echo "📁 Moving PDF to frontend public folder..."
+mkdir -p frontend/public
+mv doc/manual.pdf frontend/public/manual.pdf

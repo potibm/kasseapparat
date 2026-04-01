@@ -164,9 +164,5 @@ export class ApiError extends Error {
     if (data && typeof data === "object") {
       this.details = (data as Record<string, unknown>).details;
     }
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ApiError);
-    }
   }
 }

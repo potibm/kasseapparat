@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#MISE description="Lint frontend code (pass --fix to auto-fix)"
+#MISE dir="{{cwd}}/frontend"
+#USAGE flag "--fix" help="Automatically fix linting issues"
+
+set -e
+
+echo "🎨 Frontend (Auto-Fix: ${usage_fix:-false})"
+if [ "$usage_fix" = "true" ]; then
+    corepack yarn run prettier .. --write
+    corepack yarn run eslint --fix
+    dotenv-linter fix . --no-backup
+    corepack yarn run tsc --noEmit
+else
+    corepack yarn run tsc --noEmit
+    corepack yarn run eslint
+    corepack yarn run prettier .. --check
+    dotenv-linter check .
+fi
