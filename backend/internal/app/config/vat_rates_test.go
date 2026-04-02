@@ -7,6 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	vatRateZeroRateName = "Zero rate"
+	vatRateStandardName = "Standard"
+)
+
 func TestDetermineVatRates(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -20,8 +25,8 @@ func TestDetermineVatRates(t *testing.T) {
 				"2": "0:Zero rate",
 			},
 			expected: VatRatesConfig{
-				{Rate: 0, Name: "Zero rate"},
-				{Rate: 25, Name: "Standard"},
+				{Rate: 0, Name: vatRateZeroRateName},
+				{Rate: 25, Name: vatRateStandardName},
 			},
 		},
 		{
@@ -55,8 +60,8 @@ func TestDetermineVatRates(t *testing.T) {
 
 func TestVatRatesConfigJson(t *testing.T) {
 	vatRates := VatRatesConfig{
-		{Rate: 25, Name: "Standard"},
-		{Rate: 0, Name: "Zero rate"},
+		{Rate: 25, Name: vatRateStandardName},
+		{Rate: 0, Name: vatRateZeroRateName},
 	}
 
 	expectedJson := `[{"rate":25,"name":"Standard"},{"rate":0,"name":"Zero rate"}]`
@@ -86,8 +91,8 @@ func TestLoadVatRates(t *testing.T) {
 	t.Setenv("VAT_RATES_2", "0:Zero rate")
 
 	expected = VatRatesConfig{
-		{Rate: 0, Name: "Zero rate"},
-		{Rate: 12, Name: "Standard"},
+		{Rate: 0, Name: vatRateZeroRateName},
+		{Rate: 12, Name: vatRateStandardName},
 	}
 	result = loadVATRates()
 	assert.Equal(t, expected, result)
