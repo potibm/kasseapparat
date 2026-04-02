@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Lint backend code (pass --fix to auto-fix)"
-#MISE dir="{{cwd}}/backend"
+#MISE dir="./backend"
 #USAGE flag "--fix" help="Automatically fix linting issues"
 
 set -e

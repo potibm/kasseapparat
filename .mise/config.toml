@@ -43,10 +43,9 @@ run = "mise run be:test ::: fe:test"
 [tasks."be:test"]
 description = "Run backend tests with coverage"
 dir = "backend"
+depends = ["be:setup"]
 run = """
-  mkdir -p cmd/assets &&
-  touch cmd/assets/index.html &&
-  go test -v -coverprofile=coverage.out ./... &&
+  go test -v -coverprofile=coverage.out ./... 
   go tool cover -html=coverage.out -o coverage.html
 """
 
@@ -177,12 +176,9 @@ run = """
 description = "Seed and prepare the E2E test database"
 dir = "backend"
 hide = true
+depends = ["be:setup"]
 run = """
   : "🛠️ Create and copy test database..."
-  mkdir -p ./data
-  if [ -f .env ]; then
-    cp .env.example .env
-  fi
   go run ./tools/main.go --seed-with-test --purge --db-file "e2e-clean"
   cp data/e2e-clean.db data/e2e-work.db
 """

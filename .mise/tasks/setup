@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Initial project setup"
-
-# ensure .env files exist
-cd backend && [ -f .env ] || cp .env.example .env
-cd backend && [ -d data ] || mkdir data
+#MISE depends=["be:setup"]
 
 # Dependencies
 mise run deps:install
