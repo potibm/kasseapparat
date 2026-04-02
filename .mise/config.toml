@@ -53,7 +53,7 @@ run = """
 [tasks."fe:test"]
 description = "Run frontend tests with coverage"
 dir = "frontend"
-run = 'NODE_OPTIONS="--no-webstorage" npm run test run --coverage'
+run = 'NODE_OPTIONS="--no-webstorage" npm run test run -- --coverage'
 
 
 # ==========================================
@@ -179,6 +179,10 @@ dir = "backend"
 hide = true
 run = """
   : "🛠️ Create and copy test database..."
+  mkdir -p ./data
+  if [ -f .env ] then
+    cp .env.example .env
+  fi
   go run ./tools/main.go --seed-with-test --purge --db-file "e2e-clean"
   cp data/e2e-clean.db data/e2e-work.db
 """

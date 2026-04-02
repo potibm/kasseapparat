@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Build docker image"
-#MISE depends="docker:prepare"
+#MISE depends=["docker:prepare"]
 #USAGE flag "--clean" help="Prune buildx cache, disable cache and force pull latest base images"
 
 set -e 
@@ -9,12 +9,10 @@ CLEAN_MODE="${usage_clean:-false}"
 
 EXTRA_FLAGS=()
 if [ "$CLEAN_MODE" = "true" ]; then
-    echo "🧹 Clean-Mode aktiviert: Leere Docker Buildx Cache..."
+    echo "🧹 clean mode activated: empty buildx cache"
     docker buildx prune -f
     
-    echo "⬇️ Erzwinge Download der neuesten Base-Images..."
-    # --pull zwingt Docker, online nach neueren Base-Images zu suchen
-    # --no-cache ignoriert alle lokalen Build-Schritte und baut zu 100% neu
+    echo "⬇️ Enforce pulling latest base images and disable cache for a clean build"
     EXTRA_FLAGS=("--pull" "--no-cache")
 fi
 
