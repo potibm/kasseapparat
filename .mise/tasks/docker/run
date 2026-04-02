@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#MISE description="Run docker image"
+
+set -e 
+
+if ! docker image inspect kasseapparat:latest >/dev/null 2>&1; then \
+    echo "❌ Docker image 'kasseapparat:latest' not found. Please run 'mise run docker:build' first."; \
+	exit 1; \
+fi
+
+docker run -p 3003:8080 \
+	-e "CORS_ALLOW_ORIGINS=http://localhost:3003" \
+	-v ./backend/data:/app/data \
+	kasseapparat:latest

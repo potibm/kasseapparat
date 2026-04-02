@@ -33,7 +33,7 @@ func (m *mockSqliteRepo) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
 	return purchase, args.Error(1)
 }
 
-// Mock for the Sumup Repository.
+// Mock for the SumUp Repository.
 type mockSumupRepo struct {
 	sumup.RepositoryInterface
 	mock.Mock
@@ -69,7 +69,7 @@ func setupTestServer(t *testing.T) (*Handler, *httptest.Server, *mockSqliteRepo,
 		sqliteRepository: mockSqlite,
 		sumupRepository:  mockSumup,
 		upgrader: websocket.Upgrader{
-			// Erlaube im Test alle Origins
+			// Allow testing from any origin.
 			CheckOrigin: func(r *http.Request) bool { return true },
 		},
 	}
@@ -91,7 +91,7 @@ func TestHandleTransactionWebSocketAuthFailures(t *testing.T) {
 	dialer := websocket.DefaultDialer
 
 	t.Run("Missing Token", func(t *testing.T) {
-		// Keine Header übergeben
+		// No headers
 		_, resp, err := dialer.Dial(wsURL, nil)
 		require.Error(t, err)
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)

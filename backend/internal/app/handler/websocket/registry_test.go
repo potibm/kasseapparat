@@ -144,7 +144,7 @@ func TestPushUpdateSendError(t *testing.T) {
 
 	// get a real server-side connection to test the full flow of PushUpdate
 	conn, cleanup := getServerSideConn(t)
-	conn.Close() // Provozieren des Fehlers
+	conn.Close() // Cause an error
 
 	defer cleanup()
 

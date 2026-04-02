@@ -16,10 +16,26 @@ It is a simple point of sale (POS) system aimed at [demoparties](https://en.wiki
   - [Tailwind CSS](https://tailwindcss.com)
   - [React Admin](https://marmelab.com/react-admin/)
 - [SQLite](https://www.sqlite.org)
-- Make
+- [mise](https://mise.jdx.dev/)
+
+## Quickstart
+
+We use `mise` to automatically manage all tool versions (Go, Node, etc.) and project tasks.
+
+```bash
+# 1. Install mise (if not already installed)
+curl https://mise.run | sh
+
+# 2. Setup the project (installs dependencies and starts infra)
+mise run setup
+
+# 3. Start the development server (hot-reload for backend & frontend)
+mise run dev
+```
 
 ## Documentation
 
+- [Developer Guide](doc/dev.md)
 - [Admin Documentation](doc/admin.md)
 - [User Documentation](doc/manual.md)
 - [SumUp Integration Documentation](doc/sumup.md)

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	ginjwtCore "github.com/appleboy/gin-jwt/v3/core"
 	"github.com/gin-gonic/gin"
@@ -26,17 +27,38 @@ func (m *MockAuthRepo) GetUserByLoginAndPassword(l, p string) (*models.User, err
 	return args.Get(0).(*models.User), args.Error(1)
 }
 
+func TestInitParams(t *testing.T) {
+	t.Run("Should return valid GinJWTMiddleware with correct parameters", func(t *testing.T) {
+		mockRepo := new(MockAuthRepo)
+		realm := "test-realm"
+		secret := "super-secret-key-that-is-long-enough"
+		timeout := 10
+		secureCookie := true
+
+		middleware := InitParams(mockRepo, realm, secret, timeout, secureCookie, nil)
+
+		assert.NotNil(t, middleware)
+		assert.Equal(t, realm, middleware.Realm)
+		assert.Equal(t, []byte(secret), middleware.Key)
+		assert.Equal(t, time.Minute*time.Duration(timeout), middleware.Timeout)
+		assert.Equal(t, secureCookie, middleware.SecureCookie)
+	})
+
+	t.Run("Should return valid GinJWTMiddleware when secret is empty", func(t *testing.T) {
+		mockRepo := new(MockAuthRepo)
+		realm := "test-realm"
+		timeout := 10
+		secureCookie := true
+
+		middleware := InitParams(mockRepo, realm, "", timeout, secureCookie, nil)
+
+		assert.NotNil(t, middleware)
+		assert.Equal(t, []byte("secret"), middleware.Key)
+	})
+}
+
 func TestAuthMethods(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-
-	t.Run("PayloadFunc: Correct Mapping", func(t *testing.T) {
-		f := payloadFunc()
-		user := &models.User{ID: 123}
-
-		claims := f(user)
-
-		assert.Equal(t, uint(123), claims[IdentityKey])
-	})
 
 	t.Run("IdentityHandler: Extraction from Claims", func(t *testing.T) {
 		f := identityHandler()

@@ -50,7 +50,7 @@ export class Cart {
         return this;
       }
 
-      // Immutable Update des Items
+      // Immutable update of the item
       const updatedItem: CartItem = {
         ...existingItem,
         quantity: existingItem.quantity + count,

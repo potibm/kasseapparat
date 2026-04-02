@@ -36,10 +36,8 @@ describe("Auth Storage Service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Wir leeren den Speicher vor jedem Test
     localStorage.clear();
 
-    // Spies einrichten
     getItemSpy = vi.spyOn(Storage.prototype, "getItem");
     setItemSpy = vi.spyOn(Storage.prototype, "setItem");
     removeItemSpy = vi.spyOn(Storage.prototype, "removeItem");
@@ -161,12 +159,11 @@ describe("Auth Storage Service", () => {
     it("should remove all keys defined in AUTH_KEYS from localStorage", () => {
       clearAuthStorage();
 
-      // Prüfen, ob für jeden Wert in AUTH_KEYS removeItem gerufen wurde
       Object.values(AUTH_KEYS).forEach((key) => {
         expect(removeItemSpy).toHaveBeenCalledWith(key);
       });
 
-      // Da wir 3 Keys im Objekt haben, sollte es exakt 3 mal aufgerufen worden sein
+      // as we have 3 keys in AUTH_KEYS, it should be called exactly 3 times
       expect(removeItemSpy).toHaveBeenCalledTimes(
         Object.keys(AUTH_KEYS).length,
       );

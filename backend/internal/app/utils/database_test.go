@@ -70,7 +70,7 @@ func TestMigrateAndPurgeDatabase(t *testing.T) {
 		PurgeDatabase(db)
 	})
 
-	// Prüfen, ob die Tabellen wirklich wieder gelöscht wurden
+	// Check if the tables were actually dropped
 	assert.False(t, db.Migrator().HasTable(&models.User{}), "User table should be dropped after purge")
 	assert.False(t, db.Migrator().HasTable(&models.Product{}), "Product table should be dropped after purge")
 }
@@ -82,10 +82,10 @@ func TestSeedDatabase(t *testing.T) {
 	MigrateDatabase(db)
 
 	assert.NotPanics(t, func() {
-		SeedDatabase(db, true) // Teste mit includeTestData = true
+		SeedDatabase(db, true) // Test with includeTestData = true
 	})
 
 	assert.NotPanics(t, func() {
-		SeedDatabase(db, false) // Teste mit includeTestData = false
+		SeedDatabase(db, false) // Test with includeTestData = false
 	})
 }

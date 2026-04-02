@@ -11,7 +11,7 @@ const __dirname = path.resolve();
 const frontendPort = process.env.E2E_PORT
   ? Number.parseInt(process.env.E2E_PORT)
   : 3000;
-const backendTarget = process.env.E2E_API_TARGET || "http://localhost:3001";
+const backendTarget = process.env.E2E_API_TARGET || "http://127.0.0.1:3001";
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), flowbiteReact(), basicSsl()],
@@ -24,6 +24,20 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,
         secure: false,
+        configure: (proxy, _options) => {
+          proxy.on("error", (err, _req, _res) => {
+            //eslint-disable-next-line no-console
+            console.log("proxy error", err);
+          });
+          proxy.on("proxyReq", (proxyReq, req, _res) => {
+            //eslint-disable-next-line no-console
+            console.log(
+              "Vite proxy forwards this request:",
+              req.method,
+              req.url,
+            );
+          });
+        },
       },
     },
   },

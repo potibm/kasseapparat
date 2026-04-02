@@ -30,7 +30,7 @@ func TestRegisterPoller(t *testing.T) {
 		registerPoller(id)
 		unregisterPoller(id)
 
-		// Nach dem Abmelden muss es wieder gehen
+		// After unregistering, we should be able to register again
 		ok := registerPoller(id)
 		assert.True(t, ok, "Registration after unregister should work")
 

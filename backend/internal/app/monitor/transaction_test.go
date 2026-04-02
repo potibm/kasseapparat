@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// Mocks basierend auf deinen Interfaces.
 type MockSqlite struct{ mock.Mock }
 
 func (m *MockSqlite) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error) {
@@ -93,7 +92,7 @@ func TestHandleTransactionPollingSuccess(t *testing.T) {
 		StatusPublisher:  mPub,
 	}
 
-	// 1. Mock: DB liefert Purchase
+	// 1. Mock: DB returns Purchase
 	p := &models.Purchase{
 		ID:                       tID,
 		PaymentMethod:            models.PaymentMethodSumUp,
@@ -101,16 +100,16 @@ func TestHandleTransactionPollingSuccess(t *testing.T) {
 	}
 	mSqlite.On("GetPurchaseByID", tID).Return(p, nil)
 
-	// 2. Mock: SumUp meldet SUCCESSFUL
+	// 2. Mock: SumUp returns SUCCESSFUL
 	mSumup.On("GetTransactionByClientTransactionId", sClientID).Return(&sumupRepo.Transaction{
 		TransactionID: sTransID,
 		Status:        "SUCCESSFUL",
 	}, nil)
 
-	// 3. Mock: Update DB mit SumUp ID
+	// 3. Mock: Update DB with SumUp ID
 	mSqlite.On("UpdatePurchaseSumupTransactionIDByID", tID, sTransID).Return(p, nil)
 
-	// 4. Mock: Service beendet Kauf
+	// 4. Mock: Service finalizes the purchase
 	finalP := &models.Purchase{ID: tID, Status: models.PurchaseStatusConfirmed}
 	mService.On("FinalizePurchase", mock.Anything, tID).Return(finalP, nil)
 	mPub.On("PushUpdate", tID, models.PurchaseStatusConfirmed).Return()
@@ -141,7 +140,7 @@ func TestHandleTransactionPollingNotFound(t *testing.T) {
 	p := &models.Purchase{ID: tID, PaymentMethod: models.PaymentMethodSumUp, SumupClientTransactionID: &sClientID}
 	mSqlite.On("GetPurchaseByID", tID).Return(p, nil)
 
-	// Simuliere NOT_FOUND
+	// Simulate NOT_FOUND
 	mSumup.On("GetTransactionByClientTransactionId", sClientID).Return(nil, fmt.Errorf("SumUp error: NOT_FOUND"))
 
 	mService.On("FailPurchase", mock.Anything, tID).Return(&models.Purchase{Status: models.PurchaseStatusFailed}, nil)

@@ -4,11 +4,10 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "baseUrl": ".",
     "paths": {
-      "@core/*": ["src/core/*"],
-      "@admin/*": ["src/apps/admin/*"],
-      "@pos/*": ["src/apps/pos/*"]
+      "@core/*": ["./src/core/*"],
+      "@admin/*": ["./src/apps/admin/*"],
+      "@pos/*": ["./src/apps/pos/*"]
     },
 
     /* Bundler mode */

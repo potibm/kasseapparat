@@ -9,55 +9,50 @@ permissions: {}
 
 jobs:
   # ==========================================
-  # 1. GOLANG BACKEND
+  # 1. LINTING
   # ==========================================
-  go-linter:
-    name: Go Linter
+  lint:
+    name: Lint & Type Check
     runs-on: ubuntu-latest
     permissions:
       contents: read
       checks: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create assets file
-        run: mkdir -p backend/cmd/assets && touch backend/cmd/assets/index.html
-      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
-        with:
-          cache-dependency-path: backend/go.sum
-          go-version-file: backend/go.mod
-          cache: true
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
-        with:
-          version: v2.4.0
-          working-directory: ./backend
-          args: --timeout=30m --config=.golangci.yaml
 
-  go-test:
-    name: Go Unit Tests
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          install: true
+
+      - name: Install dependencies
+        run: mise run deps:install
+
+      - name: Run Linters (Go, TS, Prettier, Dotenv)
+        run: mise run lint
+
+  # ==========================================
+  # 2. UNIT TESTS
+  # ==========================================
+  test:
+    name: Unit Tests
     runs-on: ubuntu-latest
-    needs: go-linter # wait for go linter to pass first
+    needs: lint
     permissions:
       contents: read
       checks: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create assets file
-        run: mkdir -p backend/cmd/assets && touch backend/cmd/assets/index.html
-      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          cache-dependency-path: backend/go.sum
-          go-version-file: backend/go.mod
-          cache: true
+          install: true
+
       - name: Install dependencies
-        run: go mod download
-        working-directory: backend
-      - name: Build
-        run: go build -v ./cmd/main.go && go build -v ./tools/main.go
-        working-directory: backend
-      - name: Test
-        run: go test -coverprofile=coverage.out ./...
-        working-directory: backend
+        run: mise run deps:install
+
+      - name: Run all tests
+        run: mise run test
+
       - name: Upload Go Coverage
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
@@ -65,57 +60,6 @@ jobs:
           path: backend/coverage.out
           retention-days: 3
 
-  # ==========================================
-  # 2. TYPESCRIPT FRONTEND
-  # ==========================================
-  ts-type-check:
-    name: TS Type Check
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Enable Corepack
-        run: corepack enable && yarn set version stable
-        working-directory: frontend
-      - name: Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-        with:
-          node-version: "25"
-          cache: "yarn"
-          cache-dependency-path: frontend/yarn.lock
-      - name: install
-        run: yarn install --immutable
-        working-directory: frontend
-      - name: Run Type Check
-        run: yarn run tsc --noEmit
-        working-directory: frontend
-
-  ts-test:
-    name: TS Unit Tests
-    runs-on: ubuntu-latest
-    needs: ts-type-check # wait for type check to pass first
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Enable Corepack
-        run: corepack enable && yarn set version stable
-        working-directory: frontend
-      - name: Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-        with:
-          node-version: "25"
-          cache: "yarn"
-          cache-dependency-path: frontend/yarn.lock
-      - name: install
-        run: yarn install --immutable
-        working-directory: frontend
-      - name: test
-        run: corepack yarn vitest run --coverage
-        working-directory: frontend
-        env:
-          NODE_OPTIONS: --no-webstorage
       - name: Upload TS Coverage
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
@@ -130,51 +74,29 @@ jobs:
     name: Playwright E2E
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    needs: [go-test, ts-test]
+    needs: test
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          cache-dependency-path: backend/go.sum
-          go-version-file: backend/go.mod
-          cache: true
+          install: true
 
-      - name: Enable Corepack
-        run: corepack enable && yarn set version stable
-        working-directory: frontend
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-        with:
-          node-version: "25"
-          cache: "yarn"
-          cache-dependency-path: frontend/yarn.lock
-
-      - name: Install Frontend Dependencies
-        run: yarn install --immutable
-        working-directory: frontend
-
-      - name: Install Playwright Browsers
-        run: yarn dlx playwright install --with-deps
-        working-directory: frontend
+      - name: Install dependencies
+        run: mise run deps:install
 
       - name: Create .env file
         run: cp .env.example .env
         working-directory: backend
 
-      - name: Create assets file
-        run: mkdir -p backend/cmd/assets && touch backend/cmd/assets/index.html
-
-      - name: Create database directory
-        run: mkdir -p backend/data
-
-      - name: Create Test Database
-        run: make e2e-setup
-
-      - name: Run Playwright
-        run: corepack yarn playwright test
+      - name: Install Playwright OS Dependencies
         working-directory: frontend
+        run: npx playwright install-deps
+
+      - name: Run E2E Tests
+        run: mise run e2e:run
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -190,34 +112,19 @@ jobs:
   docker-build-check:
     name: Docker Build Check
     runs-on: ubuntu-latest
-    needs: [go-test, ts-test]
+    needs: test
     permissions:
       contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Generate build version
-        id: buildversion
-        run: echo "value=0.0.$(date +%s)" >> "$GITHUB_OUTPUT"
-
-      - name: Generate build date
-        id: builddate
-        run: echo "value=$(date --iso-8601=seconds)" >> "$GITHUB_OUTPUT"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
-
-      - name: Build Docker image (without pushing)
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
-          context: .
-          push: false
-          platforms: linux/amd64
-          tags: my-temp-image:latest
-          build-args: |
-            VERSION=${{ steps.buildversion.outputs.value }}
-            BUILD_DATE=${{ steps.builddate.outputs.value }}
+          install: true
+
+      - name: Build Docker image
+        run: mise run docker:build
 
   # ==========================================
   # 5. SONARQUBE ANALYSIS
@@ -225,7 +132,7 @@ jobs:
   sonarqube:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
-    needs: [go-test, ts-test]
+    needs: test
     permissions:
       contents: read
     steps:
@@ -247,6 +154,6 @@ jobs:
           path: frontend/coverage/
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

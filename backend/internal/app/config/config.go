@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -67,6 +68,7 @@ type Config struct {
 	FrontendURL        string
 	MailerConfig       MailerConfig
 	SumupConfig        SumupConfig
+	RedisConfig        *RedisConfig
 }
 
 func (cfg Config) OutputVersion() {
@@ -90,7 +92,12 @@ func Load(logger *slog.Logger) (Config, error) {
 func loadConfig(logger *slog.Logger) (*Config, error) {
 	corsAllowOriginsConfig, err := loadCorsAllowOrigins()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("load CORS_ALLOW_ORIGINS config: %w", err)
+	}
+
+	redisConfig, err := loadRedisConfig()
+	if err != nil {
+		return nil, fmt.Errorf("load REDIS_URL config: %w", err)
 	}
 
 	return &Config{
@@ -104,6 +111,7 @@ func loadConfig(logger *slog.Logger) (*Config, error) {
 		CorsAllowOrigins:   corsAllowOriginsConfig,
 		MailerConfig:       loadMailerConfig(),
 		SumupConfig:        loadSumupConfig(),
+		RedisConfig:        redisConfig,
 	}, nil
 }
 

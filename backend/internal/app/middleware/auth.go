@@ -10,15 +10,18 @@ import (
 
 	ginjwt "github.com/appleboy/gin-jwt/v3"
 	ginjwtCore "github.com/appleboy/gin-jwt/v3/core"
+	"github.com/appleboy/gin-jwt/v3/store"
 	"github.com/gin-gonic/gin"
-	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/potibm/kasseapparat/internal/app/exitcode"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
+
+type UserAuthenticator interface {
+	GetUserByLoginAndPassword(login, password string) (*models.User, error)
+}
 
 const (
 	RefreshTokenLifetime = 7 * 24 * time.Hour
@@ -88,17 +91,20 @@ func RegisterRoute(r *gin.RouterGroup, handle *ginjwt.GinJWTMiddleware) {
 }
 
 func InitParams(
-	repo *sqliteRepo.Repository,
+	repo UserAuthenticator,
 	realm string,
 	secret string,
 	timeout int,
 	secureCookie bool,
+	redisConfig *store.RedisConfig,
 ) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		slog.Warn("JWT_SECRET is not set, using default value")
 
 		secret = "secret"
 	}
+
+	useRedisStore := redisConfig != nil
 
 	return &ginjwt.GinJWTMiddleware{
 		Realm:      realm,
@@ -118,10 +124,13 @@ func InitParams(
 		Authorizer:      authorizer(),
 		Unauthorized:    unauthorized(),
 		LoginResponse:   loginResponse,
+
+		UseRedisStore: useRedisStore,
+		RedisConfig:   redisConfig,
 	}
 }
 
-func authenticator(repo *sqliteRepo.Repository) func(c *gin.Context) (any, error) {
+func authenticator(repo UserAuthenticator) func(c *gin.Context) (any, error) {
 	return func(c *gin.Context) (any, error) {
 		var loginVals login
 		if err := c.ShouldBind(&loginVals); err != nil {
@@ -139,18 +148,6 @@ func authenticator(repo *sqliteRepo.Repository) func(c *gin.Context) (any, error
 		}
 
 		return nil, ginjwt.ErrFailedAuthentication
-	}
-}
-
-func payloadFunc() func(data any) jwt.MapClaims {
-	return func(data any) jwt.MapClaims {
-		if v, ok := data.(*models.User); ok {
-			return jwt.MapClaims{
-				IdentityKey: v.ID,
-			}
-		}
-
-		return jwt.MapClaims{}
 	}
 }
 

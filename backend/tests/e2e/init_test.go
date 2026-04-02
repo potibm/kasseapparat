@@ -78,7 +78,7 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 	mail, _ := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mail.SetDisabled(true)
 
-	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRp, cfg.JwtConfig)
+	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRp, cfg.JwtConfig, nil)
 
 	purchaseSrvc := purchaseService.NewPurchaseService(
 		sqliteRp,

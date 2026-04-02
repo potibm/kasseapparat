@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#MISE description="Start infrastructure services"
+
+docker compose up -d --force-recreate --remove-orphans
+
+echo ""
+echo "🚀 --- INFRASTRUCTURE DASHBOARD ---"
+echo "📧 Mailhog:       http://localhost:8025"
+echo "📊 OpenObserve:   http://localhost:8027 (admin@example.com / password123)"
+echo "🔍 RedisInsight:  http://localhost:8026"
+echo "📈 OTel gRPC:     localhost:4317"
+echo "----------------------------------"

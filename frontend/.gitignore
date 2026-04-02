@@ -2,8 +2,6 @@
 logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
@@ -22,7 +20,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-.yarn/*
 
 # Playwright
 /test-results/
