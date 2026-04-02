@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	DefaultVatRates                = "[{\"rate\":25,\"name\":\"Standard\"},{\"rate\":0,\"name\":\"Zero rate\"}]"
 	DefaultDateOptions             = "{\"weekday\":\"long\",\"hour\":\"2-digit\",\"minute\":\"2-digit\"}"
 	defaultTraceSampleRate         = 0.1
 	defaultReplaySessionSampleRate = 0.1
@@ -59,7 +58,7 @@ type CorsAllowOriginsConfig []string
 type Config struct {
 	AppConfig          AppConfig
 	FormatConfig       FormatConfig
-	VATRates           string
+	VATRates           VatRatesConfig
 	EnvironmentMessage string
 	PaymentMethods     PaymentMethods
 	SentryConfig       SentryConfig
@@ -103,7 +102,7 @@ func loadConfig(logger *slog.Logger) (*Config, error) {
 	return &Config{
 		AppConfig:          loadAppConfig(),
 		FormatConfig:       loadFormatConfig(logger),
-		VATRates:           getEnvWithJSONValidation(logger, "VAT_RATES", DefaultVatRates),
+		VATRates:           loadVATRates(),
 		EnvironmentMessage: getEnv("ENV_MESSAGE", ""),
 		PaymentMethods:     loadPaymentMethods(),
 		SentryConfig:       loadSentryConfig(),

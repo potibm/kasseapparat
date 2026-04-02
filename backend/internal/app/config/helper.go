@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func getEnv(key, defaultValue string) string {
@@ -60,4 +61,29 @@ func getEnvWithJSONValidation(logger *slog.Logger, key, fallback string) string 
 	}
 
 	return val
+}
+
+func getEnvsWithPrefix(prefix string) map[string]string {
+	const maxParts = 2
+
+	result := make(map[string]string)
+
+	for _, env := range os.Environ() {
+		if !strings.HasPrefix(env, prefix) {
+			continue
+		}
+
+		parts := strings.SplitN(env, "=", maxParts)
+		if len(parts) != maxParts {
+			continue
+		}
+
+		fullKey := parts[0]
+		value := parts[1]
+
+		cleanKey := strings.TrimPrefix(fullKey, prefix)
+		result[cleanKey] = value
+	}
+
+	return result
 }

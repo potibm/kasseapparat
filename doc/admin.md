@@ -39,22 +39,39 @@ On startup you can override the defaults for the webserver port and logging.
 ## create /app/kasseapparat/.env
 
 ```
-JWT_SECRET=1234
-SENTRY_DSN=""
-SENTRY_TRACE_SAMPLE_RATE="0.1"
-SENTRY_REPLAY_SESSION_SAMPLE_RATE="0.1"
-SENTRY_REPLAY_ERROR_SAMPLE_RATE="1"
-LOCALE="da-DE"
-CURRENCY_CODE="EUR"
-FRACTION_DIGITS_MIN="0"
-FRACTION_DIGITS_MAX="2"
-VAT_RATES='[{"rate":0,"name":"Exempt"},{"rate":7,"name":"Reduced"},{"rate":19,"name":"Standard"}]'
-PAYMENT_METHODS="CASH,CC,VOUCHER"
-FRONTEND_URL="https://kasseapparat.example.cp,"
-MAIL_DSN="smtp://username:password@smtp.example.com:587"
-MAIL_FROM="kasseapparat<kasseapparat@example.com>"
-MAIL_SUBJECT_PREFIX="[Kasseapparat] "
-ENV_MESSAGE="This is just a staging system!"
+CORS_ALLOW_ORIGINS=https://localhost:3000,http://localhost:8080
+CURRENCY_CODE=EUR
+CURRENCY_LOCALE=de-DE
+DATE_LOCALE=de-DE
+DATE_OPTIONS_WEEKDAY=long
+DATE_OPTIONS_HOUR=2-digit
+DATE_OPTIONS_MINUTE=2-digit
+ENV_MESSAGE=
+FRACTION_DIGITS_MAX=2
+FRACTION_DIGITS_MIN=0
+FRONTEND_URL=https://localhost:3000
+GIN_MODE=release
+JWT_REALM=Kasseapparat
+JWT_SECRET=secret
+JWT_SECURE_COOKIE=true
+MAIL_DSN=smtp://localhost:2025
+MAIL_FROM=kasseapparat<kasseapparat@example.com>
+MAIL_SUBJECT_PREFIX=[Kasseapparat]
+PAYMENT_METHODS=CASH,CC,SUMUP,VOUCHER
+REDIS_URL="" # leave empty to use in-memory store, redis://127.0.0.1:6379/0
+SENTRY_DSN=
+SENTRY_ENVIRONMENT=development
+SENTRY_REPLAY_ERROR_SAMPLE_RATE=1
+SENTRY_REPLAY_SESSION_SAMPLE_RATE=0.1
+SENTRY_TRACE_SAMPLE_RATE=0.1
+SUMUP_AFFILIATE_KEY=
+SUMUP_API_KEY="" # see doc/sumup.md, sup_sk_LZFWoLyd...
+SUMUP_APPLICATION_ID=
+SUMUP_MERCHANT_CODE=""
+SUMUP_PUBLIC_URL="" # needs to be an https URL
+VAT_RATES_0=0:Exempt
+VAT_RATES_1=7:Reduced
+VAT_RATES_2=19:Standard
 ```
 
 ### JWT_SECRET
