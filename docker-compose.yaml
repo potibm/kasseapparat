@@ -1,0 +1,55 @@
+services:
+  mailhog:
+    image: mailhog/mailhog:latest
+    platform: linux/amd64
+    ports:
+      - "8025:8025" # Web UI
+      - "1025:1025" # SMTP Port
+
+  # Monitoring & logging backend
+  openobserve:
+    image: public.ecr.aws/zinclabs/openobserve:latest
+    environment:
+      - ZO_ROOT_USER_EMAIL=admin@example.com
+      - ZO_ROOT_USER_PASSWORD=password123
+    ports:
+      - "8027:5080" # Web UI
+    volumes:
+      - o2_data:/data
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    volumes:
+      - ./infra/otel-config.yaml:/etc/otel/config.yaml
+      - ./backend/logs:/etc/app/logs:ro
+    command: ["--config=/etc/otel/config.yaml"]
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    depends_on:
+      - openobserve
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    user: root
+    environment:
+      - REDISINSIGHT_HOST=0.0.0.0
+      - RI_ACCEPT_TERMS_AND_CONDITIONS=true
+      - RI_REDIS_ALIAS0=Kasseapparat-Redis
+      - RI_REDIS_HOST0=redis
+      - RI_REDIS_PORT0=6379
+    ports:
+      - "8026:5540"
+    volumes:
+      - ri_data:/data
+    depends_on:
+      - redis
+
+volumes:
+  o2_data:
+  ri_data:

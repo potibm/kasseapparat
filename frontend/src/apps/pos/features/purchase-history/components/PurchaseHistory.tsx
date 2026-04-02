@@ -98,6 +98,7 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
 
       <Table
         striped
+        data-testid="purchase-history-table"
         theme={compactTableTheme}
         className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
@@ -136,6 +137,7 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
                     color="failure"
                     aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
                     onClick={() => setModalState({ show: true, purchase })}
+                    data-testid={`refund-purchase-${purchase.id}`}
                   >
                     <HiReceiptRefund />
                   </Button>

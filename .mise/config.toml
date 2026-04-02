@@ -1,0 +1,213 @@
+[tools]
+node = "25"
+go = "1.26"
+golangci-lint = "2.11.4"
+dotenv-linter = "4.0.0"
+air = "1.64.5"
+overmind = "2.5.1"
+docker-cli = "29.3.1"
+tmux = "3.6a"
+"go:github.com/icholy/gomajor" = "0.15.0"
+actionlint = "1.7.12"
+shellcheck = "0.11.0"
+jq = "1.8.1"
+"aqua:securego/gosec" = "2.25.0"
+vale = "3.14.1"
+
+# ==========================================
+# 💻 DEVELOPMENT
+# ==========================================
+
+[tasks."dev"]
+description = "Start development environment with hot reload for backend and frontend"
+run = "overmind s"
+
+[tasks."be:dev"]
+description = "Start backend in development mode with hot reload"
+dir="backend"
+run = "exec air"
+
+[tasks."fe:dev"]
+description = "Start frontend in development mode with hot reload"
+dir="frontend"
+run = "npm run dev"
+
+# ==========================================
+# 🧪 TESTING
+# ==========================================
+
+[tasks."test"]
+description = "Run all tests with coverage"
+run = "mise run be:test ::: fe:test"
+
+[tasks."be:test"]
+description = "Run backend tests with coverage"
+dir = "backend"
+depends = ["be:setup"]
+run = """
+  go test -v -coverprofile=coverage.out ./... 
+  go tool cover -html=coverage.out -o coverage.html
+"""
+
+[tasks."fe:test"]
+description = "Run frontend tests with coverage"
+dir = "frontend"
+run = 'NODE_OPTIONS="--no-webstorage" npm run test run -- --coverage'
+
+
+# ==========================================
+# 🐳 INFRASTRUCTURE
+# ==========================================
+
+[tasks."infra:down"]
+description = "Stop infrastructure services"
+run = "docker compose down"
+
+[tasks."infra:restart"]
+description = "Restart infrastructure services"
+run = """
+  mise run infra:down
+  mise run infra:up
+"""
+
+# ==========================================
+# 🔍 LINTING 
+# ==========================================
+
+[tasks.lint]
+description = "Lint the whole project (pass --fix to auto-fix)"
+usage = """
+flag "--fix" help="Automatically fix linting issues"
+"""
+run = """
+  : "🚦 Orchestration (Auto-Fix: ${usage_fix:-false})"
+  if [ "$usage_fix" = "true" ]; then
+    mise run be:lint --fix ::: fe:lint --fix ::: actions:lint ::: sh:lint ::: repo:lint --fix
+  else
+    mise run be:lint ::: fe:lint ::: actions:lint ::: sh:lint ::: repo:lint
+  fi
+"""
+
+[tasks."actions:lint"]
+description = "Lint GitHub Actions workflows"
+dir = ".github/workflows"
+run = "actionlint"
+
+[tasks."sh:lint"]
+description = "Lint shell scripts using shellcheck"
+run = """
+  : "🐚 Shellcheck (Bash Scripts)"
+  find .mise/tasks -type f -exec shellcheck {} +
+"""
+
+# ==========================================
+# 📦 DEPENDENCIES
+# ==========================================
+
+[tasks."deps:install"]
+description = "Install all dependencies (Backend & Frontend)"
+run = "mise run be:deps:install ::: fe:deps:install"
+
+[tasks."be:deps:install"]
+description = "Install backend dependencies"
+dir = "backend"
+run = """
+  : "🚀 Install Backend Deps"
+  go mod download
+"""
+
+[tasks."fe:deps:install"]
+description = "Install frontend dependencies"
+dir = "frontend"
+run = """
+  : "🎨 Install Frontend Deps"
+  npm ci
+"""
+
+# --- UPDATE TASKS ---
+
+[tasks."deps:update"]
+description = "Update all dependencies across the project"
+run = """
+  mise run be:deps:update
+  mise run fe:deps:update
+  mise run actions:deps:update
+"""
+
+[tasks."be:deps:update"]
+description = "Update backend dependencies"
+dir = "backend"
+run = """
+  : "🚀 Update Backend Deps"
+  go get -u -t ./...
+  go mod tidy
+  gomajor list
+"""
+
+[tasks."fe:deps:update"]
+description = "Update frontend dependencies (Interactive)"
+dir = "frontend"
+run = """
+  : "🎨 Update Frontend Deps"
+  npx npm-check-updates --interactive --format group
+  npm install
+"""
+
+[tasks."actions:deps:update"]
+description = "Update GitHub Actions versions"
+run = """
+  : "🐙 Update GitHub Actions"
+  npx actions-up
+"""
+
+# ==========================================
+# 🎭 END-TO-END TESTS (Playwright)
+# ==========================================
+
+[tasks."e2e:install"]
+description = "Install Playwright browsers and system dependencies"
+dir = "frontend"
+run = """
+  : "🌍 Installing Playwright Browsers..."
+  npx playwright install --with-deps
+"""
+
+[tasks."e2e:setup"]
+description = "Seed and prepare the E2E test database"
+dir = "backend"
+hide = true
+depends = ["be:setup"]
+run = """
+  : "🛠️ Create and copy test database..."
+  go run ./tools/main.go --seed-with-test --purge --db-file "e2e-clean"
+  cp data/e2e-clean.db data/e2e-work.db
+"""
+
+[tasks."e2e:run"]
+description = "Run Playwright E2E tests"
+dir = "frontend"
+depends = ["e2e:install", "e2e:setup"]
+run = """
+  : "🎭 Running Playwright Tests..."
+  npx playwright test
+"""
+
+[tasks."e2e:report"]
+description = "Show Playwright E2E test report"
+dir = "frontend"
+run = """
+  : "📊 Opening Playwright Report..."
+  npx playwright show-report
+"""
+
+# ==========================================
+# 🛡️ SECURITY
+# ==========================================
+
+[tasks."be:sec"]
+description = "Run gosec security scanner for backend"
+dir = "backend"
+run = """
+  : "🕵️‍♂️ Running gosec..."
+  gosec ./...
+"""

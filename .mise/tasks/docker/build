@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#MISE description="Build docker image"
+#MISE depends=["docker:prepare"]
+#USAGE flag "--clean" help="Prune buildx cache, disable cache and force pull latest base images"
+
+set -e 
+
+CLEAN_MODE="${usage_clean:-false}"
+
+EXTRA_FLAGS=()
+if [ "$CLEAN_MODE" = "true" ]; then
+    echo "🧹 clean mode activated: empty buildx cache"
+    docker buildx prune -f
+    
+    echo "⬇️ Enforce pulling latest base images and disable cache for a clean build"
+    EXTRA_FLAGS=("--pull" "--no-cache")
+fi
+
+echo "🚀 Building Docker image 'kasseapparat'..."
+
+VERSION="0.0.$(date +%y%m%d%H%M)"
+BUILD_DATE=$(date -Iseconds)
+
+echo "📦 Version: $VERSION"
+echo "📅 Build Date: $BUILD_DATE"
+
+docker buildx build \
+    --builder kasseapparat-builder \
+    --build-arg VERSION="$VERSION" \
+    --build-arg BUILD_DATE="$BUILD_DATE" \
+    --tag kasseapparat:latest \
+    --tag "kasseapparat:$VERSION" \
+    "${EXTRA_FLAGS[@]}" \
+    --load \
+    .
+
+echo "✅ Docker image 'kasseapparat:latest' built successfully!"

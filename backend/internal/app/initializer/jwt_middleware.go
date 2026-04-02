@@ -2,16 +2,41 @@ package initializer
 
 import (
 	jwt "github.com/appleboy/gin-jwt/v3"
+	"github.com/appleboy/gin-jwt/v3/store"
 	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
-	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
+	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
-func InitializeJwtMiddleware(repository *sqliteRepo.Repository, jwtConfig config.JwtConfig) *jwt.GinJWTMiddleware {
-	const timeout = 10 // Duration that a jwt token is valid, in minutes
+var newJwtFunc = jwt.New
 
-	jwtMiddleware, err := jwt.New(
-		middleware.InitParams(repository, jwtConfig.Realm, jwtConfig.Secret, timeout, jwtConfig.SecureCookie),
+type UserAuthenticator interface {
+	GetUserByLoginAndPassword(login, password string) (*models.User, error)
+}
+
+func InitializeJwtMiddleware(
+	repository UserAuthenticator,
+	jwtConfig config.JwtConfig,
+	redisConfig *config.RedisConfig,
+) *jwt.GinJWTMiddleware {
+	const timeout = 10 // Duration that a JWT token is valid, in minutes
+
+	var jwtRedisConfig *store.RedisConfig
+
+	if redisConfig != nil {
+		cfg := redisConfig.JwtConfig()
+		jwtRedisConfig = &cfg
+	}
+
+	jwtMiddleware, err := newJwtFunc(
+		middleware.InitParams(
+			repository,
+			jwtConfig.Realm,
+			jwtConfig.Secret,
+			timeout,
+			jwtConfig.SecureCookie,
+			jwtRedisConfig,
+		),
 	)
 	if err != nil {
 		panic("[Error] failed to initialize JWT middleware: " + err.Error())

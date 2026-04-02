@@ -142,13 +142,13 @@ describe("Cart", () => {
   describe("Getters und Helfer (totalGross, totalNet, getQuantity, etc.)", () => {
     it("should calculate the correct totals for all items", () => {
       const cart = new Cart()
-        .add(createMockProduct({ id: 1, netPrice: new Decimal(100) }), 2) // 200 Netto
-        .add(createMockProduct({ id: 2, netPrice: new Decimal(50) }), 1); // 50 Netto
+        .add(createMockProduct({ id: 1, netPrice: new Decimal(100) }), 2) // 200 net
+        .add(createMockProduct({ id: 2, netPrice: new Decimal(50) }), 1); // 50 net
 
       expect(cart.totalNet).toEqual(new Decimal(250));
       expect(cart.totalQuantity).toBe(3);
       expect(cart.getQuantity(1)).toBe(2);
-      expect(cart.getQuantity(999)).toBe(0); // Existiert nicht
+      expect(cart.getQuantity(999)).toBe(0); // Does not exist
     });
 
     it("should be able to check if a ListItem (guest) exists in the entire cart", () => {

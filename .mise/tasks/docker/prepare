@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#MISE description="Setup Docker buildx builder (Internal)"
+#MISE hide=true
+
+set -e 
+
+if ! docker buildx inspect kasseapparat-builder >/dev/null 2>&1; then
+    echo "🔧 Creating buildx builder 'kasseapparat-builder'..."
+    docker buildx create --name kasseapparat-builder --use --bootstrap
+else
+    echo "✅ Using existing buildx builder 'kasseapparat-builder'"
+    docker buildx use kasseapparat-builder
+    docker buildx inspect --bootstrap > /dev/null
+fi

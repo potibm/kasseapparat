@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#MISE description="Initial project setup"
+#MISE depends=["be:setup"]
+
+# Dependencies
+mise run deps:install
+
+# Infra Check
+docker info >/dev/null 2>&1 || (echo "❌ Docker is not running!" && exit 1)
+mise run infra:up

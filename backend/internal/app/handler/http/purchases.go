@@ -134,23 +134,9 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	}
 
 	if err != nil {
-		switch err {
-		case purchaseService.ErrInvalidProductPrice,
-			purchaseService.ErrInvalidTotalGrossPrice,
-			purchaseService.ErrInvalidTotalNetPrice,
-			purchaseService.ErrProductNotFound,
-			purchaseService.ErrGuestNotFound,
-			purchaseService.ErrGuestAlreadyAttended,
-			purchaseService.ErrTooManyAdditionalGuests,
-			purchaseService.ErrListItemWrongProduct:
-			_ = c.Error(InvalidRequest.WithMsg(utils.CapitalizeFirstRune(err.Error())).WithCause(err))
+		_ = c.Error(mapPurchaseCreationError(err))
 
-			return
-		default:
-			_ = c.Error(InternalServerError.WithCauseMsg(err))
-
-			return
-		}
+		return
 	}
 
 	reloadedPurchase, err := handler.repo.GetPurchaseByID(purchase.ID)
@@ -159,56 +145,11 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 	}
 
 	if req.PaymentMethod == models.PaymentMethodSumUp {
-		clientTransactionId, err := handler.sumupRepository.CreateReaderCheckout(
-			req.SumupReaderID,
-			purchase.TotalGrossPrice,
-			"Purchase from Kasseapparat",
-			purchase.ID.String(),
-			handler.sumupRepository.GetWebhookUrl(),
-		)
-		if err != nil {
-			_ = c.Error(
-				InternalServerError.WithMsg("Failed to create SumUp reader checkout: " + err.Error()).WithCause(err),
-			)
-
-			slog.ErrorContext(c.Request.Context(), "Error creating SumUp reader checkout", "error", err)
-
-			_, err = handler.purchaseService.CancelPurchase(c.Request.Context(), reloadedPurchase.ID)
-			if err != nil {
-				slog.ErrorContext(
-					c.Request.Context(),
-					"Error canceling purchase",
-					"purchase_id", reloadedPurchase.ID,
-					"error", err,
-				)
-			}
+		if sumupErr := handler.processSumupCheckout(c, reloadedPurchase, req.SumupReaderID); sumupErr != nil {
+			_ = c.Error(sumupErr)
 
 			return
 		}
-
-		slog.InfoContext(c.Request.Context(),
-			"Created SumUp reader checkout",
-			"client_transaction_id", *clientTransactionId,
-		)
-
-		_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(reloadedPurchase.ID, *clientTransactionId)
-		if err != nil {
-			_ = c.Error(
-				InternalServerError.WithMsg("Failed to update purchase with SumUp transaction ID").WithCause(err),
-			)
-
-			return
-		}
-
-		slog.DebugContext(c.Request.Context(),
-			"Updated purchase with SumUp client transaction ID",
-			"purchase_id", reloadedPurchase.ID,
-			"client_transaction_id", *clientTransactionId,
-		)
-		slog.DebugContext(c.Request.Context(), "Monitor", "handler_monitor", handler.monitor)
-
-		handler.monitor.Start(reloadedPurchase.ID)
-		slog.InfoContext(c.Request.Context(), "Started monitoring for purchase", "purchase_id", reloadedPurchase.ID)
 	}
 
 	purchaseResponse := response.ToPurchaseResponse(*reloadedPurchase, handler.decimalPlaces)
@@ -286,4 +227,76 @@ func (handler *Handler) GetPurchaseStats(c *gin.Context) {
 
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.JSON(http.StatusOK, gin.H{"stats": stats, "totalQuantity": totalQuantity})
+}
+
+func mapPurchaseCreationError(err error) error {
+	switch err {
+	case purchaseService.ErrInvalidProductPrice,
+		purchaseService.ErrInvalidTotalGrossPrice,
+		purchaseService.ErrInvalidTotalNetPrice,
+		purchaseService.ErrProductNotFound,
+		purchaseService.ErrGuestNotFound,
+		purchaseService.ErrGuestAlreadyAttended,
+		purchaseService.ErrTooManyAdditionalGuests,
+		purchaseService.ErrListItemWrongProduct:
+		return InvalidRequest.WithMsg(utils.CapitalizeFirstRune(err.Error())).WithCause(err)
+	default:
+		return InternalServerError.WithCauseMsg(err)
+	}
+}
+
+func (handler *Handler) processSumupCheckout(c *gin.Context, purchase *models.Purchase, readerID string) error {
+	clientTransactionId, err := handler.sumupRepository.CreateReaderCheckout(
+		readerID,
+		purchase.TotalGrossPrice,
+		"Purchase from Kasseapparat",
+		purchase.ID.String(),
+		handler.sumupRepository.GetWebhookUrl(),
+	)
+	if err != nil {
+		slog.ErrorContext(c.Request.Context(), "Error creating SumUp reader checkout", "error", err)
+
+		_, cancelErr := handler.purchaseService.CancelPurchase(c.Request.Context(), purchase.ID)
+		if cancelErr != nil {
+			slog.ErrorContext(
+				c.Request.Context(),
+				"Error canceling purchase",
+				"purchase_id",
+				purchase.ID,
+				"error",
+				cancelErr,
+			)
+		}
+
+		return InternalServerError.WithMsg("Failed to create SumUp reader checkout: " + err.Error()).WithCause(err)
+	}
+
+	clientTransactionIdStr := "nil"
+	if clientTransactionId != nil {
+		clientTransactionIdStr = clientTransactionId.String()
+	}
+
+	slog.InfoContext(
+		c.Request.Context(),
+		"Created SumUp reader checkout",
+		"client_transaction_id",
+		clientTransactionIdStr,
+	)
+
+	_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(purchase.ID, *clientTransactionId)
+	if err != nil {
+		return InternalServerError.WithMsg("Failed to update purchase with SumUp transaction ID").WithCause(err)
+	}
+
+	slog.DebugContext(c.Request.Context(),
+		"Updated purchase with SumUp client transaction ID",
+		"purchase_id", purchase.ID,
+		"client_transaction_id", clientTransactionIdStr,
+	)
+	slog.DebugContext(c.Request.Context(), "Monitor", "handler_monitor", handler.monitor)
+
+	handler.monitor.Start(purchase.ID)
+	slog.InfoContext(c.Request.Context(), "Started monitoring for purchase", "purchase_id", purchase.ID)
+
+	return nil
 }

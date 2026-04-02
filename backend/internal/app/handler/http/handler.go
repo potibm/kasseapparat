@@ -36,15 +36,15 @@ type HandlerConfig struct {
 	AppConfig       config.Config
 }
 
-func NewHandler(config HandlerConfig) *Handler {
+func NewHandler(cfg HandlerConfig) *Handler {
 	return &Handler{
-		repo:            config.Repo,
-		sumupRepository: config.SumupRepository,
-		purchaseService: config.PurchaseService,
-		monitor:         config.Monitor,
-		statusPublisher: config.StatusPublisher,
-		mailer:          config.Mailer,
-		config:          config.AppConfig,
-		decimalPlaces:   int32(config.AppConfig.FormatConfig.FractionDigitsMax),
+		repo:            cfg.Repo,
+		sumupRepository: cfg.SumupRepository,
+		purchaseService: cfg.PurchaseService,
+		monitor:         cfg.Monitor,
+		statusPublisher: cfg.StatusPublisher,
+		mailer:          cfg.Mailer,
+		config:          cfg.AppConfig,
+		decimalPlaces:   int32(cfg.AppConfig.FormatConfig.FractionDigitsMax),
 	}
 }

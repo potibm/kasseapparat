@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#MISE description="Setup backend environment and dummy assets to satisfy go:embed"
+#MISE dir="./backend"
+#MISE hide=true
+
+set -e
+
+echo "🔧 Preparing backend environment..."
+
+mkdir -p ./data
+
+if [ ! -f .env ]; then
+    echo "📝 Creating .env from .env.example..."
+    cp .env.example .env
+fi
+
+echo "📁 Creating dummy assets for go:embed..."
+mkdir -p cmd/assets
+touch cmd/assets/index.html
+
+echo "✅ Backend setup complete!"

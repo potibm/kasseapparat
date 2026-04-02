@@ -142,6 +142,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
               label="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              data-testid="guestlist-search-input"
               autoFocus={hasCodes}
             />
 
@@ -150,6 +151,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
             <Button
               className="w-full mt-5"
               color="alternative"
+              aria-label="Add product to cart without guestlist entry"
               onClick={handleManualAddToCart}
             >
               Manual

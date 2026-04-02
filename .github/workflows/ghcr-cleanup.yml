@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -20,10 +20,10 @@ jobs:
         id: multi-arch-digests
         run: |
           DIGESTS=$(docker manifest inspect ghcr.io/potibm/kasseapparat | jq -r '.manifests[].digest' | paste -s -d ' ' -)
-          echo "multi-arch-digests=$DIGESTS" >> $GITHUB_ENV
+          echo "multi-arch-digests=$DIGESTS" >> "$GITHUB_ENV"
 
       - name: Run container-retention-policy
-        uses: snok/container-retention-policy@v3.0.1
+        uses: snok/container-retention-policy@3b0972b2276b171b212f8c4efbca59ebba26eceb # v3.0.1
         with:
           image-names: kasseapparat
           account: user

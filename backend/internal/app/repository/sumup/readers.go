@@ -47,7 +47,7 @@ func isReaderNotFoundError(err error) bool {
 	return err != nil && err.Error() == "The requested Reader resource does not exists."
 }
 
-func (r *Repository) CreateReader(pairingCode string, name string) (*Reader, error) {
+func (r *Repository) CreateReader(pairingCode, name string) (*Reader, error) {
 	readerName := sumup.ReaderName(name)
 
 	body := sumup.ReadersCreateParams{

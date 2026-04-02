@@ -29,18 +29,28 @@ const SidebarKeyboard: React.FC<SidebarKeyboardProps> = ({ term, setTerm }) => {
       {alphabet.map((letter) => (
         <SidebarKeyboardKey
           key={letter}
+          aria-label={"Add " + letter + " to search term"}
           onClick={() => addToSearchTerm(letter)}
         >
           {letter}
         </SidebarKeyboardKey>
       ))}
-      <SidebarKeyboardKey onClick={() => addToSearchTerm(" ")}>
+      <SidebarKeyboardKey
+        onClick={() => addToSearchTerm(" ")}
+        aria-label="Add space to search term"
+      >
         <HiOutlineMinusSm />
       </SidebarKeyboardKey>
-      <SidebarKeyboardKey onClick={() => removeFromSearchTerm()}>
+      <SidebarKeyboardKey
+        onClick={() => removeFromSearchTerm()}
+        aria-label="Remove last character from search term"
+      >
         <HiBackspace />
       </SidebarKeyboardKey>
-      <SidebarKeyboardKey onClick={() => removeSearchTerm()}>
+      <SidebarKeyboardKey
+        onClick={() => removeSearchTerm()}
+        aria-label="Clear search term"
+      >
         <HiOutlineX />
       </SidebarKeyboardKey>
     </div>

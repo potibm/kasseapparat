@@ -1,5 +1,6 @@
 bin/
-.zed
+.zed/
+.vscode/
 dist/
 node_modules/
 .DS_Store 
@@ -9,5 +10,6 @@ backend/.env
 backend/.env.backup.*
 backend/VERSION
 backend/coverage.*
+backend/tmp
 VERSION
 *.log

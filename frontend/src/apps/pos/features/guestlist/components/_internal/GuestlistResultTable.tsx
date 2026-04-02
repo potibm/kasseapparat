@@ -51,7 +51,11 @@ const GuestlistResultTable: React.FC<GuestlistResultTableProps> = ({
 
       {guestlistEntries.length > 0 && (
         <div className="space-y-4">
-          <Table hoverable className="dark:text-white">
+          <Table
+            hoverable
+            className="dark:text-white"
+            data-testid="guestlist-result-table"
+          >
             <TableHead>
               <TableRow>
                 <TableHeadCell className="w-1/12"></TableHeadCell>

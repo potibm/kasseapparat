@@ -13,15 +13,15 @@ const (
 	accountCreatedSubject = "Account created"
 )
 
-func generateChangePasswordLink(baseUrl string, token string, userId uint) string {
+func generateChangePasswordLink(baseUrl, token string, userId uint) string {
 	return fmt.Sprintf("%s/change-password?token=%s&userId=%d", baseUrl, token, userId)
 }
 
-func (mailer *Mailer) SendChangePasswordTokenMail(to string, userId uint, username string, token string) error {
+func (mailer *Mailer) SendChangePasswordTokenMail(to string, userId uint, username, token string) error {
 	return mailer.sendTokenMail(to, userId, username, token, "mail/token_change_password.txt", changePasswordSubject)
 }
 
-func (mailer *Mailer) SendNewUserTokenMail(to string, userId uint, username string, token string) error {
+func (mailer *Mailer) SendNewUserTokenMail(to string, userId uint, username, token string) error {
 	return mailer.sendTokenMail(to, userId, username, token, "mail/token_new_user.txt", accountCreatedSubject)
 }
 
@@ -33,7 +33,7 @@ func (mailer *Mailer) sendTokenMail(
 	templateFilename string,
 	subject string,
 ) error {
-	template, err := template.ParseFS(
+	tpl, err := template.ParseFS(
 		templates.MailTemplateFiles,
 		templateFilename,
 		footerTemplate,
@@ -48,7 +48,7 @@ func (mailer *Mailer) sendTokenMail(
 	}
 
 	var body bytes.Buffer
-	if err := template.Execute(&body, data); err != nil {
+	if err := tpl.Execute(&body, data); err != nil {
 		return fmt.Errorf("failed to execute email template: %w", err)
 	}
 

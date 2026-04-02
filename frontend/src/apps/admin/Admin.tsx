@@ -21,6 +21,7 @@ const AdminPanel: React.FC = () => (
     dashboard={Dashboard}
     dataProvider={dataProvider}
     authProvider={authProvider}
+    title="Kasseapparat Admin"
     basename="/admin"
   >
     <Resource name="products" {...products} />

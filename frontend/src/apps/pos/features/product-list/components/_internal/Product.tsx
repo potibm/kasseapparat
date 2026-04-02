@@ -40,19 +40,27 @@ const Product: React.FC<ProductProps> = ({
   const getActionButton = () => {
     if (product.soldOut) {
       return (
-        <Button aria-label="Register interest">
+        <Button aria-label={"Register interest in " + product.name}>
           <HiOutlineThumbUp className="h-5 w-5" />
         </Button>
       );
     } else if (hasGuestlist) {
       return (
-        <Button aria-label="Show guestlist">
+        <Button aria-label={"Show guestlist for " + product.name}>
           <HiUserAdd className="h-5 w-5" />
         </Button>
       );
     } else {
       return (
-        <Button aria-label="Add to cart">
+        <Button
+          aria-label={
+            "Add " +
+            product.name +
+            " for " +
+            currency.format(product.grossPrice.toNumber()) +
+            " to cart"
+          }
+        >
           <HiShoppingCart className="h-5 w-5" />
         </Button>
       );
@@ -80,6 +88,7 @@ const Product: React.FC<ProductProps> = ({
     <>
       <Card
         theme={compactCardTheme}
+        data-testid={"product-card-" + product.id}
         className="w-[22%] flex flex-col mb-5 mr-5 relative cursor-pointer"
         onClick={handleCardClick}
       >

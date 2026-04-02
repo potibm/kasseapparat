@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"os"
@@ -9,23 +10,40 @@ import (
 
 	ginjwt "github.com/appleboy/gin-jwt/v3"
 	ginjwtCore "github.com/appleboy/gin-jwt/v3/core"
+	"github.com/appleboy/gin-jwt/v3/store"
 	"github.com/gin-gonic/gin"
-	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/potibm/kasseapparat/internal/app/exitcode"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
-const RefreshTokenLifetime = 7 * 24 * time.Hour
+type UserAuthenticator interface {
+	GetUserByLoginAndPassword(login, password string) (*models.User, error)
+}
+
+const (
+	RefreshTokenLifetime = 7 * 24 * time.Hour
+	loginEndpoint        = "/auth/login"
+	refreshEndpoint      = "/auth/refresh"
+	logoutEndpoint       = "/auth/logout"
+)
 
 var IdentityKey = "ID"
+var meter = otel.Meter("kasseapparat-auth")
+
+var (
+	authEventsCounter, _ = meter.Int64Counter("kasseapparat_auth_events_total",
+		metric.WithDescription("Number of authentication events"))
+)
 
 type login struct {
 	Login    string `json:"login"    form:"login"    binding:"required"`
 	Password string `json:"password" form:"password" binding:"required"`
 }
 
-type loginResponse struct {
+type loginResponseDTO struct {
 	AccessToken  string  `json:"access_token"`
 	TokenType    string  `json:"token_type"`
 	ExpiresIn    int64   `json:"expires_in"`
@@ -47,23 +65,46 @@ func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc 
 }
 
 func RegisterRoute(r *gin.RouterGroup, handle *ginjwt.GinJWTMiddleware) {
-	r.POST("/auth/login", handle.LoginHandler)
-	r.POST("/auth/refresh", handle.RefreshHandler)
-	r.POST("/auth/logout", handle.LogoutHandler)
+	r.POST(loginEndpoint, handle.LoginHandler)
+	r.POST(refreshEndpoint, func(c *gin.Context) {
+		handle.RefreshHandler(c)
+
+		if c.Writer.Status() == http.StatusOK {
+			authEventsCounter.Add(c.Request.Context(), 1,
+				metric.WithAttributes(
+					attribute.String("event_type", "refresh"),
+					attribute.String("status", "success"),
+				),
+			)
+		}
+	})
+	r.POST(logoutEndpoint, func(c *gin.Context) {
+		authEventsCounter.Add(c.Request.Context(), 1,
+			metric.WithAttributes(
+				attribute.String("event_type", "logout"),
+				attribute.String("status", "success"),
+			),
+		)
+
+		handle.LogoutHandler(c)
+	})
 }
 
 func InitParams(
-	repo *sqliteRepo.Repository,
+	repo UserAuthenticator,
 	realm string,
 	secret string,
 	timeout int,
 	secureCookie bool,
+	redisConfig *store.RedisConfig,
 ) *ginjwt.GinJWTMiddleware {
 	if secret == "" {
 		slog.Warn("JWT_SECRET is not set, using default value")
 
 		secret = "secret"
 	}
+
+	useRedisStore := redisConfig != nil
 
 	return &ginjwt.GinJWTMiddleware{
 		Realm:      realm,
@@ -82,21 +123,14 @@ func InitParams(
 		Authenticator:   authenticator(repo),
 		Authorizer:      authorizer(),
 		Unauthorized:    unauthorized(),
+		LoginResponse:   loginResponse,
 
-		LoginResponse: func(c *gin.Context, token *ginjwtCore.Token) {
-			user, err := c.Get(IdentityKey)
-
-			var userObj *models.User = nil
-			if err {
-				userObj = user.(*models.User)
-			}
-
-			loginReponse(c, token, userObj)
-		},
+		UseRedisStore: useRedisStore,
+		RedisConfig:   redisConfig,
 	}
 }
 
-func authenticator(repo *sqliteRepo.Repository) func(c *gin.Context) (any, error) {
+func authenticator(repo UserAuthenticator) func(c *gin.Context) (any, error) {
 	return func(c *gin.Context) (any, error) {
 		var loginVals login
 		if err := c.ShouldBind(&loginVals); err != nil {
@@ -114,18 +148,6 @@ func authenticator(repo *sqliteRepo.Repository) func(c *gin.Context) (any, error
 		}
 
 		return nil, ginjwt.ErrFailedAuthentication
-	}
-}
-
-func payloadFunc() func(data any) jwt.MapClaims {
-	return func(data any) jwt.MapClaims {
-		if v, ok := data.(*models.User); ok {
-			return jwt.MapClaims{
-				IdentityKey: v.ID,
-			}
-		}
-
-		return jwt.MapClaims{}
 	}
 }
 
@@ -151,6 +173,22 @@ func authorizer() func(c *gin.Context, data any) bool {
 
 func unauthorized() func(c *gin.Context, code int, message string) {
 	return func(c *gin.Context, code int, message string) {
+		eventType := "request"
+
+		if strings.Contains(c.Request.URL.Path, loginEndpoint) {
+			eventType = "login"
+		} else if strings.Contains(c.Request.URL.Path, refreshEndpoint) {
+			eventType = "refresh"
+		}
+
+		authEventsCounter.Add(c.Request.Context(), 1,
+			metric.WithAttributes(
+				attribute.String("event_type", eventType),
+				attribute.String("status", "failure"),
+				attribute.Int("code", code),
+			),
+		)
+
 		c.JSON(code, gin.H{
 			"code":    code,
 			"message": message,
@@ -158,24 +196,38 @@ func unauthorized() func(c *gin.Context, code int, message string) {
 	}
 }
 
-func loginReponse(c *gin.Context, token *ginjwtCore.Token, user *models.User) {
-	loginResponse := loginResponse{
+func loginResponse(c *gin.Context, token *ginjwtCore.Token) {
+	authEventsCounter.Add(context.Background(), 1,
+		metric.WithAttributes(
+			attribute.String("event_type", "login"),
+			attribute.String("status", "success"),
+		),
+	)
+
+	user, exists := c.Get(IdentityKey)
+
+	var userObj *models.User = nil
+	if exists {
+		userObj = user.(*models.User)
+	}
+
+	loginResponse := loginResponseDTO{
 		AccessToken: token.AccessToken,
 		TokenType:   token.TokenType,
 		ExpiresIn:   token.ExpiresIn(),
 	}
 
-	if user != nil {
-		role := user.Role()
+	if userObj != nil {
+		role := userObj.Role()
 		loginResponse.Role = &role
 
-		username := user.Username
+		username := userObj.Username
 		loginResponse.Username = &username
 
-		gravatarUrl := user.GravatarURL()
+		gravatarUrl := userObj.GravatarURL()
 		loginResponse.GravatarUrl = &gravatarUrl
 
-		id := user.ID
+		id := userObj.ID
 		loginResponse.Id = &id
 	}
 

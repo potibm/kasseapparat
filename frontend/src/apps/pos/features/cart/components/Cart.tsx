@@ -86,6 +86,7 @@ const Cart: React.FC<CartProps> = ({
       <Table
         striped
         theme={compactTableTheme}
+        data-testid="cart-table"
         className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
         <TableHead>
@@ -118,14 +119,18 @@ const Cart: React.FC<CartProps> = ({
             </TableCell>
             <TableCell className="flex justify-end">
               {cart.isEmpty ? (
-                <Button disabled color="failure" aria-label="Clear cart">
+                <Button
+                  disabled
+                  color="failure"
+                  aria-label="Remove all items from cart"
+                >
                   <HiXCircle />
                 </Button>
               ) : (
                 <Button
                   color="failure"
                   onClick={() => removeAllFromCart()}
-                  aria-label="Clear cart"
+                  aria-label="Remove all items from cart"
                 >
                   <HiXCircle />
                 </Button>

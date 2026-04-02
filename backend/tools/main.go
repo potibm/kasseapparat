@@ -26,6 +26,7 @@ var (
 	createUserEmail   string
 	userImportCsvFile string
 	createUserIsAdmin bool // Flag to indicate whether to create a user with admin rights
+	dbFilename        string
 )
 
 var (
@@ -37,6 +38,8 @@ var (
 	version = "0.0.0"
 )
 
+const defaultDbFilename = "kasseapparat"
+
 func main() {
 	// Register command-line flags
 	flag.BoolVar(&purgeDB, "purge", false, "Purge the database before initializing")
@@ -46,6 +49,7 @@ func main() {
 	flag.StringVar(&createUserName, "create-user", "", "Create a user with the given username")
 	flag.StringVar(&createUserEmail, "create-user-email", "", "Email for the user to create")
 	flag.BoolVar(&createUserIsAdmin, "create-user-admin", false, "Create a user with admin rights")
+	flag.StringVar(&dbFilename, "db-file", defaultDbFilename, "Set the name for the database file")
 	flag.Parse()
 
 	logger := initializer.InitTxtLogger("debug")
@@ -59,7 +63,7 @@ func main() {
 	cfg.SetVersion(version)
 	cfg.OutputVersion()
 
-	db := utils.ConnectToDatabase()
+	db := utils.ConnectToDatabase(dbFilename)
 
 	Repo = sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
 	Mailer = initializer.InitializeMailer(cfg.MailerConfig)
@@ -164,7 +168,7 @@ func importUsers(logger *slog.Logger, filename string) {
 	}
 }
 
-func createUser(username string, email string, isAdmin bool) error {
+func createUser(username, email string, isAdmin bool) error {
 	user := models.User{
 		Username: username,
 		Email:    email,

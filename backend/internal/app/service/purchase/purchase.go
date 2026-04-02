@@ -10,6 +10,19 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/shopspring/decimal"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+)
+
+var meter = otel.Meter("kasseapparat")
+var (
+	salesOrdersCounter, _ = meter.Int64Counter("kasseapparat_sales_orders_total",
+		metric.WithDescription("Total number of processed orders or refunds"))
+
+	salesAmountCounter, _ = meter.Int64Counter("kasseapparat_sales_amount_total",
+		metric.WithDescription("Total monetary value in cents"),
+		metric.WithUnit("ct"))
 )
 
 type Service interface {
@@ -38,6 +51,7 @@ type PurchaseService struct {
 	sumupRepo     sumupRepository
 	Mailer        Mailer
 	DecimalPlaces int32
+	CurrencyCode  string
 }
 
 type PurchaseInput struct {
@@ -79,16 +93,20 @@ func NewPurchaseService(
 	sumupRepo sumupRepository,
 	mailer Mailer,
 	decimalPlaces int32,
+	currencyCode string,
 ) *PurchaseService {
 	return &PurchaseService{
 		sqliteRepo:    sqliteRepo,
 		sumupRepo:     sumupRepo,
 		Mailer:        mailer,
 		DecimalPlaces: decimalPlaces,
+		CurrencyCode:  currencyCode,
 	}
 }
 
-func (s *PurchaseService) ValidateAndCalculatePrices(input PurchaseInput) (decimal.Decimal, decimal.Decimal, error) {
+func (s *PurchaseService) ValidateAndCalculatePrices(
+	input PurchaseInput,
+) (totalNetResult, totalGrossResult decimal.Decimal, err error) {
 	totalNet := decimal.NewFromInt(0)
 	totalGross := decimal.NewFromInt(0)
 
@@ -149,6 +167,14 @@ func (s *PurchaseService) CreateConfirmedPurchase(
 
 	s.notifyGuests(guests)
 
+	s.recordTransactionMetrics(
+		ctx,
+		savedPurchase.TotalGrossPrice,
+		savedPurchase.TotalNetPrice,
+		string(savedPurchase.PaymentMethod),
+		false,
+	)
+
 	return savedPurchase, nil
 }
 
@@ -182,6 +208,14 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.
 		s.notifyGuests(guests)
 	}
 
+	s.recordTransactionMetrics(
+		ctx,
+		purchase.TotalGrossPrice,
+		purchase.TotalNetPrice,
+		string(purchase.PaymentMethod),
+		false,
+	)
+
 	return purchase, nil
 }
 
@@ -214,7 +248,7 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 		return nil, fmt.Errorf("cannot refund purchase with status: %s", purchase.Status)
 	}
 
-	// refund the purchase via sumup
+	// refund the purchase via SumUp
 	if purchase.PaymentMethod == models.PaymentMethodSumUp && purchase.SumupTransactionID != nil {
 		slog.Debug("Refunding transaction via SumUp for transaction", "transaction_id", *purchase.SumupTransactionID)
 
@@ -228,6 +262,14 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 	if err != nil {
 		return nil, errors.New("failed to set the purchase to refunded: " + err.Error())
 	}
+
+	s.recordTransactionMetrics(
+		ctx,
+		purchase.TotalGrossPrice,
+		purchase.TotalNetPrice,
+		string(purchase.PaymentMethod),
+		true,
+	)
 
 	return purchase, nil
 }
@@ -384,4 +426,46 @@ func (s *PurchaseService) createPurchaseWithStatus(
 	}
 
 	return savedPurchase, guests, nil
+}
+
+func (s *PurchaseService) recordTransactionMetrics(
+	ctx context.Context,
+	gross, net decimal.Decimal,
+	method string,
+	isRefund bool,
+) {
+	precision := s.DecimalPlaces
+	multiplier := decimal.New(1, int32(precision))
+
+	direction := int64(1)
+	entryType := "purchase"
+
+	if isRefund {
+		direction = -1
+		entryType = "refund"
+	}
+
+	grossSubUnits := gross.Mul(multiplier).IntPart() * direction
+	netSubUnits := net.Mul(multiplier).IntPart() * direction
+
+	commonAttrs := []attribute.KeyValue{
+		attribute.String("type", entryType),
+		attribute.String("currency", s.CurrencyCode),
+		attribute.String("payment_method", method),
+	}
+
+	// Gross
+	salesAmountCounter.Add(ctx, grossSubUnits, metric.WithAttributes(
+		append(commonAttrs, attribute.String("tax_status", "gross"))...,
+	))
+
+	// Net
+	salesAmountCounter.Add(ctx, netSubUnits, metric.WithAttributes(
+		append(commonAttrs, attribute.String("tax_status", "net"))...,
+	))
+
+	salesOrdersCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("payment_method", method),
+		attribute.String("type", entryType),
+	))
 }

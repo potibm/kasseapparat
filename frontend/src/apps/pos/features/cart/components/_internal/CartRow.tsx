@@ -24,7 +24,10 @@ const CartRow: React.FC<CartRowProps> = ({
   };
 
   return (
-    <TableRow key={cartElement.id}>
+    <TableRow
+      key={cartElement.id}
+      data-testid={"cart-product-" + cartElement.id}
+    >
       <TableCell className="whitespace-normal px-4 py-2">
         {cartElement.name}
         {cartElement.listItems.map((listItem: GuestType) => (
@@ -40,7 +43,7 @@ const CartRow: React.FC<CartRowProps> = ({
       <TableCell className="flex justify-end">
         <Button
           color="failure"
-          aria-label={`Remove ${cartElement.name}`}
+          aria-label={`Remove ${cartElement.name} from cart`}
           onClick={() => removeFromCart(cartElement)}
         >
           <HiXCircle />

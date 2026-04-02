@@ -4,6 +4,10 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+
+	"github.com/potibm/kasseapparat/internal/app/config"
+	slogmulti "github.com/samber/slog-multi"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 )
 
 func logLevelFromString(level string) slog.Level {
@@ -47,9 +51,12 @@ func InitTxtLogger(level string) *slog.Logger {
 	return initializeLogger(handler)
 }
 
-func initializeLogger(handler slog.Handler) *slog.Logger {
-	logger := slog.New(handler)
+func initializeLogger(cmdlineHandler slog.Handler) *slog.Logger {
+	otelHandler := otelslog.NewHandler(config.OtelServiceName)
 
+	var finalHandler = slogmulti.Fanout(cmdlineHandler, otelHandler)
+
+	logger := slog.New(finalHandler)
 	slog.SetDefault(logger)
 
 	return logger

@@ -32,10 +32,10 @@ func InitializeSumup(sumupConfig config.SumupConfig) *sumupService.Service {
 		}
 
 		clientOptions := client.WithAPIKey(apiKey)
-		client := sumup.NewClient(clientOptions)
+		clnt := sumup.NewClient(clientOptions)
 
 		instance = sumupService.NewService(
-			client,
+			clnt,
 			merchantCode,
 			applicationId,
 			affiliateKey,

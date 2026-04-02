@@ -12,8 +12,8 @@ const (
 	arrivalNotificationSubject = "Guest has arrived 🔔"
 )
 
-func (mailer *Mailer) SendNotificationOnArrival(to string, username string) error {
-	template, err := template.ParseFS(
+func (mailer *Mailer) SendNotificationOnArrival(to, username string) error {
+	tpl, err := template.ParseFS(
 		templates.MailTemplateFiles,
 		"mail/notification_on_arrival.txt",
 		footerTemplate,
@@ -24,7 +24,7 @@ func (mailer *Mailer) SendNotificationOnArrival(to string, username string) erro
 
 	var body bytes.Buffer
 
-	err = template.Execute(&body, map[string]string{
+	err = tpl.Execute(&body, map[string]string{
 		"Username": username,
 	})
 	if err != nil {
