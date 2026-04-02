@@ -9,7 +9,7 @@ You only need two things installed on your machine to work on this project:
 - [Docker](https://docs.docker.com/get-docker/) (for running infrastructure like databases and mail servers)
 - [mise](https://mise.jdx.dev/) (The polyglot tool manager)
 
-**That's it**! You do not need to manually install Go, Node.js, Yarn, or any linters. mise will automatically download and use the exact versions specified in our mise.toml to ensure 100% reproducible builds across all machines.
+**That's it**! You do not need to manually install Go, Node.js or any linters. mise will automatically download and use the exact versions specified in our mise.toml to ensure 100% reproducible builds across all machines.
 
 ## 🚀 Getting Started
 

@@ -10,12 +10,12 @@ FIX_MODE="${usage_fix:-false}"
 echo "🎨 Frontend (Auto-Fix: $FIX_MODE)"
 if [ "$FIX_MODE" = "true" ]; then
     prettier . --write
-    corepack yarn run eslint --fix
+    npm run lint:fix
+    npx tsc --noEmit
     dotenv-linter fix . --no-backup
-    corepack yarn run tsc --noEmit
 else
-    corepack yarn run tsc --noEmit
-    corepack yarn run eslint
     prettier . --check
+    npm run lint
+    npx tsc --noEmit
     dotenv-linter check .
 fi

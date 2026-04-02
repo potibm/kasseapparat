@@ -37,8 +37,7 @@ export default defineConfig({
       },
     },
     {
-      command:
-        "E2E_PORT=4000 E2E_API_TARGET=http://localhost:4001 corepack yarn dev",
+      command: "E2E_PORT=4000 E2E_API_TARGET=http://localhost:4001 npm run dev",
       port: 4000,
       reuseExistingServer: !process.env.CI,
       ignoreHTTPSErrors: true,

@@ -14,7 +14,7 @@ echo "📦 Building Version: $VERSION"
 rm -rf backend/cmd/assets
 mkdir -p backend/cmd/assets
 cd frontend 
-corepack yarn build --outDir ../backend/cmd/assets -m production
+npm run build -- --outDir ../backend/cmd/assets -m production
 cd ..
 
 # 3. Build backend

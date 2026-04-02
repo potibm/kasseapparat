@@ -1,6 +1,3 @@
-[settings]
-node = { corepack = true }
-
 [tools]
 node = "25"
 go = "1.26"
@@ -32,7 +29,7 @@ run = "exec air"
 [tasks."fe:dev"]
 description = "Start frontend in development mode with hot reload"
 dir="frontend"
-run = "exec corepack yarn dev"
+run = "npm run dev"
 
 # ==========================================
 # 🧪 TESTING
@@ -55,7 +52,7 @@ run = """
 [tasks."fe:test"]
 description = "Run frontend tests with coverage"
 dir = "frontend"
-run = 'NODE_OPTIONS="--no-webstorage" corepack yarn vitest run --coverage'
+run = 'NODE_OPTIONS="--no-webstorage" npm run test run --coverage'
 
 
 # ==========================================
@@ -124,7 +121,7 @@ description = "Install frontend dependencies"
 dir = "frontend"
 run = """
   : "🎨 Install Frontend Deps"
-  corepack yarn install
+  npm ci
 """
 
 # --- UPDATE TASKS ---
@@ -152,8 +149,8 @@ description = "Update frontend dependencies (Interactive)"
 dir = "frontend"
 run = """
   : "🎨 Update Frontend Deps"
-  corepack yarn up -R
-  corepack yarn upgrade-interactive
+  npx npm-check-updates --interactive --format group
+  npm install
 """
 
 [tasks."actions:deps:update"]
@@ -172,7 +169,7 @@ description = "Install Playwright browsers and system dependencies"
 dir = "frontend"
 run = """
   : "🌍 Installing Playwright Browsers..."
-  corepack yarn playwright install
+  npx playwright install --with-deps
 """
 
 [tasks."e2e:setup"]
@@ -192,7 +189,7 @@ dir = "frontend"
 depends = ["e2e:install", "e2e:setup"]
 run = """
   : "🎭 Running Playwright Tests..."
-  corepack yarn playwright test
+  npx playwright test
 """
 
 [tasks."e2e:report"]
@@ -200,7 +197,7 @@ description = "Show Playwright E2E test report"
 dir = "frontend"
 run = """
   : "📊 Opening Playwright Report..."
-  corepack yarn playwright show-report
+  npx playwright show-report
 """
 
 # ==========================================
