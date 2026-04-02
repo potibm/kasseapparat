@@ -13,8 +13,13 @@ RUN npm run build -- --outDir ./build
 # ==========================================
 # Build the backend
 # ==========================================
-FROM golang:1.26-bookworm AS backend-build
+FROM --platform=$BUILDPLATFORM golang:1.26-bookworm AS backend-build
 WORKDIR /app/backend
+
+RUN apt-get update -o Acquire::http::No-Cache=True && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates g++ gcc && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
@@ -29,7 +34,7 @@ RUN CGO_ENABLED=1 go build -ldflags "-X main.version=${VERSION}" -o kasseapparat
 # ==========================================
 # Create the final image
 # ==========================================
-FROM debian:bookworm-slim AS runtime
+FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS runtime
 WORKDIR /app
 
 RUN apt-get update -o Acquire::http::No-Cache=True && \
