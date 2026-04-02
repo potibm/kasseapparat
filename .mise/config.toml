@@ -11,7 +11,6 @@ tmux = "latest"
 actionlint = "latest"
 shellcheck = "latest"
 jq = "latest"
-"npm:prettier" = "latest"
 
 # ==========================================
 # 💻 DEVELOPMENT

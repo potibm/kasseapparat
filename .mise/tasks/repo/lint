@@ -15,7 +15,7 @@ TARGETS=(
 )
 
 if [ "$FIX_MODE" = "true" ]; then
-    prettier --write "${TARGETS[@]}" --ignore-unknown
+    npx --prefix frontend prettier --write "${TARGETS[@]}" --ignore-unknown
 else
-    prettier --check "${TARGETS[@]}" --ignore-unknown
+    npx --prefix frontend prettier --check "${TARGETS[@]}" --ignore-unknown
 fi

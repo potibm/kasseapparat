@@ -10,8 +10,10 @@ interface GuestlistRecord extends RaRecord {
   attendedGuests?: number;
 }
 
-interface AttendedGuestsBooleanFieldProps
-  extends Omit<BooleanFieldProps, "source"> {
+interface AttendedGuestsBooleanFieldProps extends Omit<
+  BooleanFieldProps,
+  "source"
+> {
   source?: string;
 }
 

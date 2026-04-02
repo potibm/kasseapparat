@@ -2,8 +2,10 @@ import { Chip, ChipProps } from "@mui/material";
 
 // T ist der Typ des Filterwerts (z.B. boolean, string, etc.)
 // Wir nutzen Omit, um einen sauberen ChipProps-Typ ohne Konflikte zu haben
-interface QuickFilterProps<T = unknown>
-  extends Omit<ChipProps, "defaultValue"> {
+interface QuickFilterProps<T = unknown> extends Omit<
+  ChipProps,
+  "defaultValue"
+> {
   label: string;
   source?: string;
   defaultValue?: T;

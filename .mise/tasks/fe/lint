@@ -9,12 +9,12 @@ FIX_MODE="${usage_fix:-false}"
 
 echo "🎨 Frontend (Auto-Fix: $FIX_MODE)"
 if [ "$FIX_MODE" = "true" ]; then
-    prettier . --write
+    npx prettier . --write
     npm run lint:fix
     npx tsc --noEmit
     dotenv-linter fix . --no-backup
 else
-    prettier . --check
+    npx prettier . --check
     npm run lint
     npx tsc --noEmit
     dotenv-linter check .
