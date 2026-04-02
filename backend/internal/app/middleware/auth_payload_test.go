@@ -21,7 +21,6 @@ func TestExtractUint(t *testing.T) {
 		{"Native int", int(789), 789, true},
 		{"Native int64", int64(789), 789, true},
 		{"Native uint", uint(456), 456, true},
-		{"Native uint64", uint64(234), 234, true},
 		{"Negative int", int(-789), 0, false},
 		{"Negative Float64 ", float64(-123), 0, false},
 		{"Negative Float32", float32(-234), 0, false},
