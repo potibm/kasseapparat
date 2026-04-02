@@ -302,7 +302,7 @@ func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, max
 		}
 	}
 
-	// for e2e test: create two guests with known names ia a special guestlist
+	// for e2e test: create two guests with known names in a special guestlist
 	userGuestlist := &models.Guestlist{Name: "E2E Guestlist " + gofakeit.FirstName(), ProductID: ds.freeProduct.ID}
 	ds.db.Create(userGuestlist)
 

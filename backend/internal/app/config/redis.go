@@ -1,7 +1,9 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"strconv"
 
@@ -21,11 +23,16 @@ func loadRedisConfig() (*RedisConfig, error) {
 
 	u, err := (*RedisConfig)(parsedUrl), err
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse REDIS_URL: %w", err)
 	}
 
-	if u.Scheme != "redis" {
+	if u.Scheme != "redis" && u.Scheme != "rediss" {
 		return nil, fmt.Errorf("invalid scheme: %s", u.Scheme)
+	}
+
+	host, _, err := net.SplitHostPort(u.Host)
+	if err != nil || host == "" {
+		return nil, errors.New("missing host in REDIS_URL")
 	}
 
 	return u, nil

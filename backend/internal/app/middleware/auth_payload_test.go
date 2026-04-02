@@ -17,8 +17,18 @@ func TestExtractUint(t *testing.T) {
 		expectedValid bool
 	}{
 		{"Float64 from JSON", float64(123), 123, true},
-		{"Native uint", uint(456), 456, true},
+		{"Float32", float32(123), 123, true},
 		{"Native int", int(789), 789, true},
+		{"Native int64", int64(789), 789, true},
+		{"Native uint", uint(456), 456, true},
+		{"Native uint64", uint(456), 456, true},
+		{"Negative int", int(-789), 0, false},
+		{"Negative Float64 ", float64(-123), 0, false},
+		{"Negative Float32", float32(-234), 0, false},
+		{"Negative int64", int64(-345), 0, false},
+		{"Negative int", int(-456), 0, false},
+		{"Fractional Float64", float64(123.456), 0, false},
+		{"Fractional Float32", float32(123.456), 0, false},
 		{"Invalid string type", "123", 0, false},
 		{"Nil value", nil, 0, false},
 	}

@@ -17,7 +17,7 @@ func TestLogLevelFromString(t *testing.T) {
 		{"warn", slog.LevelWarn},
 		{"error", slog.LevelError},
 		{"unknown", slog.LevelInfo}, // Fallback
-		{"", slog.LevelInfo},        // Leerstring
+		{"", slog.LevelInfo},        // Empty string
 	}
 
 	for _, tt := range tests {

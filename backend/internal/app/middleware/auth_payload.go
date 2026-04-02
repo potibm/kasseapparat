@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	"log/slog"
+	"math"
 
 	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -57,16 +58,33 @@ func extractIDFromClaims(claims map[string]interface{}) uint {
 func extractUint(val any) (uint, bool) {
 	switch v := val.(type) {
 	case float64:
+		if v < 0 || v != math.Trunc(v) {
+			return 0, false
+		}
+
 		return uint(v), true
 	case uint:
 		return v, true
 	case int:
+		if v < 0 {
+			return 0, false
+		}
+
 		return uint(v), true
 	case float32:
+		f64 := float64(v)
+		if f64 < 0 || f64 != math.Trunc(f64) {
+			return 0, false
+		}
+
 		return uint(v), true
 	case int64:
+		if v < 0 {
+			return 0, false
+		}
+
 		return uint(v), true
 	default:
-		return 0, false // Wenn es ein String, nil oder sonstiges ist
+		return 0, false // Unsupported type
 	}
 }

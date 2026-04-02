@@ -23,15 +23,15 @@ import (
 //go:embed assets/*
 var testFS embed.FS
 
-// --- STUB FÜR DAS WEBSOCKET INTERFACE ---.
+// --- STUB FOR THE WEBSOCKET INTERFACE ---.
 type stubWSHandler struct{}
 
-// HandleTransactionWebSocket erfüllt das TransactionWebSocketHandler Interface.
+// HandleTransactionWebSocket implements the  TransactionWebSocketHandler interface.
 func (s *stubWSHandler) HandleTransactionWebSocket(c *gin.Context) { /* mocked implementation */ }
 
 // --- TEST ---.
 func TestInitializeHttpServer(t *testing.T) {
-	// Gin in den Test-Modus schalten
+	// Switch to test mode to avoid side effects on global Gin state
 	gin.SetMode(gin.TestMode)
 
 	emptyHttpHandler := httpHandler.Handler{}
@@ -53,7 +53,6 @@ func TestInitializeHttpServer(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	t.Run("should initialize server and register routes successfully", func(t *testing.T) {
-		// Server initialisieren
 		engine, err := InitializeHttpServer(
 			emptyHttpHandler,
 			mockWs,

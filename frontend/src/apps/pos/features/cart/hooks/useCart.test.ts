@@ -161,7 +161,7 @@ describe("useCart Hook", () => {
 
       expect(purchaseResult).toEqual(pendingPurchase);
 
-      // Bei pending: Polling startet, Purchase wird gespeichert, Cart bleibt erstmal voll
+      // On pending: polling starts, purchase is saved, cart remains full
       expect(result.current.isPolling).toBe(true);
       expect(result.current.pendingPurchase).toEqual(pendingPurchase);
       expect(result.current.checkoutProcessing).toBe("sumup");
@@ -198,7 +198,7 @@ describe("useCart Hook", () => {
         ).rejects.toThrow("Network timeout");
       });
 
-      // Nach einem Fehler darf er nicht im "Processing" State festhängen
+      // After an error, it should not be stuck in "Processing" state
       expect(result.current.checkoutProcessing).toBeNull();
     });
   });

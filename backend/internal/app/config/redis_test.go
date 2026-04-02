@@ -71,6 +71,18 @@ func TestLoadRedisConfigWithInvalidSchemeEnv(t *testing.T) {
 	assert.Contains(t, err.Error(), "invalid scheme")
 }
 
+func TestLoadRedisConfigWithMissingHost(t *testing.T) {
+	os.Setenv("REDIS_URL", "rediss://:6379/0")
+
+	defer os.Unsetenv("REDIS_URL")
+
+	cfg, err := loadRedisConfig()
+
+	assert.Error(t, err)
+	assert.Nil(t, cfg)
+	assert.Contains(t, err.Error(), "missing host")
+}
+
 func TestJwtConfigWithValidRedisConfig(t *testing.T) {
 	redisConfig := RedisConfig{
 		Scheme: "redis",

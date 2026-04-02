@@ -1,0 +1,7 @@
+extends: existence
+message: "Es sieht so aus, als wäre dieser Kommentar auf Deutsch: '%s'"
+level: error
+scope: comment
+ignorecase: true
+raw:
+  - (?i)\b(der|die|das|ein|eine|ist|sind|und|oder|nicht|mit|auf|für|von|auch)\b

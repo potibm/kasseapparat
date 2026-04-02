@@ -248,7 +248,7 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 		return nil, fmt.Errorf("cannot refund purchase with status: %s", purchase.Status)
 	}
 
-	// refund the purchase via sumup
+	// refund the purchase via SumUp
 	if purchase.PaymentMethod == models.PaymentMethodSumUp && purchase.SumupTransactionID != nil {
 		slog.Debug("Refunding transaction via SumUp for transaction", "transaction_id", *purchase.SumupTransactionID)
 

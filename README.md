@@ -24,7 +24,7 @@ We use `mise` to automatically manage all tool versions (Go, Node, etc.) and pro
 
 ```bash
 # 1. Install mise (if not already installed)
-curl [https://mise.run](https://mise.run) | sh
+curl https://mise.run | sh
 
 # 2. Setup the project (installs dependencies and starts infra)
 mise run setup
