@@ -79,3 +79,21 @@ func TestGetEnvAsBool(t *testing.T) {
 
 	assert.Equal(t, false, getEnvAsBool("FOO_BOOL", false))
 }
+
+func TestGetEnvWithPrefix(t *testing.T) {
+	_ = os.Setenv("PREFIX_FOO", "foo")
+	_ = os.Setenv("PREFIX_BAR", "bar")
+	_ = os.Setenv("OTHER_BAZ", "baz")
+
+	defer func() {
+		_ = os.Unsetenv("PREFIX_FOO")
+		_ = os.Unsetenv("PREFIX_BAR")
+		_ = os.Unsetenv("OTHER_BAZ")
+	}()
+
+	result := getEnvsWithPrefix("PREFIX_")
+	assert.Equal(t, map[string]string{
+		"FOO": "foo",
+		"BAR": "bar",
+	}, result)
+}

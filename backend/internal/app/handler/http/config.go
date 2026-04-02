@@ -46,7 +46,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		SentryReplayErrorSampleRate:   handler.config.SentryConfig.ReplayErrorSampleRate,
 		CurrencyLocale:                handler.config.FormatConfig.CurrencyLocale,
 		CurrencyCode:                  handler.config.FormatConfig.CurrencyCode,
-		VATRates:                      handler.config.VATRates,
+		VATRates:                      handler.config.VATRates.Json(),
 		DateLocale:                    handler.config.FormatConfig.DateLocale,
 		DateOptions:                   handler.config.FormatConfig.DateOptions,
 		FractionDigitsMin:             handler.config.FormatConfig.FractionDigitsMin,
