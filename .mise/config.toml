@@ -1,16 +1,18 @@
 [tools]
 node = "25"
 go = "1.26"
-golangci-lint = "latest"
-dotenv-linter = "latest"
-air = "latest"
-overmind = "latest"
-docker-cli = "latest"
-tmux = "latest"
-"go:github.com/icholy/gomajor" = "latest"
-actionlint = "latest"
-shellcheck = "latest"
-jq = "latest"
+golangci-lint = "2.11.4"
+dotenv-linter = "4.0.0"
+air = "1.64.5"
+overmind = "2.5.1"
+docker-cli = "29.3.1"
+tmux = "3.6a"
+"go:github.com/icholy/gomajor" = "0.15.0"
+actionlint = "1.7.12"
+shellcheck = "0.11.0"
+jq = "1.8.1"
+"aqua:securego/gosec" = "2.25.0"
+vale = "3.14.1"
 
 # ==========================================
 # 💻 DEVELOPMENT
@@ -184,7 +186,6 @@ run = """
 [tasks."e2e:run"]
 description = "Run Playwright E2E tests"
 dir = "frontend"
-# mise wartet automatisch, bis das Setup fehlerfrei durchgelaufen ist!
 depends = ["e2e:install", "e2e:setup"]
 run = """
   : "🎭 Running Playwright Tests..."
