@@ -180,7 +180,7 @@ hide = true
 run = """
   : "🛠️ Create and copy test database..."
   mkdir -p ./data
-  if [ -f .env ] then
+  if [ -f .env ]; then
     cp .env.example .env
   fi
   go run ./tools/main.go --seed-with-test --purge --db-file "e2e-clean"
