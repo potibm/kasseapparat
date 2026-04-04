@@ -20,8 +20,8 @@ cd ..
 # 3. Build backend
 mkdir -p $DIST_DIR
 cd backend
-go build -ldflags "-X main.version=$VERSION" -o ../$DIST_DIR/kasseapparat ./cmd/main.go
-go build -ldflags "-X main.version=$VERSION" -o ../$DIST_DIR/kasseapparat-tool ./tools/main.go
+go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=$VERSION" -o ../$DIST_DIR/kasseapparat ./cmd/main.go
+go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=$VERSION" -o ../$DIST_DIR/kasseapparat-tool ./tools/main.go
 cd ..
 
 # 4. Prepare artefacts

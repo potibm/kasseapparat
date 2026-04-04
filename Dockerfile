@@ -28,8 +28,8 @@ COPY backend .
 COPY --from=frontend-build /app/frontend/build ./cmd/assets
 
 ARG VERSION
-RUN CGO_ENABLED=1 go build -ldflags "-X main.version=${VERSION}" -o kasseapparat ./cmd/main.go && \
-    CGO_ENABLED=1 go build -ldflags "-X main.version=${VERSION}" -o kasseapparat-tool ./tools/main.go
+RUN CGO_ENABLED=1 go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat ./cmd/main.go && \
+    CGO_ENABLED=1 go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat-tool ./tools/main.go
 
 # ==========================================
 # Create the final image

@@ -1,0 +1,29 @@
+
+format:
+  currency:
+    locale: "de-DE"
+    code: "EUR"
+    fraction_digits_min: 0
+    fraction_digits_max: 2
+  date:
+    locale: "de-DE"
+    options:
+      weekday: "long"
+      hour: "2-digit"
+      minute: "2-digit"
+
+vat_rates:
+  - rate: 0
+    name: "Exempt"
+  - rate: 7
+    name: "Reduced"
+  - rate: 19
+    name: "Standard"
+
+payment_methods:
+  - code: "CASH"
+    name: "Cash"
+  - code: "CC"
+    name: "Credit Card"
+  - code: "SUMUP"
+    name: "SumUp"

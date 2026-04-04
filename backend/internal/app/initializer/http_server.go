@@ -40,7 +40,7 @@ func InitializeHttpServer(
 	cfg config.Config,
 	logger *slog.Logger,
 ) (*gin.Engine, error) {
-	gin.SetMode(cfg.AppConfig.GinMode)
+	gin.SetMode(cfg.App.GinMode)
 
 	r = gin.New()
 	r.Use(
@@ -55,7 +55,7 @@ func InitializeHttpServer(
 
 	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHdlr.GetPurchaseStats)
 
-	r.Use(CreateCorsMiddleware(cfg.CorsAllowOrigins))
+	r.Use(CreateCorsMiddleware(cfg.App.CorsAllowOrigins))
 
 	folder, err := static.EmbedFolder(staticFiles, "assets")
 	if err != nil {

@@ -39,19 +39,19 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 	}
 
 	config := Config{
-		Version:                       handler.config.AppConfig.Version,
-		SentryDSN:                     handler.config.SentryConfig.DSN,
-		SentryTraceSampleRate:         handler.config.SentryConfig.TraceSampleRate,
-		SentryReplaySessionSampleRate: handler.config.SentryConfig.ReplaySessionSampleRate,
-		SentryReplayErrorSampleRate:   handler.config.SentryConfig.ReplayErrorSampleRate,
-		CurrencyLocale:                handler.config.FormatConfig.CurrencyLocale,
-		CurrencyCode:                  handler.config.FormatConfig.CurrencyCode,
+		Version:                       handler.config.App.Version,
+		SentryDSN:                     handler.config.Sentry.DSN,
+		SentryTraceSampleRate:         handler.config.Sentry.TraceSampleRate,
+		SentryReplaySessionSampleRate: handler.config.Sentry.ReplaySessionSampleRate,
+		SentryReplayErrorSampleRate:   handler.config.Sentry.ReplayErrorSampleRate,
+		CurrencyLocale:                handler.config.Format.Currency.Locale,
+		CurrencyCode:                  handler.config.Format.Currency.Code,
+		FractionDigitsMin:             handler.config.Format.Currency.FractionDigitsMin,
+		FractionDigitsMax:             handler.config.Format.Currency.FractionDigitsMax,
 		VATRates:                      handler.config.VATRates.Json(),
-		DateLocale:                    handler.config.FormatConfig.DateLocale,
-		DateOptions:                   handler.config.FormatConfig.DateOptions,
-		FractionDigitsMin:             handler.config.FormatConfig.FractionDigitsMin,
-		FractionDigitsMax:             handler.config.FormatConfig.FractionDigitsMax,
-		EnvironmentMessage:            handler.config.EnvironmentMessage,
+		DateLocale:                    handler.config.Format.Date.Locale,
+		DateOptions:                   handler.config.Format.Date.Options.Json(),
+		EnvironmentMessage:            handler.config.App.EnvironmentMessage,
 		PaymentMethods:                paymentMethods,
 	}
 

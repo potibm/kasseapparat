@@ -1,182 +1,62 @@
 package config
 
 import (
-	"errors"
-	"fmt"
-	"log/slog"
 	"strings"
 
-	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
 const (
+	OtelServiceName = "kasseapparat-backend"
+
 	DefaultDateOptions             = "{\"weekday\":\"long\",\"hour\":\"2-digit\",\"minute\":\"2-digit\"}"
-	defaultTraceSampleRate         = 0.1
-	defaultReplaySessionSampleRate = 0.1
-	defaultReplayErrorSampleRate   = 0.1
-	defaultMinorUnit               = 2
+	DefaultTraceSampleRate         = 0.1
+	DefaultReplaySessionSampleRate = 0.1
+	DefaultReplayErrorSampleRate   = 0.1
+	DefaultMinorUnit               = 2
+	DefaultJwtSecret               = "very-insecure"
 )
 
-type SentryConfig struct {
-	DSN                     string
-	TraceSampleRate         float64
-	ReplaySessionSampleRate float64
-	ReplayErrorSampleRate   float64
-	Environment             string
-	Version                 string
-}
+func InitViper() {
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-type JwtConfig struct {
-	Secret       string
-	Realm        string
-	SecureCookie bool
-}
+	viper.SetDefault("app.gin_mode", "release")
+	viper.SetDefault("app.log_level", "info")
+	viper.SetDefault("app.env", "production")
+	viper.SetDefault("app.db_filename", "kasseapparat")
+	viper.SetDefault("app.redis_url", "")
+	viper.SetDefault("app.frontend_url", "")
 
-type MailerConfig struct {
-	DSN               string
-	FromEmail         string
-	MailSubjectPrefix string
-	FrontendURL       string
-}
+	viper.SetDefault("format.currency.locale", "da-DK")
+	viper.SetDefault("format.currency.code", "DKK")
+	viper.SetDefault("format.currency.fraction_digits_min", 0)
+	viper.SetDefault("format.currency.fraction_digits_max", DefaultMinorUnit)
+	viper.SetDefault("format.date.locale", "da-DK")
+	viper.SetDefault("format.date.options", DefaultDateOptions)
 
-type AppConfig struct {
-	Version string
-	GinMode string
-}
+	viper.SetDefault("sentry.dsn", "")
+	viper.SetDefault("sentry.trace_sample_rate", DefaultTraceSampleRate)
+	viper.SetDefault("sentry.replay_session_sample_rate", DefaultReplaySessionSampleRate)
+	viper.SetDefault("sentry.replay_error_sample_rate", DefaultReplayErrorSampleRate)
 
-type FormatConfig struct {
-	CurrencyLocale    string
-	CurrencyCode      string
-	DateLocale        string
-	DateOptions       string
-	FractionDigitsMin int
-	FractionDigitsMax int
-}
+	viper.SetDefault("jwt.realm", "Kasseapparat")
+	viper.SetDefault("jwt.secret", DefaultJwtSecret)
+	viper.SetDefault("jwt.secure_cookie", true)
 
-type CorsAllowOriginsConfig []string
+	viper.SetDefault("mailer.dsn", "smtp://user:password@localhost:1025")
+	viper.SetDefault("mailer.from", "kasseapparat@example.com")
+	viper.SetDefault("mailer.subject_prefix", "[Kasseapparat]")
 
-type Config struct {
-	AppConfig          AppConfig
-	FormatConfig       FormatConfig
-	VATRates           VatRatesConfig
-	EnvironmentMessage string
-	PaymentMethods     PaymentMethods
-	SentryConfig       SentryConfig
-	JwtConfig          JwtConfig
-	CorsAllowOrigins   CorsAllowOriginsConfig
-	FrontendURL        string
-	MailerConfig       MailerConfig
-	SumupConfig        SumupConfig
-	RedisConfig        *RedisConfig
-}
+	viper.SetDefault("sumup.api_key", "")
+	viper.SetDefault("sumup.merchant_code", "")
+	viper.SetDefault("sumup.currency_code", "")
+	viper.SetDefault("sumup.currency_minor_unit", DefaultMinorUnit)
+	viper.SetDefault("sumup.affiliate_key", "")
+	viper.SetDefault("sumup.application_id", "")
+	viper.SetDefault("sumup.public_url", "")
 
-func (cfg Config) OutputVersion() {
-	slog.Info("Kasseapparat", slog.String("version", cfg.AppConfig.Version))
-}
-
-func Load(logger *slog.Logger) (Config, error) {
-	err := godotenv.Load()
-	if err != nil {
-		logger.Warn("Error loading .env file, using environment variables")
-	}
-
-	config, err := loadConfig(logger)
-	if err != nil {
-		return Config{}, err
-	}
-
-	return *config, nil
-}
-
-func loadConfig(logger *slog.Logger) (*Config, error) {
-	corsAllowOriginsConfig, err := loadCorsAllowOrigins()
-	if err != nil {
-		return nil, fmt.Errorf("load CORS_ALLOW_ORIGINS config: %w", err)
-	}
-
-	redisConfig, err := loadRedisConfig()
-	if err != nil {
-		return nil, fmt.Errorf("load REDIS_URL config: %w", err)
-	}
-
-	return &Config{
-		AppConfig:          loadAppConfig(),
-		FormatConfig:       loadFormatConfig(logger),
-		VATRates:           loadVATRates(),
-		EnvironmentMessage: getEnv("ENV_MESSAGE", ""),
-		PaymentMethods:     loadPaymentMethods(),
-		SentryConfig:       loadSentryConfig(),
-		JwtConfig:          loadJwtConfig(),
-		CorsAllowOrigins:   corsAllowOriginsConfig,
-		MailerConfig:       loadMailerConfig(),
-		SumupConfig:        loadSumupConfig(),
-		RedisConfig:        redisConfig,
-	}, nil
-}
-
-func loadAppConfig() AppConfig {
-	return AppConfig{
-		Version: "0.0.0",
-		GinMode: getEnv("GIN_MODE", "release"),
-	}
-}
-
-func (cfg *Config) SetVersion(version string) {
-	cfg.AppConfig.Version = version
-	cfg.SentryConfig.Version = version
-}
-
-func loadCorsAllowOrigins() ([]string, error) {
-	origins := getEnv("CORS_ALLOW_ORIGINS", "")
-	if origins == "" {
-		return nil, errors.New("CORS_ALLOW_ORIGINS is not set in env")
-	}
-
-	return strings.Split(origins, ","), nil
-}
-
-func loadFormatConfig(logger *slog.Logger) FormatConfig {
-	return FormatConfig{
-		CurrencyLocale:    getEnv("CURRENCY_LOCALE", "dk-DK"),
-		CurrencyCode:      getCurrencyCode(),
-		DateLocale:        getEnv("DATE_LOCALE", "dk-DK"),
-		DateOptions:       getEnvWithJSONValidation(logger, "DATE_OPTIONS", DefaultDateOptions),
-		FractionDigitsMin: getEnvAsInt("FRACTION_DIGITS_MIN", 0),
-		FractionDigitsMax: getCurrencyMinorUnit(),
-	}
-}
-
-func loadSentryConfig() SentryConfig {
-	return SentryConfig{
-		DSN:                     getEnv("SENTRY_DSN", ""),
-		TraceSampleRate:         getEnvAsFloat("SENTRY_TRACE_SAMPLE_RATE", defaultTraceSampleRate),
-		ReplaySessionSampleRate: getEnvAsFloat("SENTRY_REPLAY_SESSION_SAMPLE_RATE", defaultReplaySessionSampleRate),
-		ReplayErrorSampleRate:   getEnvAsFloat("SENTRY_REPLAY_ERROR_SAMPLE_RATE", defaultReplayErrorSampleRate),
-		Version:                 "0.0.0",
-	}
-}
-
-func loadJwtConfig() JwtConfig {
-	return JwtConfig{
-		Realm:        getEnv("JWT_REALM", "kasseapparat"),
-		Secret:       getEnv("JWT_SECRET", ""),
-		SecureCookie: getEnvAsBool("JWT_SECURE_COOKIE", true),
-	}
-}
-
-func loadMailerConfig() MailerConfig {
-	return MailerConfig{
-		DSN:               getEnv("MAIL_DSN", "smtp://user:password@localhost:1025"),
-		FromEmail:         getEnv("MAIL_FROM", ""),
-		MailSubjectPrefix: getEnv("MAIL_SUBJECT_PREFIX", "[Kasseapparat]"),
-		FrontendURL:       getEnv("FRONTEND_URL", ""),
-	}
-}
-
-func getCurrencyCode() string {
-	return getEnv("CURRENCY_CODE", "DKK")
-}
-
-func getCurrencyMinorUnit() int {
-	return getEnvAsInt("FRACTION_DIGITS_MAX", defaultMinorUnit)
+	viper.RegisterAlias("mailer.frontend_url", "app.frontend_url")
+	viper.RegisterAlias("sentry.environment", "app.env")
+	viper.RegisterAlias("sentry.version", "app.version")
 }
