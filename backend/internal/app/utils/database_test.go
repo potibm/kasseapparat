@@ -7,21 +7,57 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gorm.io/gorm"
 )
 
 func TestConnectToDatabaseInvalidFilename(t *testing.T) {
-	assert.PanicsWithValue(t, "invalid database filename: \"invalid/name\"", func() {
-		ConnectToDatabase("invalid/name")
-	})
+	invalidFilenames := []string{
+		"invalid/name",
+		"name with spaces",
+		"name/with/slash",
+		"../traversal",
+		"invalid\\name",
+		"invalid:name",
+	}
 
-	assert.PanicsWithValue(t, "invalid database filename: \"name with spaces\"", func() {
-		ConnectToDatabase("name with spaces")
-	})
+	for _, filename := range invalidFilenames {
+		t.Run(filename, func(t *testing.T) {
+			db, err := ConnectToDatabase(filename)
+			assert.Nil(t, db)
+			assert.Error(t, err)
+			assert.ErrorContains(t, err, "invalid database filename")
+		})
+	}
+}
 
-	assert.PanicsWithValue(t, "invalid database filename: \"../escaped\"", func() {
-		ConnectToDatabase("../escaped")
-	})
+func TestIsValidDatabaseFilename(t *testing.T) {
+	validFilenames := []string{
+		"validname",
+		"valid_name",
+		"valid-name",
+		"valid.name",
+		"12345",
+	}
+
+	for _, filename := range validFilenames {
+		t.Run(filename, func(t *testing.T) {
+			assert.True(t, IsValidDatabaseFilename(filename))
+		})
+	}
+
+	invalidFilenames := []string{
+		"invalid/name",
+		"name with spaces",
+		"name/with/slash",
+		"../traversal",
+		"invalid\\name",
+		"invalid:name",
+	}
+
+	for _, filename := range invalidFilenames {
+		t.Run(filename, func(t *testing.T) {
+			assert.False(t, IsValidDatabaseFilename(filename))
+		})
+	}
 }
 
 func TestConnectToDatabaseValidFilename(t *testing.T) {
@@ -32,30 +68,25 @@ func TestConnectToDatabaseValidFilename(t *testing.T) {
 
 	defer os.RemoveAll("data") // Clean up after test
 
-	var db *gorm.DB
-
-	assert.NotPanics(t, func() {
-		db = ConnectToDatabase("testdb_123")
-	})
+	db, err := ConnectToDatabase("testdb_123")
 	assert.NotNil(t, db)
+	assert.NoError(t, err)
 
-	assert.NotPanics(t, func() {
-		db = ConnectToDatabase("")
-	})
+	db, err = ConnectToDatabase("")
 	assert.NotNil(t, db)
+	assert.NoError(t, err)
 }
 
 func TestConnectToLocalDatabase(t *testing.T) {
-	var db *gorm.DB
+	db, err := ConnectToLocalDatabase()
 
-	assert.NotPanics(t, func() {
-		db = ConnectToLocalDatabase()
-	})
+	assert.NoError(t, err)
 	assert.NotNil(t, db)
 }
 
 func TestMigrateAndPurgeDatabase(t *testing.T) {
-	db := ConnectToLocalDatabase()
+	db, err := ConnectToLocalDatabase()
+	require.NoError(t, err)
 	require.NotNil(t, db)
 
 	assert.NotPanics(t, func() {
@@ -76,7 +107,8 @@ func TestMigrateAndPurgeDatabase(t *testing.T) {
 }
 
 func TestSeedDatabase(t *testing.T) {
-	db := ConnectToLocalDatabase()
+	db, err := ConnectToLocalDatabase()
+	require.NoError(t, err)
 	require.NotNil(t, db)
 
 	MigrateDatabase(db)

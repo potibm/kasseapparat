@@ -21,7 +21,10 @@ func (c *Config) Validate() error {
 
 	localeRegexp := regexp.MustCompile(`^[a-zA-Z]{2}-[A-Z]{2}$`)
 	if !localeRegexp.MatchString(c.Format.Currency.Locale) {
-		return fmt.Errorf("currency.locale '%s' is not a valid locale (expected format: xx-XX)", c.Format.Currency.Locale)
+		return fmt.Errorf(
+			"currency.locale '%s' is not a valid locale (expected format: xx-XX)",
+			c.Format.Currency.Locale,
+		)
 	}
 
 	if !localeRegexp.MatchString(c.Format.Date.Locale) {
@@ -30,7 +33,10 @@ func (c *Config) Validate() error {
 
 	currencyRegexp := regexp.MustCompile(`^[A-Z]{3}$`)
 	if !currencyRegexp.MatchString(c.Format.Currency.Code) {
-		return fmt.Errorf("currency.code '%s' is not a valid ISO 4217 currency code (expected format: XXX)", c.Format.Currency.Code)
+		return fmt.Errorf(
+			"currency.code '%s' is not a valid ISO 4217 currency code (expected format: XXX)",
+			c.Format.Currency.Code,
+		)
 	}
 
 	if c.App.RedisURL != "" {
@@ -40,7 +46,11 @@ func (c *Config) Validate() error {
 
 		redisUrl := c.App.RedisURL.UrlObject()
 		if redisUrl.Scheme != "redis" && redisUrl.Scheme != "rediss" {
-			return fmt.Errorf("redis_url '%s' has invalid scheme '%s' (expected 'redis' or 'rediss')", c.App.RedisURL, redisUrl.Scheme)
+			return fmt.Errorf(
+				"redis_url '%s' has invalid scheme '%s' (expected 'redis' or 'rediss')",
+				c.App.RedisURL,
+				redisUrl.Scheme,
+			)
 		}
 
 		host, _, err := net.SplitHostPort(redisUrl.Host)

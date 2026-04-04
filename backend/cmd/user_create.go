@@ -10,7 +10,6 @@ var userCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new user",
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		email, _ := cmd.Flags().GetString("email")
 		fmt.Printf("Erstelle User mit Email: %s\n", email)
 

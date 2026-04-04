@@ -10,7 +10,7 @@ tmp_dir = "tmp"
   bin = "./tmp/main"
   cmd = "go build -o ./tmp/main ./main.go"
   delay = 1000
-  entrypoint = ["./tmp/main", "--port=3001", "--log-level=debug", "--otel-endpoint=localhost:4317"]
+  entrypoint = ["./tmp/main", "serve", "--port=3001", "--log-level=debug", "--otel-endpoint=localhost:4317"]
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "data"]
   exclude_file = []
   exclude_regex = ["_test.go"]

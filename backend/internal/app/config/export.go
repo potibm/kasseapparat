@@ -45,6 +45,7 @@ func (u *RedisUrl) IsValid() bool {
 	}
 
 	_, err := url.ParseRequestURI(string(*u))
+
 	return err == nil
 }
 

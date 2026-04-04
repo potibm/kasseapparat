@@ -14,6 +14,7 @@ import (
 
 func IsValidDatabaseFilename(filename string) bool {
 	validName := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+
 	return validName.MatchString(filename)
 }
 
@@ -78,6 +79,7 @@ func PurgeDatabase(db *gorm.DB) error {
 	if err != nil {
 		return fmt.Errorf("failed to purge database: %w", err)
 	}
+
 	return nil
 }
 
@@ -94,6 +96,7 @@ func MigrateDatabase(db *gorm.DB) error {
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
+
 	return nil
 }
 

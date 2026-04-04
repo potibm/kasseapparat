@@ -40,10 +40,10 @@ func TestInitializeHttpServer(t *testing.T) {
 	var mockWs websocket.TransactionWebSocketHandler = &stubWSHandler{}
 
 	cfg := config.Config{
-		AppConfig: config.AppConfig{
-			GinMode: gin.TestMode,
+		App: config.AppConfig{
+			GinMode:          gin.TestMode,
+			CorsAllowOrigins: []string{"http://localhost:8080"},
 		},
-		CorsAllowOrigins: []string{"http://localhost:8080"},
 	}
 
 	jwtMiddleware := &jwt.GinJWTMiddleware{

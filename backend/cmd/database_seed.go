@@ -32,5 +32,6 @@ var dbSeedCmd = &cobra.Command{
 func init() {
 	databaseCmd.AddCommand(dbSeedCmd)
 
-	dbSeedCmd.Flags().BoolVarP(&includeTestData, "test-data", "t", false, "Additional test data (dummy products, etc.) to generate")
+	dbSeedCmd.Flags().
+		BoolVarP(&includeTestData, "test-data", "t", false, "Additional test data (dummy products, etc.) to generate")
 }

@@ -24,12 +24,14 @@ var dbResetCmd = &cobra.Command{
 		if !resetForce {
 			fmt.Printf("WARNING: The database '%s' will be COMPLETELY deleted!\n", Cfg.App.DbFilename)
 			fmt.Print("Are you sure? [y/N]: ")
+
 			reader := bufio.NewReader(os.Stdin)
 			response, _ := reader.ReadString('\n')
 			response = strings.TrimSpace(strings.ToLower(response))
 
 			if response != "y" && response != "yes" {
 				slog.Info("Reset aborted by user")
+
 				return nil
 			}
 		}
@@ -42,11 +44,13 @@ var dbResetCmd = &cobra.Command{
 		}
 
 		slog.Info("Deleting old tables...")
+
 		if err := utils.PurgeDatabase(db); err != nil {
 			return fmt.Errorf("error while deleting tables: %w", err)
 		}
 
 		slog.Info("Rebuilding table structure...")
+
 		if err := utils.MigrateDatabase(db); err != nil {
 			return fmt.Errorf("error while rebuilding table structure: %w", err)
 		}
@@ -57,6 +61,7 @@ var dbResetCmd = &cobra.Command{
 		}
 
 		slog.Info("Database reset completed successfully!")
+
 		return nil
 	},
 }

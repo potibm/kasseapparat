@@ -18,6 +18,7 @@ func startup() int {
 
 		return int(exitcode.Software)
 	}
+
 	return int(exitcode.OK)
 }
 
