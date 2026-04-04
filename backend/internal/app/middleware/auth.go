@@ -142,13 +142,10 @@ func authenticator(repo UserAuthenticator) func(c *gin.Context) (any, error) {
 		login := strings.TrimSpace(loginVals.Login)
 		password := strings.TrimSpace(loginVals.Password)
 
-		slog.Info("Attempting login for user", "login", login)
-
 		user, err := repo.GetUserByLoginAndPassword(login, password)
 		if err == nil {
 			c.Set(IdentityKey, user) // Set the user in the context
-			slog.Info("Login successful for user", "login", login, "user_id", user.ID)
-
+		
 			return user, nil
 		}
 

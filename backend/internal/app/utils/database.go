@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const defaultDirMode os.FileMode = 0o755
+const defaultDirMode os.FileMode = 0o700
 
 func IsValidDatabaseFilename(filename string) bool {
 	validName := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)

@@ -14,7 +14,7 @@ var (
 
 func startup() int {
 	if err := cmd.Execute(); err != nil {
-		log.Fatalf("Fatal error while starting: %v", err)
+		log.Printf("Fatal error while starting: %v", err)
 
 		return int(exitcode.Software)
 	}
