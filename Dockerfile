@@ -28,8 +28,7 @@ COPY backend .
 COPY --from=frontend-build /app/frontend/build ./cmd/assets
 
 ARG VERSION
-RUN CGO_ENABLED=1 go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat ./cmd/main.go && \
-    CGO_ENABLED=1 go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat-tool ./tools/main.go
+RUN CGO_ENABLED=1 go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat . 
 
 # ==========================================
 # Create the final image
@@ -49,7 +48,6 @@ RUN mkdir -p /app/data && chown -R appuser:appuser /app
 
 # Copy backend build
 COPY --from=backend-build --chown=appuser:appuser /app/backend/kasseapparat ./kasseapparat
-COPY --from=backend-build --chown=appuser:appuser /app/backend/kasseapparat-tool ./kasseapparat-tool
 
 RUN chmod +x /app/kasseapparat && \
     chmod +x /app/kasseapparat-tool 
@@ -60,4 +58,4 @@ VOLUME [ "/app/data" ]
 
 EXPOSE 8080
 
-CMD ["/app/kasseapparat", "--port", "8080"]
+CMD ["/app/kasseapparat", "serve"]

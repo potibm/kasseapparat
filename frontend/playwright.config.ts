@@ -28,12 +28,13 @@ export default defineConfig({
   webServer: [
     {
       command:
-        'cd ../backend && go run ./cmd/main.go --port=4001 --log-level=debug --db-file "e2e-work"',
+        'cd ../backend && go run . serve --port=4001 --log-level=debug --db-file "e2e-work"',
       port: 4001,
       reuseExistingServer: !process.env.CI,
       stdout: "pipe",
       env: {
-        CORS_ALLOW_ORIGINS: "https://localhost:4000",
+        APP_CORS_ALLOW_ORIGINS: "https://localhost:4000",
+        APP_REDIS_URL: "",
       },
     },
     {
