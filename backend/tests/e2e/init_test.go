@@ -40,13 +40,23 @@ func TestMain(m *testing.M) {
 }
 
 func setup() {
-	db, err := utils.ConnectToLocalDatabase()
+	var err error
+
+	db, err = utils.ConnectToLocalDatabase()
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
 	}
 
-	utils.PurgeDatabase(db)
-	utils.MigrateDatabase(db)
+	err = utils.PurgeDatabase(db)
+	if err != nil {
+		log.Fatal("Failed to purge database: ", err)
+	}
+
+	err = utils.MigrateDatabase(db)
+	if err != nil {
+		log.Fatal("Failed to migrate database: ", err)
+	}
+
 	utils.SeedDatabase(db, true)
 }
 
@@ -54,7 +64,11 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 	cfg := config.Config{
 		App: config.AppConfig{
 			Version:            "0.1.2",
-			GinMode:            "test",
+			GinMode:            "debug",
+			LogLevel:           "debug",
+			LogFormat:          "text",
+			RedisURL:           "",
+			Environment:        "test",
 			EnvironmentMessage: "Test environment",
 			CorsAllowOrigins:   []string{"http://localhost:3000"},
 		},
@@ -118,7 +132,7 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		&cfg.App.CorsAllowOrigins,
 	)
 
-	router, _ := initializer.InitializeHttpServer(
+	router, err := initializer.InitializeHttpServer(
 		*handlerHttpObj,
 		websocketHandler,
 		*sqliteRp,
@@ -127,13 +141,17 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		cfg,
 		logger,
 	)
+	if err != nil {
+		log.Fatal("Failed to initialize HTTP server: ", err)
+	}
 
 	ts := httptest.NewServer(router)
 
 	e = httpexpect.WithConfig(httpexpect.Config{
+		BaseURL: ts.URL,
 		Client: &http.Client{
-			Transport: httpexpect.NewBinder(router),
-			Jar:       httpexpect.NewCookieJar(),
+			//Transport: httpexpect.NewBinder(router),
+			Jar: httpexpect.NewCookieJar(),
 		},
 		Reporter: httpexpect.NewAssertReporter(t),
 		Printers: []httpexpect.Printer{

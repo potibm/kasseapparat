@@ -33,11 +33,14 @@ type RedisUrl string
 type RedisConfig url.URL
 
 type AppConfig struct {
-	Version            string                 `mapstructure:"version"`
-	GinMode            string                 `mapstructure:"gin_mode"            validate:"required,oneof=debug release test"`
-	Environment        string                 `mapstructure:"env"                 validate:"required,oneof=development staging production test"`
-	LogLevel           string                 `mapstructure:"log_level"           validate:"required,oneof=debug info warn error"`
-	LogFormat          string                 `mapstructure:"log_format"          validate:"required,oneof=json text"`
+	Version string `mapstructure:"version"`
+
+	GinMode     string `mapstructure:"gin_mode" validate:"required,oneof=debug release test"`
+	Environment string `mapstructure:"env"      validate:"required,oneof=development staging production test"`
+
+	LogLevel  string `mapstructure:"log_level"  validate:"required,oneof=debug info warn error"`
+	LogFormat string `mapstructure:"log_format" validate:"required,oneof=json text"`
+
 	DbFilename         string                 `mapstructure:"db_filename"         validate:"required"`
 	RedisURL           RedisUrl               `mapstructure:"redis_url"           validate:"omitempty,url"`
 	FrontendURL        string                 `mapstructure:"frontend_url"        validate:"required,http_url"`

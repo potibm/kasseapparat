@@ -6,21 +6,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var userCreateCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Create a new user",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		email, _ := cmd.Flags().GetString("email")
-		fmt.Printf("Erstelle User mit Email: %s\n", email)
+func NewUserCreateCmd() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "create",
+		Short: "Create a new user",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			email, _ := cmd.Flags().GetString("email")
+			fmt.Printf("Create an user with email: %s\n", email)
 
-		// Hier rufst du z.B. userlogic.CreateUser(cfg, email) auf
-		return nil
-	},
-}
+			// @TODO: Implement user creation logic here
+			return nil
+		},
+	}
 
-func init() {
-	userCmd.AddCommand(userCreateCmd)
+	cmd.Flags().String("email", "", "The users email address")
+	_ = cmd.MarkFlagRequired("email")
 
-	userCreateCmd.Flags().String("email", "", "E-Mail des Benutzers")
-	userCreateCmd.MarkFlagRequired("email")
+	return cmd
 }

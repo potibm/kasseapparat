@@ -89,17 +89,15 @@ func TestMigrateAndPurgeDatabase(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, db)
 
-	assert.NotPanics(t, func() {
-		MigrateDatabase(db)
-	})
+	err = MigrateDatabase(db)
+	assert.NoError(t, err)
 
 	assert.True(t, db.Migrator().HasTable(&models.User{}), "User table should exist after migration")
 	assert.True(t, db.Migrator().HasTable(&models.Product{}), "Product table should exist after migration")
 
 	// 2. Purge
-	assert.NotPanics(t, func() {
-		PurgeDatabase(db)
-	})
+	err = PurgeDatabase(db)
+	assert.NoError(t, err)
 
 	// Check if the tables were actually dropped
 	assert.False(t, db.Migrator().HasTable(&models.User{}), "User table should be dropped after purge")
@@ -111,7 +109,8 @@ func TestSeedDatabase(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, db)
 
-	MigrateDatabase(db)
+	err = MigrateDatabase(db)
+	assert.NoError(t, err)
 
 	assert.NotPanics(t, func() {
 		SeedDatabase(db, true) // Test with includeTestData = true

@@ -15,6 +15,10 @@ const (
 	DefaultReplayErrorSampleRate   = 0.1
 	DefaultMinorUnit               = 2
 	DefaultJwtSecret               = "very-insecure"
+
+	DefaultStandardVatRate = 25
+	DefaultReducedVatRate  = 12
+	DefaultZeroVatRate     = 0
 )
 
 var (
@@ -24,9 +28,9 @@ var (
 		"minute":  "2-digit",
 	}
 	DefaultVatRates = VatRatesConfig{
-		{Name: "Standard", Rate: 25},
-		{Name: "Reduced", Rate: 12},
-		{Name: "Zero", Rate: 0},
+		{Name: "Standard", Rate: DefaultStandardVatRate},
+		{Name: "Reduced", Rate: DefaultReducedVatRate},
+		{Name: "Zero", Rate: DefaultZeroVatRate},
 	}
 	DefaultPaymentMethods = []PaymentMethodConfig{
 		{Code: models.PaymentMethodCash, Name: "Cash"},

@@ -50,13 +50,13 @@ func (u *RedisUrl) IsValid() bool {
 }
 
 func (r RedisUrl) JwtConfig() store.RedisConfig {
-	url := r.UrlObject()
+	u := r.UrlObject()
 
-	if url == nil {
+	if u == nil {
 		return store.RedisConfig{}
 	}
 
-	path := url.Path
+	path := u.Path
 	if path == "" {
 		path = "/0"
 	}
@@ -66,10 +66,10 @@ func (r RedisUrl) JwtConfig() store.RedisConfig {
 		db = 0
 	}
 
-	password, _ := url.User.Password()
+	password, _ := u.User.Password()
 
 	return store.RedisConfig{
-		Addr:     url.Host,
+		Addr:     u.Host,
 		Password: password,
 		DB:       db,
 	}

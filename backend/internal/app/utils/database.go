@@ -12,6 +12,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const defaultDirMode os.FileMode = 0o755
+
 func IsValidDatabaseFilename(filename string) bool {
 	validName := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
 
@@ -31,7 +33,7 @@ func ConnectToDatabase(filename string) (*gorm.DB, error) {
 
 	dbDir := filepath.Dir(dbPath)
 
-	if err := os.MkdirAll(dbDir, 0755); err != nil {
+	if err := os.MkdirAll(dbDir, defaultDirMode); err != nil {
 		return nil, fmt.Errorf("unable to create database directory: %w", err)
 	}
 

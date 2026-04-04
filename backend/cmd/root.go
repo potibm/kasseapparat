@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		_ = cmd.Help()
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if err := viper.Unmarshal(&Cfg); err != nil {
@@ -46,20 +46,34 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
-	return rootCmd.Execute()
-}
-
-func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().String("log-level", "info", "Log Level (debug, info, warn, error)")
-	viper.BindPFlag("app.log_level", rootCmd.PersistentFlags().Lookup("log-level"))
+	_ = viper.BindPFlag("app.log_level", rootCmd.PersistentFlags().Lookup("log-level"))
 
 	rootCmd.PersistentFlags().String("log-format", "json", "Log Format (json, text)")
-	viper.BindPFlag("app.log_format", rootCmd.PersistentFlags().Lookup("log-format"))
+	_ = viper.BindPFlag("app.log_format", rootCmd.PersistentFlags().Lookup("log-format"))
 
 	rootCmd.PersistentFlags().String("db-file", "kasseapparat.db", "Dateiname der SQLite Datenbank")
-	viper.BindPFlag("app.db_filename", rootCmd.PersistentFlags().Lookup("db-file"))
+	_ = viper.BindPFlag("app.db_filename", rootCmd.PersistentFlags().Lookup("db-file"))
+
+	rootCmd.AddCommand(NewServeCmd())
+
+	dbCmd := NewDatabaseCmd()
+	dbCmd.AddCommand(
+		NewDbMigrateCmd(),
+		NewDbSeedCmd(),
+		NewDbResetCmd(),
+	)
+	rootCmd.AddCommand(dbCmd)
+
+	userCmd := NewUserCmd()
+	userCmd.AddCommand(
+		NewUserCreateCmd(),
+	)
+	rootCmd.AddCommand(userCmd)
+
+	return rootCmd.Execute()
 }
 
 func initConfig() {

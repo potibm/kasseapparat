@@ -23,111 +23,114 @@ import (
 //go:embed assets
 var staticFiles embed.FS
 
+const (
+	defaultPort = 3000
+)
+
 var (
 	port         int
 	otelEndpoint string
 )
 
-var serveCmd = &cobra.Command{
-	Use:   "serve",
-	Short: "Runs the HTTP server for the Kasseapparat application",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		// 1. Context
-		ctx := cmd.Context()
+func NewServeCmd() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "serve",
+		Short: "Runs the HTTP server for the Kasseapparat application",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// 1. Context
+			ctx := cmd.Context()
 
-		// 2. Initialize Telemetry
-		shutdownFn, err := initializer.InitTelemetry(ctx, otelEndpoint, Cfg.App.Version)
-		if err != nil {
-			return fmt.Errorf("failed to initialize telemetry: %w", err)
-		}
+			// 2. Initialize Telemetry
+			shutdownFn, err := initializer.InitTelemetry(ctx, otelEndpoint, Cfg.App.Version)
+			if err != nil {
+				return fmt.Errorf("failed to initialize telemetry: %w", err)
+			}
 
-		if shutdownFn != nil {
-			defer shutdownFn()
-		}
+			if shutdownFn != nil {
+				defer shutdownFn()
+			}
 
-		// 3. Connect to Database
-		db, err := utils.ConnectToDatabase(Cfg.App.DbFilename)
-		if err != nil {
-			return fmt.Errorf("failed to connect to database: %w", err)
-		}
+			// 3. Connect to Database
+			db, err := utils.ConnectToDatabase(Cfg.App.DbFilename)
+			if err != nil {
+				return fmt.Errorf("failed to connect to database: %w", err)
+			}
 
-		// 4. Initialize external services (Sentry, SumUp, etc.)
-		initializer.InitializeSentry(Cfg.Sentry)
-		initializer.InitializeSumup(Cfg.Sumup)
+			// 4. Initialize external services (Sentry, SumUp, etc.)
+			initializer.InitializeSentry(Cfg.Sentry)
+			initializer.InitializeSumup(Cfg.Sumup)
 
-		// 5. Dependency Injection (Repositories & Middleware)
-		sqliteRepository := sqliteRepo.NewRepository(db, int32(Cfg.Format.Currency.FractionDigitsMax))
-		sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
-		mailer := initializer.InitializeMailer(Cfg.Mailer)
-		jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, Cfg.Jwt, &Cfg.App.RedisURL)
+			// 5. Dependency Injection (Repositories & Middleware)
+			sqliteRepository := sqliteRepo.NewRepository(db, int32(Cfg.Format.Currency.FractionDigitsMax))
+			sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
+			mailer := initializer.InitializeMailer(Cfg.Mailer)
+			jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, Cfg.Jwt, &Cfg.App.RedisURL)
 
-		// 6. Services & Handler
-		purchaseSvc := purchaseService.NewPurchaseService(
-			sqliteRepository,
-			sumupRepository,
-			&mailer,
-			int32(Cfg.Format.Currency.FractionDigitsMax),
-			Cfg.Format.Currency.Code,
-		)
+			// 6. Services & Handler
+			purchaseSvc := purchaseService.NewPurchaseService(
+				sqliteRepository,
+				sumupRepository,
+				&mailer,
+				int32(Cfg.Format.Currency.FractionDigitsMax),
+				Cfg.Format.Currency.Code,
+			)
 
-		websocketHandler := websocket.NewHandler(
-			sqliteRepository,
-			sumupRepository,
-			purchaseSvc,
-			jwtMiddleware,
-			&Cfg.App.CorsAllowOrigins,
-		)
-		publisher := &websocket.WebsocketPublisher{}
-		poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseSvc, publisher)
+			websocketHandler := websocket.NewHandler(
+				sqliteRepository,
+				sumupRepository,
+				purchaseSvc,
+				jwtMiddleware,
+				&Cfg.App.CorsAllowOrigins,
+			)
+			publisher := &websocket.WebsocketPublisher{}
+			poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseSvc, publisher)
 
-		httpHandlerConfig := handlerHttp.HandlerConfig{
-			Repo:            sqliteRepository,
-			SumupRepository: sumupRepository,
-			PurchaseService: purchaseSvc,
-			Monitor:         poller,
-			StatusPublisher: publisher,
-			Mailer:          mailer,
-			AppConfig:       Cfg,
-		}
-		httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
+			httpHandlerConfig := handlerHttp.HandlerConfig{
+				Repo:            sqliteRepository,
+				SumupRepository: sumupRepository,
+				PurchaseService: purchaseSvc,
+				Monitor:         poller,
+				StatusPublisher: publisher,
+				Mailer:          mailer,
+				AppConfig:       Cfg,
+			}
+			httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
-		// 7. Initialize HTTP Server
-		router, err := initializer.InitializeHttpServer(
-			*httpHandler,
-			websocketHandler,
-			*sqliteRepository,
-			staticFiles,
-			jwtMiddleware,
-			Cfg,
-			slog.Default(),
-		)
-		if err != nil {
-			return fmt.Errorf("failed to initialize HTTP server: %w", err)
-		}
+			// 7. Initialize HTTP Server
+			router, err := initializer.InitializeHttpServer(
+				*httpHandler,
+				websocketHandler,
+				*sqliteRepository,
+				staticFiles,
+				jwtMiddleware,
+				Cfg,
+				slog.Default(),
+			)
+			if err != nil {
+				return fmt.Errorf("failed to initialize HTTP server: %w", err)
+			}
 
-		// 8. Start background tasks
-		startPollerForPendingPurchases(poller, sqliteRepository)
-		startCleanupForWebsocketConnections()
+			// 8. Start background tasks
+			startPollerForPendingPurchases(poller, sqliteRepository)
+			startCleanupForWebsocketConnections()
 
-		// 9. Server hochfahren
-		portStr := ":" + strconv.Itoa(port)
-		slog.Info("HTTP server listening", slog.Int("port", port))
+			// 9. Server hochfahren
+			portStr := ":" + strconv.Itoa(port)
+			slog.Info("HTTP server listening", slog.Int("port", port))
 
-		if err := router.Run(portStr); err != nil {
-			return fmt.Errorf("failed to start server: %w", err)
-		}
+			if err := router.Run(portStr); err != nil {
+				return fmt.Errorf("failed to start server: %w", err)
+			}
 
-		return nil
-	},
-}
+			return nil
+		},
+	}
 
-func init() {
-	rootCmd.AddCommand(serveCmd)
-
-	// Flags spezifisch für den Server
-	serveCmd.Flags().IntVarP(&port, "port", "p", 3000, "Set the port number for the server to listen on")
-	serveCmd.Flags().
+	cmd.Flags().IntVarP(&port, "port", "p", defaultPort, "Set the port number for the server to listen on")
+	cmd.Flags().
 		StringVar(&otelEndpoint, "otel-endpoint", "", "Set the OpenTelemetry endpoint (e.g., localhost:4317)")
+
+	return cmd
 }
 
 func startCleanupForWebsocketConnections() {

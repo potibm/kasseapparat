@@ -134,15 +134,20 @@ func authenticator(repo UserAuthenticator) func(c *gin.Context) (any, error) {
 	return func(c *gin.Context) (any, error) {
 		var loginVals login
 		if err := c.ShouldBind(&loginVals); err != nil {
+			slog.Warn("Missing login values", "error", err)
+
 			return "", ginjwt.ErrMissingLoginValues
 		}
 
 		login := strings.TrimSpace(loginVals.Login)
 		password := strings.TrimSpace(loginVals.Password)
 
+		slog.Info("Attempting login for user", "login", login)
+
 		user, err := repo.GetUserByLoginAndPassword(login, password)
 		if err == nil {
 			c.Set(IdentityKey, user) // Set the user in the context
+			slog.Info("Login successful for user", "login", login, "user_id", user.ID)
 
 			return user, nil
 		}
@@ -197,6 +202,7 @@ func unauthorized() func(c *gin.Context, code int, message string) {
 }
 
 func loginResponse(c *gin.Context, token *ginjwtCore.Token) {
+	slog.Info("generating login request")
 	authEventsCounter.Add(context.Background(), 1,
 		metric.WithAttributes(
 			attribute.String("event_type", "login"),
