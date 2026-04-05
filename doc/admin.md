@@ -65,11 +65,9 @@ Kasseapparat comes with a powerful built-in CLI to manage the application.
 ### Global Flags
 These flags can be appended to almost any command:
 
-- `--port=3000` (override the webserver port)
 - `--log-level=info` (or debug, warn, error)
 - `--log-format=json` (or text)
 - `--db-file="kasseapparat.db"` (to set the SQLite filename)
-- `--otel-endpoint="localhost:4317"` (to set an OpenTelemetry endpoint)
 
 ### Available Commands
 
