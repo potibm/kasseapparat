@@ -27,6 +27,10 @@ var rootCmd = &cobra.Command{
 		_ = cmd.Help()
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if err := loadConfig(); err != nil {
+			return err
+		}
+
 		if Version != "" {
 			viper.Set("app.version", Version)
 		}
@@ -61,8 +65,6 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
-	cobra.OnInitialize(initConfig)
-
 	rootCmd.PersistentFlags().String("log-level", "info", "Log Level (debug, info, warn, error)")
 	_ = viper.BindPFlag("app.log_level", rootCmd.PersistentFlags().Lookup("log-level"))
 
@@ -93,16 +95,22 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-func initConfig() {
+func loadConfig() error {
 	_ = godotenv.Load()
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 
-	_ = viper.ReadInConfig()
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return fmt.Errorf("error reading config file: %w", err)
+		}
+	}
 
 	config.InitViper()
+
+	return nil
 }
 
 func setupLogger(format, level string) {

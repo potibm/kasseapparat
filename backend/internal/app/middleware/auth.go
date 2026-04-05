@@ -198,7 +198,6 @@ func unauthorized() func(c *gin.Context, code int, message string) {
 }
 
 func loginResponse(c *gin.Context, token *ginjwtCore.Token) {
-	slog.Info("generating login request")
 	authEventsCounter.Add(context.Background(), 1,
 		metric.WithAttributes(
 			attribute.String("event_type", "login"),
