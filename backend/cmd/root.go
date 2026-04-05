@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -16,6 +18,12 @@ import (
 var Version = "dev"
 
 var Cfg config.Config
+
+const (
+	logFormatFlagName    = "log-format"
+	logLevelFagName      = "log-level"
+	databaseFileFlagName = "db-file"
+)
 
 var rootCmd = &cobra.Command{
 	Use:           "kasseapparat",
@@ -52,7 +60,7 @@ var rootCmd = &cobra.Command{
 			return fmt.Errorf("invalid configuration: %w", err)
 		}
 
-		if !cmd.Flags().Changed("log-format") {
+		if !cmd.Flags().Changed(logFormatFlagName) {
 			if cmd.Name() != "serve" {
 				Cfg.App.LogFormat = "text"
 			}
@@ -65,14 +73,14 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
-	rootCmd.PersistentFlags().String("log-level", "info", "Log Level (debug, info, warn, error)")
-	_ = viper.BindPFlag("app.log_level", rootCmd.PersistentFlags().Lookup("log-level"))
+	rootCmd.PersistentFlags().String(logLevelFagName, "info", "Log Level (debug, info, warn, error)")
+	_ = viper.BindPFlag("app.log_level", rootCmd.PersistentFlags().Lookup(logLevelFagName))
 
-	rootCmd.PersistentFlags().String("log-format", "json", "Log Format (json, text)")
-	_ = viper.BindPFlag("app.log_format", rootCmd.PersistentFlags().Lookup("log-format"))
+	rootCmd.PersistentFlags().String(logFormatFlagName, "json", "Log Format (json, text)")
+	_ = viper.BindPFlag("app.log_format", rootCmd.PersistentFlags().Lookup(logFormatFlagName))
 
-	rootCmd.PersistentFlags().String("db-file", "kasseapparat.db", "Dateiname der SQLite Datenbank")
-	_ = viper.BindPFlag("app.db_filename", rootCmd.PersistentFlags().Lookup("db-file"))
+	rootCmd.PersistentFlags().String(databaseFileFlagName, "kasseapparat.db", "Dateiname der SQLite Datenbank")
+	_ = viper.BindPFlag("app.db_filename", rootCmd.PersistentFlags().Lookup(databaseFileFlagName))
 
 	rootCmd.AddCommand(NewServeCmd())
 
@@ -115,4 +123,15 @@ func loadConfig() error {
 
 func setupLogger(format, level string) {
 	initializer.InitLogger(format, level)
+}
+
+func confirm(question string) bool {
+	fmt.Printf("WARNING: %s\n", question)
+	fmt.Print("Are you sure? [y/N]: ")
+
+	reader := bufio.NewReader(os.Stdin)
+	response, _ := reader.ReadString('\n')
+	response = strings.TrimSpace(strings.ToLower(response))
+
+	return response == "y" || response == "yes"
 }
