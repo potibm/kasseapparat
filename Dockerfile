@@ -57,4 +57,5 @@ VOLUME [ "/app/data" ]
 
 EXPOSE 8080
 
-CMD ["/app/kasseapparat", "serve"]
+ENTRYPOINT ["/app/kasseapparat"]
+CMD ["serve"]

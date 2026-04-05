@@ -8,6 +8,7 @@ backend/data/
 backend/cmd/assets/
 backend/.env
 backend/.env.backup.*
+backend/config.yaml
 backend/VERSION
 backend/coverage.*
 backend/tmp
