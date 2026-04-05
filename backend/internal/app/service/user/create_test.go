@@ -24,7 +24,7 @@ type MockMailer struct {
 	mock.Mock
 }
 
-func (m *MockMailer) SendNewUserTokenMail(email string, userID uint, username string, token string) error {
+func (m *MockMailer) SendNewUserTokenMail(email string, userID uint, username, token string) error {
 	args := m.Called(email, userID, username, token)
 
 	return args.Error(0)
