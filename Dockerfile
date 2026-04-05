@@ -13,13 +13,8 @@ RUN npm run build -- --outDir ./build
 # ==========================================
 # Build the backend
 # ==========================================
-FROM --platform=$BUILDPLATFORM golang:1.26-bookworm AS backend-build
+FROM golang:1.26-bookworm AS backend-build
 WORKDIR /app/backend
-
-RUN apt-get update -o Acquire::http::No-Cache=True && \
-    apt-get install -y --no-install-recommends \
-    ca-certificates g++ gcc && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
@@ -28,18 +23,17 @@ COPY backend .
 COPY --from=frontend-build /app/frontend/build ./cmd/assets
 
 ARG VERSION
-RUN CGO_ENABLED=1 go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat . 
+RUN CGO_ENABLED=0 go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat . 
 
 # ==========================================
 # Create the final image
 # ==========================================
-FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS runtime
+FROM alpine:3.23 AS runtime
 WORKDIR /app
 
-RUN apt-get update -o Acquire::http::No-Cache=True && \
-    apt-get install -y --no-install-recommends ca-certificates && \
-    useradd -m -s /bin/bash appuser && \
-    rm -rf /var/lib/apt/lists/* 
+RUN apk update --no-cache && \
+    apk add --no-cache ca-certificates bash tzdata && \
+    adduser -D -h /app -s /bin/bash appuser
 
 ARG BUILD_DATE
 ARG VERSION
