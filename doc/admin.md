@@ -63,6 +63,7 @@ Using the default value is a major security risk. You must provide a secure key 
 Kasseapparat comes with a powerful built-in CLI to manage the application.
 
 ### Global Flags
+
 These flags can be appended to almost any command:
 
 - `--log-level=info` (or debug, warn, error)
@@ -77,7 +78,6 @@ These flags can be appended to almost any command:
 - `kasseapparat database reset`: Drops all tables and recreates them from scratch (WARNING: Deletes all data!).
 - `kasseapparat user create`: Interactive or flag-based command to create a new user.
 - `kasseapparat config`: Prints the final, merged configuration (YAML + .env + CLI flags) as a JSON tree. Sensitive data like secrets and API keys are automatically redacted for safety.
-
 
 ### SENTRY
 
