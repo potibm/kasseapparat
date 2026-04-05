@@ -120,3 +120,34 @@ func TestSeedDatabase(t *testing.T) {
 		SeedDatabase(db, false) // Test with includeTestData = false
 	})
 }
+
+func TestCloseDatabase(t *testing.T) {
+	db, err := ConnectToLocalDatabase()
+	require.NoError(t, err)
+
+	err = CloseDatabase(db)
+	assert.NoError(t, err)
+
+	err = db.Exec("SELECT 1").Error
+	assert.Error(t, err, "Operations should fail after closing the database")
+}
+
+func TestConnectToDatabaseDirectoryCreation(t *testing.T) {
+	tmpDir := t.TempDir()
+	originalWd, _ := os.Getwd()
+
+	err := os.Chdir(tmpDir)
+	require.NoError(t, err)
+
+	defer os.Chdir(originalWd)
+
+	db, err := ConnectToDatabase("new_db")
+	assert.NoError(t, err)
+	assert.NotNil(t, db)
+
+	info, err := os.Stat("data")
+	assert.NoError(t, err)
+	assert.True(t, info.IsDir())
+
+	_ = CloseDatabase(db)
+}
