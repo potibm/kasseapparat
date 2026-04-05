@@ -25,10 +25,11 @@ import {
   Guest as GuestType,
 } from "../utils/api.schemas";
 import { createLogger } from "@core/logger/logger";
+import { ToastProvider } from "@pos/features/ui/toast/providers/ToastProvider";
 
 const logPurchase = createLogger("Purchase");
 
-const Kasseapparat: React.FC = () => {
+const KasseapparatContent: React.FC = () => {
   const { apiHost, environmentMessage } = useConfig();
   const { username, getSafeToken, id: userId } = useAuth();
 
@@ -47,7 +48,7 @@ const Kasseapparat: React.FC = () => {
     loading: _productsLoading,
     refreshProducts,
     addInterest,
-  } = useProducts(apiHost, getSafeToken, showError);
+  } = useProducts(apiHost, getSafeToken);
 
   const {
     cart,
@@ -66,7 +67,7 @@ const Kasseapparat: React.FC = () => {
     refreshHistory,
     refundPurchase,
     loading: historyLoading,
-  } = usePurchaseHistory(apiHost, getSafeToken, userId, showError);
+  } = usePurchaseHistory(apiHost, getSafeToken, userId);
 
   const handlePurchaseSuccess = useCallback(async () => {
     await Promise.all([refreshHistory(), refreshProducts()]);
@@ -182,6 +183,14 @@ const Kasseapparat: React.FC = () => {
         addProductInterest={(p: ProductType) => addInterest(p.id)}
       />
     </PosLayout>
+  );
+};
+
+export const Kasseapparat: React.FC = () => {
+  return (
+    <ToastProvider>
+      <KasseapparatContent />
+    </ToastProvider>
   );
 };
 

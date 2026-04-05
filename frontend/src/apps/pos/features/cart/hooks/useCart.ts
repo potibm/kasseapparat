@@ -8,6 +8,7 @@ import {
   Guest as GuestType,
 } from "../../../utils/api.schemas";
 import { createLogger } from "@core/logger/logger";
+import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 
 const cartLog = createLogger("Cart");
 const purchaseLog = createLogger("Purchase");
@@ -21,6 +22,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
   const [checkoutProcessing, setCheckoutProcessing] = useState<string | null>(
     null,
   );
+  const { showToast } = useToast();
 
   const add = useCallback(
     (product: ProductType, count: number, listItem: GuestType | null) => {
@@ -80,6 +82,10 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
         purchaseLog.info("Purchase confirmed immediately", {
           purchaseId: createdPurchase.id,
         });
+        showToast({
+          type: "success",
+          message: "Purchase completed successfully!",
+        });
         return createdPurchase;
       }
 
@@ -90,6 +96,12 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
         "Error during checkout",
         error instanceof Error ? { message: error.message } : { error },
       );
+      showToast({
+        type: "error",
+        message: "An error occurred while processing the purchase.",
+        autoClose: false,
+      });
+
       setCheckoutProcessing(null);
       throw error;
     }

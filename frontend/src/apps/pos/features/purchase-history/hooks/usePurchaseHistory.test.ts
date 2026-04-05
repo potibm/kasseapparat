@@ -19,10 +19,16 @@ vi.mock("@core/logger/logger", () => ({
   }),
 }));
 
+const mockShowToast = vi.fn();
+vi.mock("@pos/features/ui/toast/hooks/useToast", () => ({
+  useToast: () => ({
+    showToast: mockShowToast,
+  }),
+}));
+
 // fixture data
 const mockApiHost = "https://api.example.com";
 const mockGetToken = vi.fn(async () => "fake-token");
-const mockOnError = vi.fn();
 const mockUserId = 42;
 
 const mockPurchases = [
@@ -46,7 +52,7 @@ describe("usePurchaseHistory Hook", () => {
   describe("Initialization (loadHistory)", () => {
     it("should NOT fetch anything and return an empty array if userId is falsy", async () => {
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, 0, mockOnError),
+        usePurchaseHistory(mockApiHost, mockGetToken, 0),
       );
 
       await waitFor(() => {
@@ -61,7 +67,7 @@ describe("usePurchaseHistory Hook", () => {
       vi.mocked(fetchPurchases).mockResolvedValue(mockPurchases);
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId, mockOnError),
+        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
       );
 
       expect(result.current.loading).toBe(true);
@@ -76,7 +82,7 @@ describe("usePurchaseHistory Hook", () => {
         mockUserId,
       );
       expect(result.current.history).toEqual(mockPurchases);
-      expect(mockOnError).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
     });
 
     it("should trigger onError and set empty history if fetching throws an Error object", async () => {
@@ -84,7 +90,7 @@ describe("usePurchaseHistory Hook", () => {
       vi.mocked(fetchPurchases).mockRejectedValue(apiError);
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId, mockOnError),
+        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
       );
 
       await waitFor(() => {
@@ -92,16 +98,19 @@ describe("usePurchaseHistory Hook", () => {
       });
 
       expect(result.current.history).toEqual([]);
-      expect(mockOnError).toHaveBeenCalledWith(
-        "Error while loading the purchase history: Database unreachable",
-      );
+      expect(mockShowToast).toHaveBeenCalledWith({
+        autoClose: false,
+        message:
+          "Error while loading the purchase history: Database unreachable",
+        type: "error",
+      });
     });
 
     it("should trigger onError with a fallback message if fetching throws a non-Error", async () => {
       vi.mocked(fetchPurchases).mockRejectedValue("Weird backend crash string");
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId, mockOnError),
+        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
       );
 
       await waitFor(() => {
@@ -109,7 +118,11 @@ describe("usePurchaseHistory Hook", () => {
       });
 
       expect(result.current.history).toEqual([]);
-      expect(mockOnError).toHaveBeenCalledWith("An unknown error has occurred");
+      expect(mockShowToast).toHaveBeenCalledWith({
+        autoClose: false,
+        message: "An unknown error has occurred",
+        type: "error",
+      });
     });
   });
 
@@ -121,7 +134,7 @@ describe("usePurchaseHistory Hook", () => {
       );
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId, mockOnError),
+        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -147,7 +160,7 @@ describe("usePurchaseHistory Hook", () => {
       vi.mocked(refundPurchaseById).mockRejectedValue(refundError);
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId, mockOnError),
+        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -158,9 +171,11 @@ describe("usePurchaseHistory Hook", () => {
         ).rejects.toThrow("Refund denied by bank");
       });
 
-      expect(mockOnError).toHaveBeenCalledWith(
-        "Error while refunding the purchase: Refund denied by bank",
-      );
+      expect(mockShowToast).toHaveBeenCalledWith({
+        autoClose: false,
+        message: "Error while refunding the purchase: Refund denied by bank",
+        type: "error",
+      });
     });
 
     it("should trigger onError AND re-throw with fallback if refunding throws a non-Error", async () => {
@@ -168,7 +183,7 @@ describe("usePurchaseHistory Hook", () => {
       vi.mocked(refundPurchaseById).mockRejectedValue({ some: "weird object" });
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId, mockOnError),
+        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -179,7 +194,11 @@ describe("usePurchaseHistory Hook", () => {
         ).rejects.toEqual({ some: "weird object" });
       });
 
-      expect(mockOnError).toHaveBeenCalledWith("An unknown error has occurred");
+      expect(mockShowToast).toHaveBeenCalledWith({
+        autoClose: false,
+        message: "An unknown error has occurred",
+        type: "error",
+      });
     });
   });
 });
