@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/glebarez/sqlite"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
