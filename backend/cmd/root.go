@@ -27,6 +27,10 @@ var rootCmd = &cobra.Command{
 		_ = cmd.Help()
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if Version != "" {
+			viper.Set("app.version", Version)
+		}
+
 		err := viper.Unmarshal(&Cfg, viper.DecodeHook(
 			mapstructure.ComposeDecodeHookFunc(
 				mapstructure.StringToSliceHookFunc(","),
@@ -39,10 +43,6 @@ var rootCmd = &cobra.Command{
 		}
 
 		Cfg.App.CorsAllowOrigins = strings.Split(viper.GetString("app.cors_allow_origins"), ",")
-
-		if Version != "" {
-			Cfg.App.Version = Version
-		}
 
 		if err := Cfg.Validate(); err != nil {
 			return fmt.Errorf("invalid configuration: %w", err)

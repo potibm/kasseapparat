@@ -12,6 +12,7 @@ import (
 	ginjwtCore "github.com/appleboy/gin-jwt/v3/core"
 	"github.com/appleboy/gin-jwt/v3/store"
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/exitcode"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"go.opentelemetry.io/otel"
@@ -98,10 +99,8 @@ func InitParams(
 	secureCookie bool,
 	redisConfig *store.RedisConfig,
 ) *ginjwt.GinJWTMiddleware {
-	if secret == "" {
-		slog.Warn("JWT_SECRET is not set, using default value")
-
-		secret = "secret"
+	if secret == config.DefaultJwtSecret{
+		slog.Warn("Beware, JWT_SECRET is set to the default value. This is not recommended for production use.")
 	}
 
 	useRedisStore := redisConfig != nil
