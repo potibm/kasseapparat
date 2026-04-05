@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/joho/godotenv"
 	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
@@ -25,8 +27,21 @@ var rootCmd = &cobra.Command{
 		_ = cmd.Help()
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if err := viper.Unmarshal(&Cfg); err != nil {
+		err := viper.Unmarshal(&Cfg, viper.DecodeHook(
+			mapstructure.ComposeDecodeHookFunc(
+				mapstructure.StringToSliceHookFunc(","),
+				mapstructure.StringToTimeDurationHookFunc(),
+				mapstructure.StringToTimeHookFunc(time.RFC3339),
+			),
+		))
+		if err != nil {
 			return fmt.Errorf("error parsing the config: %w", err)
+		}
+
+		Cfg.App.CorsAllowOrigins = strings.Split(viper.GetString("app.cors_allow_origins"), ",")
+
+		if Version != "" {
+			Cfg.App.Version = Version
 		}
 
 		if err := Cfg.Validate(); err != nil {
@@ -73,13 +88,13 @@ func Execute() error {
 	)
 	rootCmd.AddCommand(userCmd)
 
+	rootCmd.AddCommand(NewConfigCmd())
+
 	return rootCmd.Execute()
 }
 
 func initConfig() {
 	_ = godotenv.Load()
-
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")

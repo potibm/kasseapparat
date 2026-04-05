@@ -27,6 +27,6 @@ cd ..
 [ -f $DIST_DIR/.env ] || cp backend/.env.example $DIST_DIR/.env
 mkdir -p $DIST_DIR/data
 cd $DIST_DIR 
-./kasseapparat database reset --force --test-data 
+./kasseapparat database migrate
 
 echo "✅ Build complete in ./$DIST_DIR"

@@ -20,6 +20,12 @@ func NewDbMigrateCmd() *cobra.Command {
 				return fmt.Errorf("failed to connect to database: %w", err)
 			}
 
+			defer func() {
+				if closeErr := utils.CloseDatabase(db); closeErr != nil {
+					slog.Error("Failed to close database connection", "error", closeErr)
+				}
+			}()
+
 			err = utils.MigrateDatabase(db)
 			if err != nil {
 				return fmt.Errorf("failed to migrate database: %w", err)

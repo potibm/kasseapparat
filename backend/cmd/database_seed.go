@@ -22,6 +22,12 @@ func NewDbSeedCmd() *cobra.Command {
 				return fmt.Errorf("failed to connect to database: %w", err)
 			}
 
+			defer func() {
+				if closeErr := utils.CloseDatabase(db); closeErr != nil {
+					slog.Error("Failed to close database connection", "error", closeErr)
+				}
+			}()
+
 			utils.SeedDatabase(db, includeTestData)
 
 			slog.Info("Seed completed successfully!")

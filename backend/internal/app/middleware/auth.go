@@ -145,7 +145,7 @@ func authenticator(repo UserAuthenticator) func(c *gin.Context) (any, error) {
 		user, err := repo.GetUserByLoginAndPassword(login, password)
 		if err == nil {
 			c.Set(IdentityKey, user) // Set the user in the context
-		
+
 			return user, nil
 		}
 

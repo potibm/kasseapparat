@@ -44,6 +44,12 @@ func NewDbResetCmd() *cobra.Command {
 				return fmt.Errorf("could not connect to database: %w", err)
 			}
 
+			defer func() {
+				if closeErr := utils.CloseDatabase(db); closeErr != nil {
+					slog.Error("Failed to close database connection", "error", closeErr)
+				}
+			}()
+
 			slog.Info("Deleting old tables...")
 
 			if err := utils.PurgeDatabase(db); err != nil {

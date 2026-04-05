@@ -106,3 +106,16 @@ func SeedDatabase(db *gorm.DB, includeTestData bool) {
 	seed := NewDatabaseSeed(db)
 	seed.Seed(includeTestData)
 }
+
+func CloseDatabase(db *gorm.DB) error {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get database connection: %w", err)
+	}
+
+	if err := sqlDB.Close(); err != nil {
+		return fmt.Errorf("failed to close database connection: %w", err)
+	}
+
+	return nil
+}
