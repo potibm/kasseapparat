@@ -2,6 +2,7 @@ package tests_e2e
 
 import (
 	"embed"
+	"log"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -39,33 +40,55 @@ func TestMain(m *testing.M) {
 }
 
 func setup() {
-	db = utils.ConnectToLocalDatabase()
-	utils.PurgeDatabase(db)
-	utils.MigrateDatabase(db)
+	var err error
+
+	db, err = utils.ConnectToLocalDatabase()
+	if err != nil {
+		log.Fatal("Failed to connect to database: ", err)
+	}
+
+	err = utils.PurgeDatabase(db)
+	if err != nil {
+		log.Fatal("Failed to purge database: ", err)
+	}
+
+	err = utils.MigrateDatabase(db)
+	if err != nil {
+		log.Fatal("Failed to migrate database: ", err)
+	}
+
 	utils.SeedDatabase(db, true)
 }
 
 func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFunc func()) {
 	cfg := config.Config{
-		AppConfig: config.AppConfig{
-			Version: "0.1.2",
-			GinMode: "test",
+		App: config.AppConfig{
+			Version:            "0.1.2",
+			GinMode:            "debug",
+			LogLevel:           "debug",
+			LogFormat:          "text",
+			RedisURL:           "",
+			Environment:        "test",
+			EnvironmentMessage: "Test environment",
+			CorsAllowOrigins:   []string{"http://localhost:3000"},
 		},
-		FormatConfig: config.FormatConfig{
-			FractionDigitsMax: 2,
-			CurrencyCode:      "DKK",
-			CurrencyLocale:    "dk-DK",
-			DateLocale:        "dk-DK",
-			DateOptions:       config.DefaultDateOptions,
-			FractionDigitsMin: 0,
+		Format: config.FormatConfig{
+			Currency: config.CurrencyFormatConfig{
+				Code:              "DKK",
+				Locale:            "dk-DK",
+				FractionDigitsMax: 2,
+				FractionDigitsMin: 0,
+			},
+			Date: config.DateFormatConfig{
+				Locale:  "dk-DK",
+				Options: config.DefaultDateOptions,
+			},
 		},
-		JwtConfig: config.JwtConfig{
+		Jwt: config.JwtConfig{
 			Realm:  "",
 			Secret: "test",
 		},
-		VATRates:           config.DefaultVatRates,
-		EnvironmentMessage: "Test environment",
-		CorsAllowOrigins:   []string{"http://localhost:3000"},
+		VATRates: config.DefaultVatRates,
 		PaymentMethods: config.PaymentMethods{
 			{Code: models.PaymentMethodCash, Name: "Cash"},
 			{Code: models.PaymentMethodCC, Name: "Creditcard"},
@@ -73,19 +96,19 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		},
 	}
 
-	sqliteRp := sqliteRepo.NewRepository(db, int32(cfg.FormatConfig.FractionDigitsMax))
+	sqliteRp := sqliteRepo.NewRepository(db, int32(cfg.Format.Currency.FractionDigitsMax))
 	sumupRp := NewMockSumUpRepository()
 	mail, _ := mailer.NewMailer("smtp://127.0.0.1:1025")
 	mail.SetDisabled(true)
 
-	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRp, cfg.JwtConfig, nil)
+	jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRp, cfg.Jwt, nil)
 
 	purchaseSrvc := purchaseService.NewPurchaseService(
 		sqliteRp,
 		sumupRp,
 		mail,
-		int32(cfg.FormatConfig.FractionDigitsMax),
-		cfg.FormatConfig.CurrencyCode,
+		int32(cfg.Format.Currency.FractionDigitsMax),
+		cfg.Format.Currency.Code,
 	)
 
 	statusPublisher := MockStatusPublisher{}
@@ -106,10 +129,10 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		sumupRp,
 		purchaseSrvc,
 		jwtMiddleware,
-		&cfg.CorsAllowOrigins,
+		&cfg.App.CorsAllowOrigins,
 	)
 
-	router, _ := initializer.InitializeHttpServer(
+	router, err := initializer.InitializeHttpServer(
 		*handlerHttpObj,
 		websocketHandler,
 		*sqliteRp,
@@ -118,13 +141,17 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		cfg,
 		logger,
 	)
+	if err != nil {
+		log.Fatal("Failed to initialize HTTP server: ", err)
+	}
 
 	ts := httptest.NewServer(router)
 
 	e = httpexpect.WithConfig(httpexpect.Config{
+		BaseURL: ts.URL,
 		Client: &http.Client{
-			Transport: httpexpect.NewBinder(router),
-			Jar:       httpexpect.NewCookieJar(),
+			//Transport: httpexpect.NewBinder(router),
+			Jar: httpexpect.NewCookieJar(),
 		},
 		Reporter: httpexpect.NewAssertReporter(t),
 		Printers: []httpexpect.Printer{

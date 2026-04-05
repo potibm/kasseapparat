@@ -20,14 +20,13 @@ cd ..
 # 3. Build backend
 mkdir -p $DIST_DIR
 cd backend
-go build -ldflags "-X main.version=$VERSION" -o ../$DIST_DIR/kasseapparat ./cmd/main.go
-go build -ldflags "-X main.version=$VERSION" -o ../$DIST_DIR/kasseapparat-tool ./tools/main.go
+go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=$VERSION" -o ../$DIST_DIR/kasseapparat ./main.go
 cd ..
 
 # 4. Prepare artefacts
 [ -f $DIST_DIR/.env ] || cp backend/.env.example $DIST_DIR/.env
 mkdir -p $DIST_DIR/data
 cd $DIST_DIR 
-./kasseapparat-tool --seed --purge
+./kasseapparat database migrate
 
 echo "✅ Build complete in ./$DIST_DIR"

@@ -2,7 +2,7 @@
 
 This documentation will give hints how to set up Kasseapparat on a server.
 
-## Prequisites
+## Prerequisites
 
 ### Server
 
@@ -26,60 +26,28 @@ Find a list below with hardware that was tried and tested at demoparties (feel f
 - create directory /app/kassepparat/data
 - create directory /app/kassepparat/backup
 
-## Command line flags
+## Configuration Strategy
 
-On startup you can override the defaults for the webserver port and logging.
+Kasseapparat uses a hybrid configuration approach to give you the best of both worlds:
 
-- --port=3000
-- --log-level=info (or debug, warn, error)
-- --log-format=json (or text)
-- --db-file="kasseapparat" (to set the sqlite filename)
-- --otel-endpoint="localhost:4317" (to set an OpenTelemetry endpoint)
+1. `config.yaml`: Used for structured, static business data (like VAT rates, payment methods, and locale formatting).
 
-## create /app/kasseapparat/.env
+2. `.env`: Used for environment-specific settings (like URLs) and strict secrets (like API keys and JWT passwords).
 
-```
-CORS_ALLOW_ORIGINS=https://localhost:3000,http://localhost:8080
-CURRENCY_CODE=EUR
-CURRENCY_LOCALE=de-DE
-DATE_LOCALE=de-DE
-DATE_OPTIONS_WEEKDAY=long
-DATE_OPTIONS_HOUR=2-digit
-DATE_OPTIONS_MINUTE=2-digit
-ENV_MESSAGE=
-FRACTION_DIGITS_MAX=2
-FRACTION_DIGITS_MIN=0
-FRONTEND_URL=https://localhost:3000
-GIN_MODE=release
-JWT_REALM=Kasseapparat
-JWT_SECRET=secret
-JWT_SECURE_COOKIE=true
-MAIL_DSN=smtp://localhost:2025
-MAIL_FROM=kasseapparat<kasseapparat@example.com>
-MAIL_SUBJECT_PREFIX=[Kasseapparat]
-PAYMENT_METHODS=CASH,CC,SUMUP,VOUCHER
-REDIS_URL="" # leave empty to use in-memory store, redis://127.0.0.1:6379/0
-SENTRY_DSN=
-SENTRY_ENVIRONMENT=development
-SENTRY_REPLAY_ERROR_SAMPLE_RATE=1
-SENTRY_REPLAY_SESSION_SAMPLE_RATE=0.1
-SENTRY_TRACE_SAMPLE_RATE=0.1
-SUMUP_AFFILIATE_KEY=
-SUMUP_API_KEY="" # see doc/sumup.md, sup_sk_LZFWoLyd...
-SUMUP_APPLICATION_ID=
-SUMUP_MERCHANT_CODE=""
-SUMUP_PUBLIC_URL="" # needs to be an https URL
-VAT_RATES_0=0:Exempt
-VAT_RATES_1=7:Reduced
-VAT_RATES_2=19:Standard
-```
+### 1. Create /app/kasseapparat/config.yaml
 
-### JWT_SECRET
+Copy the [`config.yaml.example`](../backend/config.yaml.example) from the repository to your server and rename it to `config.yaml`. Open it and adjust the business rules (like currencies and VAT rates) to your needs.
 
-Generate a random JWT secret e.g. by calling
+### 2. Create /app/kasseapparat/.env
+
+Copy the [`.env.example`](../backend/.env.example) from the repository to your server and rename it to `.env`. Fill in your specific URLs, SMTP credentials, and API keys.
+
+#### Important: JWT_SECRET
+
+Generate a random JWT secret using one of these commands:
 
 ```bash
-< /dev/urandom tr -dc 'A-Za-z0-9!@#$%^&*()_+=' | head -c 16
+< /dev/urandom tr -dc 'A-Za-z0-9!@#$%^&*()_+=' | head -c 32
 ```
 
 or
@@ -88,7 +56,28 @@ or
 openssl rand -base64 32
 ```
 
-Using the default value is a major security risk. You should really add some entrophy here.
+Using the default value is a major security risk. You must provide a secure key (minimum 8 characters, 32+ recommended).
+
+## Command Line Interface (CLI)
+
+Kasseapparat comes with a powerful built-in CLI to manage the application.
+
+### Global Flags
+
+These flags can be appended to almost any command:
+
+- `--log-level=info` (or debug, warn, error)
+- `--log-format=json` (or text)
+- `--db-file="kasseapparat.db"` (to set the SQLite filename)
+
+### Available Commands
+
+- `kasseapparat serve`: Starts the main web server and API.
+- `kasseapparat database migrate`: Creates or updates the database tables to the latest schema.
+- `kasseapparat database seed`: Fills the database with dummy data (useful for development).
+- `kasseapparat database reset`: Drops all tables and recreates them from scratch (WARNING: Deletes all data!).
+- `kasseapparat user create`: Interactive or flag-based command to create a new user.
+- `kasseapparat config`: Prints the final, merged configuration (YAML + .env + CLI flags) as a JSON tree. Sensitive data like secrets and API keys are automatically redacted for safety.
 
 ### SENTRY
 
@@ -149,13 +138,13 @@ services:
     restart: always
     volumes:
       - ./data:/app/kasseapparat/data
+      - ./config.yaml:/app/config.yaml
     env_file: ".env"
     environment:
-      - "GIN_MODE=release"
+      - "APP_GIN_MODE=release"
       - "JWT_REALM=Kasseapparat"
       - "JWT_SECRET=${JWT_SECRET}"
-      - "JWT_TIMEOUT=10"
-      - "CORS_ALLOW_ORIGINS=https://kasseapparat.example.com"
+      - "APP_CORS_ALLOW_ORIGINS=https://kasseapparat.example.com"
     labels:
       - traefik.enable=true
       - traefik.http.routers.kasseapparat.entrypoints=websecure
@@ -219,7 +208,7 @@ else
 fi
 
 # Execute any necessary commands inside the container
-docker compose exec kasseapparat /app/kasseapparat-tool
+docker compose run --rm kasseapparat database migrate
 
 # Optional: Clean up dangling images
 docker image prune -f
@@ -246,7 +235,7 @@ docker run --rm ghcr.io/potibm/kasseapparat:latest id appuser
 ### Create Database
 
 ```bash
-docker compose exec kasseapparat /app/kasseapparat-tool
+docker compose run --rm kasseapparat database seed --test-data
 ```
 
 ### Username and Email Requirements
@@ -278,7 +267,7 @@ This minimal restriction model allows flexibility for everyone while ensuring th
 Call
 
 ```bash
-docker compose exec kasseapparat /app/kasseapparat-tool -create-user username -create-user-email email@example.com -create-user-admin
+docker compose run --rm kasseapparat user create
 ```
 
 to create a user called "username" with the email "email@example.com" as an admin. You should receive an email to change your password.
@@ -287,7 +276,7 @@ Just edit the command accordingly.
 
 ### Create multiple users
 
-Create /app/kasseapparat/data/user.txt with the following structure (please, edit accordingly)
+Create `/app/kasseapparat/data/user.txt` with the following structure (please, edit accordingly)
 
 ```csv
 john_doe,john.doe@company.com,true
@@ -298,7 +287,7 @@ tech_lead,tech.lead@company.com,true
 Call
 
 ```bash
-docker compose exec kasseapparat /app/kasseapparat-tool -import-users /data/user.txt
+docker compose run --rm kasseapparat user import /data/user.txt
 ```
 
 to create the three users provided. Each user should receive an email to change their password.

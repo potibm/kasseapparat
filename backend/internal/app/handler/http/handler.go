@@ -45,6 +45,6 @@ func NewHandler(cfg HandlerConfig) *Handler {
 		statusPublisher: cfg.StatusPublisher,
 		mailer:          cfg.Mailer,
 		config:          cfg.AppConfig,
-		decimalPlaces:   int32(cfg.AppConfig.FormatConfig.FractionDigitsMax),
+		decimalPlaces:   int32(cfg.AppConfig.Format.Currency.FractionDigitsMax),
 	}
 }
