@@ -229,7 +229,7 @@ sudo chown 1000:1000 /app/kassepparat/data
 You can check those values by running
 
 ```bash
-docker compose run --rm ghcr.io/potibm/kasseapparat:latest id appuser
+docker run --rm ghcr.io/potibm/kasseapparat:latest id appuser
 ```
 
 ### Create Database
