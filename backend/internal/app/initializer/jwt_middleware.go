@@ -17,7 +17,7 @@ type UserAuthenticator interface {
 func InitializeJwtMiddleware(
 	repository UserAuthenticator,
 	jwtConfig config.JwtConfig,
-	redisConfig *config.RedisConfig,
+	redisConfig *config.RedisUrl,
 ) *jwt.GinJWTMiddleware {
 	const timeout = 10 // Duration that a JWT token is valid, in minutes
 

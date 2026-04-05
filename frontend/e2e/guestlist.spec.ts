@@ -11,7 +11,7 @@ test.describe("guestlist", () => {
 
   test.describe("free product", () => {
     test.beforeEach(async ({ page }) => {
-      resetDatabase();
+      await resetDatabase();
 
       const loginPage = new LoginPage(page);
       await loginPage.loginSuccessfully("demo", "demo");

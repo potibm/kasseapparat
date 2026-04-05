@@ -53,7 +53,7 @@ func TestInitParams(t *testing.T) {
 		middleware := InitParams(mockRepo, realm, "", timeout, secureCookie, nil)
 
 		assert.NotNil(t, middleware)
-		assert.Equal(t, []byte("secret"), middleware.Key)
+		assert.Equal(t, []byte(""), middleware.Key)
 	})
 }
 

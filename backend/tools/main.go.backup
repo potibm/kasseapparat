@@ -61,7 +61,7 @@ func main() {
 	}
 
 	cfg.SetVersion(version)
-	cfg.OutputVersion()
+	//cfg.OutputVersion()
 
 	db := utils.ConnectToDatabase(dbFilename)
 

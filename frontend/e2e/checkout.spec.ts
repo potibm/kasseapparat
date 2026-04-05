@@ -9,7 +9,7 @@ test.describe("checkout", () => {
   const coffeeMugProduct = TEST_PRODUCTS.COFFEE_MUG;
 
   test.beforeEach(async ({ page }) => {
-    resetDatabase();
+    await resetDatabase();
 
     const loginPage = new LoginPage(page);
     await loginPage.loginSuccessfully("demo", "demo");

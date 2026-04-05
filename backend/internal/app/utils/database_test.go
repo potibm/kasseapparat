@@ -7,21 +7,57 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gorm.io/gorm"
 )
 
 func TestConnectToDatabaseInvalidFilename(t *testing.T) {
-	assert.PanicsWithValue(t, "invalid database filename: \"invalid/name\"", func() {
-		ConnectToDatabase("invalid/name")
-	})
+	invalidFilenames := []string{
+		"invalid/name",
+		"name with spaces",
+		"name/with/slash",
+		"../traversal",
+		"invalid\\name",
+		"invalid:name",
+	}
 
-	assert.PanicsWithValue(t, "invalid database filename: \"name with spaces\"", func() {
-		ConnectToDatabase("name with spaces")
-	})
+	for _, filename := range invalidFilenames {
+		t.Run(filename, func(t *testing.T) {
+			db, err := ConnectToDatabase(filename)
+			assert.Nil(t, db)
+			assert.Error(t, err)
+			assert.ErrorContains(t, err, "invalid database filename")
+		})
+	}
+}
 
-	assert.PanicsWithValue(t, "invalid database filename: \"../escaped\"", func() {
-		ConnectToDatabase("../escaped")
-	})
+func TestIsValidDatabaseFilename(t *testing.T) {
+	validFilenames := []string{
+		"validname",
+		"valid_name",
+		"valid-name",
+		"valid.name",
+		"12345",
+	}
+
+	for _, filename := range validFilenames {
+		t.Run(filename, func(t *testing.T) {
+			assert.True(t, IsValidDatabaseFilename(filename))
+		})
+	}
+
+	invalidFilenames := []string{
+		"invalid/name",
+		"name with spaces",
+		"name/with/slash",
+		"../traversal",
+		"invalid\\name",
+		"invalid:name",
+	}
+
+	for _, filename := range invalidFilenames {
+		t.Run(filename, func(t *testing.T) {
+			assert.False(t, IsValidDatabaseFilename(filename))
+		})
+	}
 }
 
 func TestConnectToDatabaseValidFilename(t *testing.T) {
@@ -32,43 +68,36 @@ func TestConnectToDatabaseValidFilename(t *testing.T) {
 
 	defer os.RemoveAll("data") // Clean up after test
 
-	var db *gorm.DB
-
-	assert.NotPanics(t, func() {
-		db = ConnectToDatabase("testdb_123")
-	})
+	db, err := ConnectToDatabase("testdb_123")
 	assert.NotNil(t, db)
+	assert.NoError(t, err)
 
-	assert.NotPanics(t, func() {
-		db = ConnectToDatabase("")
-	})
+	db, err = ConnectToDatabase("")
 	assert.NotNil(t, db)
+	assert.NoError(t, err)
 }
 
 func TestConnectToLocalDatabase(t *testing.T) {
-	var db *gorm.DB
+	db, err := ConnectToLocalDatabase()
 
-	assert.NotPanics(t, func() {
-		db = ConnectToLocalDatabase()
-	})
+	assert.NoError(t, err)
 	assert.NotNil(t, db)
 }
 
 func TestMigrateAndPurgeDatabase(t *testing.T) {
-	db := ConnectToLocalDatabase()
+	db, err := ConnectToLocalDatabase()
+	require.NoError(t, err)
 	require.NotNil(t, db)
 
-	assert.NotPanics(t, func() {
-		MigrateDatabase(db)
-	})
+	err = MigrateDatabase(db)
+	assert.NoError(t, err)
 
 	assert.True(t, db.Migrator().HasTable(&models.User{}), "User table should exist after migration")
 	assert.True(t, db.Migrator().HasTable(&models.Product{}), "Product table should exist after migration")
 
 	// 2. Purge
-	assert.NotPanics(t, func() {
-		PurgeDatabase(db)
-	})
+	err = PurgeDatabase(db)
+	assert.NoError(t, err)
 
 	// Check if the tables were actually dropped
 	assert.False(t, db.Migrator().HasTable(&models.User{}), "User table should be dropped after purge")
@@ -76,10 +105,12 @@ func TestMigrateAndPurgeDatabase(t *testing.T) {
 }
 
 func TestSeedDatabase(t *testing.T) {
-	db := ConnectToLocalDatabase()
+	db, err := ConnectToLocalDatabase()
+	require.NoError(t, err)
 	require.NotNil(t, db)
 
-	MigrateDatabase(db)
+	err = MigrateDatabase(db)
+	assert.NoError(t, err)
 
 	assert.NotPanics(t, func() {
 		SeedDatabase(db, true) // Test with includeTestData = true
@@ -88,4 +119,37 @@ func TestSeedDatabase(t *testing.T) {
 	assert.NotPanics(t, func() {
 		SeedDatabase(db, false) // Test with includeTestData = false
 	})
+}
+
+func TestCloseDatabase(t *testing.T) {
+	db, err := ConnectToLocalDatabase()
+	require.NoError(t, err)
+
+	err = CloseDatabase(db)
+	assert.NoError(t, err)
+
+	err = db.Exec("SELECT 1").Error
+	assert.Error(t, err, "Operations should fail after closing the database")
+}
+
+func TestConnectToDatabaseDirectoryCreation(t *testing.T) {
+	tmpDir := t.TempDir()
+	originalWd, _ := os.Getwd()
+
+	err := os.Chdir(tmpDir)
+	require.NoError(t, err)
+
+	defer func() {
+		_ = os.Chdir(originalWd)
+	}()
+
+	db, err := ConnectToDatabase("new_db")
+	assert.NoError(t, err)
+	assert.NotNil(t, db)
+
+	info, err := os.Stat("data")
+	assert.NoError(t, err)
+	assert.True(t, info.IsDir())
+
+	_ = CloseDatabase(db)
 }
