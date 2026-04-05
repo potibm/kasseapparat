@@ -99,7 +99,7 @@ func InitParams(
 	secureCookie bool,
 	redisConfig *store.RedisConfig,
 ) *ginjwt.GinJWTMiddleware {
-	if secret == config.DefaultJwtSecret{
+	if secret == config.DefaultJwtSecret {
 		slog.Warn("Beware, JWT_SECRET is set to the default value. This is not recommended for production use.")
 	}
 
