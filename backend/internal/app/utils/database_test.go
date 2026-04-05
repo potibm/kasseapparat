@@ -139,7 +139,9 @@ func TestConnectToDatabaseDirectoryCreation(t *testing.T) {
 	err := os.Chdir(tmpDir)
 	require.NoError(t, err)
 
-	defer os.Chdir(originalWd)
+	defer func() {
+		_ = os.Chdir(originalWd)
+	}()
 
 	db, err := ConnectToDatabase("new_db")
 	assert.NoError(t, err)
