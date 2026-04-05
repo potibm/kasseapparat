@@ -9,10 +9,13 @@ export default defineConfig({
   workers: 1,
   reporter: "html",
   use: {
-    baseURL: "https://localhost:4000",
+    baseURL: "https://127.0.0.1:4000",
     ignoreHTTPSErrors: true,
-
     trace: "on-first-retry",
+    screenshot: "only-on-failure",
+
+    locale: "da-DK",
+    timezoneId: "Europe/Berlin",
   },
 
   projects: [
@@ -35,6 +38,11 @@ export default defineConfig({
       env: {
         APP_CORS_ALLOW_ORIGINS: "https://localhost:4000",
         APP_REDIS_URL: "",
+        FORMAT_CURRENCY_LOCALE: "de-DE",
+        FORMAT_CURRENCY_CODE: "EUR",
+        FORMAT_CURRENCY_FRACTION_DIGITS_MAX: "2",
+        FORMAT_CURRENCY_FRACTION_DIGITS_MIN: "0",
+        FORMAT_DATE_LOCALE: "de-DE",
       },
     },
     {
