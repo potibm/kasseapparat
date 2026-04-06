@@ -34,7 +34,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.5.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
@@ -42,7 +42,6 @@
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "4.1.2",
-    "esbuild": "^0.27.7",
     "eslint": "^9.7.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-compiler": "^19.1.0-rc.2",
@@ -53,7 +52,7 @@
     "prettier": "3.8.1",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.0",
-    "vite": "^8.0.3",
+    "vite": "^8.0.5",
     "vitest": "^4.1.2"
   }
 }
