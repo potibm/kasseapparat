@@ -4,10 +4,57 @@ updates:
     directory: /backend/
     schedule:
       interval: weekly
+    groups:
+      opentelemetry:
+        patterns:
+          - "go.opentelemetry.io/*"
+          - "github.com/uptrace/*"
+      gin:
+        patterns:
+          - "github.com/gin-gonic/gin"
+          - "github.com/gin-contrib/*"
+          - "github.com/appleboy/gin-jwt/*"
+          - "github.com/samber/slog-gin"
+      testing:
+        patterns:
+          - "github.com/stretchr/testify"
+          - "github.com/brianvoe/gofakeit/*"
+          - "github.com/gavv/httpexpect/*"
   - package-ecosystem: npm
     directory: /frontend/
     schedule:
       interval: weekly
+    groups:
+      react-core:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react*"
+      react-admin:
+        patterns:
+          - "react-admin"
+          - "ra-data-json-server"
+      vite-ecosystem:
+        patterns:
+          - "vite"
+          - "vitest"
+          - "@vitejs/*"
+          - "@vitest/*"
+      linting-and-types:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+          - "@typescript-eslint/*"
+          - "typescript"
+          - "prettier"
+      testing:
+        patterns:
+          - "@testing-library/*"
+          - "@playwright/*"
+          - "jsdom"
+      tailwindcss:
+        patterns:
+          - "*tailwindcss*"
   - package-ecosystem: github-actions
     directory: /
     schedule:
