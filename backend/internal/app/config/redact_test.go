@@ -17,7 +17,7 @@ func TestRedactConfigForDisplay(t *testing.T) {
 
 	// Execute redaction
 	redactedCfg := cfg.RedactConfigForDisplay()
-	urlEncodedRedacted := "%2A%2A%2AREDACTED%2A%2A%2"
+	urlEncodedRedacted := "%2A%2A%2AREDACTED%2A%2A%2A"
 
 	// Verify standard fields are redacted
 	assert.Equal(t, redacted, redactedCfg.Jwt.Secret)

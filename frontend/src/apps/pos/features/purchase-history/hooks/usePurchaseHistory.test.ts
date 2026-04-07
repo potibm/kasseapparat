@@ -21,6 +21,7 @@ vi.mock("@core/logger/logger", () => ({
   createLogger: () => ({
     debug: vi.fn(),
     error: vi.fn(),
+    warn: vi.fn(),
   }),
 }));
 
@@ -107,7 +108,7 @@ describe("usePurchaseHistory Hook", () => {
         autoClose: false,
         message:
           "Error while loading the purchase history: Database unreachable",
-        type: "error",
+        severity: "error",
       });
     });
 
@@ -126,7 +127,7 @@ describe("usePurchaseHistory Hook", () => {
       expect(mockShowToast).toHaveBeenCalledWith({
         autoClose: false,
         message: "An unknown error has occurred",
-        type: "error",
+        severity: "error",
       });
     });
   });
@@ -178,7 +179,7 @@ describe("usePurchaseHistory Hook", () => {
         autoClose: false,
         blocking: true,
         message: "Error while refunding the purchase: Refund denied by bank",
-        type: "error",
+        severity: "error",
       });
     });
 
@@ -202,7 +203,7 @@ describe("usePurchaseHistory Hook", () => {
         autoClose: false,
         blocking: true,
         message: "An unknown error has occurred",
-        type: "error",
+        severity: "error",
       });
     });
   });

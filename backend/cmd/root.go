@@ -21,7 +21,7 @@ var Cfg config.Config
 
 const (
 	logFormatFlagName    = "log-format"
-	logLevelFagName      = "log-level"
+	logLevelFlagName     = "log-level"
 	databaseFileFlagName = "db-file"
 )
 
@@ -73,8 +73,8 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
-	rootCmd.PersistentFlags().String(logLevelFagName, "info", "Log Level (debug, info, warn, error)")
-	_ = viper.BindPFlag("app.log_level", rootCmd.PersistentFlags().Lookup(logLevelFagName))
+	rootCmd.PersistentFlags().String(logLevelFlagName, "info", "Log Level (debug, info, warn, error)")
+	_ = viper.BindPFlag("app.log_level", rootCmd.PersistentFlags().Lookup(logLevelFlagName))
 
 	rootCmd.PersistentFlags().String(logFormatFlagName, "json", "Log Format (json, text)")
 	_ = viper.BindPFlag("app.log_format", rootCmd.PersistentFlags().Lookup(logFormatFlagName))

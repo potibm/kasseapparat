@@ -77,7 +77,7 @@ describe("useProducts Hook", () => {
       expect(mockShowToast).toHaveBeenCalledWith({
         autoClose: false,
         message: "There was an error fetching the products: Network offline",
-        type: "error",
+        severity: "error",
       });
     });
 
@@ -95,7 +95,7 @@ describe("useProducts Hook", () => {
       expect(mockShowToast).toHaveBeenCalledWith({
         autoClose: false,
         message: "An unknown error has occurred",
-        type: "error",
+        severity: "error",
       });
     });
   });
@@ -147,7 +147,7 @@ describe("useProducts Hook", () => {
       expect(mockShowToast).toHaveBeenCalledWith({
         message: "Error on saving the interest: Item not found",
         autoClose: false,
-        type: "error",
+        severity: "error",
       });
     });
 
@@ -168,7 +168,7 @@ describe("useProducts Hook", () => {
       expect(mockShowToast).toHaveBeenCalledWith({
         autoClose: false,
         message: "An unknown error has occurred",
-        type: "error",
+        severity: "error",
       });
     });
   });

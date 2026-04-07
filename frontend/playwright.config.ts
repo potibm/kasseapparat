@@ -36,7 +36,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       stdout: "pipe",
       env: {
-        APP_CORS_ALLOW_ORIGINS: "https://localhost:4000",
+        APP_CORS_ALLOW_ORIGINS: "https://127.0.0.1:4000",
         APP_REDIS_URL: "",
         FORMAT_CURRENCY_LOCALE: "de-DE",
         FORMAT_CURRENCY_CODE: "EUR",

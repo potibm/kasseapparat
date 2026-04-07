@@ -158,7 +158,7 @@ describe("useCart Hook", () => {
       expect(result.current.cart.isEmpty).toBe(true);
 
       expect(mockShowToast).toHaveBeenCalledWith({
-        type: "success",
+        severity: "success",
         message: "Purchase at 979.66 confirmed!",
       });
     });
