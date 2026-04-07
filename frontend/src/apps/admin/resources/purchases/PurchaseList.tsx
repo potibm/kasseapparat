@@ -7,7 +7,7 @@ import {
   DateField,
   FunctionField,
 } from "react-admin";
-import { useConfig } from "../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { PurchaseListToolbar } from "./components/PurchaseListToolbar";
 import { PurchaseStatusField } from "./components/PurchaseStatusField";
 import { PaymentMethodField } from "./components/PaymentMethodField";

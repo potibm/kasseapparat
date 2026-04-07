@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../hooks/useAuth";
 import BaseCard from "../../../components/BaseCard";
 import { Spinner } from "flowbite-react";
 import { logout } from "../../../../../core/api/auth";
-import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 
 const Logout: React.FC = () => {
   const { removeSession } = useAuth();

@@ -8,7 +8,7 @@ import {
   NumberField,
   BooleanField,
 } from "react-admin";
-import { useConfig } from "../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { Product } from "./types";
 
 export const ProductList: React.FC = () => {

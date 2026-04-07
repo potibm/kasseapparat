@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useConfig } from "../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 import { createLogger } from "@core/logger/logger";

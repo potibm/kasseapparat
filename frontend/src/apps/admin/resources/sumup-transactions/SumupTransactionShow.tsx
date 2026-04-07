@@ -9,7 +9,7 @@ import {
   ArrayField,
   ShowProps,
 } from "react-admin";
-import { useConfig } from "../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import SumupTransactionStatusField from "./components/SumupTransactionStatusField";
 
 export const SumupTransactionShow: React.FC<ShowProps> = (props) => {

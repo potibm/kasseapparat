@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { List, ListProps } from "react-admin";
-import { useConfig } from "@core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import {
   getCurrentReaderId,
   setCurrentReaderId,

@@ -2,11 +2,16 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { usePurchaseHistory } from "./usePurchaseHistory";
 import { fetchPurchases, refundPurchaseById } from "../../../utils/api";
-import { Purchase as PurchaseType } from "../../../utils/api.schemas";
 import { createMockPurchase } from "@pos/utils/api.schemas.mocks";
 import Decimal from "decimal.js";
 
 // mocks
+vi.mock("@core/config/hooks/useConfig", () => ({
+  useConfig: () => ({
+    currency: new Intl.NumberFormat(),
+  }),
+}));
+
 vi.mock("../../../utils/api", () => ({
   fetchPurchases: vi.fn(),
   refundPurchaseById: vi.fn(),
@@ -129,9 +134,7 @@ describe("usePurchaseHistory Hook", () => {
   describe("refundPurchase()", () => {
     it("should call the refund API and then reload the history", async () => {
       vi.mocked(fetchPurchases).mockResolvedValue(mockPurchases);
-      vi.mocked(refundPurchaseById).mockResolvedValue(
-        undefined as unknown as PurchaseType,
-      );
+      vi.mocked(refundPurchaseById).mockResolvedValue(createMockPurchase());
 
       const { result } = renderHook(() =>
         usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
@@ -173,6 +176,7 @@ describe("usePurchaseHistory Hook", () => {
 
       expect(mockShowToast).toHaveBeenCalledWith({
         autoClose: false,
+        blocking: true,
         message: "Error while refunding the purchase: Refund denied by bank",
         type: "error",
       });
@@ -196,6 +200,7 @@ describe("usePurchaseHistory Hook", () => {
 
       expect(mockShowToast).toHaveBeenCalledWith({
         autoClose: false,
+        blocking: true,
         message: "An unknown error has occurred",
         type: "error",
       });

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Badge, Card } from "flowbite-react";
 import { HiShoppingCart, HiUserAdd, HiOutlineThumbUp } from "react-icons/hi";
-import { useConfig } from "../../../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import GuestlistModal from "../../../guestlist/components/GuestlistModal";
 import Button from "../../../../components/Button";
 import ProductInterestModal from "./ProductInterestModal";

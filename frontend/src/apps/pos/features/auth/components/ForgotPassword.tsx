@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Label, Button, TextInput, Alert, Spinner } from "flowbite-react";
 import BaseCard from "../../../components/BaseCard";
-import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
-import { requestChangePasswordToken } from "../../../../../core/api/auth";
+import { useConfig } from "@core/config/hooks/useConfig";
+import { requestChangePasswordToken } from "@core/api/auth";
 import { createLogger } from "@core/logger/logger";
 
 const log = createLogger("Auth");

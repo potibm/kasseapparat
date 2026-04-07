@@ -10,7 +10,7 @@ import {
   TabbedForm,
   FormTab,
 } from "react-admin";
-import { useConfig } from "../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import DecimalInput from "../../ui/inputs/DecimalInput";
 import GrossPriceInput from "../../ui/inputs/GrossPriceInput";
 import VatRateInput from "../../ui/inputs/VatRateInput";

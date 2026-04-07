@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router";
-import { useAuth } from "../apps/pos/features/auth/providers/AuthProvider";
+import { useAuth } from "../apps/pos/features/auth/hooks/useAuth";
 
 export const ProtectedRoute: React.FC = () => {
   const { isLoggedIn } = useAuth() || {};

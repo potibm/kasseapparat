@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toast, ToastToggle } from "flowbite-react";
 import {
   HiCheck,
@@ -29,6 +30,16 @@ export const ToastItem = ({
       color: "text-purple-500 bg-purple-100 dark:bg-purple-900",
     },
   };
+
+  useEffect(() => {
+    if (toast.autoClose === false) return;
+
+    const timer = setTimeout(() => {
+      onDismiss(toast.id);
+    }, toast.duration || 10000);
+
+    return () => clearTimeout(timer);
+  }, [toast, onDismiss]);
 
   const { icon: Icon, color } = styles[toast.type];
 

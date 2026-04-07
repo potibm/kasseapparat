@@ -1,11 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import MinimalBaseCard from "../../../apps/pos/components/MinimalBaseCard";
 import { Alert } from "flowbite-react";
 import { HiInformationCircle } from "react-icons/hi";
@@ -13,11 +6,10 @@ import { AppConfig } from "../types/config.types";
 import { ConfigSchema } from "../schemas/config.schemas";
 import { transformConfig } from "../utils/config.transform";
 import { createLogger } from "@core/logger/logger";
+import { ConfigContext } from "../context/ConfigContext";
 
 const log = createLogger("Config");
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
-
-export const ConfigContext = createContext<AppConfig | null>(null);
 
 interface ConfigProviderProps {
   children: ReactNode;
@@ -80,14 +72,6 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
   return (
     <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
   );
-};
-
-export const useConfig = () => {
-  const context = useContext(ConfigContext);
-  if (!context) {
-    throw new Error("useConfig must be used within a ConfigProvider");
-  }
-  return context;
 };
 
 export default ConfigProvider;

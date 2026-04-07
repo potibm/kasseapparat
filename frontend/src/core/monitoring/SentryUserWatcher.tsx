@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import * as Sentry from "@sentry/react";
-import { useAuth } from "../../apps/pos/features/auth/providers/AuthProvider";
+import { useAuth } from "../../apps/pos/features/auth/hooks/useAuth";
 
 const SentryUserWatcher = () => {
   const { id, username } = useAuth();

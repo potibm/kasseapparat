@@ -11,10 +11,17 @@ import {
   createMockPurchase,
 } from "@pos/utils/api.schemas.mocks";
 import { PaymentMethodData } from "../types/cart.types";
+import Decimal from "decimal.js";
 
 // --- 1. MOCKS ---
 vi.mock("../../../utils/api", () => ({
   storePurchase: vi.fn(),
+}));
+
+vi.mock("@core/config/hooks/useConfig", () => ({
+  useConfig: () => ({
+    currency: new Intl.NumberFormat(),
+  }),
 }));
 
 vi.mock("@core/logger/logger", () => ({
@@ -116,7 +123,10 @@ describe("useCart Hook", () => {
 
   describe("checkout() API Interaction", () => {
     it("should handle an immediately confirmed purchase", async () => {
-      const confirmedPurchase = createMockPurchase({ status: "confirmed" });
+      const confirmedPurchase = createMockPurchase({
+        status: "confirmed",
+        totalGrossPrice: Decimal(979.66),
+      });
       vi.mocked(storePurchase).mockResolvedValue(confirmedPurchase);
 
       const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
@@ -149,7 +159,7 @@ describe("useCart Hook", () => {
 
       expect(mockShowToast).toHaveBeenCalledWith({
         type: "success",
-        message: "Purchase completed successfully!",
+        message: "Purchase at 979.66 confirmed!",
       });
     });
 

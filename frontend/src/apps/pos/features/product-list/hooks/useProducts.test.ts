@@ -116,7 +116,7 @@ describe("useProducts Hook", () => {
       vi.mocked(fetchProducts).mockClear();
 
       await act(async () => {
-        await result.current.addInterest(99);
+        await result.current.addInterest(99, "Test Product");
       });
 
       expect(addProductInterest).toHaveBeenCalledWith(
@@ -141,7 +141,7 @@ describe("useProducts Hook", () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       await act(async () => {
-        await result.current.addInterest(99);
+        await result.current.addInterest(99, "A missing product");
       });
 
       expect(mockShowToast).toHaveBeenCalledWith({
@@ -162,7 +162,7 @@ describe("useProducts Hook", () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       await act(async () => {
-        await result.current.addInterest(99);
+        await result.current.addInterest(99, "Another strange product");
       });
 
       expect(mockShowToast).toHaveBeenCalledWith({

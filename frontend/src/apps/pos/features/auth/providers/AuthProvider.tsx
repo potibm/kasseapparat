@@ -1,14 +1,6 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, {
-  createContext,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  ReactNode,
-} from "react";
-import { refreshJwtToken } from "../../../../../core/api/auth";
-import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
+import React, { useMemo, useRef, useState, ReactNode } from "react";
+import { refreshJwtToken } from "@core/api/auth";
+import { useConfig } from "@core/config/hooks/useConfig";
 import {
   AuthContextType,
   AuthUser as AuthUserType,
@@ -22,10 +14,9 @@ import {
   storeUser,
 } from "../services/auth-storage";
 import { createLogger } from "@core/logger/logger";
+import { AuthContext } from "../context/AuthContext";
 
 const log = createLogger("Auth");
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -117,14 +108,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
-};
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };
 
 export default AuthProvider;

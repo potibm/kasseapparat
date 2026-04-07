@@ -9,7 +9,7 @@ import {
 } from "react-admin";
 import GuestActions from "./components/GuestActions";
 import { GuestFilters } from "./components/GuestFilters";
-import { useConfig } from "../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { ConditionalDeleteOnOwnershipButton } from "../../ui/buttons/ConditionalDeleteOnOwnershipButton";
 import { AttendedGuestsBooleanField } from "./components/AttendedGuestsBooleanField";
 

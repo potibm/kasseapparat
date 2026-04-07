@@ -9,6 +9,7 @@ import {
 } from "../../../utils/api.schemas";
 import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
+import { useConfig } from "@core/config/hooks/useConfig";
 
 const cartLog = createLogger("Cart");
 const purchaseLog = createLogger("Purchase");
@@ -23,6 +24,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
     null,
   );
   const { showToast } = useToast();
+  const { currency } = useConfig();
 
   const add = useCallback(
     (product: ProductType, count: number, listItem: GuestType | null) => {
@@ -82,9 +84,10 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
         purchaseLog.info("Purchase confirmed immediately", {
           purchaseId: createdPurchase.id,
         });
+
         showToast({
           type: "success",
-          message: "Purchase completed successfully!",
+          message: `Purchase at ${currency.format(createdPurchase.totalGrossPrice.toNumber())} confirmed!`,
         });
         return createdPurchase;
       }

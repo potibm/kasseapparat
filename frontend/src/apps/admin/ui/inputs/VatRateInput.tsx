@@ -4,7 +4,7 @@ import {
   RadioButtonGroupInputProps,
   required,
 } from "react-admin";
-import { useConfig } from "../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 
 interface VatRateType {
   name: string;

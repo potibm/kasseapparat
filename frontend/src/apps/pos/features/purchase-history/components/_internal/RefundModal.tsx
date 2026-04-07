@@ -10,7 +10,7 @@ import {
 } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { Purchase } from "../../../../utils/api.schemas";
-import { useConfig } from "../../../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import Button from "../../../../components/Button";
 
 interface RefundModalProps {

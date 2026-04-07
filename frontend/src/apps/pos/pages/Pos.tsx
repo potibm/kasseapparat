@@ -12,8 +12,8 @@ import PollingModal from "@pos/features/payment/components/PollingModal";
 import Version from "../components/Version";
 import PosLayout from "../layouts/PosLayout";
 // hooks
-import { useAuth } from "../features/auth/providers/AuthProvider";
-import { useConfig } from "../../../core/config/providers/ConfigProvider";
+import { useAuth } from "../features/auth/hooks/useAuth";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { useProducts } from "../features/product-list/hooks/useProducts";
 import { useCart } from "../features/cart/hooks/useCart";
 import { usePurchaseHistory } from "../features/purchase-history/hooks/usePurchaseHistory";
@@ -111,15 +111,10 @@ const KasseapparatContent: React.FC = () => {
         await refundPurchase(purchaseId);
         await refreshProducts();
       } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "An unknown error has occurred";
-
-        showError(errorMessage);
+        logPurchase.error("Refund failed:", error);
       }
     },
-    [refundPurchase, refreshProducts, showError],
+    [refundPurchase, refreshProducts],
   );
 
   const handlePurchaseModalComplete = useCallback(
@@ -180,7 +175,7 @@ const KasseapparatContent: React.FC = () => {
         addToCart={add}
         hasListItem={(g: GuestType) => cart.hasListItem(g.id)}
         quantityByProductInCart={(p: ProductType) => cart.getQuantity(p.id)}
-        addProductInterest={(p: ProductType) => addInterest(p.id)}
+        addProductInterest={(p: ProductType) => addInterest(p.id, p.name)}
       />
     </PosLayout>
   );

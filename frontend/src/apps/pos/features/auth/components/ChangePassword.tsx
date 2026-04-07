@@ -13,7 +13,7 @@ import {
 } from "flowbite-react";
 import { changePassword } from "../../../../../core/api/auth";
 import BaseCard from "../../../components/BaseCard";
-import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { z } from "zod";
 import { AuthApiError as AuthApiErrorType } from "../../../utils/api.types";
 

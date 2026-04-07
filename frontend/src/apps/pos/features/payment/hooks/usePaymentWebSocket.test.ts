@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { usePaymentWebSocket } from "./usePaymentWebSocket";
-import { useAuth } from "@pos/features/auth/providers/AuthProvider";
-import { useConfig } from "@core/config/providers/ConfigProvider";
+import { useAuth } from "@pos/features/auth/hooks/useAuth";
+import { useConfig } from "@core/config/hooks/useConfig";
 
 // dependency mocks
-vi.mock("@pos/features/auth/providers/AuthProvider", () => ({
+vi.mock("@pos/features/auth/hooks/useAuth", () => ({
   useAuth: vi.fn(),
 }));
 
-vi.mock("@core/config/providers/ConfigProvider", () => ({
+vi.mock("@core/config/hooks/useConfig", () => ({
   useConfig: vi.fn(),
 }));
 

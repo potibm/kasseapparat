@@ -9,7 +9,7 @@ import {
   ArrayField,
   ReferenceField,
 } from "react-admin";
-import { useConfig } from "../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { PurchaseStatusField } from "./components/PurchaseStatusField";
 import { PaymentMethodField } from "./components/PaymentMethodField";
 

@@ -13,7 +13,7 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import { useConfig } from "@core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import Decimal from "decimal.js";
 import { createLogger } from "@core/logger/logger";
 

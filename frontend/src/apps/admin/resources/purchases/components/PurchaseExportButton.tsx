@@ -10,7 +10,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import { useConfig } from "@core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { getSession } from "@admin/utils/auth-utils";
 
 interface PaymentMethod {

@@ -40,13 +40,13 @@ export const useProducts = (
     }
   }, [apiHost, getToken, showToast]);
 
-  const addInterest = async (productId: number) => {
+  const addInterest = async (productId: number, productName: string) => {
     try {
       const token = await getToken();
       await addProductInterest(apiHost, token, productId);
       showToast({
         type: "success",
-        message: "Interest for product added successfully!",
+        message: `Interest for ${productName} added successfully!`,
       });
       await loadProducts();
     } catch (error: unknown) {

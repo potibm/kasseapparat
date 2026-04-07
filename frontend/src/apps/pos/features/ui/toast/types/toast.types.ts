@@ -6,4 +6,5 @@ export interface Toast {
   message: string;
   autoClose?: boolean;
   duration?: number;
+  blocking?: boolean;
 }
