@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { Toast as ToastType } from "../types/toast.types";
+import { ToastData as ToastType } from "../types/toast.types";
 
 interface ToastContextType {
   showToast: (toast: Omit<ToastType, "id">) => void;

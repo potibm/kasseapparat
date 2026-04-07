@@ -20,6 +20,7 @@ export const usePurchaseHistory = (
 
   const loadHistory = useCallback(async () => {
     if (!userId) {
+      log.warn("No user ID provided, cannot load purchase history");
       setHistory([]);
       setLoading(false);
       return;
@@ -46,7 +47,7 @@ export const usePurchaseHistory = (
           ? "Error while loading the purchase history: " + error.message
           : "An unknown error has occurred";
 
-      showToast({ type: "error", message: errorMessage, autoClose: false });
+      showToast({ severity: "error", message: errorMessage, autoClose: false });
       setHistory([]);
     } finally {
       setLoading(false);
@@ -62,7 +63,7 @@ export const usePurchaseHistory = (
       const token = await getToken();
       const purchase = await refundPurchaseById(apiHost, token, purchaseId);
       showToast({
-        type: "success",
+        severity: "success",
         message: `Purchase of ${currency.format(purchase.totalGrossPrice.toNumber())} refunded successfully!`,
       });
       await loadHistory();
@@ -73,7 +74,7 @@ export const usePurchaseHistory = (
           : "An unknown error has occurred";
 
       showToast({
-        type: "error",
+        severity: "error",
         message: errorMessage,
         autoClose: false,
         blocking: true,

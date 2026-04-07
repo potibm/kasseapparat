@@ -8,19 +8,16 @@ import {
   HiInformationCircle,
 } from "react-icons/hi";
 import { IconType } from "react-icons";
-import {
-  Toast as ToastType,
-  ToastType as ToastTypeType,
-} from "../../types/toast.types";
+import { ToastData, ToastSeverity } from "../../types/toast.types";
 
 export const ToastItem = ({
   toast,
   onDismiss,
 }: {
-  toast: ToastType;
+  toast: ToastData;
   onDismiss: (id: string) => void;
 }) => {
-  const styles: Record<ToastTypeType, { icon: IconType; color: string }> = {
+  const styles: Record<ToastSeverity, { icon: IconType; color: string }> = {
     success: { icon: HiCheck, color: "text-green-500 bg-green-100" },
     error: { icon: HiX, color: "text-red-500 bg-red-100" },
     warning: { icon: HiExclamation, color: "text-yellow-500 bg-yellow-100" },
@@ -41,7 +38,7 @@ export const ToastItem = ({
     return () => clearTimeout(timer);
   }, [toast, onDismiss]);
 
-  const { icon: Icon, color } = styles[toast.type];
+  const { icon: Icon, color } = styles[toast.severity];
 
   return (
     <Toast className="max-w-xs border border-gray-200 shadow-lg mb-2">
@@ -51,7 +48,7 @@ export const ToastItem = ({
         <Icon className="h-5 w-5" />
       </div>
       <div className="ml-3 text-sm font-normal">
-        {toast.type === "debug" && (
+        {toast.severity === "debug" && (
           <span className="font-bold mr-1">[DEBUG]</span>
         )}
         {toast.message}

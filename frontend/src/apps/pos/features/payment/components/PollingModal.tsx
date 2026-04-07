@@ -6,7 +6,7 @@ import Button from "@pos/components/Button";
 import { usePaymentWebSocket } from "../hooks/usePaymentWebSocket";
 import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
-import { ToastType } from "@pos/features/ui/toast/types/toast.types";
+import { ToastSeverity } from "@pos/features/ui/toast/types/toast.types";
 import { useConfig } from "@core/config/hooks/useConfig";
 import { Purchase as PurchaseType } from "../../../utils/api.schemas";
 
@@ -61,7 +61,7 @@ export const PollingModal: React.FC<PollingModalProps> = ({
     if (status === "confirmed") {
       log.info("Purchase confirmed", purchase.id);
       showToast({
-        type: "success",
+        severity: "success",
         message: `Purchase of ${currency.format(purchase.totalGrossPrice.toNumber())} using ${paymentMethodName} was successful!`,
       });
       onComplete(true);
@@ -71,7 +71,7 @@ export const PollingModal: React.FC<PollingModalProps> = ({
       log.error("Terminal process ended with status", purchase.id, status);
 
       const toastMessage = {
-        type: "error" as ToastType,
+        severity: "error" as ToastSeverity,
         message: "Payment failed.",
         autoClose: status === "cancelled",
         blocking: status !== "cancelled",

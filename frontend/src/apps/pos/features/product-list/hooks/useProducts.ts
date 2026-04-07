@@ -34,7 +34,7 @@ export const useProducts = (
         error instanceof Error
           ? "There was an error fetching the products: " + error.message
           : "An unknown error has occurred";
-      showToast({ type: "error", message: errorMessage, autoClose: false });
+      showToast({ severity: "error", message: errorMessage, autoClose: false });
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ export const useProducts = (
       const token = await getToken();
       await addProductInterest(apiHost, token, productId);
       showToast({
-        type: "success",
+        severity: "success",
         message: `Interest for ${productName} added successfully!`,
       });
       await loadProducts();
@@ -55,7 +55,7 @@ export const useProducts = (
           ? "Error on saving the interest: " + error.message
           : "An unknown error has occurred";
 
-      showToast({ type: "error", message: errorMessage, autoClose: false });
+      showToast({ severity: "error", message: errorMessage, autoClose: false });
     }
   };
 

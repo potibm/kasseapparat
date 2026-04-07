@@ -1,8 +1,8 @@
-export type ToastType = "info" | "warning" | "error" | "success" | "debug";
+export type ToastSeverity = "info" | "warning" | "error" | "success" | "debug";
 
-export interface Toast {
+export interface ToastData {
   id: string;
-  type: ToastType;
+  severity: ToastSeverity;
   message: string;
   autoClose?: boolean;
   duration?: number;

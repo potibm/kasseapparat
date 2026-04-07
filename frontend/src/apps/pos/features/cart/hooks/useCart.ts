@@ -86,7 +86,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
         });
 
         showToast({
-          type: "success",
+          severity: "success",
           message: `Purchase at ${currency.format(createdPurchase.totalGrossPrice.toNumber())} confirmed!`,
         });
         return createdPurchase;
@@ -100,7 +100,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
         error instanceof Error ? { message: error.message } : { error },
       );
       showToast({
-        type: "error",
+        severity: "error",
         message: "An error occurred while processing the purchase.",
         autoClose: false,
       });
