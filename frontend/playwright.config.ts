@@ -9,7 +9,7 @@ export default defineConfig({
   workers: 1,
   reporter: "html",
   use: {
-    baseURL: "https://127.0.0.1:4000",
+    baseURL: "https://localhost:4000",
     ignoreHTTPSErrors: true,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
@@ -36,7 +36,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       stdout: "pipe",
       env: {
-        APP_CORS_ALLOW_ORIGINS: "https://127.0.0.1:4000",
+        APP_CORS_ALLOW_ORIGINS: "https://localhost:4000",
         APP_REDIS_URL: "",
         FORMAT_CURRENCY_LOCALE: "de-DE",
         FORMAT_CURRENCY_CODE: "EUR",

@@ -86,7 +86,6 @@ export const PollingModal: React.FC<PollingModalProps> = ({
 
       showToast(toastMessage);
 
-      // Modal sofort schließen! Der 3-Sekunden-Timer ist weg.
       onComplete(false);
     }
   }, [
