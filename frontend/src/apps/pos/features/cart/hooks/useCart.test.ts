@@ -159,7 +159,7 @@ describe("useCart Hook", () => {
 
       expect(mockShowToast).toHaveBeenCalledWith({
         severity: "success",
-        message: "Purchase at 979.66 confirmed!",
+        message: "Payment of 979.66 successful!",
       });
     });
 

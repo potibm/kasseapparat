@@ -34,8 +34,10 @@ describe("ConfigProvider", () => {
   it("renders children with config on successful fetch", async () => {
     const mockRawConfig = {
       version: "2.0.0",
-      dateOptions: '{"year": "numeric"}',
-      vatRates: '{"default": 19}',
+      dateOptions: {
+        year: "numeric",
+      },
+      vatRates: [{ name: "STANDARD", rate: 20 }],
       paymentMethods: [{ code: "CASH", name: "Cash" }],
     };
 

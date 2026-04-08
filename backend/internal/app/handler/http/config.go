@@ -4,6 +4,7 @@ import (
 	nethttp "net/http"
 
 	"github.com/gin-gonic/gin"
+	cfgTypes "github.com/potibm/kasseapparat/internal/app/config"
 )
 
 type PaymentMethodsConfig struct {
@@ -11,33 +12,31 @@ type PaymentMethodsConfig struct {
 	Name string `json:"name"`
 }
 
+type VatRateConfig struct {
+	Rate float64 `json:"rate"`
+	Name string  `json:"name"`
+}
+
+type DateFormatOptionsConfig map[string]any
+
 type Config struct {
-	Version                       string                 `json:"version"`
-	SentryDSN                     string                 `json:"sentryDSN"`
-	SentryTraceSampleRate         float64                `json:"sentryTraceSampleRate"`
-	SentryReplaySessionSampleRate float64                `json:"sentryReplaySessionSampleRate"`
-	SentryReplayErrorSampleRate   float64                `json:"sentryReplayErrorSampleRate"`
-	CurrencyLocale                string                 `json:"currencyLocale"`
-	CurrencyCode                  string                 `json:"currencyCode"`
-	VATRates                      string                 `json:"vatRates"`
-	DateLocale                    string                 `json:"dateLocale"`
-	DateOptions                   string                 `json:"dateOptions"`
-	FractionDigitsMin             int                    `json:"fractionDigitsMin"`
-	FractionDigitsMax             int                    `json:"fractionDigitsMax"`
-	EnvironmentMessage            string                 `json:"environmentMessage"`
-	PaymentMethods                []PaymentMethodsConfig `json:"paymentMethods"`
+	Version                       string                  `json:"version"`
+	SentryDSN                     string                  `json:"sentryDSN"`
+	SentryTraceSampleRate         float64                 `json:"sentryTraceSampleRate"`
+	SentryReplaySessionSampleRate float64                 `json:"sentryReplaySessionSampleRate"`
+	SentryReplayErrorSampleRate   float64                 `json:"sentryReplayErrorSampleRate"`
+	CurrencyLocale                string                  `json:"currencyLocale"`
+	CurrencyCode                  string                  `json:"currencyCode"`
+	VATRates                      []VatRateConfig         `json:"vatRates"`
+	DateLocale                    string                  `json:"dateLocale"`
+	DateOptions                   DateFormatOptionsConfig `json:"dateOptions"`
+	FractionDigitsMin             int                     `json:"fractionDigitsMin"`
+	FractionDigitsMax             int                     `json:"fractionDigitsMax"`
+	EnvironmentMessage            string                  `json:"environmentMessage"`
+	PaymentMethods                []PaymentMethodsConfig  `json:"paymentMethods"`
 }
 
 func (handler *Handler) GetConfig(c *gin.Context) {
-	paymentMethods := make([]PaymentMethodsConfig, 0, len(handler.config.PaymentMethods))
-
-	for _, configPaymentMethod := range handler.config.PaymentMethods {
-		paymentMethods = append(paymentMethods, PaymentMethodsConfig{
-			Code: string(configPaymentMethod.Code),
-			Name: configPaymentMethod.Name,
-		})
-	}
-
 	config := Config{
 		Version:                       handler.config.App.Version,
 		SentryDSN:                     handler.config.Sentry.DSN,
@@ -48,12 +47,38 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		CurrencyCode:                  handler.config.Format.Currency.Code,
 		FractionDigitsMin:             handler.config.Format.Currency.FractionDigitsMin,
 		FractionDigitsMax:             handler.config.Format.Currency.FractionDigitsMax,
-		VATRates:                      handler.config.VATRates.Json(),
+		VATRates:                      concertVatRates(handler.config.VATRates),
 		DateLocale:                    handler.config.Format.Date.Locale,
-		DateOptions:                   handler.config.Format.Date.Options.Json(),
+		DateOptions:                   DateFormatOptionsConfig(handler.config.Format.Date.Options),
 		EnvironmentMessage:            handler.config.App.EnvironmentMessage,
-		PaymentMethods:                paymentMethods,
+		PaymentMethods:                convertPaymentMethods(handler.config.PaymentMethods),
 	}
 
 	c.JSON(nethttp.StatusOK, config)
+}
+
+func convertPaymentMethods(paymentMethods []cfgTypes.PaymentMethodConfig) []PaymentMethodsConfig {
+	result := make([]PaymentMethodsConfig, 0, len(paymentMethods))
+
+	for _, configPaymentMethod := range paymentMethods {
+		result = append(result, PaymentMethodsConfig{
+			Code: string(configPaymentMethod.Code),
+			Name: configPaymentMethod.Name,
+		})
+	}
+
+	return result
+}
+
+func concertVatRates(vatRates []cfgTypes.VatRateConfig) []VatRateConfig {
+	result := make([]VatRateConfig, 0, len(vatRates))
+
+	for _, configVatRate := range vatRates {
+		result = append(result, VatRateConfig{
+			Rate: configVatRate.Rate,
+			Name: configVatRate.Name,
+		})
+	}
+
+	return result
 }

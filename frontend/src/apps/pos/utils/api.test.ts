@@ -214,7 +214,7 @@ describe("Api Service", () => {
       );
 
       const result = await fetchPurchases(apiHost, fakeToken, 1);
-      const url = `${apiHost}/api/v2/purchases?createdById=1&status=confirmed`;
+      const url = `${apiHost}/api/v2/purchases?createdById=1&status=confirmed&status=pending`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,

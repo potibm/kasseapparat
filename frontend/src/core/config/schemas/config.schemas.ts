@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { JsonObjectSchema } from "@core/schemas/zod-schemas";
 
 export const ConfigSchema = z.object({
   version: z.string().default("1.0.0"),
@@ -12,8 +11,15 @@ export const ConfigSchema = z.object({
   fractionDigitsMin: z.number().default(0),
   fractionDigitsMax: z.number().default(2),
   dateLocale: z.string().default("en-US"),
-  dateOptions: JsonObjectSchema,
-  vatRates: JsonObjectSchema,
+  dateOptions: z.record(z.string(), z.any()).default({}),
+  vatRates: z
+    .array(
+      z.object({
+        rate: z.number(),
+        name: z.string(),
+      }),
+    )
+    .default([]),
   paymentMethods: z
     .array(
       z.object({

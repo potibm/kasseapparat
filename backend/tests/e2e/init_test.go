@@ -80,7 +80,7 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 				FractionDigitsMin: 0,
 			},
 			Date: config.DateFormatConfig{
-				Locale:  "dk-DK",
+				Locale:  "da-DK",
 				Options: config.DefaultDateOptions,
 			},
 		},

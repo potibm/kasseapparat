@@ -62,7 +62,7 @@ export const PollingModal: React.FC<PollingModalProps> = ({
       log.info("Purchase confirmed", purchase.id);
       showToast({
         severity: "success",
-        message: `Purchase of ${currency.format(purchase.totalGrossPrice.toNumber())} using ${paymentMethodName} was successful!`,
+        message: `Payment of ${currency.format(purchase.totalGrossPrice.toNumber())} successful via ${paymentMethodName}!`,
       });
       onComplete(true);
     }
@@ -72,16 +72,16 @@ export const PollingModal: React.FC<PollingModalProps> = ({
 
       const toastMessage = {
         severity: "error" as ToastSeverity,
-        message: "Payment failed.",
+        message: `Payment with ${paymentMethodName} failed.`,
         autoClose: status === "cancelled",
         blocking: status !== "cancelled",
       };
       if (status === "cancelled") {
-        toastMessage.message = `Payment using ${paymentMethodName} was cancelled by the user.`;
+        toastMessage.message = `Payment via ${paymentMethodName} was cancelled by the user.`;
       } else if (status === "connection_lost") {
-        toastMessage.message = `Connection to the terminal lost for payment method ${paymentMethodName}.`;
+        toastMessage.message = `Connection lost: ${paymentMethodName} terminal is unreachable.`;
       } else if (status === "timeout") {
-        toastMessage.message = `Timeout at the terminal for payment method ${paymentMethodName}.`;
+        toastMessage.message = `Timeout: No response from ${paymentMethodName} terminal.`;
       }
 
       showToast(toastMessage);

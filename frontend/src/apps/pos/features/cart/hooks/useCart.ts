@@ -10,6 +10,10 @@ import {
 import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 import { useConfig } from "@core/config/hooks/useConfig";
+import {
+  getErrorMessage,
+  getPurchaseErrorType,
+} from "../services/PurchaseErrorHandler";
 
 const cartLog = createLogger("Cart");
 const purchaseLog = createLogger("Purchase");
@@ -87,7 +91,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
 
         showToast({
           severity: "success",
-          message: `Purchase at ${currency.format(createdPurchase.totalGrossPrice.toNumber())} confirmed!`,
+          message: `Payment of ${currency.format(createdPurchase.totalGrossPrice.toNumber())} successful!`,
         });
         return createdPurchase;
       }
@@ -95,20 +99,33 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
       purchaseLog.error("Unknown purchase status", createdPurchase.status);
       throw new Error("Unknown purchase status: " + createdPurchase.status);
     } catch (error: unknown) {
-      purchaseLog.error(
-        "Error during checkout",
-        error instanceof Error ? { message: error.message } : { error },
-      );
+      setCheckoutProcessing(null);
+
+      const errorType = getPurchaseErrorType(error);
+      const message = getErrorMessage(errorType);
+
       showToast({
         severity: "error",
-        message: "An error occurred while processing the purchase.",
-        autoClose: false,
+        message,
+        blocking: errorType === "READER_BUSY", // block UI if reader is busy to prevent further attempts
       });
 
-      setCheckoutProcessing(null);
+      purchaseLog.error("Checkout failed", { error, errorType });
+
       throw error;
     }
   };
+
+  const resumePolling = useCallback((purchase: PurchaseType) => {
+    purchaseLog.info("Resuming polling for existing purchase", {
+      purchaseId: purchase.id,
+    });
+
+    setPendingPurchase(purchase);
+    setIsPolling(true);
+
+    setCheckoutProcessing(purchase.paymentMethod);
+  }, []);
 
   return {
     cart,
@@ -120,6 +137,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
     checkoutProcessing,
     isPolling,
     pendingPurchase,
+    resumePolling,
   };
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { HiReceiptRefund } from "react-icons/hi";
+import { HiClock, HiReceiptRefund } from "react-icons/hi";
 import {
   Spinner,
   Table,
@@ -21,6 +21,8 @@ interface PurchaseHistoryProps {
   history: Purchase[] | null;
   loading: boolean;
   removeFromPurchaseHistory: (purchase: Purchase) => Promise<void>;
+  resumePolling: (purchase: Purchase) => void;
+  cartEmpty: boolean;
 }
 
 const compactTableTheme = {
@@ -40,6 +42,8 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
   history,
   loading,
   removeFromPurchaseHistory,
+  resumePolling,
+  cartEmpty,
 }) => {
   const { currency, dateLocale, dateOptions } = useConfig();
 
@@ -133,14 +137,36 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
                   {currency.format(purchase.totalGrossPrice.toNumber())}
                 </TableCell>
                 <TableCell className="flex justify-end">
-                  <Button
-                    color="failure"
-                    aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
-                    onClick={() => setModalState({ show: true, purchase })}
-                    data-testid={`refund-purchase-${purchase.id}`}
-                  >
-                    <HiReceiptRefund />
-                  </Button>
+                  {purchase.status === "confirmed" && (
+                    <Button
+                      color="failure"
+                      aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
+                      onClick={() => setModalState({ show: true, purchase })}
+                      data-testid={`refund-purchase-${purchase.id}`}
+                    >
+                      <HiReceiptRefund />
+                    </Button>
+                  )}
+                  {purchase.status === "pending" && cartEmpty && (
+                    <Button
+                      color="failure"
+                      aria-label={`Reopen pending purchase from ${formatDate(purchase.createdAt)}`}
+                      onClick={() => resumePolling(purchase)}
+                      data-testid={`resume-purchase-${purchase.id}`}
+                    >
+                      <HiClock />
+                    </Button>
+                  )}
+                  {purchase.status === "pending" && !cartEmpty && (
+                    <Button
+                      color="failure"
+                      disabled
+                      aria-label={`Reopen not possible with a non-empty cart`}
+                      data-testid={`resume-purchase-${purchase.id}-disabled`}
+                    >
+                      <HiClock />
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

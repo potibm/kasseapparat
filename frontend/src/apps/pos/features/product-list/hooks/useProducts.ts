@@ -46,7 +46,7 @@ export const useProducts = (
       await addProductInterest(apiHost, token, productId);
       showToast({
         severity: "success",
-        message: `Interest for ${productName} added successfully!`,
+        message: `Interest in ${productName} registered successfully!`,
       });
       await loadProducts();
     } catch (error: unknown) {
