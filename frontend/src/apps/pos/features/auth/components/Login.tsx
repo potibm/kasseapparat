@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../hooks/useAuth";
 import { Label, Button, TextInput, Alert, Spinner } from "flowbite-react";
 import { getJwtToken } from "../../../../../core/api/auth";
 import BaseCard from "../../../components/BaseCard";
-import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import {
   LoginError as LoginErrorType,
   AuthUser as AuthUserType,

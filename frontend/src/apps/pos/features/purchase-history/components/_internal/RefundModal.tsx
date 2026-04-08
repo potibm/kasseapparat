@@ -10,7 +10,7 @@ import {
 } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { Purchase } from "../../../../utils/api.schemas";
-import { useConfig } from "../../../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import Button from "../../../../components/Button";
 
 interface RefundModalProps {
@@ -75,7 +75,12 @@ export const RefundModal: React.FC<RefundModalProps> = ({
               Yes, I&apos;m sure{" "}
               {processing && <Spinner size="sm" className="ml-2" />}
             </Button>
-            <Button color="black" onClick={onClose} aria-label="Cancel refund">
+            <Button
+              color="black"
+              onClick={onClose}
+              aria-label="Cancel refund"
+              className="bg-gray-200 dark:bg-gray-200 dark:text-gray-800"
+            >
               No, cancel
             </Button>
           </div>

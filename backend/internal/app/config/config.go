@@ -85,4 +85,5 @@ func InitViper() {
 	viper.RegisterAlias("mailer.frontend_url", "app.frontend_url")
 	viper.RegisterAlias("sentry.environment", "app.env")
 	viper.RegisterAlias("sentry.version", "app.version")
+	viper.RegisterAlias("sumup.currency_code", "format.currency.code")
 }

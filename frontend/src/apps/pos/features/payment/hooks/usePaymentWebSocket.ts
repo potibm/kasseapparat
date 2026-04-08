@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useAuth } from "@pos/features/auth/providers/AuthProvider";
-import { useConfig } from "@core/config/providers/ConfigProvider";
+import { useAuth } from "@pos/features/auth/hooks/useAuth";
+import { useConfig } from "@core/config/hooks/useConfig";
 import {
   UsePaymentWebSocketReturn,
   PaymentStatus,

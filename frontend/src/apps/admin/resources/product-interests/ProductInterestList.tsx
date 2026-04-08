@@ -8,7 +8,7 @@ import {
   DateField,
 } from "react-admin";
 import { ProductInterest } from "./types";
-import { useConfig } from "../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 
 export const ProductInterestList: React.FC = () => {
   const { dateLocale } = useConfig();

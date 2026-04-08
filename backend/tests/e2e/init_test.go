@@ -75,7 +75,7 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		Format: config.FormatConfig{
 			Currency: config.CurrencyFormatConfig{
 				Code:              "DKK",
-				Locale:            "dk-DK",
+				Locale:            "da-DK",
 				FractionDigitsMax: 2,
 				FractionDigitsMin: 0,
 			},

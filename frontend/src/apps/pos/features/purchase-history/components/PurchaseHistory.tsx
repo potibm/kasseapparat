@@ -9,7 +9,7 @@ import {
   TableHeadCell,
   TableBody,
 } from "flowbite-react";
-import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { Purchase } from "../../../utils/api.schemas";
 import Button from "../../../components/Button";
 import { RefundModal } from "./_internal/RefundModal";

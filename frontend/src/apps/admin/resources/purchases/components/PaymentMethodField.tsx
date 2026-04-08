@@ -1,5 +1,5 @@
 import { RaRecord, useRecordContext, FieldProps } from "react-admin";
-import { useConfig } from "@core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 
 export const PaymentMethodField = <T extends RaRecord>(
   props: FieldProps<T>,

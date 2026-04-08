@@ -54,10 +54,18 @@ run = """
   go tool cover -html=coverage.out -o coverage.html
 """
 
+[tasks."be:test:cov"]
+description = "Show the backend test coverage report in the browser"
+run = "open backend/coverage.html"
+
 [tasks."fe:test"]
 description = "Run frontend tests with coverage"
 dir = "frontend"
 run = 'NODE_OPTIONS="--no-webstorage" npm run test run -- --coverage'
+
+[tasks."fe:test:cov"]
+description = "Show the frontend test coverage report in the browser"
+run = "open frontend/coverage/index.html"
 
 
 # ==========================================

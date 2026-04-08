@@ -30,6 +30,7 @@ func TestInitViper(t *testing.T) {
 	viper.Set("app.env", "staging")
 	// sentry.environment is an alias for app.env
 	assert.Equal(t, "staging", viper.GetString("sentry.environment"))
+	assert.Equal(t, "DKK", viper.GetString("sumup.currency_code"))
 
 	viper.Set("app.frontend_url", "https://kasse.party")
 	assert.Equal(t, "https://kasse.party", viper.GetString("mailer.frontend_url"))

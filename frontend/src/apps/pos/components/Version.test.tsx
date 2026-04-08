@@ -3,10 +3,10 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { Version } from "./Version";
-import * as ConfigModule from "../../../core/config/providers/ConfigProvider";
+import * as ConfigModule from "../../../core/config/hooks/useConfig";
 import { AppConfig } from "../../../core/config/types/config.types";
 
-vi.mock("../../../core/config/providers/ConfigProvider", () => ({
+vi.mock("../../../core/config/hooks/useConfig", () => ({
   useConfig: vi.fn(),
 }));
 

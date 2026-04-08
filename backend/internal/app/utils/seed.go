@@ -269,6 +269,16 @@ func (ds *DatabaseSeed) seedGuests() {
 	)
 }
 
+func getOptionalArrivalNote() *string {
+	if gofakeit.Number(1, 100) <= 20 {
+		words := gofakeit.Sentence(5)
+
+		return &words
+	}
+
+	return nil
+}
+
 func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, maxPresentEntries int) {
 	if guestlistCount <= 0 {
 		return
@@ -284,6 +294,7 @@ func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, max
 					Name:             gofakeit.Name(),
 					GuestlistID:      userGuestlist.ID,
 					AdditionalGuests: uint(gofakeit.Number(0, 2)),
+					ArrivalNote:      getOptionalArrivalNote(),
 				},
 			)
 		}

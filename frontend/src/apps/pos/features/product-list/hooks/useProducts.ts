@@ -3,16 +3,17 @@ import { useState, useEffect, useCallback } from "react";
 import { fetchProducts, addProductInterest } from "../../../utils/api";
 import { Product as ProductType } from "../../../utils/api.schemas";
 import { createLogger } from "@core/logger/logger";
+import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 
 const log = createLogger("Product");
 
 export const useProducts = (
   apiHost: string,
   getToken: () => Promise<string>,
-  onError: (msg: string) => void,
 ) => {
   const [products, setProducts] = useState<ProductType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const { showToast } = useToast();
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
@@ -33,17 +34,20 @@ export const useProducts = (
         error instanceof Error
           ? "There was an error fetching the products: " + error.message
           : "An unknown error has occurred";
-
-      onError(errorMessage);
+      showToast({ severity: "error", message: errorMessage, autoClose: false });
     } finally {
       setLoading(false);
     }
-  }, [apiHost, getToken, onError]);
+  }, [apiHost, getToken, showToast]);
 
-  const addInterest = async (productId: number) => {
+  const addInterest = async (productId: number, productName: string) => {
     try {
       const token = await getToken();
       await addProductInterest(apiHost, token, productId);
+      showToast({
+        severity: "success",
+        message: `Interest for ${productName} added successfully!`,
+      });
       await loadProducts();
     } catch (error: unknown) {
       const errorMessage =
@@ -51,7 +55,7 @@ export const useProducts = (
           ? "Error on saving the interest: " + error.message
           : "An unknown error has occurred";
 
-      onError(errorMessage);
+      showToast({ severity: "error", message: errorMessage, autoClose: false });
     }
   };
 

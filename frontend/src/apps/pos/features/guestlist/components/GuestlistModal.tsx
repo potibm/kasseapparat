@@ -3,8 +3,8 @@ import { FloatingLabel, Modal, ModalBody } from "flowbite-react";
 import { fetchGuestlistByProductId } from "../../../utils/api";
 import { HiOutlineX } from "react-icons/hi";
 import SidebarKeyboard from "./_internal/SidebarKeyboard";
-import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
-import { useAuth } from "../../auth/providers/AuthProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
+import { useAuth } from "../../auth/hooks/useAuth";
 import Button from "../../../components/Button";
 import GuestlistResultTable from "./_internal/GuestlistResultTable";
 import {

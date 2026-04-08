@@ -44,10 +44,6 @@ export default defineConfig([
           varsIgnorePattern: "^_",
         },
       ],
-      "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true },
-      ],
       "react/jsx-uses-vars": "error",
       "@typescript-eslint/no-explicit-any": "error",
     },

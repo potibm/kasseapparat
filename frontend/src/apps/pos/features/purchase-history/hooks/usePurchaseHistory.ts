@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import { fetchPurchases, refundPurchaseById } from "../../../utils/api";
 import { Purchase as PurchaseType } from "../../../utils/api.schemas";
 import { createLogger } from "@core/logger/logger";
+import { useToast } from "@pos/features/ui/toast/hooks/useToast";
+import { useConfig } from "@core/config/hooks/useConfig";
 
 const log = createLogger("Purchase");
 
@@ -10,13 +12,15 @@ export const usePurchaseHistory = (
   apiHost: string,
   getToken: () => Promise<string>,
   userId: number,
-  onError: (msg: string) => void,
 ) => {
   const [history, setHistory] = useState<PurchaseType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const { showToast } = useToast();
+  const { currency } = useConfig();
 
   const loadHistory = useCallback(async () => {
     if (!userId) {
+      log.warn("No user ID provided, cannot load purchase history");
       setHistory([]);
       setLoading(false);
       return;
@@ -43,12 +47,12 @@ export const usePurchaseHistory = (
           ? "Error while loading the purchase history: " + error.message
           : "An unknown error has occurred";
 
-      onError(errorMessage);
+      showToast({ severity: "error", message: errorMessage, autoClose: false });
       setHistory([]);
     } finally {
       setLoading(false);
     }
-  }, [apiHost, getToken, userId, onError]);
+  }, [apiHost, getToken, userId, showToast]);
 
   useEffect(() => {
     loadHistory();
@@ -57,7 +61,11 @@ export const usePurchaseHistory = (
   const refund = async (purchaseId: string) => {
     try {
       const token = await getToken();
-      await refundPurchaseById(apiHost, token, purchaseId);
+      const purchase = await refundPurchaseById(apiHost, token, purchaseId);
+      showToast({
+        severity: "success",
+        message: `Purchase of ${currency.format(purchase.totalGrossPrice.toNumber())} refunded successfully!`,
+      });
       await loadHistory();
     } catch (error: unknown) {
       const errorMessage =
@@ -65,7 +73,12 @@ export const usePurchaseHistory = (
           ? "Error while refunding the purchase: " + error.message
           : "An unknown error has occurred";
 
-      onError(errorMessage);
+      showToast({
+        severity: "error",
+        message: errorMessage,
+        autoClose: false,
+        blocking: true,
+      });
       throw error;
     }
   };

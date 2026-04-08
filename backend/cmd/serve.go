@@ -56,6 +56,12 @@ func NewServeCmd() *cobra.Command {
 				return fmt.Errorf("failed to connect to database: %w", err)
 			}
 
+			defer func() {
+				if err := utils.CloseDatabase(db); err != nil {
+					slog.Error("failed to close database", "error", err)
+				}
+			}()
+
 			// 4. Initialize external services (Sentry, SumUp, etc.)
 			initializer.InitializeSentry(Cfg.Sentry)
 			initializer.InitializeSumup(Cfg.Sumup)

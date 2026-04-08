@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { createRoutesStub } from "react-router";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import * as ConfigProviderModule from "./core/config/providers/ConfigProvider";
+import * as ConfigHookModule from "./core/config/hooks/useConfig";
+import { ConfigContext } from "./core/config/context/ConfigContext";
 import AuthProvider from "./apps/pos/features/auth/providers/AuthProvider";
 import Login from "./apps/pos/features/auth/components/Login";
 import App from "./App";
@@ -31,7 +32,7 @@ describe("App", () => {
   });
 
   it("renders the App component before loading the config", async () => {
-    const spy = vi.spyOn(ConfigProviderModule, "useConfig").mockReturnValue({
+    const spy = vi.spyOn(ConfigHookModule, "useConfig").mockReturnValue({
       loading: true,
       error: null,
     } as unknown as AppConfig);
@@ -63,14 +64,12 @@ describe("App", () => {
       websocketHost: "ws://localhost",
     } as unknown as AppConfig;
 
-    vi.spyOn(ConfigProviderModule, "useConfig").mockReturnValue(
-      mockConfigValue,
-    );
+    vi.spyOn(ConfigHookModule, "useConfig").mockReturnValue(mockConfigValue);
 
     const MockConfigProvider = ({ children }: { children: ReactNode }) => (
-      <ConfigProviderModule.ConfigContext.Provider value={mockConfigValue}>
+      <ConfigContext.Provider value={mockConfigValue}>
         {children}
-      </ConfigProviderModule.ConfigContext.Provider>
+      </ConfigContext.Provider>
     );
 
     const LoginComponentWrapped = () => (

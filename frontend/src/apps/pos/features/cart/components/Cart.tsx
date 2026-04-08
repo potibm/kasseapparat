@@ -9,7 +9,7 @@ import {
   TableRow,
   TableCell,
 } from "flowbite-react";
-import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import "animate.css";
 import Button from "../../../components/Button";
 import CheckoutButtons from "./_internal/CheckoutButtons";

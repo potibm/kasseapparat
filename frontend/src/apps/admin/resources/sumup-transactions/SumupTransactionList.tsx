@@ -7,7 +7,7 @@ import {
   DateField,
   ListProps,
 } from "react-admin";
-import { useConfig } from "../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { SumupTransactionTimeRangeFilter } from "./components/SumupTransactionTimeRangeFilter";
 import { SumupTransactionStatusField } from "./components/SumupTransactionStatusField";
 

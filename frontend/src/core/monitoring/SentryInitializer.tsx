@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import * as Sentry from "@sentry/react";
-import { useConfig } from "../config/providers/ConfigProvider";
+import { useConfig } from "../config/hooks/useConfig";
 import { createLogger } from "@core/logger/logger";
 
 const log = createLogger("Core");

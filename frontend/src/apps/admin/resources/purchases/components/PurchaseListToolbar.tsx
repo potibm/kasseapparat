@@ -12,7 +12,7 @@ import {
   ToolbarProps,
 } from "react-admin";
 import { Box } from "@mui/material";
-import { useConfig } from "../../../../../core/config/providers/ConfigProvider";
+import { useConfig } from "@core/config/hooks/useConfig";
 import { PurchaseExportButton } from "./PurchaseExportButton";
 
 export const PurchaseListToolbar: React.FC<ToolbarProps> = () => {

@@ -11,10 +11,17 @@ import {
   createMockPurchase,
 } from "@pos/utils/api.schemas.mocks";
 import { PaymentMethodData } from "../types/cart.types";
+import Decimal from "decimal.js";
 
 // --- 1. MOCKS ---
 vi.mock("../../../utils/api", () => ({
   storePurchase: vi.fn(),
+}));
+
+vi.mock("@core/config/hooks/useConfig", () => ({
+  useConfig: () => ({
+    currency: new Intl.NumberFormat(),
+  }),
 }));
 
 vi.mock("@core/logger/logger", () => ({
@@ -23,6 +30,13 @@ vi.mock("@core/logger/logger", () => ({
     info: vi.fn(),
     error: vi.fn(),
   })),
+}));
+
+const mockShowToast = vi.fn();
+vi.mock("@pos/features/ui/toast/hooks/useToast", () => ({
+  useToast: () => ({
+    showToast: mockShowToast,
+  }),
 }));
 
 // --- 2. FIXTURES (Dummy Data) ---
@@ -109,7 +123,10 @@ describe("useCart Hook", () => {
 
   describe("checkout() API Interaction", () => {
     it("should handle an immediately confirmed purchase", async () => {
-      const confirmedPurchase = createMockPurchase({ status: "confirmed" });
+      const confirmedPurchase = createMockPurchase({
+        status: "confirmed",
+        totalGrossPrice: Decimal(979.66),
+      });
       vi.mocked(storePurchase).mockResolvedValue(confirmedPurchase);
 
       const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
@@ -139,6 +156,11 @@ describe("useCart Hook", () => {
       expect(result.current.isPolling).toBe(false);
       expect(result.current.checkoutProcessing).toBeNull();
       expect(result.current.cart.isEmpty).toBe(true);
+
+      expect(mockShowToast).toHaveBeenCalledWith({
+        severity: "success",
+        message: "Purchase at 979.66 confirmed!",
+      });
     });
 
     it("should handle a pending purchase (triggering polling)", async () => {

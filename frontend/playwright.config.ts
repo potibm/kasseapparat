@@ -9,7 +9,7 @@ export default defineConfig({
   workers: 1,
   reporter: "html",
   use: {
-    baseURL: "https://127.0.0.1:4000",
+    baseURL: "https://localhost:4000",
     ignoreHTTPSErrors: true,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
