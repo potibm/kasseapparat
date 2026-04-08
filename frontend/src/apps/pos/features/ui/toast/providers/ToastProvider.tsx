@@ -21,7 +21,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
       if (newToast.severity === "debug" && !isDev) return;
 
       const id = Math.random().toString(36).substring(2, 9);
-      setToasts((prev) => [...prev, { ...newToast, id }]);
+
+      const resolvedAutoClose = newToast.blocking ? false : newToast.autoClose;
+
+      setToasts((prev) => [
+        ...prev,
+        { ...newToast, id, autoClose: resolvedAutoClose },
+      ]);
     },
     [isDev],
   );

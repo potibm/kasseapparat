@@ -37,7 +37,10 @@ func TestConfigValidate(t *testing.T) {
 
 	h := slog.NewJSONHandler(&buf, nil)
 	logger := slog.New(h)
+	oldLogger := slog.Default()
+
 	slog.SetDefault(logger)
+	t.Cleanup(func() { slog.SetDefault(oldLogger) })
 
 	cfg := defaultTestConfig
 	assert.NoError(t, cfg.Validate())
@@ -60,7 +63,10 @@ func TestConfigValidateWithDefaultJwtSecretShowingWarning(t *testing.T) {
 
 	h := slog.NewJSONHandler(&buf, nil)
 	logger := slog.New(h)
+	oldLogger := slog.Default()
+
 	slog.SetDefault(logger)
+	t.Cleanup(func() { slog.SetDefault(oldLogger) })
 
 	cfg := defaultTestConfig
 	cfg.App.Environment = "development"

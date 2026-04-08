@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { HiClock, HiReceiptRefund } from "react-icons/hi";
+import { HiReceiptRefund, HiRefresh } from "react-icons/hi";
 import {
   Spinner,
   Table,
@@ -14,6 +14,7 @@ import { Purchase } from "../../../utils/api.schemas";
 import Button from "../../../components/Button";
 import { RefundModal } from "./_internal/RefundModal";
 import { createLogger } from "@core/logger/logger";
+import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 
 const log = createLogger("Purchase");
 
@@ -46,6 +47,7 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
   cartEmpty,
 }) => {
   const { currency, dateLocale, dateOptions } = useConfig();
+  const { showToast } = useToast();
 
   // State
   const [modalState, setModalState] = useState<{
@@ -147,24 +149,23 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
                       <HiReceiptRefund />
                     </Button>
                   )}
-                  {purchase.status === "pending" && cartEmpty && (
+                  {purchase.status === "pending" && (
                     <Button
-                      color="failure"
-                      aria-label={`Reopen pending purchase from ${formatDate(purchase.createdAt)}`}
-                      onClick={() => resumePolling(purchase)}
-                      data-testid={`resume-purchase-${purchase.id}`}
+                      color="warning"
+                      aria-label={`Resume purchase`}
+                      onClick={() => {
+                        if (!cartEmpty) {
+                          showToast({
+                            severity: "warning",
+                            message:
+                              "Please complete or clear the current cart before resuming this purchase.",
+                          });
+                        } else {
+                          resumePolling(purchase);
+                        }
+                      }}
                     >
-                      <HiClock />
-                    </Button>
-                  )}
-                  {purchase.status === "pending" && !cartEmpty && (
-                    <Button
-                      color="failure"
-                      disabled
-                      aria-label={`Reopen not possible with a non-empty cart`}
-                      data-testid={`resume-purchase-${purchase.id}-disabled`}
-                    >
-                      <HiClock />
+                      <HiRefresh className="animate-spin" />
                     </Button>
                   )}
                 </TableCell>

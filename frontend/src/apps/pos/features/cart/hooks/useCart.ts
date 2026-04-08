@@ -116,16 +116,31 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
     }
   };
 
-  const resumePolling = useCallback((purchase: PurchaseType) => {
-    purchaseLog.info("Resuming polling for existing purchase", {
-      purchaseId: purchase.id,
-    });
+  const resumePolling = useCallback(
+    (purchase: PurchaseType) => {
+      if (isPolling) {
+        purchaseLog.warn("Polling is already active. Ignoring resume request.");
+        return;
+      }
 
-    setPendingPurchase(purchase);
-    setIsPolling(true);
+      if (purchase.status !== "pending") {
+        purchaseLog.warn(
+          `Cannot resume polling. Purchase is already in terminal state: ${purchase.status}`,
+        );
+        return;
+      }
 
-    setCheckoutProcessing(purchase.paymentMethod);
-  }, []);
+      purchaseLog.info("Resuming polling for existing purchase", {
+        purchaseId: purchase.id,
+      });
+
+      setPendingPurchase(purchase);
+      setIsPolling(true);
+
+      setCheckoutProcessing(purchase.paymentMethod);
+    },
+    [isPolling],
+  );
 
   return {
     cart,

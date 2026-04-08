@@ -121,7 +121,7 @@ export const storePurchase = async (
   );
 };
 
-// Fetch all confirmed purchases for a user
+// Fetch all confirmed and pendingpurchases for a user
 export const fetchPurchases = async (
   apiHost: string,
   jwtToken: string,

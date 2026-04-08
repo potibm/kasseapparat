@@ -47,7 +47,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		CurrencyCode:                  handler.config.Format.Currency.Code,
 		FractionDigitsMin:             handler.config.Format.Currency.FractionDigitsMin,
 		FractionDigitsMax:             handler.config.Format.Currency.FractionDigitsMax,
-		VATRates:                      concertVatRates(handler.config.VATRates),
+		VATRates:                      convertVatRates(handler.config.VATRates),
 		DateLocale:                    handler.config.Format.Date.Locale,
 		DateOptions:                   DateFormatOptionsConfig(handler.config.Format.Date.Options),
 		EnvironmentMessage:            handler.config.App.EnvironmentMessage,
@@ -70,7 +70,7 @@ func convertPaymentMethods(paymentMethods []cfgTypes.PaymentMethodConfig) []Paym
 	return result
 }
 
-func concertVatRates(vatRates []cfgTypes.VatRateConfig) []VatRateConfig {
+func convertVatRates(vatRates []cfgTypes.VatRateConfig) []VatRateConfig {
 	result := make([]VatRateConfig, 0, len(vatRates))
 
 	for _, configVatRate := range vatRates {
