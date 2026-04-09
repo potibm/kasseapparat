@@ -97,8 +97,8 @@ describe("Cart Component", () => {
   });
 
   it("shows processing state on checkout buttons", () => {
-    const cart = new CartObject();
-    cart.add(mockProduct as unknown as Product, 1);
+    let cart = new CartObject();
+    cart = cart.add(mockProduct as unknown as Product, 1);
 
     render(
       <Cart
@@ -109,6 +109,13 @@ describe("Cart Component", () => {
         checkoutProcessing="cash" // simulates running checkout
       />,
     );
+
+    const cashBtn = screen.getByTestId("checkout-button-CASH");
+
+    expect(cashBtn).toBeDisabled();
+
+    const cardBtn = screen.getByTestId("checkout-button-CARD");
+    expect(cardBtn).toBeDisabled();
   });
 
   it("triggers the flash animation when cart quantity changes", async () => {
