@@ -46,27 +46,29 @@ const Cart: React.FC<CartProps> = ({
   const prevCartTotalQuantityRef = useRef(cart.totalQuantity);
   const isFirstRenderRef = useRef(true);
 
-  const triggerFlash = () => {
-    requestAnimationFrame(() => {
-      setFlash(true);
-      setTimeout(() => {
-        setFlash(false);
-      }, 500);
-    });
-  };
-
   useEffect(() => {
     if (isFirstRenderRef.current) {
       isFirstRenderRef.current = false;
       return;
     }
 
+    let rafId: number;
+    let timerId: ReturnType<typeof setTimeout>;
+
     if (cart.totalQuantity !== prevCartTotalQuantityRef.current) {
-      triggerFlash();
+      rafId = requestAnimationFrame(() => {
+        setFlash(true);
+        timerId = setTimeout(() => setFlash(false), 500);
+      });
     }
 
     prevCartTotalQuantityRef.current = cart.totalQuantity;
-  }, [cart]);
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [cart.totalQuantity]);
 
   const compactTableTheme = {
     head: {
@@ -114,7 +116,10 @@ const Cart: React.FC<CartProps> = ({
             <TableCell colSpan={2} className="uppercase font-bold">
               Total
             </TableCell>
-            <TableCell className="font-bold text-right">
+            <TableCell
+              className="font-bold text-right"
+              data-testid="cart-total-value"
+            >
               {currency.format(cart.totalGross.toNumber())}
             </TableCell>
             <TableCell className="flex justify-end">

@@ -71,13 +71,14 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
     } else if (lastTopIdRef.current !== currentTopId) {
       let timerId: ReturnType<typeof setTimeout>;
 
-      requestAnimationFrame(() => {
+      const rafId = requestAnimationFrame(() => {
         setFlash(true);
         timerId = setTimeout(() => setFlash(false), 500);
       });
 
       lastTopIdRef.current = currentTopId;
       return () => {
+        if (rafId) cancelAnimationFrame(rafId);
         if (timerId) clearTimeout(timerId);
       };
     }
