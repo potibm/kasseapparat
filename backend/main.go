@@ -8,9 +8,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/exitcode"
 )
 
-var (
-	version = "0.0.0"
-)
+var version = "0.0.0"
 
 func startup() int {
 	if err := cmd.Execute(); err != nil {

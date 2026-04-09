@@ -8,26 +8,26 @@ func (c Config) RedactConfigForDisplay() Config {
 	result := c
 
 	result.Jwt.Secret = redacted
-	result.Sumup.ApiKey = redacted
+	result.Sumup.APIKey = redacted
 	result.Sentry.DSN = redacted
 
-	result.App.RedisURL = RedisUrl(redactUrlPassword(string(c.App.RedisURL)))
-	result.Mailer.DSN = redactUrlPassword(c.Mailer.DSN)
+	result.App.RedisURL = RedisURL(redactURLPassword(string(c.App.RedisURL)))
+	result.Mailer.DSN = redactURLPassword(c.Mailer.DSN)
 
 	return result
 }
 
-func redactUrlPassword(rawUrl string) string {
-	parsedUrl, err := url.Parse(rawUrl)
+func redactURLPassword(rawURL string) string {
+	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
-		return rawUrl
+		return rawURL
 	}
 
-	if parsedUrl.User != nil {
-		parsedUrl.User = url.UserPassword(parsedUrl.User.Username(), redacted)
+	if parsedURL.User != nil {
+		parsedURL.User = url.UserPassword(parsedURL.User.Username(), redacted)
 
-		return parsedUrl.String()
+		return parsedURL.String()
 	}
 
-	return rawUrl
+	return rawURL
 }

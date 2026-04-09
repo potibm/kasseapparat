@@ -9,7 +9,7 @@ import (
 )
 
 func NewDbMigrateCmd() *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "migrate",
 		Short: "Runs database migrations",
 		RunE: func(cmd *cobra.Command, args []string) error {

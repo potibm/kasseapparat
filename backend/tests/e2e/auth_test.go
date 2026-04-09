@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	refreshtokenUrl      = "/api/v2/auth/refresh"
-	loginUrl             = "/api/v2/auth/login"
-	logoutUrl            = "/api/v2/auth/logout"
+	refreshtokenURL      = "/api/v2/auth/refresh"
+	loginURL             = "/api/v2/auth/login"
+	logoutURL            = "/api/v2/auth/logout"
 	jwtRegexp            = `^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$`
 	expireDateTimeRegexp = `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$`
 )
@@ -17,7 +17,7 @@ func TestLogin(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	r := e.POST(loginUrl).
+	r := e.POST(loginURL).
 		WithJSON(map[string]string{
 			"login":    "demo",
 			"password": "demo",
@@ -44,7 +44,7 @@ func TestInvalidLogin(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	e := e.POST(loginUrl).
+	e := e.POST(loginURL).
 		WithJSON(map[string]string{
 			"login":    "demo",
 			"password": "wrooong",
@@ -61,7 +61,7 @@ func TestRefreshToken(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	req := e.POST(loginUrl).
+	req := e.POST(loginURL).
 		WithJSON(map[string]string{
 			"login":    "demo",
 			"password": "demo",
@@ -72,7 +72,7 @@ func TestRefreshToken(t *testing.T) {
 	cookie := req.Cookie("refresh_token")
 	oldRefreshToken := cookie.Value().Raw()
 
-	refreshReq := e.POST(refreshtokenUrl).
+	refreshReq := e.POST(refreshtokenURL).
 		WithCookie("refresh_token", oldRefreshToken).
 		Expect().
 		Status(http.StatusOK)
@@ -89,7 +89,7 @@ func TestRefreshTokenWithoutToken(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	response := e.POST(refreshtokenUrl).
+	response := e.POST(refreshtokenURL).
 		Expect().
 		Status(http.StatusBadRequest).
 		JSON().Object()
@@ -106,7 +106,7 @@ func TestRefreshTokenWithExpiredToken(t *testing.T) {
 		"eyJJRCI6MiwiZXhwIjoxNzI2MDg4NTA4LCJvcmlnX2lhdCI6MTcyNjA4NzkwOH0." +
 		"sNlaDHxoJ6Lr1IruI2DembljhSFmlZncusHUV4hcGq4"
 
-	response := e.POST(refreshtokenUrl).
+	response := e.POST(refreshtokenURL).
 		WithCookie("refresh_token", token).
 		Expect().
 		Status(http.StatusUnauthorized).
@@ -123,7 +123,7 @@ func TestRefreshTokenWithInvalidToken(t *testing.T) {
 	// old token
 	token := "eythisis.invalid.token"
 
-	response := e.POST(refreshtokenUrl).
+	response := e.POST(refreshtokenURL).
 		WithCookie("refresh_token", token).
 		Expect().
 		Status(http.StatusUnauthorized).
@@ -137,7 +137,7 @@ func TestLogout(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	req := e.POST(loginUrl).
+	req := e.POST(loginURL).
 		WithJSON(map[string]string{
 			"login":    "demo",
 			"password": "demo",
@@ -148,7 +148,7 @@ func TestLogout(t *testing.T) {
 	refreshToken := req.Cookie("refresh_token").Value().Raw()
 	token := req.Cookie("jwt").Value().Raw()
 
-	logoutReq := e.POST(logoutUrl).
+	logoutReq := e.POST(logoutURL).
 		WithCookie("refresh_token", refreshToken).
 		WithCookie("jwt", token).
 		WithHeader("Content-Type", "application/json").
@@ -158,7 +158,7 @@ func TestLogout(t *testing.T) {
 	logoutReq.Cookie("refresh_token").Value().IsEmpty()
 	logoutReq.Cookie("jwt").Value().IsEmpty()
 
-	e.POST(refreshtokenUrl).
+	e.POST(refreshtokenURL).
 		WithCookie("refresh_token", refreshToken).
 		Expect().
 		Status(http.StatusUnauthorized)

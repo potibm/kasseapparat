@@ -24,10 +24,10 @@ type TransactionalRepository interface {
 type GuestRepository interface {
 	GuestCRUDRepository
 	GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.Guest, error)
-	GetUnattendedGuestsByProductID(productId int, q string) (models.GuestSummarySlice, error)
+	GetUnattendedGuestsByProductID(productID int, q string) (models.GuestSummarySlice, error)
 	GetGuestByCode(code string) (*models.Guest, error)
 	GetFullGuestByID(id int) (*models.Guest, error)
-	RollbackVisitedGuestsByPurchaseID(purchaseId uuid.UUID) error
+	RollbackVisitedGuestsByPurchaseID(purchaseID uuid.UUID) error
 }
 
 type GuestCRUDRepository interface {
@@ -61,7 +61,7 @@ type ProductInterestRepository interface {
 	GetProductInterestByID(id int) (*models.ProductInterest, error)
 	DeleteProductInterest(productInterest models.ProductInterest, deletedBy models.User)
 	CreateProductInterest(productInterest models.ProductInterest, createdBy models.User) (models.ProductInterest, error)
-	GetProductInterestCountByProductID(productID uint) (int, error)
+	GetProductInterestCountByProductID(productID int) (int, error)
 }
 
 type ProductRepository interface {
@@ -72,7 +72,7 @@ type ProductRepository interface {
 	UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error)
 	CreateProduct(product models.Product) (models.Product, error)
 	DeleteProduct(product models.Product, deletedBy models.User)
-	GetAttendedGuestSumByProductID(productID uint) (int, error)
+	GetAttendedGuestSumByProductID(productID int) (int, error)
 }
 
 type PurchaseRepository interface {
@@ -80,14 +80,14 @@ type PurchaseRepository interface {
 
 	GetPurchaseBySumupClientTransactionID(sumupTransactionID uuid.UUID) (*models.Purchase, error)
 	UpdatePurchaseStatusByID(id uuid.UUID, status models.PurchaseStatus) (*models.Purchase, error)
-	UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error)
+	UpdatePurchaseSumupTransactionIDByID(id, sumupTransactionID uuid.UUID) (*models.Purchase, error)
 	UpdatePurchaseSumupClientTransactionIDByID(
-		id uuid.UUID,
+		id,
 		sumupClientTransactionID uuid.UUID,
 	) (*models.Purchase, error)
 	GetFilteredPurchases(filters PurchaseFilters) ([]models.PurchaseItem, error)
 	GetPurchaseStats() ([]ProductPurchaseStats, error)
-	GetPurchasedQuantitiesByProductID(productID uint) (int, error)
+	GetPurchasedQuantitiesByProductID(productID int) (int, error)
 }
 
 type PurchaseCRUDRepository interface {

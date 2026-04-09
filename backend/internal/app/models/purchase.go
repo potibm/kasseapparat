@@ -8,8 +8,10 @@ import (
 	"gorm.io/gorm"
 )
 
-type PurchaseStatus string
-type PurchaseStatusList []PurchaseStatus
+type (
+	PurchaseStatus     string
+	PurchaseStatusList []PurchaseStatus
+)
 
 const (
 	PurchaseStatusPending   PurchaseStatus = "pending"

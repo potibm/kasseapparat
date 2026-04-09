@@ -9,15 +9,15 @@ import (
 )
 
 var (
-	guestlistBaseUrl   = "/api/v2/guestlists"
-	guestlistUrlWithId = guestlistBaseUrl + "/1"
+	guestlistBaseURL   = "/api/v2/guestlists"
+	guestlistURLWithID = guestlistBaseURL + "/1"
 )
 
 func TestGetGuestlists(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(guestlistBaseURL)).
 		Expect()
 
 	res.Status(http.StatusOK)
@@ -41,7 +41,7 @@ func TestGetGuestlistsEmpty(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(guestlistBaseURL)).
 		WithQuery("id", 0).
 		Expect().
 		Status(http.StatusOK)
@@ -58,7 +58,7 @@ func TestGetGuestlistsWithSort(t *testing.T) {
 	sortFields := []string{"id", "name"}
 
 	for _, sortField := range sortFields {
-		withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
+		withDemoUserAuthToken(e.GET(guestlistBaseURL)).
 			WithQuery("_sort", sortField).
 			Expect().
 			Status(http.StatusOK)
@@ -69,7 +69,7 @@ func TestGetGuestlistsWithQuery(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(guestlistBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(guestlistBaseURL)).
 		WithQuery("q", "Guestlist").
 		Expect()
 
@@ -88,7 +88,7 @@ func TestGetGuestlist(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	list := withDemoUserAuthToken(e.GET(guestlistUrlWithId)).
+	list := withDemoUserAuthToken(e.GET(guestlistURLWithID)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
@@ -103,7 +103,7 @@ func TestCreateUpdateAndDeleteGuestList(t *testing.T) {
 
 	changedName := "Test List Updated"
 
-	list := withDemoUserAuthToken(e.POST(guestlistBaseUrl)).
+	list := withDemoUserAuthToken(e.POST(guestlistBaseURL)).
 		WithJSON(map[string]any{
 			"name":      originalName,
 			"typeCode":  false,
@@ -115,17 +115,17 @@ func TestCreateUpdateAndDeleteGuestList(t *testing.T) {
 	list.Value("id").Number().Gt(0)
 	list.Value("name").String().IsEqual(originalName)
 
-	listId := list.Value("id").Number().Raw()
-	listUrl := guestlistBaseUrl + "/" + strconv.FormatFloat(listId, 'f', -1, 64)
+	listID := list.Value("id").Number().Raw()
+	listURL := guestlistBaseURL + "/" + strconv.FormatFloat(listID, 'f', -1, 64)
 
-	list = withDemoUserAuthToken(e.GET(listUrl)).
+	list = withDemoUserAuthToken(e.GET(listURL)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	list.Value("id").Number().Gt(0)
 	list.Value("name").String().Contains(originalName)
 
-	withDemoUserAuthToken(e.PUT(listUrl)).
+	withDemoUserAuthToken(e.PUT(listURL)).
 		WithJSON(map[string]any{
 			"name":      changedName,
 			"typeCode":  false,
@@ -134,24 +134,24 @@ func TestCreateUpdateAndDeleteGuestList(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	list = withDemoUserAuthToken(e.GET(listUrl)).
+	list = withDemoUserAuthToken(e.GET(listURL)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	list.Value("id").Number().Gt(0)
 	list.Value("name").String().Contains(changedName)
 
-	withDemoUserAuthToken(e.DELETE(listUrl)).
+	withDemoUserAuthToken(e.DELETE(listURL)).
 		Expect().
 		Status(http.StatusNoContent)
 
-	withDemoUserAuthToken(e.GET(listUrl)).
+	withDemoUserAuthToken(e.GET(listURL)).
 		Expect().
 		Status(http.StatusNotFound)
 }
 
 func TestGuestlistAuthentication(t *testing.T) {
-	testAuthenticationForEntityEndpoints(t, guestlistBaseUrl, guestlistUrlWithId)
+	testAuthenticationForEntityEndpoints(t, guestlistBaseURL, guestlistURLWithID)
 }
 
 func validateGuestlistObject(guestlist *httpexpect.Object) {

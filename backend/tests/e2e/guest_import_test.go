@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	guestsImportUrl       = "/api/v2/guestsUpload"
+	guestsImportURL       = "/api/v2/guestsUpload"
 	guestsImportCsvHeader = "Code;LastName;FirstName;Subject;Blocked;Notiz;\n"
-	deineTicketProductId  = 4
+	deineTicketProductID  = 4
 )
 
 func TestGuestImport(t *testing.T) {
@@ -37,7 +37,7 @@ func TestGuestImportWithoutFile(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	withDemoUserAuthToken(e.POST(guestsImportUrl)).
+	withDemoUserAuthToken(e.POST(guestsImportURL)).
 		Expect().
 		Status(http.StatusBadRequest)
 }
@@ -93,17 +93,17 @@ func TestGuestImportWithWarningMessages(t *testing.T) {
 }
 
 func deleteGuestsByNameQuery(query string) {
-	guestsUrl := productBaseUrl + "/" + strconv.Itoa(deineTicketProductId) + "/guests"
-	guests := withDemoUserAuthToken(e.GET(guestsUrl)).
+	guestsURL := productBaseURL + "/" + strconv.Itoa(deineTicketProductID) + "/guests"
+	guests := withDemoUserAuthToken(e.GET(guestsURL)).
 		WithQuery("q", query).
 		Expect().
 		Status(http.StatusOK).JSON().Array()
 
 	for i := range len(guests.Iter()) {
 		guest := guests.Value(i).Object()
-		guestId := guest.Value("id").Number().Raw()
+		guestID := guest.Value("id").Number().Raw()
 
-		withDemoUserAuthToken(e.DELETE(guestBaseUrl + "/" + strconv.Itoa(int(guestId)))).
+		withDemoUserAuthToken(e.DELETE(guestBaseURL + "/" + strconv.Itoa(int(guestID)))).
 			Expect().
 			Status(http.StatusOK)
 	}
@@ -113,7 +113,7 @@ func uploadGuestImport(fileContent string) *httpexpect.Response {
 	reader := strings.NewReader(fileContent)
 
 	// Create a list entry import
-	return withDemoUserAuthToken(e.POST(guestsImportUrl)).
+	return withDemoUserAuthToken(e.POST(guestsImportURL)).
 		WithMultipart().
 		WithFile("file", "import.csv", reader).
 		Expect()
@@ -123,5 +123,5 @@ func TestGuestsImportAuthentication(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	e.Request("POST", guestsImportUrl).Expect().Status(http.StatusUnauthorized)
+	e.Request("POST", guestsImportURL).Expect().Status(http.StatusUnauthorized)
 }

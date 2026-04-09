@@ -71,7 +71,7 @@ func (n *transactionPoller) handleTransactionPolling(transactionID uuid.UUID) bo
 	}
 
 	// Fetch current status from SumUp
-	transaction, err := n.SumupRepository.GetTransactionByClientTransactionId(*purchase.SumupClientTransactionID)
+	transaction, err := n.SumupRepository.GetTransactionByClientTransactionID(*purchase.SumupClientTransactionID)
 	if err != nil {
 		slog.Error(
 			"Error fetching transaction from SumUp",

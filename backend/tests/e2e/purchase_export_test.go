@@ -11,20 +11,20 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-var purchaseExportBaseUrl = "/api/v2/purchases/export"
+var purchaseExportBaseURL = "/api/v2/purchases/export"
 
 func TestPurchaseExportForEntityEndpoints(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	e.Request("GET", purchaseExportBaseUrl).Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", purchaseExportBaseURL).Expect().Status(http.StatusUnauthorized)
 }
 
 func TestGetPurchaseExport(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(purchaseExportBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(purchaseExportBaseURL)).
 		Expect()
 
 	res.Status(http.StatusOK)
@@ -81,7 +81,7 @@ func testGetPurchaseExportFilterOnPaymentMethod(t *testing.T, paymentMethod stri
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(purchaseExportBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(purchaseExportBaseURL)).
 		WithQuery("paymentMethods", paymentMethod).
 		Expect()
 

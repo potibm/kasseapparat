@@ -57,7 +57,7 @@ func (repo *Repository) CreateProductInterest(
 	return productInterest, result.Error
 }
 
-func (repo *Repository) GetProductInterestCountByProductID(productID uint) (int, error) {
+func (repo *Repository) GetProductInterestCountByProductID(productID int) (int, error) {
 	var count int
 
 	err := repo.db.Table("product_interests").

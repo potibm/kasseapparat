@@ -16,19 +16,19 @@ var (
 
 func InitializeSumup(sumupConfig config.SumupConfig) *sumupService.Service {
 	once.Do(func() {
-		apiKey := sumupConfig.ApiKey
+		apiKey := sumupConfig.APIKey
 		merchantCode := sumupConfig.MerchantCode
 		paymentCurrency := sumupConfig.CurrencyCode
 		paymentMinorUnit := sumupConfig.CurrencyMinorUnit
 		affiliateKey := sumupConfig.AffiliateKey
-		applicationId := sumupConfig.ApplicationId
+		applicationID := sumupConfig.ApplicationID
 
-		var webhookUrl *string
+		var webhookURL *string
 
-		publicUrl := sumupConfig.PublicUrl
-		if publicUrl != "" {
-			webhookUrl = &publicUrl
-			*webhookUrl += "/api/sumup/webhook"
+		publicURL := sumupConfig.PublicURL
+		if publicURL != "" {
+			webhookURL = &publicURL
+			*webhookURL += "/api/sumup/webhook"
 		}
 
 		clientOptions := client.WithAPIKey(apiKey)
@@ -37,11 +37,11 @@ func InitializeSumup(sumupConfig config.SumupConfig) *sumupService.Service {
 		instance = sumupService.NewService(
 			clnt,
 			merchantCode,
-			applicationId,
+			applicationID,
 			affiliateKey,
 			paymentCurrency,
-			uint(paymentMinorUnit),
-			webhookUrl,
+			paymentMinorUnit,
+			webhookURL,
 		)
 	})
 

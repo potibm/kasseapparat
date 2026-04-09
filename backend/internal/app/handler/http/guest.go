@@ -12,7 +12,7 @@ import (
 )
 
 type GuestCreateRequest struct {
-	GuestlistID          uint    `json:"guestlistId"          form:"guestlistId"          binding:"required"`
+	GuestlistID          int     `json:"guestlistId"          form:"guestlistId"          binding:"required"`
 	Name                 string  `json:"name"                 form:"name"                 binding:"required"`
 	Code                 string  `json:"code"                 form:"code"`
 	AdditionalGuests     uint    `json:"additionalGuests"     form:"additionalGuests"`
@@ -22,7 +22,7 @@ type GuestCreateRequest struct {
 }
 
 type GuestUpdateRequest struct {
-	GuestlistID          uint       `json:"guestlistId"          form:"guestlistId"`
+	GuestlistID          int        `json:"guestlistId"          form:"guestlistId"`
 	Name                 string     `json:"name"                 form:"name"                 binding:"required"`
 	Code                 string     `json:"code"                 form:"code"`
 	AdditionalGuests     uint       `json:"additionalGuests"     form:"additionalGuests"`

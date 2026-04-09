@@ -14,10 +14,10 @@ type UserCreator interface {
 type Mailer interface {
 	SendNewUserTokenMail(
 		email string,
-		userID uint,
+		userID int,
 		username string,
 		token string,
-	) error // Passe den Typ von userID an, falls nötig (z.B. int oder string)
+	) error
 }
 
 type UserService struct {

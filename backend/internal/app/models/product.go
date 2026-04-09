@@ -14,7 +14,7 @@ type Product struct {
 	WrapAfter           bool            `json:"wrapAfter"           gorm:"default:false"`
 	Hidden              bool            `json:"hidden"              gorm:"default:false"`
 	SoldOut             bool            `json:"soldOut"             gorm:"default:false"`
-	ApiExport           bool            `json:"apiExport"           gorm:"default:false"`
+	APIExport           bool            `json:"apiExport"           gorm:"default:false"`
 	Pos                 int             `json:"pos"                 gorm:""`
 	TotalStock          int             `json:"totalStock"          gorm:"default:0"`
 	UnitsSold           int             `json:"unitsSold"           gorm:"default:0"`

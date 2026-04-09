@@ -31,24 +31,24 @@ type Service interface {
 	FinalizePurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
 	CancelPurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
 	FailPurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
-	RefundPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error)
+	RefundPurchase(ctx context.Context, purchaseID uuid.UUID) (*models.Purchase, error)
 }
 
 var _ Service = (*PurchaseService)(nil)
 
 var _ sqlite.RepositoryInterface = (*sqlite.Repository)(nil)
 
-type sumupRepository interface {
-	RefundTransaction(purchaseId uuid.UUID) error
+type Refunder interface {
+	RefundTransaction(purchaseID uuid.UUID) error
 }
 
 type Mailer interface {
-	SendNotificationOnArrival(email string, name string) error
+	SendNotificationOnArrival(email, name string) error
 }
 
 type PurchaseService struct {
 	sqliteRepo    sqlite.RepositoryInterface
-	sumupRepo     sumupRepository
+	sumupRepo     Refunder
 	Mailer        Mailer
 	DecimalPlaces int32
 	CurrencyCode  string
@@ -63,13 +63,13 @@ type PurchaseInput struct {
 
 type ListItemInput struct {
 	ID             int
-	AttendedGuests int
+	AttendedGuests uint
 }
 
 type PurchaseCartItem struct {
 	ID        int
 	NetPrice  decimal.Decimal
-	Quantity  int
+	Quantity  uint
 	ListItems []ListItemInput
 }
 
@@ -84,13 +84,13 @@ var (
 	ErrListItemWrongProduct    = errors.New("list item does not belong to product")
 )
 
-func uintPtr(v uint) *uint {
+func intPtr(v int) *int {
 	return &v
 }
 
 func NewPurchaseService(
 	sqliteRepo sqlite.RepositoryInterface,
-	sumupRepo sumupRepository,
+	sumupRepo Refunder,
 	mailer Mailer,
 	decimalPlaces int32,
 	currencyCode string,
@@ -120,8 +120,8 @@ func (s *PurchaseService) ValidateAndCalculatePrices(
 			return decimal.Zero, decimal.Zero, ErrInvalidProductPrice
 		}
 
-		net := product.NetPrice.Mul(decimal.NewFromInt(int64(item.Quantity)))
-		gross := product.GrossPrice(s.DecimalPlaces).Mul(decimal.NewFromInt(int64(item.Quantity)))
+		net := product.NetPrice.Mul(decimal.NewFromUint64(uint64(item.Quantity)))
+		gross := product.GrossPrice(s.DecimalPlaces).Mul(decimal.NewFromUint64(uint64(item.Quantity)))
 
 		totalNet = totalNet.Add(net)
 		totalGross = totalGross.Add(gross)
@@ -188,17 +188,17 @@ func (s *PurchaseService) CreatePendingPurchase(
 	return savedPurchase, err
 }
 
-func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
+func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseID uuid.UUID) (*models.Purchase, error) {
 	// update status of purchase to confirmed
-	purchase, err := s.setPurchaseStatus(ctx, purchaseId, models.PurchaseStatusConfirmed, false)
+	purchase, err := s.setPurchaseStatus(ctx, purchaseID, models.PurchaseStatusConfirmed, false)
 	if err != nil {
 		return nil, errors.New("failed to finalize purchase: " + err.Error())
 	}
 
 	// notify guests
-	guests, err := s.sqliteRepo.GetGuestsByPurchaseID(purchaseId)
+	guests, err := s.sqliteRepo.GetGuestsByPurchaseID(purchaseID)
 	if guests == nil || err != nil {
-		args := []any{"purchase_id", purchaseId}
+		args := []any{"purchase_id", purchaseID}
 		if err != nil {
 			args = append(args, "error", err)
 		}
@@ -219,8 +219,8 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseId uuid.
 	return purchase, nil
 }
 
-func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
-	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusCancelled)
+func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseID uuid.UUID) (*models.Purchase, error) {
+	purchase, err := s.rollbackPurchase(ctx, purchaseID, models.PurchaseStatusCancelled)
 	if err != nil {
 		return nil, errors.New("failed to cancel purchase: " + err.Error())
 	}
@@ -228,8 +228,8 @@ func (s *PurchaseService) CancelPurchase(ctx context.Context, purchaseId uuid.UU
 	return purchase, nil
 }
 
-func (s *PurchaseService) FailPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
-	purchase, err := s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusFailed)
+func (s *PurchaseService) FailPurchase(ctx context.Context, purchaseID uuid.UUID) (*models.Purchase, error) {
+	purchase, err := s.rollbackPurchase(ctx, purchaseID, models.PurchaseStatusFailed)
 	if err != nil {
 		return nil, errors.New("failed to set the purchase to failed: " + err.Error())
 	}
@@ -237,8 +237,8 @@ func (s *PurchaseService) FailPurchase(ctx context.Context, purchaseId uuid.UUID
 	return purchase, nil
 }
 
-func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UUID) (*models.Purchase, error) {
-	purchase, err := s.sqliteRepo.GetPurchaseByID(purchaseId)
+func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseID uuid.UUID) (*models.Purchase, error) {
+	purchase, err := s.sqliteRepo.GetPurchaseByID(purchaseID)
 	if err != nil {
 		return nil, errors.New("failed to get purchase by ID: " + err.Error())
 	}
@@ -258,7 +258,7 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 	}
 
 	// update status of purchase to refunded
-	purchase, err = s.rollbackPurchase(ctx, purchaseId, models.PurchaseStatusRefunded)
+	purchase, err = s.rollbackPurchase(ctx, purchaseID, models.PurchaseStatusRefunded)
 	if err != nil {
 		return nil, errors.New("failed to set the purchase to refunded: " + err.Error())
 	}
@@ -276,10 +276,10 @@ func (s *PurchaseService) RefundPurchase(ctx context.Context, purchaseId uuid.UU
 
 func (s *PurchaseService) rollbackPurchase(
 	ctx context.Context,
-	purchaseId uuid.UUID,
+	purchaseID uuid.UUID,
 	status models.PurchaseStatus,
 ) (*models.Purchase, error) {
-	purchase, err := s.setPurchaseStatus(ctx, purchaseId, status, true)
+	purchase, err := s.setPurchaseStatus(ctx, purchaseID, status, true)
 	if err != nil {
 		return nil, errors.New("failed to rollback purchase: " + err.Error())
 	}
@@ -289,14 +289,14 @@ func (s *PurchaseService) rollbackPurchase(
 
 func (s *PurchaseService) setPurchaseStatus(
 	ctx context.Context,
-	purchaseId uuid.UUID,
+	purchaseID uuid.UUID,
 	status models.PurchaseStatus,
 	rollbackGuests bool,
 ) (*models.Purchase, error) {
 	var purchase *models.Purchase
 
 	err := s.sqliteRepo.WithTransaction(ctx, func(txRepo sqlite.RepositoryInterface) error {
-		p, err := txRepo.UpdatePurchaseStatusByID(purchaseId, status)
+		p, err := txRepo.UpdatePurchaseStatusByID(purchaseID, status)
 		if err != nil {
 			return err
 		}
@@ -304,7 +304,7 @@ func (s *PurchaseService) setPurchaseStatus(
 		purchase = p
 
 		if rollbackGuests {
-			if err := txRepo.RollbackVisitedGuestsByPurchaseID(purchaseId); err != nil {
+			if err := txRepo.RollbackVisitedGuestsByPurchaseID(purchaseID); err != nil {
 				return fmt.Errorf("failed to rollback visited guests: %w", err)
 			}
 		}
@@ -329,7 +329,7 @@ func (s *PurchaseService) validateGuest(listInput ListItemInput, productID int) 
 		return nil, ErrTooManyAdditionalGuests
 	}
 
-	if guest.Guestlist.ProductID != uint(productID) {
+	if guest.Guestlist.ProductID != productID {
 		return nil, ErrListItemWrongProduct
 	}
 
@@ -387,7 +387,7 @@ func (s *PurchaseService) createPurchaseWithStatus(
 			PaymentMethod:   input.PaymentMethod,
 			Status:          status,
 		}
-		purchase.CreatedByID = uintPtr(uint(userID))
+		purchase.CreatedByID = intPtr(userID)
 
 		for _, item := range input.Cart {
 			product, err := txRepo.GetProductByID(item.ID)
@@ -414,7 +414,7 @@ func (s *PurchaseService) createPurchaseWithStatus(
 
 		for _, guest := range guests {
 			guest.PurchaseID = &stored.ID
-			if _, err := txRepo.UpdateGuestByID(int(guest.ID), guest); err != nil {
+			if _, err := txRepo.UpdateGuestByID(guest.ID, guest); err != nil {
 				return err
 			}
 		}

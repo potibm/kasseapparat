@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type HttpError interface {
+type HTTPError interface {
 	StatusCode() int
 	Error() string
 	Details() string
@@ -40,7 +40,7 @@ func captureError(hub *sentry.Hub, err error) {
 	}
 
 	// unwrap known HttpError
-	if httpErr, ok := err.(HttpError); ok {
+	if httpErr, ok := err.(HTTPError); ok {
 		if cause := httpErr.Cause(); cause != nil {
 			hub.CaptureException(cause)
 
@@ -52,7 +52,7 @@ func captureError(hub *sentry.Hub, err error) {
 }
 
 func writeErrorResponse(c *gin.Context, err error) {
-	if httpErr, ok := err.(HttpError); ok {
+	if httpErr, ok := err.(HTTPError); ok {
 		response := gin.H{
 			"error": httpErr.Error(),
 		}

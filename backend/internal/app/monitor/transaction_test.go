@@ -22,6 +22,7 @@ func (m *MockSqlite) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error) {
 
 	return args.Get(0).(*models.Purchase), args.Error(1)
 }
+
 func (m *MockSqlite) UpdatePurchaseSumupTransactionIDByID(id, sID uuid.UUID) (*models.Purchase, error) {
 	args := m.Called(id, sID)
 	if args.Get(0) == nil {
@@ -33,7 +34,7 @@ func (m *MockSqlite) UpdatePurchaseSumupTransactionIDByID(id, sID uuid.UUID) (*m
 
 type MockSumup struct{ mock.Mock }
 
-func (m *MockSumup) GetTransactionByClientTransactionId(id uuid.UUID) (*sumupRepo.Transaction, error) {
+func (m *MockSumup) GetTransactionByClientTransactionID(id uuid.UUID) (*sumupRepo.Transaction, error) {
 	args := m.Called(id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -52,6 +53,7 @@ func (m *MockService) FinalizePurchase(ctx context.Context, id uuid.UUID) (*mode
 
 	return args.Get(0).(*models.Purchase), args.Error(1)
 }
+
 func (m *MockService) FailPurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
@@ -60,6 +62,7 @@ func (m *MockService) FailPurchase(ctx context.Context, id uuid.UUID) (*models.P
 
 	return args.Get(0).(*models.Purchase), args.Error(1)
 }
+
 func (m *MockService) CancelPurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
@@ -101,7 +104,7 @@ func TestHandleTransactionPollingSuccess(t *testing.T) {
 	mSqlite.On("GetPurchaseByID", tID).Return(p, nil)
 
 	// 2. Mock: SumUp returns SUCCESSFUL
-	mSumup.On("GetTransactionByClientTransactionId", sClientID).Return(&sumupRepo.Transaction{
+	mSumup.On("GetTransactionByClientTransactionID", sClientID).Return(&sumupRepo.Transaction{
 		TransactionID: sTransID,
 		Status:        "SUCCESSFUL",
 	}, nil)
@@ -141,7 +144,7 @@ func TestHandleTransactionPollingNotFound(t *testing.T) {
 	mSqlite.On("GetPurchaseByID", tID).Return(p, nil)
 
 	// Simulate NOT_FOUND
-	mSumup.On("GetTransactionByClientTransactionId", sClientID).Return(nil, fmt.Errorf("SumUp error: NOT_FOUND"))
+	mSumup.On("GetTransactionByClientTransactionID", sClientID).Return(nil, fmt.Errorf("SumUp error: NOT_FOUND"))
 
 	mService.On("FailPurchase", mock.Anything, tID).Return(&models.Purchase{Status: models.PurchaseStatusFailed}, nil)
 	mPub.On("PushUpdate", tID, models.PurchaseStatusFailed).Return()

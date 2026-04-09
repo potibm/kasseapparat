@@ -33,7 +33,7 @@ var (
 )
 
 func NewServeCmd() *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "serve",
 		Short: "Runs the HTTP server for the Kasseapparat application",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -67,7 +67,7 @@ func NewServeCmd() *cobra.Command {
 			initializer.InitializeSumup(Cfg.Sumup)
 
 			// 5. Dependency Injection (Repositories & Middleware)
-			sqliteRepository := sqliteRepo.NewRepository(db, int32(Cfg.Format.Currency.FractionDigitsMax))
+			sqliteRepository := sqliteRepo.NewRepository(db, Cfg.Format.Currency.FractionDigitsMax)
 			sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
 			mailer := initializer.InitializeMailer(Cfg.Mailer)
 			jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, Cfg.Jwt, &Cfg.App.RedisURL)
@@ -77,7 +77,7 @@ func NewServeCmd() *cobra.Command {
 				sqliteRepository,
 				sumupRepository,
 				&mailer,
-				int32(Cfg.Format.Currency.FractionDigitsMax),
+				Cfg.Format.Currency.FractionDigitsMax,
 				Cfg.Format.Currency.Code,
 			)
 
@@ -103,7 +103,7 @@ func NewServeCmd() *cobra.Command {
 			httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
 			// 7. Initialize HTTP Server
-			router, err := initializer.InitializeHttpServer(
+			router, err := initializer.InitializeHTTPServer(
 				*httpHandler,
 				websocketHandler,
 				*sqliteRepository,

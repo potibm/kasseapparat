@@ -6,7 +6,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/errors"
 )
 
-func NewHttpError(code int, message, detail string) *errors.BasicError {
+func NewHTTPError(code int, message, detail string) *errors.BasicError {
 	return &errors.BasicError{
 		Code:    code,
 		Message: message,
@@ -16,24 +16,24 @@ func NewHttpError(code int, message, detail string) *errors.BasicError {
 
 // predefined HTTP errors.
 var (
-	InvalidRequest = NewHttpError(
+	InvalidRequest = NewHTTPError(
 		http.StatusBadRequest,
 		"Invalid Request",
 		"The request could not be understood by the server.",
 	)
-	NotFound = NewHttpError(
+	NotFound = NewHTTPError(
 		http.StatusNotFound,
 		"Not Found",
 		"The requested resource could not be found.",
 	)
-	UnableToRetrieveExecutingUser = NewHttpError(http.StatusUnauthorized, "Unable to retrieve executing user", "")
-	InternalServerError           = NewHttpError(http.StatusInternalServerError, "Internal Server Error", "")
-	Forbidden                     = NewHttpError(
+	UnableToRetrieveExecutingUser = NewHTTPError(http.StatusUnauthorized, "Unable to retrieve executing user", "")
+	InternalServerError           = NewHTTPError(http.StatusInternalServerError, "Internal Server Error", "")
+	Forbidden                     = NewHTTPError(
 		http.StatusForbidden,
 		"Forbidden",
 		"You do not have permission to access this resource.",
 	)
-	BadRequest = NewHttpError(
+	BadRequest = NewHTTPError(
 		http.StatusBadRequest,
 		"Bad Request",
 		"The request could not be understood by the server.",

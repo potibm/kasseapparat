@@ -10,12 +10,12 @@ import (
 
 type PurchaseListItemRequest struct {
 	ID             int  `form:"ID"             binding:"required"`
-	AttendedGuests uint `form:"attendedGuests" binding:"required"`
+	AttendedGuests uint `form:"attendedGuests" binding:"required,gte=0,lte=10"`
 }
 
 type PurchaseCartRequest struct {
 	ID        int                       `form:"ID"        binding:"required"`
-	Quantity  int                       `form:"quantity"  binding:"required"`
+	Quantity  uint                      `form:"quantity"  binding:"required"`
 	NetPrice  decimal.Decimal           `form:"netPrice"  binding:"required"`
 	ListItems []PurchaseListItemRequest `form:"listItems" binding:"required,dive"`
 }
@@ -95,7 +95,7 @@ func (req PurchaseRequest) ToInput() purchaseService.PurchaseInput {
 		for _, li := range cart.ListItems {
 			item.ListItems = append(item.ListItems, purchaseService.ListItemInput{
 				ID:             li.ID,
-				AttendedGuests: int(li.AttendedGuests),
+				AttendedGuests: li.AttendedGuests,
 			})
 		}
 

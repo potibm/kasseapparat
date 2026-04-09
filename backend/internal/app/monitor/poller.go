@@ -29,12 +29,12 @@ type StatusPublisher interface {
 }
 
 type SumupTransactionReader interface {
-	GetTransactionByClientTransactionId(clientTransactionId uuid.UUID) (*sumupRepo.Transaction, error)
+	GetTransactionByClientTransactionID(clientTransactionID uuid.UUID) (*sumupRepo.Transaction, error)
 }
 
 type PurchaseRepository interface {
 	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
-	UpdatePurchaseSumupTransactionIDByID(id uuid.UUID, sumupTransactionID uuid.UUID) (*models.Purchase, error)
+	UpdatePurchaseSumupTransactionIDByID(id, sumupTransactionID uuid.UUID) (*models.Purchase, error)
 }
 
 type PurchaseStatusService interface {

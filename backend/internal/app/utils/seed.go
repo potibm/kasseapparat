@@ -75,7 +75,7 @@ func (ds *DatabaseSeed) seedProducts() {
 		NetPrice:  price40GrossAt7,
 		VATRate:   vat7,
 		Pos:       1,
-		ApiExport: true,
+		APIExport: true,
 	}
 	ds.db.Create(ds.regularProduct)
 
@@ -84,11 +84,11 @@ func (ds *DatabaseSeed) seedProducts() {
 		NetPrice:  price20GrossAt7,
 		VATRate:   vat7,
 		Pos:       2,
-		ApiExport: true,
+		APIExport: true,
 	}
 	ds.db.Create(ds.reducedProduct)
 
-	ds.freeProduct = &models.Product{Name: "🎟️ Free", NetPrice: price0, VATRate: vat0, Pos: 3, ApiExport: true}
+	ds.freeProduct = &models.Product{Name: "🎟️ Free", NetPrice: price0, VATRate: vat0, Pos: 3, APIExport: true}
 	ds.db.Create(ds.freeProduct)
 
 	ds.prepaidProduct = &models.Product{
@@ -97,7 +97,7 @@ func (ds *DatabaseSeed) seedProducts() {
 		VATRate:   vat0,
 		Pos:       4,
 		WrapAfter: true,
-		ApiExport: true,
+		APIExport: true,
 	}
 	ds.db.Create(ds.prepaidProduct)
 
@@ -293,7 +293,7 @@ func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, max
 				&models.Guest{
 					Name:             gofakeit.Name(),
 					GuestlistID:      userGuestlist.ID,
-					AdditionalGuests: uint(gofakeit.Number(0, 2)),
+					AdditionalGuests: gofakeit.UintRange(0, 2),
 					ArrivalNote:      getOptionalArrivalNote(),
 				},
 			)
@@ -305,7 +305,7 @@ func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, max
 				&models.Guest{
 					Name:             gofakeit.Name(),
 					GuestlistID:      userGuestlist.ID,
-					AdditionalGuests: uint(gofakeit.Number(0, 2)),
+					AdditionalGuests: gofakeit.UintRange(0, 2),
 					AttendedGuests:   1,
 					ArrivedAt:        &arrivedAt,
 				},
@@ -321,7 +321,7 @@ func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, max
 		&models.Guest{
 			Name:             "Jean Dupont",
 			GuestlistID:      userGuestlist.ID,
-			AdditionalGuests: uint(gofakeit.Number(0, 2)),
+			AdditionalGuests: uint(gofakeit.UintRange(0, 2)),
 		},
 	)
 
@@ -330,7 +330,7 @@ func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, max
 		&models.Guest{
 			Name:             "Mario Rossi",
 			GuestlistID:      userGuestlist.ID,
-			AdditionalGuests: uint(gofakeit.Number(0, 2)),
+			AdditionalGuests: uint(gofakeit.UintRange(0, 2)),
 			ArrivalNote:      &note,
 		},
 	)
@@ -355,7 +355,7 @@ func (ds *DatabaseSeed) seedPurchases(purchaseCount int) {
 			for j := 0; j < gofakeit.Number(1, 5); j++ {
 				product := ds.products[gofakeit.Number(0, len(ds.products)-1)]
 
-				quantity := gofakeit.Number(1, 3)
+				quantity := gofakeit.UintRange(1, 3)
 				purchaseItem := models.PurchaseItem{
 					ProductID: product.ID,
 					Quantity:  quantity,

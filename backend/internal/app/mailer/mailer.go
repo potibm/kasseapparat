@@ -8,15 +8,15 @@ import (
 )
 
 const (
-	defaultSmtpPort        = 587
-	defaultSmtpUsername    = ""
-	defaultSmtpPassword    = ""
+	defaultSMTPPort        = 587
+	defaultSMTPUsername    = ""
+	defaultSMTPPassword    = ""
 	defaultFrom            = "kasseapparat@example.com"
 	defaultSubjectPrefix   = "[Kasseapparat] "
-	defaultFrontendBaseUrl = "http://localhost:3000"
+	defaultFrontendBaseURL = "http://localhost:3000"
 )
 
-type SmtpConfig struct {
+type SMPTConfig struct {
 	user     string
 	password string
 	host     string
@@ -24,14 +24,14 @@ type SmtpConfig struct {
 }
 
 type Mailer struct {
-	smtpConfig SmtpConfig
+	smtpConfig SMPTConfig
 
 	disabled bool
 
 	from          string
 	subjectPrefix string
 
-	frontendBaseUrl string
+	frontendBaseURL string
 }
 
 const (
@@ -39,9 +39,9 @@ const (
 )
 
 func NewMailer(dsn string) (*Mailer, error) {
-	frontendBaseUrl := defaultFrontendBaseUrl
+	frontendBaseURL := defaultFrontendBaseURL
 
-	smtpConfig, err := SmtpConfigFromDsn(dsn)
+	smtpConfig, err := SMTPConfigFromDSN(dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -50,15 +50,15 @@ func NewMailer(dsn string) (*Mailer, error) {
 		smtpConfig:      *smtpConfig,
 		from:            defaultFrom,
 		subjectPrefix:   defaultSubjectPrefix,
-		frontendBaseUrl: frontendBaseUrl,
+		frontendBaseURL: frontendBaseURL,
 		disabled:        false,
 	}, nil
 }
 
-func SmtpConfigFromDsn(dsn string) (*SmtpConfig, error) {
-	user := defaultSmtpUsername
-	password := defaultSmtpPassword
-	port := defaultSmtpPort
+func SMTPConfigFromDSN(dsn string) (*SMPTConfig, error) {
+	user := defaultSMTPUsername
+	password := defaultSMTPPassword
+	port := defaultSMTPPort
 
 	u, err := url.Parse(dsn)
 	if err != nil {
@@ -83,7 +83,7 @@ func SmtpConfigFromDsn(dsn string) (*SmtpConfig, error) {
 		}
 	}
 
-	return &SmtpConfig{
+	return &SMPTConfig{
 		user:     user,
 		password: password,
 		host:     host,
@@ -99,8 +99,8 @@ func (m *Mailer) SetSubjectPrefix(prefix string) {
 	m.subjectPrefix = prefix
 }
 
-func (m *Mailer) SetFrontendBaseUrl(u string) {
-	m.frontendBaseUrl = u
+func (m *Mailer) SetFrontendBaseURL(u string) {
+	m.frontendBaseURL = u
 }
 
 func (m *Mailer) SetDisabled(disabled bool) {
@@ -122,7 +122,7 @@ func (m *Mailer) SendMail(to, subject, body string) error {
 	message := []byte(header + body)
 
 	var auth smtp.Auth = nil
-	if m.smtpConfig.user != defaultSmtpUsername && m.smtpConfig.password != defaultSmtpPassword {
+	if m.smtpConfig.user != defaultSMTPUsername && m.smtpConfig.password != defaultSMTPPassword {
 		auth = smtp.PlainAuth("", m.smtpConfig.user, m.smtpConfig.password, m.smtpConfig.host)
 	}
 

@@ -42,9 +42,9 @@ func (r *deineTicketsRecord) Validate(repo sqliteRepo.GuestRepository) (valid bo
 	return true, ""
 }
 
-func (r *deineTicketsRecord) GetGuest(listId uint) models.Guest {
+func (r *deineTicketsRecord) GetGuest(listID int) models.Guest {
 	return models.Guest{
-		GuestlistID:      listId,
+		GuestlistID:      listID,
 		Name:             r.FirstName + " " + r.LastName + " (" + r.Subject + ")",
 		Code:             &r.Code,
 		AdditionalGuests: 0,

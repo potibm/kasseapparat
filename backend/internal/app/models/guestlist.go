@@ -6,6 +6,6 @@ type Guestlist struct {
 
 	Name      string  `json:"name"`
 	TypeCode  bool    `json:"typeCode"  gorm:"default:false"`
-	ProductID uint    `json:"productId"`
+	ProductID int     `json:"productId"`
 	Product   Product `json:"product"   gorm:""`
 }

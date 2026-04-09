@@ -10,7 +10,7 @@ func TestRedactConfigForDisplay(t *testing.T) {
 	// Initialize a config with sensitive data
 	cfg := Config{}
 	cfg.Jwt.Secret = "super-secret-key"
-	cfg.Sumup.ApiKey = "sup_sk_12345"
+	cfg.Sumup.APIKey = "sup_sk_12345"
 	cfg.Sentry.DSN = "https://public@sentry.io/1"
 	cfg.App.RedisURL = "redis://:p@ssword@localhost:6379/0"
 	cfg.Mailer.DSN = "smtp://user:secret-mail-pass@smtp.example.com:587"
@@ -21,7 +21,7 @@ func TestRedactConfigForDisplay(t *testing.T) {
 
 	// Verify standard fields are redacted
 	assert.Equal(t, redacted, redactedCfg.Jwt.Secret)
-	assert.Equal(t, redacted, redactedCfg.Sumup.ApiKey)
+	assert.Equal(t, redacted, redactedCfg.Sumup.APIKey)
 	assert.Equal(t, redacted, redactedCfg.Sentry.DSN)
 
 	// Verify URL passwords are redacted but structure remains
@@ -64,7 +64,7 @@ func TestRedactUrlPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			output := redactUrlPassword(tt.input)
+			output := redactURLPassword(tt.input)
 			assert.Equal(t, tt.expected, output)
 		})
 	}

@@ -20,6 +20,8 @@ import (
 
 // --- MOCKS ---
 
+const secWebsocketProtocol = "Sec-WebSocket-Protocol"
+
 // Mock for the SQLite Repository.
 type mockSqliteRepo struct {
 	mock.Mock
@@ -98,7 +100,7 @@ func TestHandleTransactionWebSocketAuthFailures(t *testing.T) {
 	})
 
 	t.Run("Invalid Token", func(t *testing.T) {
-		headers := http.Header{"Sec-WebSocket-Protocol": []string{"invalid-token"}}
+		headers := http.Header{secWebsocketProtocol: []string{"invalid-token"}}
 		_, resp, err := dialer.Dial(wsURL, headers)
 		require.Error(t, err)
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
@@ -112,7 +114,7 @@ func TestHandleTransactionWebSocketInvalidUUID(t *testing.T) {
 
 	wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws/invalid-uuid-format"
 
-	headers := http.Header{"Sec-WebSocket-Protocol": []string{validToken}}
+	headers := http.Header{secWebsocketProtocol: []string{validToken}}
 	_, resp, err := websocket.DefaultDialer.Dial(wsURL, headers)
 
 	require.Error(t, err)
@@ -133,7 +135,7 @@ func TestHandleTransactionWebSocketHappyPath(t *testing.T) {
 	mockSumup.On("CreateReaderTerminateAction", "reader-123").Return(nil)
 
 	// 2. Setup connection
-	headers := http.Header{"Sec-WebSocket-Protocol": []string{validToken}}
+	headers := http.Header{secWebsocketProtocol: []string{validToken}}
 	conn, resp, err := websocket.DefaultDialer.Dial(wsURL, headers)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)

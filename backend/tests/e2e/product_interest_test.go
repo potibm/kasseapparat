@@ -9,15 +9,15 @@ import (
 )
 
 var (
-	productInterestBaseUrl   = "/api/v2/productInterests"
-	productInterestUrlWithId = productInterestBaseUrl + "/1"
+	productInterestBaseURL   = "/api/v2/productInterests"
+	productInterestURLWithID = productInterestBaseURL + "/1"
 )
 
 func TestGetProductInterest(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(productInterestBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(productInterestBaseURL)).
 		Expect()
 
 	res.Status(http.StatusOK)
@@ -35,7 +35,7 @@ func TestGetProductInterestsWithSort(t *testing.T) {
 	sortFields := []string{"id", "pos", "createdAt", "product.id", "product.name"}
 
 	for _, sortField := range sortFields {
-		withDemoUserAuthToken(e.GET(productInterestBaseUrl)).
+		withDemoUserAuthToken(e.GET(productInterestBaseURL)).
 			WithQuery("_sort", sortField).
 			Expect().
 			Status(http.StatusOK)
@@ -46,7 +46,7 @@ func TestCreateAndDeleteProductInterest(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	productInterest := withDemoUserAuthToken(e.POST(productInterestBaseUrl)).
+	productInterest := withDemoUserAuthToken(e.POST(productInterestBaseURL)).
 		WithJSON(map[string]any{
 			"productId": 1,
 		}).
@@ -55,12 +55,12 @@ func TestCreateAndDeleteProductInterest(t *testing.T) {
 
 	productInterest.Value("id").Number().Gt(0)
 
-	productInterestId := productInterest.Value("id").Number().Raw()
-	productInterestUrl := productInterestBaseUrl + "/" + strconv.FormatFloat(productInterestId, 'f', -1, 64)
+	productInterestID := productInterest.Value("id").Number().Raw()
+	productInterestURL := productInterestBaseURL + "/" + strconv.FormatFloat(productInterestID, 'f', -1, 64)
 
 	getTotalCountOfProductInterests().IsEqual(1)
 
-	withDemoUserAuthToken(e.DELETE(productInterestUrl)).
+	withDemoUserAuthToken(e.DELETE(productInterestURL)).
 		Expect().
 		Status(http.StatusNoContent)
 
@@ -68,7 +68,7 @@ func TestCreateAndDeleteProductInterest(t *testing.T) {
 }
 
 func getTotalCountOfProductInterests() *httpexpect.Number {
-	res := withDemoUserAuthToken(e.GET(productInterestBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(productInterestBaseURL)).
 		Expect().
 		Status(http.StatusOK)
 
@@ -79,7 +79,7 @@ func TestProductInterestAuthentication(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	e.Request("GET", productInterestBaseUrl).Expect().Status(http.StatusUnauthorized)
-	e.Request("POST", productInterestBaseUrl).Expect().Status(http.StatusUnauthorized)
-	e.Request("DELETE", productInterestUrlWithId).Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", productInterestBaseURL).Expect().Status(http.StatusUnauthorized)
+	e.Request("POST", productInterestBaseURL).Expect().Status(http.StatusUnauthorized)
+	e.Request("DELETE", productInterestURLWithID).Expect().Status(http.StatusUnauthorized)
 }

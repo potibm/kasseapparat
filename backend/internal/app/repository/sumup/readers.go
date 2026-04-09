@@ -25,13 +25,13 @@ func (r *Repository) GetReaders() ([]Reader, error) {
 	return result, nil
 }
 
-func (r *Repository) GetReader(readerId string) (*Reader, error) {
+func (r *Repository) GetReader(readerID string) (*Reader, error) {
 	params := sumup.ReadersGetParams{}
-	id := sumup.ReaderID(readerId)
+	id := sumup.ReaderID(readerID)
 
 	reader, err := r.service.Client.Readers.Get(context.Background(), r.service.MerchantCode, id, params)
 	if err != nil {
-		slog.Error("Error retrieving reader with ID", "reader_id", readerId, "error", err)
+		slog.Error("Error retrieving reader with ID", "reader_id", readerID, "error", err)
 
 		if isReaderNotFoundError(err) {
 			return nil, nil
@@ -64,25 +64,25 @@ func (r *Repository) CreateReader(pairingCode, name string) (*Reader, error) {
 }
 
 func (r *Repository) CreateReaderCheckout(
-	readerId string,
+	readerID string,
 	amount decimal.Decimal,
 	description string,
-	affiliateTransactionId string,
-	returnUrl *string,
+	affiliateTransactionID string,
+	returnURL *string,
 ) (*uuid.UUID, error) {
 	amountStruct := sumup.CreateCheckoutRequestTotalAmount{
 		Currency:  r.service.PaymentCurrency,
-		Value:     getValueFromDecimal(amount, int(r.service.PaymentMinorUnit)), // Example amount in cents (10.00 EUR)
+		Value:     getValueFromDecimal(amount, r.service.PaymentMinorUnit), // Example amount in cents (10.00 EUR)
 		MinorUnit: int(r.service.PaymentMinorUnit),
 	}
 
 	var affiliateNullable *sumupnullable.Field[sumup.CreateCheckoutRequestAffiliate]
 
-	if affiliateTransactionId != "" {
+	if affiliateTransactionID != "" {
 		affiliate := sumup.CreateCheckoutRequestAffiliate{
-			AppID:                r.service.ApplicationId,
+			AppID:                r.service.ApplicationID,
 			Key:                  r.service.AffiliateKey,
-			ForeignTransactionID: affiliateTransactionId,
+			ForeignTransactionID: affiliateTransactionID,
 		}
 		affiliateNullable = sumupnullable.Value(affiliate)
 	}
@@ -91,13 +91,13 @@ func (r *Repository) CreateReaderCheckout(
 		TotalAmount: amountStruct,
 		Description: &description,
 		Affiliate:   affiliateNullable,
-		ReturnURL:   returnUrl,
+		ReturnURL:   returnURL,
 	}
 
 	response, err := r.service.Client.Readers.CreateCheckout(
 		context.Background(),
 		r.service.MerchantCode,
-		readerId,
+		readerID,
 		body,
 	)
 	if err != nil {
@@ -106,24 +106,24 @@ func (r *Repository) CreateReaderCheckout(
 		return nil, err
 	}
 
-	clientTransactionId, err := uuid.Parse(response.Data.ClientTransactionID)
+	clientTransactionID, err := uuid.Parse(response.Data.ClientTransactionID)
 	if err != nil {
 		return nil, err
 	}
 
-	return &clientTransactionId, nil
+	return &clientTransactionID, nil
 }
 
-func getValueFromDecimal(value decimal.Decimal, minorUnit int) int {
-	return int(value.Shift(int32(minorUnit)).IntPart())
+func getValueFromDecimal(value decimal.Decimal, minorUnit int32) int {
+	return int(value.Shift(minorUnit).IntPart())
 }
 
-func (r *Repository) CreateReaderTerminateAction(readerId string) error {
-	return r.service.Client.Readers.TerminateCheckout(context.Background(), r.service.MerchantCode, readerId)
+func (r *Repository) CreateReaderTerminateAction(readerID string) error {
+	return r.service.Client.Readers.TerminateCheckout(context.Background(), r.service.MerchantCode, readerID)
 }
 
-func (r *Repository) DeleteReader(readerId string) error {
-	id := sumup.ReaderID(readerId)
+func (r *Repository) DeleteReader(readerID string) error {
+	id := sumup.ReaderID(readerID)
 
 	return r.service.Client.Readers.Delete(context.Background(), r.service.MerchantCode, id)
 }

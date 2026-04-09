@@ -7,13 +7,13 @@ import (
 	"github.com/gavv/httpexpect/v2"
 )
 
-var productStatsUrl = "/api/v2/productStats"
+var productStatsURL = "/api/v2/productStats"
 
 func TestProductStats(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(productStatsUrl)).
+	res := withDemoUserAuthToken(e.GET(productStatsURL)).
 		Expect().
 		Status(http.StatusOK)
 
@@ -23,9 +23,9 @@ func TestProductStats(t *testing.T) {
 	validateProductStatsArray(obj)
 	soldItemsValue := obj.Value(0).Object().Value("soldItems").Number().Raw()
 
-	purchaseUrl := createPurchase()
+	purchaseURL := createPurchase()
 
-	res = withDemoUserAuthToken(e.GET(productStatsUrl)).
+	res = withDemoUserAuthToken(e.GET(productStatsURL)).
 		Expect().
 		Status(http.StatusOK)
 
@@ -37,7 +37,7 @@ func TestProductStats(t *testing.T) {
 	item.Value("totalGrossPrice").String()
 	item.Value("totalNetPrice").String()
 
-	deletePurchase(purchaseUrl)
+	deletePurchase(purchaseURL)
 }
 
 func validateProductStatsArray(productStatsArray *httpexpect.Array) {
@@ -61,5 +61,5 @@ func TestProductStatsAuthentication(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	e.Request("GET", productStatsUrl).Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", productStatsURL).Expect().Status(http.StatusUnauthorized)
 }

@@ -77,7 +77,7 @@ func (handler *Handler) GetSumupTransactionByID(c *gin.Context) {
 		return
 	}
 
-	transaction, err := handler.sumupRepository.GetTransactionById(transactionID)
+	transaction, err := handler.sumupRepository.GetTransactionByID(transactionID)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithMsg("failed to retrieve transaction").WithCause(err))
 

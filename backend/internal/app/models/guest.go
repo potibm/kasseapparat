@@ -12,7 +12,7 @@ import (
 type Guest struct {
 	GormOwnedModel
 
-	GuestlistID          uint       `json:"guestlistId"`
+	GuestlistID          int        `json:"guestlistId"`
 	Guestlist            Guestlist  `json:"guestlist"`
 	Name                 string     `json:"name"`
 	Code                 *string    `json:"code"                 gorm:"unique"`

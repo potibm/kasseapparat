@@ -5,13 +5,13 @@ import (
 	"testing"
 )
 
-var configUrl = "/api/v2/config"
+var configURL = "/api/v2/config"
 
 func TestGetConfig(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	config := e.GET(configUrl).
+	config := e.GET(configURL).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 

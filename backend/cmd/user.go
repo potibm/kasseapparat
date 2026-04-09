@@ -9,7 +9,7 @@ import (
 )
 
 func NewUserCmd() *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "user",
 		Short: "User management commands",
 	}
@@ -25,7 +25,7 @@ func setupUserService() (*user.UserService, func(), error) {
 
 	cleanup := func() { _ = utils.CloseDatabase(db) }
 
-	repo := sqlite.NewRepository(db, int32(Cfg.Format.Currency.FractionDigitsMax))
+	repo := sqlite.NewRepository(db, Cfg.Format.Currency.FractionDigitsMax)
 
 	mailerClient, err := mailer.NewMailer(Cfg.Mailer.DSN)
 	if err != nil {

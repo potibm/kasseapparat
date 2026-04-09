@@ -117,7 +117,7 @@ func (repo *Repository) UpdatePurchaseStatusByID(id uuid.UUID, status models.Pur
 }
 
 func (repo *Repository) UpdatePurchaseSumupClientTransactionIDByID(
-	id uuid.UUID,
+	id,
 	sumupClientTransactionID uuid.UUID,
 ) (*models.Purchase, error) {
 	return repo.updatePurchaseFieldByID(id, map[string]any{
@@ -126,7 +126,7 @@ func (repo *Repository) UpdatePurchaseSumupClientTransactionIDByID(
 }
 
 func (repo *Repository) UpdatePurchaseSumupTransactionIDByID(
-	id uuid.UUID,
+	id,
 	sumupTransactionID uuid.UUID,
 ) (*models.Purchase, error) {
 	return repo.updatePurchaseFieldByID(id, map[string]any{
@@ -242,7 +242,7 @@ func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
 	return purchases, nil
 }
 
-func (repo *Repository) GetPurchasedQuantitiesByProductID(productID uint) (int, error) {
+func (repo *Repository) GetPurchasedQuantitiesByProductID(productID int) (int, error) {
 	var sum sql.NullInt64
 
 	err := repo.db.Table("purchase_items").
