@@ -11,10 +11,9 @@ export const getPurchaseErrorType = (error: unknown): PurchaseErrorType => {
 };
 
 export const getErrorMessage = (type: PurchaseErrorType): string => {
-  switch (type) {
-    case PurchaseErrorType.ReaderBusy:
-      return "The SumUp reader is currently busy. Please complete or cancel the ongoing transaction.";
-    default:
-      return "An error occurred while processing the purchase.";
+  if (type === PurchaseErrorType.ReaderBusy) {
+    return "The SumUp reader is currently busy. Please complete or cancel the ongoing transaction.";
+  } else {
+    return "An error occurred while processing the purchase.";
   }
 };

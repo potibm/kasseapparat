@@ -154,14 +154,14 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
                       color="warning"
                       aria-label={`Resume purchase`}
                       onClick={() => {
-                        if (!cartEmpty) {
+                        if (cartEmpty) {
+                          resumePolling(purchase);
+                        } else {
                           showToast({
                             severity: "warning",
                             message:
                               "Please complete or clear the current cart before resuming this purchase.",
                           });
-                        } else {
-                          resumePolling(purchase);
                         }
                       }}
                     >
