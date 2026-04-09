@@ -1,18 +1,18 @@
 import globals from "globals";
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
-import reactPlugin from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import { defineConfig } from "eslint/config";
+import eslintReact from "@eslint-react/eslint-plugin";
 
 export default defineConfig([
   { ignores: ["dist", "coverage", "**/.*"] },
   eslint.configs.recommended,
   tseslint.configs.recommended,
-  reactPlugin.configs.flat.recommended,
   reactHooks.configs.flat.recommended,
   reactRefresh.configs.vite,
+  eslintReact.configs["recommended-typescript"],
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
@@ -44,7 +44,6 @@ export default defineConfig([
           varsIgnorePattern: "^_",
         },
       ],
-      "react/jsx-uses-vars": "error",
       "@typescript-eslint/no-explicit-any": "error",
     },
   },

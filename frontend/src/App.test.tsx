@@ -10,6 +10,22 @@ import "@testing-library/jest-dom";
 import { ReactNode } from "react";
 import { AppConfig } from "@core/config/types/config.types";
 
+const MockConfigProvider = ({
+  children,
+  value,
+}: {
+  children: ReactNode;
+  value: AppConfig;
+}) => <ConfigContext value={value}>{children}</ConfigContext>;
+
+const LoginComponentWrapped = ({ config }: { config: AppConfig }) => (
+  <MockConfigProvider value={config}>
+    <AuthProvider>
+      <Login />
+    </AuthProvider>
+  </MockConfigProvider>
+);
+
 vi.stubGlobal(
   "fetch",
   vi.fn().mockResolvedValue({
@@ -66,24 +82,11 @@ describe("App", () => {
 
     vi.spyOn(ConfigHookModule, "useConfig").mockReturnValue(mockConfigValue);
 
-    const MockConfigProvider = ({ children }: { children: ReactNode }) => (
-      <ConfigContext.Provider value={mockConfigValue}>
-        {children}
-      </ConfigContext.Provider>
-    );
-
-    const LoginComponentWrapped = () => (
-      <MockConfigProvider>
-        <AuthProvider>
-          <Login />
-        </AuthProvider>
-      </MockConfigProvider>
-    );
-
     const Stub = createRoutesStub([
       {
         path: "/",
-        Component: LoginComponentWrapped,
+        // eslint-disable-next-line @eslint-react/component-hook-factories
+        Component: () => <LoginComponentWrapped config={mockConfigValue} />,
       },
     ]);
 

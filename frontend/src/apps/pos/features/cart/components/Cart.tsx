@@ -43,8 +43,8 @@ const Cart: React.FC<CartProps> = ({
 
   const [flash, setFlash] = useState(false);
 
-  const prevCartTotalQuantity = useRef(cart.totalQuantity);
-  const isFirstRender = useRef(true);
+  const prevCartTotalQuantityRef = useRef(cart.totalQuantity);
+  const isFirstRenderRef = useRef(true);
 
   const triggerFlash = () => {
     requestAnimationFrame(() => {
@@ -56,16 +56,16 @@ const Cart: React.FC<CartProps> = ({
   };
 
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
       return;
     }
 
-    if (cart.totalQuantity !== prevCartTotalQuantity.current) {
+    if (cart.totalQuantity !== prevCartTotalQuantityRef.current) {
       triggerFlash();
     }
 
-    prevCartTotalQuantity.current = cart.totalQuantity;
+    prevCartTotalQuantityRef.current = cart.totalQuantity;
   }, [cart]);
 
   const compactTableTheme = {

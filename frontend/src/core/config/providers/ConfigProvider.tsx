@@ -69,9 +69,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
     );
   }
 
-  return (
-    <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
-  );
+  return <ConfigContext value={config}>{children}</ConfigContext>;
 };
 
 export default ConfigProvider;

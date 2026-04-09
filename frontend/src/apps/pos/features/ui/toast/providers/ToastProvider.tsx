@@ -35,7 +35,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   const contextValue = useMemo(() => ({ showToast }), [showToast]);
 
   return (
-    <ToastContext.Provider value={contextValue}>
+    <ToastContext value={contextValue}>
       {children}
       {hasBlockingToast && (
         <div className="fixed inset-0 z-9998 bg-black/50 backdrop-blur-sm transition-opacity" />
@@ -46,6 +46,6 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
           <ToastItem key={t.id} toast={t} onDismiss={removeToast} />
         ))}
       </div>
-    </ToastContext.Provider>
+    </ToastContext>
   );
 };

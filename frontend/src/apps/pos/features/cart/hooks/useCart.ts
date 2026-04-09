@@ -19,7 +19,7 @@ const cartLog = createLogger("Cart");
 const purchaseLog = createLogger("Purchase");
 
 export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
-  const [cart, setCart] = useState(new Cart());
+  const [cart, setCart] = useState(() => new Cart());
   const [isPolling, setIsPolling] = useState(false);
   const [pendingPurchase, setPendingPurchase] = useState<PurchaseType | null>(
     null,
@@ -64,57 +64,57 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
     [clear],
   );
 
-  const checkout = async (
-    paymentMethodCode: string,
-    paymentMethodData: PaymentMethodData,
-  ) => {
-    setCheckoutProcessing(paymentMethodCode);
-    purchaseLog.debug("Initiating purchase", { paymentMethodCode });
+  const checkout = useCallback(
+    async (paymentMethodCode: string, paymentMethodData: PaymentMethodData) => {
+      setCheckoutProcessing(paymentMethodCode);
+      purchaseLog.debug("Initiating purchase", { paymentMethodCode });
 
-    try {
-      const token = await getToken();
-      const payload = cart.toApiPayload(paymentMethodCode, paymentMethodData);
-      const createdPurchase = await storePurchase(apiHost, token, payload);
+      try {
+        const token = await getToken();
+        const payload = cart.toApiPayload(paymentMethodCode, paymentMethodData);
+        const createdPurchase = await storePurchase(apiHost, token, payload);
 
-      if (createdPurchase.status === "pending") {
-        setPendingPurchase(createdPurchase);
-        setIsPolling(true);
-        return createdPurchase;
-      }
+        if (createdPurchase.status === "pending") {
+          setPendingPurchase(createdPurchase);
+          setIsPolling(true);
+          return createdPurchase;
+        }
 
-      if (createdPurchase.status === "confirmed") {
-        clear();
+        if (createdPurchase.status === "confirmed") {
+          clear();
+          setCheckoutProcessing(null);
+          purchaseLog.info("Purchase confirmed immediately", {
+            purchaseId: createdPurchase.id,
+          });
+
+          showToast({
+            severity: "success",
+            message: `Payment of ${currency.format(createdPurchase.totalGrossPrice.toNumber())} successful!`,
+          });
+          return createdPurchase;
+        }
+
+        purchaseLog.error("Unknown purchase status", createdPurchase.status);
+        throw new Error("Unknown purchase status: " + createdPurchase.status);
+      } catch (error: unknown) {
         setCheckoutProcessing(null);
-        purchaseLog.info("Purchase confirmed immediately", {
-          purchaseId: createdPurchase.id,
-        });
+
+        const errorType = getPurchaseErrorType(error);
+        const message = getErrorMessage(errorType);
 
         showToast({
-          severity: "success",
-          message: `Payment of ${currency.format(createdPurchase.totalGrossPrice.toNumber())} successful!`,
+          severity: "error",
+          message,
+          blocking: errorType === "READER_BUSY", // block UI if reader is busy to prevent further attempts
         });
-        return createdPurchase;
+
+        purchaseLog.error("Checkout failed", { error, errorType });
+
+        throw error;
       }
-
-      purchaseLog.error("Unknown purchase status", createdPurchase.status);
-      throw new Error("Unknown purchase status: " + createdPurchase.status);
-    } catch (error: unknown) {
-      setCheckoutProcessing(null);
-
-      const errorType = getPurchaseErrorType(error);
-      const message = getErrorMessage(errorType);
-
-      showToast({
-        severity: "error",
-        message,
-        blocking: errorType === "READER_BUSY", // block UI if reader is busy to prevent further attempts
-      });
-
-      purchaseLog.error("Checkout failed", { error, errorType });
-
-      throw error;
-    }
-  };
+    },
+    [apiHost, getToken, cart, currency, showToast, clear],
+  );
 
   const resumePolling = useCallback(
     (purchase: PurchaseType) => {
