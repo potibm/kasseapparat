@@ -24,7 +24,7 @@ type MockMailer struct {
 	mock.Mock
 }
 
-func (m *MockMailer) SendNewUserTokenMail(email string, userID uint, username, token string) error {
+func (m *MockMailer) SendNewUserTokenMail(email string, userID int, username, token string) error {
 	args := m.Called(email, userID, username, token)
 
 	return args.Error(0)
@@ -47,7 +47,7 @@ func TestCreateUserSuccess(t *testing.T) {
 		ChangePasswordToken: stringPtr("valid-token"), // Helper siehe unten
 	}, nil)
 
-	mailer.On("SendNewUserTokenMail", testEmail, uint(1337), testUser, "valid-token").Return(nil)
+	mailer.On("SendNewUserTokenMail", testEmail, int(1337), testUser, "valid-token").Return(nil)
 
 	err := svc.CreateUser(testUser, testEmail, true)
 

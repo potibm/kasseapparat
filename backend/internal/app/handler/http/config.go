@@ -30,8 +30,8 @@ type Config struct {
 	VATRates                      []VatRateConfig         `json:"vatRates"`
 	DateLocale                    string                  `json:"dateLocale"`
 	DateOptions                   DateFormatOptionsConfig `json:"dateOptions"`
-	FractionDigitsMin             int                     `json:"fractionDigitsMin"`
-	FractionDigitsMax             int                     `json:"fractionDigitsMax"`
+	FractionDigitsMin             int32                   `json:"fractionDigitsMin"`
+	FractionDigitsMax             int32                   `json:"fractionDigitsMax"`
 	EnvironmentMessage            string                  `json:"environmentMessage"`
 	PaymentMethods                []PaymentMethodsConfig  `json:"paymentMethods"`
 }

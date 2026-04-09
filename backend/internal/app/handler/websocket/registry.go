@@ -14,9 +14,11 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
-const maxConnections = 100
-const CloseTooManyConnections = 4001
-const CloseStaleConnection = 4005
+const (
+	maxConnections          = 100
+	CloseTooManyConnections = 4001
+	CloseStaleConnection    = 4005
+)
 
 const CleanupStaleConnectionsInterval = 5 * time.Minute
 

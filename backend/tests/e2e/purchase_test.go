@@ -5,14 +5,14 @@ import (
 	"testing"
 )
 
-var purchaseBaseUrl = "/api/v2/purchases"
+var purchaseBaseURL = "/api/v2/purchases"
 
 func TestGetPurchasesList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
 	// Get the purchase list
-	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseURL)).
 		Expect().
 		Status(http.StatusOK)
 
@@ -37,7 +37,7 @@ func TestGetPurchasesListWithAllFilters(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseURL)).
 		WithQuery("paymentMethod", "CASH").
 		WithQuery("createdById", "1").
 		WithQuery("totalGrossPrice_gte", "1").
@@ -61,7 +61,7 @@ func TestGetPurchasesWithSort(t *testing.T) {
 	sortFields := []string{"id", "createdAt", "totalGrossPrice", "createdBy.username", "paymentMethod"}
 
 	for _, sortField := range sortFields {
-		withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+		withDemoUserAuthToken(e.GET(purchaseBaseURL)).
 			WithQuery("_sort", sortField).
 			Expect().
 			Status(http.StatusOK)
@@ -73,7 +73,7 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase
-	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
 			"paymentMethod":   "CC",
 			"totalNetPrice":   "18.69",
@@ -108,20 +108,20 @@ func TestCreatePurchaseWithList(t *testing.T) {
 	product.Value("id").Number().IsEqual(2)
 	product.Value("name").String().NotEmpty() // see issue #469
 
-	purchaseId := purchase.Value("id").String().Raw()
-	purchaseUrl := purchaseBaseUrl + "/" + purchaseId
+	purchaseID := purchase.Value("id").String().Raw()
+	purchaseURL := purchaseBaseURL + "/" + purchaseID
 
 	// Get the purchase
-	purchase = withDemoUserAuthToken(e.GET(purchaseUrl)).
+	purchase = withDemoUserAuthToken(e.GET(purchaseURL)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	purchase.Value("id").String().IsEqual(purchaseId)
+	purchase.Value("id").String().IsEqual(purchaseID)
 	purchase.Value("totalGrossPrice").String().IsEqual("20")
 	purchase.Value("totalNetPrice").String().IsEqual("18.69")
 
 	// Get the purchase list
-	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl)).
+	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseURL)).
 		WithQuery("_sort", "createdAt").
 		WithQuery("_order", "DESC").
 		Expect().
@@ -133,15 +133,15 @@ func TestCreatePurchaseWithList(t *testing.T) {
 
 	purchaseList.Length().Ge(1)
 	purchaseListItem := purchaseList.Value(0).Object()
-	purchaseListItem.Value("id").String().IsEqual(purchaseId)
+	purchaseListItem.Value("id").String().IsEqual(purchaseID)
 	purchaseListItem.Value("paymentMethod").String().IsEqual("CC")
 
 	// Delete the purchase
-	withDemoUserAuthToken(e.DELETE(purchaseUrl)).
+	withDemoUserAuthToken(e.DELETE(purchaseURL)).
 		Expect().
 		Status(http.StatusNoContent)
 
-	withDemoUserAuthToken(e.GET(purchaseUrl)).
+	withDemoUserAuthToken(e.GET(purchaseURL)).
 		Expect().
 		Status(http.StatusNotFound)
 }
@@ -151,7 +151,7 @@ func TestCreatePurchaseWithWithFreeProduct(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase with a free product
-	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalNetPrice":   "0",
@@ -173,19 +173,19 @@ func TestCreatePurchaseWithWithFreeProduct(t *testing.T) {
 	purchase.Value("totalGrossPrice").String().IsEqual("0")
 	purchase.Value("totalNetPrice").String().IsEqual("0")
 
-	purchaseId := purchase.Value("id").String().Raw()
-	purchaseUrl := purchaseBaseUrl + "/" + purchaseId
+	purchaseID := purchase.Value("id").String().Raw()
+	purchaseURL := purchaseBaseURL + "/" + purchaseID
 
 	// Get the purchase
-	purchase = withDemoUserAuthToken(e.GET(purchaseUrl)).
+	purchase = withDemoUserAuthToken(e.GET(purchaseURL)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	purchase.Value("id").String().IsEqual(purchaseId)
+	purchase.Value("id").String().IsEqual(purchaseID)
 	purchase.Value("totalGrossPrice").String().IsEqual("0")
 	purchase.Value("totalNetPrice").String().IsEqual("0")
 
-	deletePurchase(purchaseUrl)
+	deletePurchase(purchaseURL)
 }
 
 func TestCreatePurchaseWithWrongTotalGrossPrice(t *testing.T) {
@@ -193,7 +193,7 @@ func TestCreatePurchaseWithWrongTotalGrossPrice(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase, but with a wrong total gross price
-	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalGrossPrice": "21",
@@ -218,7 +218,7 @@ func TestCreatePurchaseWithWrongTotalNetPrice(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase, but with a wrong total net price
-	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalGrossPrice": "20",
@@ -243,7 +243,7 @@ func TestCreatePurchaseWithWrongProductPrice(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase, but with a wrong total net price
-	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalGrossPrice": "20",
@@ -268,7 +268,7 @@ func TestCreatePurchaseWithInvalidProduct(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase, but with a wrong product ID
-	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalGrossPrice": "21",
@@ -293,7 +293,7 @@ func TestCreatePurchaseWithInvalidPaymentMethod(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase, but with a wrong payment method
-	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
 			"paymentMethod":   "INVALID",
 			"totalGrossPrice": "21",
@@ -318,7 +318,7 @@ func TestCreatePurchaseWithListForWrongProduct(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase
-	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalNetPrice":   "0",
@@ -348,7 +348,7 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 	defer cleanup()
 
 	// Create a purchase
-	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalNetPrice":   "0",
@@ -361,7 +361,7 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 					"listItems": []map[string]any{
 						{
 							"ID":             1,
-							"attendedGuests": 15,
+							"attendedGuests": 10,
 						},
 					},
 				},
@@ -377,14 +377,14 @@ func TestPurchasesAuthentication(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	purchaseUrlWithId := createPurchase()
+	purchaseURLWithID := createPurchase()
 
-	e.Request("GET", purchaseBaseUrl).Expect().Status(http.StatusUnauthorized)
-	e.Request("GET", purchaseUrlWithId).Expect().Status(http.StatusUnauthorized)
-	e.Request("POST", purchaseBaseUrl).Expect().Status(http.StatusUnauthorized)
-	e.Request("DELETE", purchaseUrlWithId).Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", purchaseBaseURL).Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", purchaseURLWithID).Expect().Status(http.StatusUnauthorized)
+	e.Request("POST", purchaseBaseURL).Expect().Status(http.StatusUnauthorized)
+	e.Request("DELETE", purchaseURLWithID).Expect().Status(http.StatusUnauthorized)
 
-	deletePurchase(purchaseUrlWithId)
+	deletePurchase(purchaseURLWithID)
 }
 
 func TestPurchaseGetByIdWithoutUuid(t *testing.T) {
@@ -392,7 +392,7 @@ func TestPurchaseGetByIdWithoutUuid(t *testing.T) {
 	defer cleanup()
 
 	// Get a purchase with a wrong ID
-	errorResponse := withDemoUserAuthToken(e.GET(purchaseBaseUrl + "/123")).
+	errorResponse := withDemoUserAuthToken(e.GET(purchaseBaseURL + "/123")).
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object()
 
@@ -404,7 +404,7 @@ func TestPurchaseDeleteWithoutUuid(t *testing.T) {
 	defer cleanup()
 
 	// Get a purchase with a wrong ID
-	errorResponse := withDemoUserAuthToken(e.DELETE(purchaseBaseUrl + "/123")).
+	errorResponse := withDemoUserAuthToken(e.DELETE(purchaseBaseURL + "/123")).
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object()
 
@@ -412,7 +412,7 @@ func TestPurchaseDeleteWithoutUuid(t *testing.T) {
 }
 
 func createPurchase() string {
-	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseUrl)).
+	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
 			"paymentMethod":   "CASH",
 			"totalNetPrice":   "37.38",
@@ -431,13 +431,13 @@ func createPurchase() string {
 		JSON().Object()
 
 	purchase := purchaseResponse
-	purchaseId := purchase.Value("id").String().Raw()
+	purchaseID := purchase.Value("id").String().Raw()
 
-	return purchaseBaseUrl + "/" + purchaseId
+	return purchaseBaseURL + "/" + purchaseID
 }
 
-func deletePurchase(purchaseUrl string) {
-	withDemoUserAuthToken(e.DELETE(purchaseUrl)).
+func deletePurchase(purchaseURL string) {
+	withDemoUserAuthToken(e.DELETE(purchaseURL)).
 		Expect().
 		Status(http.StatusNoContent)
 }

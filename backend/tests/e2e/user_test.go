@@ -9,15 +9,15 @@ import (
 )
 
 var (
-	userBaseUrl   = "/api/v2/users"
-	userUrlWithId = userBaseUrl + "/1"
+	userBaseURL   = "/api/v2/users"
+	userURLWithID = userBaseURL + "/1"
 )
 
 func TestGetUsers(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(userBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(userBaseURL)).
 		Expect()
 
 	res.Status(http.StatusOK)
@@ -40,7 +40,7 @@ func TestGetUsersEmpty(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(userBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(userBaseURL)).
 		WithQuery("q", "arandomstringthatnousernamecontains").
 		Expect().
 		Status(http.StatusOK)
@@ -57,7 +57,7 @@ func TestGetUsersWithSort(t *testing.T) {
 	sortFields := []string{"id", "username", "email", "admin"}
 
 	for _, sortField := range sortFields {
-		withDemoUserAuthToken(e.GET(userBaseUrl)).
+		withDemoUserAuthToken(e.GET(userBaseURL)).
 			WithQuery("_sort", sortField).
 			Expect().
 			Status(http.StatusOK)
@@ -69,7 +69,7 @@ func TestGetUsersWithFilters(t *testing.T) {
 	defer cleanup()
 
 	// search for admin users
-	res := withDemoUserAuthToken(e.GET(userBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(userBaseURL)).
 		WithQuery("isAdmin", "true").
 		Expect()
 
@@ -84,7 +84,7 @@ func TestGetUsersWithFilters(t *testing.T) {
 	validateUserObjectAdmin(user)
 
 	// search for the demo user
-	res = withDemoUserAuthToken(e.GET(userBaseUrl)).
+	res = withDemoUserAuthToken(e.GET(userBaseURL)).
 		WithQuery("q", "demo").
 		Expect()
 
@@ -99,7 +99,7 @@ func TestGetUsersWithFilters(t *testing.T) {
 	validateUserObjectDemo(user)
 
 	// search for a user that does not exist
-	res = withDemoUserAuthToken(e.GET(userBaseUrl)).
+	res = withDemoUserAuthToken(e.GET(userBaseURL)).
 		WithQuery("q", "doesnotexist").
 		Expect()
 
@@ -111,7 +111,7 @@ func TestGetUser(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	user := withDemoUserAuthToken(e.GET(userUrlWithId)).
+	user := withDemoUserAuthToken(e.GET(userURLWithID)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
@@ -130,7 +130,7 @@ func TestCreateUpdateAndDeleteUser(t *testing.T) {
 
 	changedEmail := "changed@example.com"
 
-	user := withDemoUserAuthToken(e.POST(userBaseUrl)).
+	user := withDemoUserAuthToken(e.POST(userBaseURL)).
 		WithJSON(map[string]any{
 			"username": originalUsername,
 			"email":    originalEmail,
@@ -142,10 +142,10 @@ func TestCreateUpdateAndDeleteUser(t *testing.T) {
 	user.Value("username").String().IsEqual(originalUsername)
 	user.Value("email").String().IsEqual(originalEmail)
 
-	userId := user.Value("id").Number().Raw()
-	userUrl := userBaseUrl + "/" + strconv.FormatFloat(userId, 'f', -1, 64)
+	userID := user.Value("id").Number().Raw()
+	userURL := userBaseURL + "/" + strconv.FormatFloat(userID, 'f', -1, 64)
 
-	user = withDemoUserAuthToken(e.GET(userUrl)).
+	user = withDemoUserAuthToken(e.GET(userURL)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
@@ -153,7 +153,7 @@ func TestCreateUpdateAndDeleteUser(t *testing.T) {
 	user.Value("username").String().IsEqual(originalUsername)
 	user.Value("email").String().IsEqual(originalEmail)
 
-	withDemoUserAuthToken(e.PUT(userUrl)).
+	withDemoUserAuthToken(e.PUT(userURL)).
 		WithJSON(map[string]any{
 			"username": changedUsername,
 			"email":    changedEmail,
@@ -161,7 +161,7 @@ func TestCreateUpdateAndDeleteUser(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	user = withDemoUserAuthToken(e.GET(userUrl)).
+	user = withDemoUserAuthToken(e.GET(userURL)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
@@ -169,17 +169,17 @@ func TestCreateUpdateAndDeleteUser(t *testing.T) {
 	user.Value("username").String().IsEqual(changedUsername)
 	user.Value("email").String().IsEqual(changedEmail)
 
-	withAdminUserAuthToken(e.DELETE(userUrl)).
+	withAdminUserAuthToken(e.DELETE(userURL)).
 		Expect().
 		Status(http.StatusNoContent)
 
-	withDemoUserAuthToken(e.GET(userUrl)).
+	withDemoUserAuthToken(e.GET(userURL)).
 		Expect().
 		Status(http.StatusNotFound)
 }
 
 func TestUserAuthentication(t *testing.T) {
-	testAuthenticationForEntityEndpoints(t, userBaseUrl, userUrlWithId)
+	testAuthenticationForEntityEndpoints(t, userBaseURL, userURLWithID)
 }
 
 func validateUserObject(user *httpexpect.Object) {

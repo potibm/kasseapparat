@@ -12,13 +12,13 @@ import (
 type GuestlistCreateRequest struct {
 	Name      string `json:"name"      form:"name"      binding:"required"`
 	TypeCode  bool   `json:"typeCode"  form:"typeCode"  binding:"boolean"`
-	ProductID uint   `json:"productId" form:"productId" binding:"required"`
+	ProductID int    `json:"productId" form:"productId" binding:"required"`
 }
 
 type GuestlistUpdateRequest struct {
 	Name      string `json:"name"      form:"name"      binding:"required"`
 	TypeCode  bool   `json:"typeCode"  form:"typeCode"  binding:"boolean"`
-	ProductID uint   `json:"productId" form:"productId" binding:"required"`
+	ProductID int    `json:"productId" form:"productId" binding:"required"`
 }
 
 func (handler *Handler) GetGuestlists(c *gin.Context) {

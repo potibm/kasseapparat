@@ -25,13 +25,11 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
-var (
-	r *gin.Engine
-)
+var r *gin.Engine
 
-const API_VERSION = "v2"
+const APIVersion = "v2"
 
-func InitializeHttpServer(
+func InitializeHTTPServer(
 	httpHdlr httpHandler.Handler,
 	websocketHdlr websocket.TransactionWebSocketHandler,
 	repository sqliteRepo.Repository,
@@ -53,7 +51,7 @@ func InitializeHttpServer(
 		otelgin.Middleware("kasseapparat-backend"),
 	)
 
-	r.GET("/api/"+API_VERSION+"/purchases/stats", httpHdlr.GetPurchaseStats)
+	r.GET("/api/"+APIVersion+"/purchases/stats", httpHdlr.GetPurchaseStats)
 
 	r.Use(CreateCorsMiddleware(cfg.App.CorsAllowOrigins))
 
@@ -65,7 +63,7 @@ func InitializeHttpServer(
 	r.Use(static.Serve("/", folder))
 
 	registerAuthMiddleware(jwtMiddleware)
-	registerApiRoutes(httpHdlr, websocketHdlr, jwtMiddleware)
+	registerAPIRoutes(httpHdlr, websocketHdlr, jwtMiddleware)
 
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
@@ -98,7 +96,7 @@ func SlogUserID() gin.HandlerFunc {
 		if exists {
 			if user, ok := user.(*models.User); ok {
 				sloggin.AddCustomAttributes(c,
-					slog.String("user_id", strconv.Itoa(int(user.ID))),
+					slog.Int("user_id", user.ID),
 				)
 			}
 		}
@@ -110,7 +108,7 @@ func SlogUserID() gin.HandlerFunc {
 func registerAuthMiddleware(authMiddleware *jwt.GinJWTMiddleware) {
 	r.Use(middleware.HandlerMiddleWare(authMiddleware))
 
-	versionedGroup := r.Group("/api/" + API_VERSION)
+	versionedGroup := r.Group("/api/" + APIVersion)
 
 	middleware.RegisterRoute(versionedGroup, authMiddleware)
 }
@@ -132,41 +130,40 @@ func SentryMiddleware() gin.HandlerFunc {
 	}
 }
 
-func registerApiRoutes(
+func registerAPIRoutes(
 	httpHdlr httpHandler.Handler,
 	websocketHdlr websocket.TransactionWebSocketHandler,
 	authMiddleware *jwt.GinJWTMiddleware,
-
 ) {
-	protectedApiRouter := r.Group("/api/" + API_VERSION)
-	protectedApiRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware(), SlogUserID())
+	protectedAPIRouter := r.Group("/api/" + APIVersion)
+	protectedAPIRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware(), SlogUserID())
 	{
-		registerProductRoutes(protectedApiRouter, httpHdlr)
-		registerProductInterestRoutes(protectedApiRouter, httpHdlr)
-		protectedApiRouter.GET("/productStats", httpHdlr.GetProductStats)
+		registerProductRoutes(protectedAPIRouter, httpHdlr)
+		registerProductInterestRoutes(protectedAPIRouter, httpHdlr)
+		protectedAPIRouter.GET("/productStats", httpHdlr.GetProductStats)
 
-		registerGuestlistRoutes(protectedApiRouter, httpHdlr)
-		registerGuestRoutes(protectedApiRouter, httpHdlr)
-		protectedApiRouter.POST("/guestsUpload", httpHdlr.ImportGuestsFromDeineTicketsCsv)
+		registerGuestlistRoutes(protectedAPIRouter, httpHdlr)
+		registerGuestRoutes(protectedAPIRouter, httpHdlr)
+		protectedAPIRouter.POST("/guestsUpload", httpHdlr.ImportGuestsFromDeineTicketsCsv)
 
-		registerPurchaseRoutes(protectedApiRouter, httpHdlr)
-		registerUserRoutes(protectedApiRouter, httpHdlr)
+		registerPurchaseRoutes(protectedAPIRouter, httpHdlr)
+		registerUserRoutes(protectedAPIRouter, httpHdlr)
 
-		registerSumupReadersRoutes(protectedApiRouter, httpHdlr)
-		registerSumupTransactionRoutes(protectedApiRouter, httpHdlr)
+		registerSumupReadersRoutes(protectedAPIRouter, httpHdlr)
+		registerSumupTransactionRoutes(protectedAPIRouter, httpHdlr)
 	}
 
 	// unprotected routes
-	unprotectedApiRouter := r.Group("/api/" + API_VERSION)
+	unprotectedAPIRouter := r.Group("/api/" + APIVersion)
 	{
-		unprotectedApiRouter.GET("/config", httpHdlr.GetConfig)
+		unprotectedAPIRouter.GET("/config", httpHdlr.GetConfig)
 
-		unprotectedApiRouter.POST("/auth/changePasswordToken", httpHdlr.RequestChangePasswordToken)
-		unprotectedApiRouter.POST("/auth/changePassword", httpHdlr.UpdateUserPassword)
+		unprotectedAPIRouter.POST("/auth/changePasswordToken", httpHdlr.RequestChangePasswordToken)
+		unprotectedAPIRouter.POST("/auth/changePassword", httpHdlr.UpdateUserPassword)
 
-		unprotectedApiRouter.POST("/sumup/webhook", httpHdlr.GetSumupTransactionWebhook)
+		unprotectedAPIRouter.POST("/sumup/webhook", httpHdlr.GetSumupTransactionWebhook)
 
-		unprotectedApiRouter.GET("/purchases/:id/ws", websocketHdlr.HandleTransactionWebSocket)
+		unprotectedAPIRouter.GET("/purchases/:id/ws", websocketHdlr.HandleTransactionWebSocket)
 	}
 }
 
@@ -248,6 +245,7 @@ func registerSumupReadersRoutes(rg *gin.RouterGroup, handler httpHandler.Handler
 		sumupReaders.POST("", handler.CreateSumupReader)
 	}
 }
+
 func registerSumupTransactionRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 	sumupTransactions := rg.Group("/sumup/transactions")
 	{

@@ -7,11 +7,11 @@ import (
 )
 
 type PurchaseItemResponse struct {
-	ID              uint            `json:"id"`
+	ID              int             `json:"id"`
 	PurchaseID      uuid.UUID       `json:"purchaseID"` // Foreign key to Purchase
-	ProductID       uint            `json:"productID"`  // Foreign key to Product
+	ProductID       int             `json:"productID"`  // Foreign key to Product
 	Product         ProductResponse `json:"product"`
-	Quantity        int             `json:"quantity"`
+	Quantity        uint            `json:"quantity"`
 	NetPrice        decimal.Decimal `json:"netPrice"`
 	GrossPrice      decimal.Decimal `json:"grossPrice"`
 	VATRate         decimal.Decimal `json:"vatRate"`

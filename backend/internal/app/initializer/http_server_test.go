@@ -34,7 +34,7 @@ func TestInitializeHttpServer(t *testing.T) {
 	// Switch to test mode to avoid side effects on global Gin state
 	gin.SetMode(gin.TestMode)
 
-	emptyHttpHandler := httpHandler.Handler{}
+	emptyHTTPHandler := httpHandler.Handler{}
 	emptyRepo := sqliteRepo.Repository{}
 
 	var mockWs websocket.TransactionWebSocketHandler = &stubWSHandler{}
@@ -53,8 +53,8 @@ func TestInitializeHttpServer(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	t.Run("should initialize server and register routes successfully", func(t *testing.T) {
-		engine, err := InitializeHttpServer(
-			emptyHttpHandler,
+		engine, err := InitializeHTTPServer(
+			emptyHTTPHandler,
 			mockWs,
 			emptyRepo,
 			testFS,

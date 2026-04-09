@@ -5,9 +5,7 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
-var (
-	meter = otel.Meter("websocket-server")
-)
+var meter = otel.Meter("websocket-server")
 
 var (
 	activeConns, _ = meter.Int64UpDownCounter("ws_active_connections",

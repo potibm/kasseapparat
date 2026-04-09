@@ -11,7 +11,6 @@ tmux = "3.6a"
 actionlint = "1.7.12"
 shellcheck = "0.11.0"
 jq = "1.8.1"
-"aqua:securego/gosec" = "2.25.0"
 vale = "3.14.1"
 
 # ==========================================
@@ -213,14 +212,3 @@ run = """
   npx playwright show-report
 """
 
-# ==========================================
-# 🛡️ SECURITY
-# ==========================================
-
-[tasks."be:sec"]
-description = "Run gosec security scanner for backend"
-dir = "backend"
-run = """
-  : "🕵️‍♂️ Running gosec..."
-  gosec ./...
-"""

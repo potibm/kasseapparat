@@ -11,7 +11,7 @@ import (
 var includeTestData bool
 
 func NewDbSeedCmd() *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "seed",
 		Short: "Fills the database with initial data",
 		RunE: func(cmd *cobra.Command, args []string) error {

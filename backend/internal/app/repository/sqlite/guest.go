@@ -16,7 +16,7 @@ var (
 type GuestFilters struct {
 	Query       string
 	GuestlistID int
-	ListGroupId int
+	ListGroupID int
 	Present     bool
 	NotPresent  bool
 	IDs         []int
@@ -102,10 +102,10 @@ func (repo *Repository) GetTotalGuests(filters *GuestFilters) (int64, error) {
 	return totalRows, nil
 }
 
-func (repo *Repository) GetGuestsByPurchaseID(purchaseId uuid.UUID) ([]models.Guest, error) {
+func (repo *Repository) GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.Guest, error) {
 	var guests []models.Guest
 
-	if err := repo.db.Preload("Guestlist").Where("purchase_id = ?", purchaseId).Find(&guests).Error; err != nil {
+	if err := repo.db.Preload("Guestlist").Where("purchase_id = ?", purchaseID).Find(&guests).Error; err != nil {
 		return nil, err
 	}
 
@@ -116,7 +116,7 @@ func (repo *Repository) GetGuestsByPurchaseID(purchaseId uuid.UUID) ([]models.Gu
 	return guests, nil
 }
 
-func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) (models.GuestSummarySlice, error) {
+func (repo *Repository) GetUnattendedGuestsByProductID(productID int, q string) (models.GuestSummarySlice, error) {
 	var guests models.GuestSummarySlice
 
 	var filter GuestFilters
@@ -132,7 +132,7 @@ func (repo *Repository) GetUnattendedGuestsByProductID(productId int, q string) 
 			"Guests.additional_guests, Guests.arrival_note").
 		Joins("JOIN guestlists ON Guests.guestlist_id = Guestlists.id").
 		Joins("JOIN products ON Guestlists.product_id = Products.id").
-		Where("Products.id = ?", productId).
+		Where("Products.id = ?", productID).
 		Order("guests.name ASC")
 	query = filter.AddWhere(query)
 
@@ -211,9 +211,9 @@ func (repo *Repository) DeleteGuest(guest models.Guest, deletedBy models.User) {
 	repo.db.Delete(&guest)
 }
 
-func (repo *Repository) RollbackVisitedGuestsByPurchaseID(purchaseId uuid.UUID) error {
+func (repo *Repository) RollbackVisitedGuestsByPurchaseID(purchaseID uuid.UUID) error {
 	err := repo.db.Model(&models.Guest{}).
-		Where("purchase_id = ?", purchaseId.String()).
+		Where("purchase_id = ?", purchaseID.String()).
 		Updates(map[string]any{"purchase_id": nil, "attended_guests": 0, "arrived_at": nil}).
 		Error
 

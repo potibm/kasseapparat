@@ -29,13 +29,13 @@ func logLevelFromString(level string) slog.Level {
 
 func InitLogger(loggerType, level string) *slog.Logger {
 	if loggerType == "text" {
-		return InitTxtLogger(level)
+		return InitTXTLogger(level)
 	}
 
-	return InitJsonLogger(level) // default to JSON logger
+	return InitJSONLogger(level) // default to JSON logger
 }
 
-func InitJsonLogger(level string) *slog.Logger {
+func InitJSONLogger(level string) *slog.Logger {
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logLevelFromString(level),
 	})
@@ -43,7 +43,7 @@ func InitJsonLogger(level string) *slog.Logger {
 	return initializeLogger(handler)
 }
 
-func InitTxtLogger(level string) *slog.Logger {
+func InitTXTLogger(level string) *slog.Logger {
 	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logLevelFromString(level),
 	})
@@ -54,7 +54,7 @@ func InitTxtLogger(level string) *slog.Logger {
 func initializeLogger(cmdlineHandler slog.Handler) *slog.Logger {
 	otelHandler := otelslog.NewHandler(config.OtelServiceName)
 
-	var finalHandler = slogmulti.Fanout(cmdlineHandler, otelHandler)
+	finalHandler := slogmulti.Fanout(cmdlineHandler, otelHandler)
 
 	logger := slog.New(finalHandler)
 	slog.SetDefault(logger)

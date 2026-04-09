@@ -14,11 +14,17 @@ linters:
     - cyclop
     - sloglint
     - gocritic
+    - revive
+    - gosec
   disable:
     - wsl
     - testpackage
     - funlen
   settings:
+    revive:
+      rules:
+        - name: var-naming
+        - name: receiver-naming
     gocritic:
       enabled-tags:
         - style
@@ -70,9 +76,14 @@ linters:
       - path: internal/app/utils/seed.go
         linters:
           - mnd
+      - path: _test\.go$
+        linters:
+          - gosec
+        text: "G101"
 formatters:
   enable:
     - golines
+    - gofumpt
   settings:
     golines:
       max-len: 120

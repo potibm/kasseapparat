@@ -28,7 +28,7 @@ func payloadFunc() func(data any) jwt.MapClaims {
 	}
 }
 
-func extractUserID(data any) uint {
+func extractUserID(data any) int {
 	switch v := data.(type) {
 	case *models.User:
 		return v.ID
@@ -39,15 +39,15 @@ func extractUserID(data any) uint {
 	}
 }
 
-func extractIDFromClaims(claims map[string]interface{}) uint {
+func extractIDFromClaims(claims map[string]interface{}) int {
 	if val, exists := claims["id"]; exists {
-		if id, valid := extractUint(val); valid {
+		if id, valid := extractInt(val); valid {
 			return id
 		}
 	}
 
 	if val, exists := claims[IdentityKey]; exists {
-		if id, valid := extractUint(val); valid {
+		if id, valid := extractInt(val); valid {
 			return id
 		}
 	}
@@ -55,36 +55,27 @@ func extractIDFromClaims(claims map[string]interface{}) uint {
 	return 0
 }
 
-func extractUint(val any) (uint, bool) {
+func extractInt(val any) (int, bool) {
 	switch v := val.(type) {
-	case float64:
-		if v < 0 || v != math.Trunc(v) {
-			return 0, false
-		}
-
-		return uint(v), true
-	case uint:
-		return v, true
 	case int:
 		if v < 0 {
 			return 0, false
 		}
 
-		return uint(v), true
-	case float32:
-		f64 := float64(v)
-		if f64 < 0 || f64 != math.Trunc(f64) {
+		return v, true
+	case float64:
+		if v < 0 || v != math.Trunc(v) {
 			return 0, false
 		}
 
-		return uint(v), true
+		return int(v), true
 	case int64:
 		if v < 0 {
 			return 0, false
 		}
 
-		return uint(v), true
+		return int(v), true
 	default:
-		return 0, false // Unsupported type
+		return 0, false
 	}
 }

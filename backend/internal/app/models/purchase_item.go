@@ -10,9 +10,9 @@ type PurchaseItem struct {
 
 	PurchaseID uuid.UUID       `json:"purchaseID" gorm:"type:text"` // Foreign key to Purchase
 	Purchase   Purchase        `json:"-"          gorm:"foreignKey:PurchaseID"`
-	ProductID  uint            `json:"productID"` // Foreign key to Product
+	ProductID  int             `json:"productID"` // Foreign key to Product
 	Product    Product         `json:"product"    gorm:"foreignKey:ProductID"`
-	Quantity   int             `json:"quantity"`
+	Quantity   uint            `json:"quantity"`
 	NetPrice   decimal.Decimal `json:"netPrice"   gorm:"type:TEXT"`
 	VATRate    decimal.Decimal `json:"vatRate"    gorm:"type:TEXT"`
 }
@@ -38,7 +38,7 @@ func (pi PurchaseItem) TotalVATAmount(decimalPlaces int32) decimal.Decimal {
 }
 
 func (pi PurchaseItem) getQuantityAsDecimal() decimal.Decimal {
-	return decimal.NewFromInt(int64(pi.Quantity))
+	return decimal.NewFromUint64(uint64(pi.Quantity))
 }
 
 func (pi PurchaseItem) vatRateAsPercentage() decimal.Decimal {

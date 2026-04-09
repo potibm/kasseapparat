@@ -1,56 +1,37 @@
 package config
 
 import (
-	"encoding/json"
 	"net/url"
 	"strconv"
 
 	"github.com/appleboy/gin-jwt/v3/store"
 )
 
-func (vr *VatRatesConfig) Json() string {
-	jsonData, err := json.Marshal(*vr)
-	if err != nil {
-		return "[]"
-	}
-
-	return string(jsonData)
-}
-
-func (vr *DateFormatOptionsConfig) Json() string {
-	jsonData, err := json.Marshal(*vr)
-	if err != nil {
-		return "[]"
-	}
-
-	return string(jsonData)
-}
-
-func (u *RedisUrl) UrlObject() *url.URL {
-	if u == nil {
+func (ru *RedisURL) URLObject() *url.URL {
+	if ru == nil {
 		return nil
 	}
 
-	parsedUrl, err := url.Parse(string(*u))
+	parsedURL, err := url.Parse(string(*ru))
 	if err != nil {
 		return nil
 	}
 
-	return parsedUrl
+	return parsedURL
 }
 
-func (u *RedisUrl) IsValid() bool {
-	if u == nil {
+func (ru *RedisURL) IsValid() bool {
+	if ru == nil {
 		return true
 	}
 
-	_, err := url.ParseRequestURI(string(*u))
+	_, err := url.ParseRequestURI(string(*ru))
 
 	return err == nil
 }
 
-func (r RedisUrl) JwtConfig() store.RedisConfig {
-	u := r.UrlObject()
+func (ru RedisURL) JwtConfig() store.RedisConfig {
+	u := ru.URLObject()
 
 	if u == nil {
 		return store.RedisConfig{}

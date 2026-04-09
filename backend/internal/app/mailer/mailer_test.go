@@ -7,7 +7,7 @@ import (
 )
 
 func TestSmtpConfigFromDsnWithValidDsn(t *testing.T) {
-	smtpConfig, err := SmtpConfigFromDsn("smtp://user:password@localhost:587")
+	smtpConfig, err := SMTPConfigFromDSN("smtp://user:password@localhost:587")
 	assert.NoError(t, err)
 	assert.Equal(t, "user", smtpConfig.user)
 	assert.Equal(t, "password", smtpConfig.password)
@@ -16,17 +16,17 @@ func TestSmtpConfigFromDsnWithValidDsn(t *testing.T) {
 }
 
 func TestSmtpConfigFromDsnWithInvalidDsn(t *testing.T) {
-	_, err := SmtpConfigFromDsn("töst://invalid-dsn")
+	_, err := SMTPConfigFromDSN("töst://invalid-dsn")
 	assert.Error(t, err)
 }
 
 func TestSmtpConfigFromDsnWithInvalidPort(t *testing.T) {
-	_, err := SmtpConfigFromDsn("smtp://user:password@localhost:abc")
+	_, err := SMTPConfigFromDSN("smtp://user:password@localhost:abc")
 	assert.Error(t, err)
 }
 
 func TestSmtpConfigFromDsnWithoutUsernameAndPassword(t *testing.T) {
-	smtpConfig, err := SmtpConfigFromDsn("smtp://localhost:25")
+	smtpConfig, err := SMTPConfigFromDSN("smtp://localhost:25")
 	assert.NoError(t, err)
 	assert.Equal(t, "", smtpConfig.user)
 	assert.Equal(t, "", smtpConfig.password)
@@ -35,7 +35,7 @@ func TestSmtpConfigFromDsnWithoutUsernameAndPassword(t *testing.T) {
 }
 
 func TestSmtpConfigFromDsnWithoutPort(t *testing.T) {
-	smtpConfig, err := SmtpConfigFromDsn("smtp://localhost")
+	smtpConfig, err := SMTPConfigFromDSN("smtp://localhost")
 	assert.NoError(t, err)
 	assert.Equal(t, "", smtpConfig.user)
 	assert.Equal(t, "", smtpConfig.password)

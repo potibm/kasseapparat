@@ -11,14 +11,14 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
-var meter = otel.Meter("kasseapparat")
 var (
+	meter                     = otel.Meter("kasseapparat")
 	productInterestCounter, _ = meter.Int64Counter("kasseapparat_product_interest_total",
 		metric.WithDescription("Total number of interests shown in out-of-stock products"))
 )
 
 type ProductInterestCreateRequest struct {
-	ProductID uint `json:"productId" form:"productId" binding:"required"`
+	ProductID int `json:"productId" form:"productId" binding:"required"`
 }
 
 func (handler *Handler) GetProductInterests(c *gin.Context) {
@@ -85,7 +85,7 @@ func (handler *Handler) CreateProductInterest(c *gin.Context) {
 
 	productInterest.ProductID = productInterestRequest.ProductID
 
-	product, err := handler.repo.GetProductByID(int(productInterest.ProductID)) // check if product exists
+	product, err := handler.repo.GetProductByID(productInterest.ProductID) // check if product exists
 	if product == nil || err != nil {
 		_ = c.Error(BadRequest.WithMsg("Product not found").WithCause(err))
 

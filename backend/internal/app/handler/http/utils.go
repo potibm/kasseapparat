@@ -122,14 +122,14 @@ func (handler *Handler) IsValidPaymentMethod(code models.PaymentMethod) bool {
 	return handler.config.PaymentMethods.Contains(code)
 }
 
-func (handler *Handler) ValidatePaymentMethodPayload(code models.PaymentMethod, sumupReaderId string) error {
+func (handler *Handler) ValidatePaymentMethodPayload(code models.PaymentMethod, sumupReaderID string) error {
 	// Check if the payment method code is valid
 	if !handler.IsValidPaymentMethod(code) {
 		return errors.New("invalid payment method")
 	}
 
 	// If payment method is SUMUP, sumupReaderId must be provided
-	if code == models.PaymentMethodSumUp && sumupReaderId == "" {
+	if code == models.PaymentMethodSumUp && sumupReaderID == "" {
 		return errors.New("the SumUp reader ID is required for SumUp payments")
 	}
 

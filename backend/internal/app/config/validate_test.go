@@ -109,15 +109,15 @@ func TestDateFormatConfigValidate(t *testing.T) {
 }
 
 func TestRedisUrlValidate(t *testing.T) {
-	validUrl := RedisUrl("redis://user:password@localhost:6379/0")
-	assert.NoError(t, validUrl.Validate())
+	validURL := RedisURL("redis://user:password@localhost:6379/0")
+	assert.NoError(t, validURL.Validate())
 
-	invalidUrl := RedisUrl("not-a-valid-url")
-	err := invalidUrl.Validate()
+	invalidURL := RedisURL("not-a-valid-url")
+	err := invalidURL.Validate()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "redis_url 'not-a-valid-url' is not a valid URL")
 
-	invalidScheme := RedisUrl("http://localhost:6379")
+	invalidScheme := RedisURL("http://localhost:6379")
 	err = invalidScheme.Validate()
 	assert.Error(t, err)
 	assert.Contains(
@@ -126,7 +126,7 @@ func TestRedisUrlValidate(t *testing.T) {
 		"redis_url 'http://localhost:6379' has invalid scheme 'http' (expected 'redis' or 'rediss')",
 	)
 
-	missingHost := RedisUrl("redis:///0")
+	missingHost := RedisURL("redis:///0")
 	err = missingHost.Validate()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "redis_url 'redis:///0' has missing host")

@@ -6,7 +6,7 @@ import (
 )
 
 type ProductResponse struct {
-	ID                  uint               `json:"id"`
+	ID                  int                `json:"id"`
 	Name                string             `json:"name"`
 	NetPrice            decimal.Decimal    `json:"netPrice"`
 	GrossPrice          decimal.Decimal    `json:"grossPrice"`
@@ -15,7 +15,7 @@ type ProductResponse struct {
 	WrapAfter           bool               `json:"wrapAfter"`
 	Hidden              bool               `json:"hidden"`
 	SoldOut             bool               `json:"soldOut"`
-	ApiExport           bool               `json:"apiExport"`
+	APIExport           bool               `json:"apiExport"`
 	Pos                 int                `json:"pos"`
 	TotalStock          int                `json:"totalStock"`
 	UnitsSold           int                `json:"unitsSold"`
@@ -41,7 +41,7 @@ func ToProductResponse(product models.Product, decimalPlaces int32) ProductRespo
 		WrapAfter:           product.WrapAfter,
 		Hidden:              product.Hidden,
 		SoldOut:             product.SoldOut,
-		ApiExport:           product.ApiExport,
+		APIExport:           product.APIExport,
 		Pos:                 product.Pos,
 		TotalStock:          product.TotalStock,
 		UnitsSold:           product.UnitsSold,

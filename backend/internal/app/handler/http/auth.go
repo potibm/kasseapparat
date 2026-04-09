@@ -10,7 +10,7 @@ import (
 )
 
 type UserUpdatePasswordRequest struct {
-	UserId   int    `json:"userId"   form:"userId"   binding:"required"`
+	UserID   int    `json:"userId"   form:"userId"   binding:"required"`
 	Token    string `json:"token"    form:"token"    binding:"required,len=32"`
 	Password string `json:"password" form:"password" binding:"required,min=8"`
 }
@@ -23,7 +23,7 @@ func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 		return
 	}
 
-	user, err := handler.repo.GetUserByID(userPasswordChangeRequest.UserId)
+	user, err := handler.repo.GetUserByID(userPasswordChangeRequest.UserID)
 	if err != nil {
 		_ = c.Error(BadRequest.WithCauseMsg(err))
 
@@ -40,7 +40,7 @@ func (handler *Handler) UpdateUserPassword(c *gin.Context) {
 	user.ChangePasswordToken = nil
 	user.ChangePasswordTokenExpiry = nil
 
-	user, err = handler.repo.UpdateUserByID(int(user.ID), *user)
+	user, err = handler.repo.UpdateUserByID(user.ID, *user)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCause(err))
 
@@ -78,7 +78,7 @@ func (handler *Handler) RequestChangePasswordToken(c *gin.Context) {
 	user.GenerateChangePasswordToken(nil)
 	user.Password = "" // Clear password so it is not saved in the database
 
-	user, err = handler.repo.UpdateUserByID(int(user.ID), *user)
+	user, err = handler.repo.UpdateUserByID(user.ID, *user)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCause(err))
 

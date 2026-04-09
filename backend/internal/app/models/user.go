@@ -11,14 +11,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const bcryptCost = 14
-const passwordLength = 32
-const defaultChangePasswordTokenValidity = 15 * time.Minute
+const (
+	bcryptCost                         = 14
+	passwordLength                     = 32
+	defaultChangePasswordTokenValidity = 15 * time.Minute
+)
 
 type User struct {
 	GormModel
 
-	ID                        uint    `json:"id"       gorm:"primarykey"`
+	ID                        int     `json:"id"       gorm:"primarykey"`
 	Username                  string  `json:"username" gorm:"unique"`
 	Email                     string  `json:"email"    gorm:"unique"`
 	Password                  string  `json:"-"`

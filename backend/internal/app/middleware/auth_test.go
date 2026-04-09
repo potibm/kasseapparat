@@ -74,7 +74,7 @@ func TestAuthMethods(t *testing.T) {
 		user, ok := identity.(*models.User)
 
 		assert.True(t, ok, "Identity should be a *models.User")
-		assert.Equal(t, uint(456), user.ID)
+		assert.Equal(t, int(456), user.ID)
 	})
 
 	t.Run("Authorizer: Grant and Deny", func(t *testing.T) {
@@ -108,8 +108,8 @@ func TestAuthMethods(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "secret-token", resp.AccessToken)
 
-		if assert.NotNil(t, resp.Id) {
-			assert.Equal(t, uint(789), *resp.Id)
+		if assert.NotNil(t, resp.ID) {
+			assert.Equal(t, int(789), *resp.ID)
 		}
 	})
 

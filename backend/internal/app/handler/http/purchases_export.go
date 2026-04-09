@@ -84,7 +84,7 @@ func (handler *Handler) exportSinglePurchase(writer *csv.Writer, p models.Purcha
 	return writer.Write([]string{
 		p.CreatedAt.Format("2006-01-02 15:04:05"),
 		p.Purchase.ID.String(),
-		strconv.Itoa(p.Quantity),
+		strconv.FormatUint(uint64(p.Quantity), 10),
 		p.Product.Name,
 		p.VATRate.String() + "%",
 		p.GrossPrice(handler.decimalPlaces).StringFixed(handler.decimalPlaces),

@@ -123,7 +123,7 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		Mailer:          *mail,
 		AppConfig:       cfg,
 	}
-	handlerHttpObj := handlerHttp.NewHandler(httpHandlerConfig)
+	handlerHTTPObj := handlerHttp.NewHandler(httpHandlerConfig)
 	websocketHandler := websocket.NewHandler(
 		sqliteRp,
 		sumupRp,
@@ -132,8 +132,8 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		&cfg.App.CorsAllowOrigins,
 	)
 
-	router, err := initializer.InitializeHttpServer(
-		*handlerHttpObj,
+	router, err := initializer.InitializeHTTPServer(
+		*handlerHTTPObj,
 		websocketHandler,
 		*sqliteRp,
 		embed.FS{},
@@ -150,7 +150,7 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 	e = httpexpect.WithConfig(httpexpect.Config{
 		BaseURL: ts.URL,
 		Client: &http.Client{
-			//Transport: httpexpect.NewBinder(router),
+			// Transport: httpexpect.NewBinder(router),
 			Jar: httpexpect.NewCookieJar(),
 		},
 		Reporter: httpexpect.NewAssertReporter(t),
@@ -211,15 +211,15 @@ func withAdminUserAuthToken(req *httpexpect.Request) *httpexpect.Request {
 	return withAuthToken(req, getJwtForAdminUser())
 }
 
-func testAuthenticationForEntityEndpoints(t *testing.T, baseUrl, urlWithId string) {
+func testAuthenticationForEntityEndpoints(t *testing.T, baseURL, urlWithID string) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	e.Request("GET", baseUrl).Expect().Status(http.StatusUnauthorized)
-	e.Request("GET", urlWithId).Expect().Status(http.StatusUnauthorized)
-	e.Request("POST", baseUrl).Expect().Status(http.StatusUnauthorized)
-	e.Request("PUT", urlWithId).Expect().Status(http.StatusUnauthorized)
-	e.Request("DELETE", urlWithId).Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", baseURL).Expect().Status(http.StatusUnauthorized)
+	e.Request("GET", urlWithID).Expect().Status(http.StatusUnauthorized)
+	e.Request("POST", baseURL).Expect().Status(http.StatusUnauthorized)
+	e.Request("PUT", urlWithID).Expect().Status(http.StatusUnauthorized)
+	e.Request("DELETE", urlWithID).Expect().Status(http.StatusUnauthorized)
 }
 
 func validateErrorDetailMessage(err *httpexpect.Object, message string) {

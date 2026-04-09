@@ -54,23 +54,23 @@ func (f *AppConfig) Validate() error {
 	return nil
 }
 
-func (r *RedisUrl) Validate() error {
-	rString := string(*r)
+func (ru *RedisURL) Validate() error {
+	rString := string(*ru)
 
-	if !r.IsValid() {
+	if !ru.IsValid() {
 		return fmt.Errorf("redis_url '%s' is not a valid URL", rString)
 	}
 
-	redisUrl := r.UrlObject()
-	if redisUrl.Scheme != "redis" && redisUrl.Scheme != "rediss" {
+	redisURL := ru.URLObject()
+	if redisURL.Scheme != "redis" && redisURL.Scheme != "rediss" {
 		return fmt.Errorf(
 			"redis_url '%s' has invalid scheme '%s' (expected 'redis' or 'rediss')",
 			rString,
-			redisUrl.Scheme,
+			redisURL.Scheme,
 		)
 	}
 
-	host, _, err := net.SplitHostPort(redisUrl.Host)
+	host, _, err := net.SplitHostPort(redisURL.Host)
 	if err != nil || host == "" {
 		return fmt.Errorf("redis_url '%s' has missing host", rString)
 	}

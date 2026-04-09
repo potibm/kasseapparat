@@ -11,7 +11,7 @@ import (
 type PurchaseResponse struct {
 	ID                       uuid.UUID              `json:"id"`
 	CreatedAt                time.Time              `json:"createdAt"`
-	CreatedByID              *uint                  `json:"createdById"`
+	CreatedByID              *int                   `json:"createdById"`
 	CreatedBy                *models.User           `json:"createdBy"`
 	PaymentMethod            models.PaymentMethod   `json:"paymentMethod"`
 	TotalNetPrice            decimal.Decimal        `json:"totalNetPrice"`

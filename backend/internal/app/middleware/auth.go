@@ -30,13 +30,13 @@ const (
 	logoutEndpoint       = "/auth/logout"
 )
 
-var IdentityKey = "ID"
-var meter = otel.Meter("kasseapparat-auth")
-
 var (
-	authEventsCounter, _ = meter.Int64Counter("kasseapparat_auth_events_total",
-		metric.WithDescription("Number of authentication events"))
+	IdentityKey = "ID"
+	meter       = otel.Meter("kasseapparat-auth")
 )
+
+var authEventsCounter, _ = meter.Int64Counter("kasseapparat_auth_events_total",
+	metric.WithDescription("Number of authentication events"))
 
 type login struct {
 	Login    string `json:"login"    form:"login"    binding:"required"`
@@ -50,8 +50,8 @@ type loginResponseDTO struct {
 	RefreshToken string  `json:"refresh_token,omitempty"`
 	Role         *string `json:"role"`
 	Username     *string `json:"username"`
-	GravatarUrl  *string `json:"gravatarUrl"`
-	Id           *uint   `json:"id"`
+	GravatarURL  *string `json:"gravatarUrl"`
+	ID           *int    `json:"id"`
 }
 
 func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc {
@@ -152,7 +152,7 @@ func identityHandler() func(c *gin.Context) any {
 		claims := ginjwt.ExtractClaims(c)
 
 		return &models.User{
-			ID: uint(claims[IdentityKey].(float64)),
+			ID: int(claims[IdentityKey].(float64)),
 		}
 	}
 }
@@ -220,11 +220,11 @@ func loginResponse(c *gin.Context, token *ginjwtCore.Token) {
 		username := userObj.Username
 		loginResponse.Username = &username
 
-		gravatarUrl := userObj.GravatarURL()
-		loginResponse.GravatarUrl = &gravatarUrl
+		gravatarURL := userObj.GravatarURL()
+		loginResponse.GravatarURL = &gravatarURL
 
 		id := userObj.ID
-		loginResponse.Id = &id
+		loginResponse.ID = &id
 	}
 
 	c.JSON(http.StatusOK, loginResponse)

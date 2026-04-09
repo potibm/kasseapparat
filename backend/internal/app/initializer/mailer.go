@@ -20,7 +20,7 @@ func InitializeMailer(mailerConfig config.MailerConfig) mailer.Mailer {
 	}
 
 	if mailerConfig.FrontendURL != "" {
-		mail.SetFrontendBaseUrl(mailerConfig.FrontendURL)
+		mail.SetFrontendBaseURL(mailerConfig.FrontendURL)
 	}
 
 	return *mail

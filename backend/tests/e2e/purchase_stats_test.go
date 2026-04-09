@@ -5,13 +5,13 @@ import (
 	"testing"
 )
 
-var purchaseStatsUrl = "/api/v2/purchases/stats"
+var purchaseStatsURL = "/api/v2/purchases/stats"
 
 func TestPurchaseStats(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := e.GET(purchaseStatsUrl).
+	res := e.GET(purchaseStatsURL).
 		Expect().
 		Status(http.StatusOK)
 
@@ -20,13 +20,13 @@ func TestPurchaseStats(t *testing.T) {
 	// store this value for later use
 	totalQuantity := res.JSON().Object().Value("totalQuantity").Number().Raw()
 
-	purchaseUrl := createPurchase()
+	purchaseURL := createPurchase()
 
-	res = e.GET(purchaseStatsUrl).
+	res = e.GET(purchaseStatsURL).
 		Expect().
 		Status(http.StatusOK)
 
 	res.JSON().Object().Value("totalQuantity").Number().IsEqual(totalQuantity + 1)
 
-	deletePurchase(purchaseUrl)
+	deletePurchase(purchaseURL)
 }

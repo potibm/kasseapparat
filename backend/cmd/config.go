@@ -14,12 +14,12 @@ func NewConfigCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			safeCfg := Cfg.RedactConfigForDisplay()
 
-			configJson, err := json.MarshalIndent(safeCfg, "", "  ")
+			configJSON, err := json.MarshalIndent(safeCfg, "", "  ")
 			if err != nil {
 				return fmt.Errorf("failed to marshal config: %w", err)
 			}
 
-			fmt.Fprintln(cmd.OutOrStdout(), string(configJson))
+			fmt.Fprintln(cmd.OutOrStdout(), string(configJSON))
 
 			return nil
 		},

@@ -3,10 +3,10 @@ package models
 type GormOwnedModel struct {
 	GormModel
 
-	CreatedByID *uint `json:"createdById"`
+	CreatedByID *int  `json:"createdById"`
 	CreatedBy   *User `json:"createdBy"`
-	UpdatedByID *uint `json:"updatedById"`
+	UpdatedByID *int  `json:"updatedById"`
 	UpdatedBy   *User `json:"updatedBy"`
-	DeletedByID *uint `json:"deletedById"`
+	DeletedByID *int  `json:"deletedById"`
 	DeletedBy   *User `json:"deletedBy"`
 } // @name models.gormOwnedModel

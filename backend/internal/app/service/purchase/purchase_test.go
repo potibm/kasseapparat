@@ -96,13 +96,13 @@ func (m *MockRepository) GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
 	return m.StoredPurchase, nil
 }
 
-func (m *MockRepository) RollbackVisitedGuestsByPurchaseID(purchaseId uuid.UUID) error {
+func (m *MockRepository) RollbackVisitedGuestsByPurchaseID(purchaseID uuid.UUID) error {
 	if m.UpdatedGuests == nil {
 		return nil
 	}
 
 	for _, guest := range m.UpdatedGuests {
-		if guest.PurchaseID != nil && *guest.PurchaseID == purchaseId {
+		if guest.PurchaseID != nil && *guest.PurchaseID == purchaseID {
 			// Reset the guest's fields to their original values
 			guest.AttendedGuests = 0
 			guest.PurchaseID = nil
@@ -126,15 +126,19 @@ func (m *MockRepository) GetGuests(
 ) ([]models.Guest, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetTotalGuests(filters *sqlite.GuestFilters) (int64, error) {
 	panic(errNotImplemented)
 }
-func (m *MockRepository) GetUnattendedGuestsByProductID(productId int, q string) (models.GuestSummarySlice, error) {
+
+func (m *MockRepository) GetUnattendedGuestsByProductID(productID int, q string) (models.GuestSummarySlice, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetGuestByID(id int) (*models.Guest, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetGuestByCode(code string) (*models.Guest, error) {
 	panic(errNotImplemented)
 }
@@ -142,6 +146,7 @@ func (m *MockRepository) GetGuestByCode(code string) (*models.Guest, error) {
 func (m *MockRepository) CreateGuest(guest models.Guest) (models.Guest, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) DeleteGuest(guest models.Guest, deletedBy models.User) {
 	panic(errNotImplemented)
 }
@@ -155,33 +160,43 @@ func (m *MockRepository) GetGuestlists(
 ) ([]models.Guestlist, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetTotalGuestlists() (int64, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetGuestlistByID(id int) (*models.Guestlist, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetGuestlistWithTypeCode() (*models.Guestlist, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) UpdateGuestlistByID(id int, updatedGuestlist models.Guestlist) (*models.Guestlist, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) CreateGuestlist(guestlist models.Guestlist) (models.Guestlist, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) DeleteGuestlist(guestlist models.Guestlist, deletedBy models.User) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetProductInterests(limit, offset int, ids []int) ([]models.ProductInterest, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetTotalProductInterests() (int64, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetProductInterestByID(id int) (*models.ProductInterest, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) DeleteProductInterest(productInterest models.ProductInterest, deletedBy models.User) {
 	panic(errNotImplemented)
 }
@@ -192,9 +207,11 @@ func (m *MockRepository) CreateProductInterest(
 ) (models.ProductInterest, error) {
 	panic(errNotImplemented)
 }
-func (m *MockRepository) GetProductInterestCountByProductID(productID uint) (int, error) {
+
+func (m *MockRepository) GetProductInterestCountByProductID(productID int) (int, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetProductStats() ([]response.ProductStats, error) {
 	panic(errNotImplemented)
 }
@@ -208,6 +225,7 @@ func (m *MockRepository) GetProducts(
 ) ([]models.Product, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetTotalProducts() (int64, error) {
 	panic(errNotImplemented)
 }
@@ -215,13 +233,16 @@ func (m *MockRepository) GetTotalProducts() (int64, error) {
 func (m *MockRepository) UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) CreateProduct(product models.Product) (models.Product, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) DeleteProduct(product models.Product, deletedBy models.User) {
 	panic(errNotImplemented)
 }
-func (m *MockRepository) GetAttendedGuestSumByProductID(productID uint) (int, error) {
+
+func (m *MockRepository) GetAttendedGuestSumByProductID(productID int) (int, error) {
 	panic(errNotImplemented)
 }
 
@@ -230,14 +251,14 @@ func (m *MockRepository) DeletePurchaseByID(id uuid.UUID, deletedBy models.User)
 }
 
 func (m *MockRepository) UpdatePurchaseSumupTransactionIDByID(
-	id uuid.UUID,
+	id,
 	sumupTransactionID uuid.UUID,
 ) (*models.Purchase, error) {
 	panic(errNotImplemented)
 }
 
 func (m *MockRepository) UpdatePurchaseSumupClientTransactionIDByID(
-	id uuid.UUID,
+	id,
 	sumupClientTransactionID uuid.UUID,
 ) (*models.Purchase, error) {
 	panic(errNotImplemented)
@@ -252,16 +273,20 @@ func (m *MockRepository) GetPurchases(
 ) ([]models.Purchase, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetFilteredPurchases(filters sqlite.PurchaseFilters) ([]models.PurchaseItem, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetTotalPurchases(filters sqlite.PurchaseFilters) (int64, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetPurchaseStats() ([]sqlite.ProductPurchaseStats, error) {
 	panic(errNotImplemented)
 }
-func (m *MockRepository) GetPurchasedQuantitiesByProductID(productID uint) (int, error) {
+
+func (m *MockRepository) GetPurchasedQuantitiesByProductID(productID int) (int, error) {
 	panic(errNotImplemented)
 }
 
@@ -278,30 +303,39 @@ func (m *MockRepository) GetUsers(
 ) ([]models.User, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetTotalUsers(filters *sqlite.UserFilters) (int64, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) CreateUser(user models.User) (models.User, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) UpdateUserByID(id int, updatedUser models.User) (*models.User, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) DeleteUser(user models.User) error {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetUserByEmail(email string) (*models.User, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetUserByUsername(username string) (*models.User, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetUserByUsernameOrEmail(usernameOrEmail string) (*models.User, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetPurchaseBySumupClientTransactionID(sumupTransactionID uuid.UUID) (*models.Purchase, error) {
 	panic(errNotImplemented)
 }
+
 func (m *MockRepository) GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.Guest, error) {
 	panic(errNotImplemented)
 }

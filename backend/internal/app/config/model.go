@@ -28,7 +28,7 @@ type MailerConfig struct {
 	FrontendURL       string `mapstructure:"frontend_url"   validate:"required,http_url"`
 }
 
-type RedisUrl string
+type RedisURL string
 
 type RedisConfig url.URL
 
@@ -42,7 +42,7 @@ type AppConfig struct {
 	LogFormat string `mapstructure:"log_format" validate:"required,oneof=json text"`
 
 	DbFilename         string                 `mapstructure:"db_filename"         validate:"required"`
-	RedisURL           RedisUrl               `mapstructure:"redis_url"           validate:"omitempty,url"`
+	RedisURL           RedisURL               `mapstructure:"redis_url"           validate:"omitempty,url"`
 	FrontendURL        string                 `mapstructure:"frontend_url"        validate:"required,http_url"`
 	CorsAllowOrigins   CorsAllowOriginsConfig `mapstructure:"cors_allow_origins"  validate:"dive,required"`
 	EnvironmentMessage string                 `mapstructure:"environment_message"`
@@ -56,8 +56,8 @@ type FormatConfig struct {
 type CurrencyFormatConfig struct {
 	Locale            string `mapstructure:"locale"              validate:"required"`
 	Code              string `mapstructure:"code"                validate:"required"`
-	FractionDigitsMin int    `mapstructure:"fraction_digits_min" validate:"gte=0"`
-	FractionDigitsMax int    `mapstructure:"fraction_digits_max" validate:"gte=0"`
+	FractionDigitsMin int32  `mapstructure:"fraction_digits_min" validate:"gte=0"`
+	FractionDigitsMax int32  `mapstructure:"fraction_digits_max" validate:"gte=0"`
 }
 
 type DateFormatOptionsConfig map[string]any
@@ -84,13 +84,13 @@ type PaymentMethodConfig struct {
 }
 
 type SumupConfig struct {
-	ApiKey            string `mapstructure:"api_key"`
+	APIKey            string `mapstructure:"api_key"`
 	MerchantCode      string `mapstructure:"merchant_code"`
 	CurrencyCode      string `mapstructure:"currency_code"`
-	CurrencyMinorUnit int    `mapstructure:"currency_minor_unit"`
+	CurrencyMinorUnit int32  `mapstructure:"currency_minor_unit"`
 	AffiliateKey      string `mapstructure:"affiliate_key"`
-	ApplicationId     string `mapstructure:"application_id"`
-	PublicUrl         string `mapstructure:"public_url"          validate:"omitempty,https_url"`
+	ApplicationID     string `mapstructure:"application_id"`
+	PublicURL         string `mapstructure:"public_url"          validate:"omitempty,https_url"`
 }
 
 type Config struct {

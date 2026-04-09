@@ -61,7 +61,7 @@ func (handler *Handler) RefundPurchase(c *gin.Context) {
 		return
 	}
 
-	isCreator := purchase.CreatedByID != nil && *purchase.CreatedByID == uint(executingUserObj.ID)
+	isCreator := purchase.CreatedByID != nil && *purchase.CreatedByID == executingUserObj.ID
 	if !executingUserObj.Admin && !isCreator {
 		_ = c.Error(Forbidden.WithMsg("You are not allowed to refund this purchase"))
 
@@ -123,13 +123,13 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		purchase, err = handler.purchaseService.CreatePendingPurchase(
 			c.Request.Context(),
 			input,
-			int(executingUserObj.ID),
+			executingUserObj.ID,
 		)
 	} else {
 		purchase, err = handler.purchaseService.CreateConfirmedPurchase(
 			c.Request.Context(),
 			input,
-			int(executingUserObj.ID),
+			executingUserObj.ID,
 		)
 	}
 
@@ -246,12 +246,12 @@ func mapPurchaseCreationError(err error) error {
 }
 
 func (handler *Handler) processSumupCheckout(c *gin.Context, purchase *models.Purchase, readerID string) error {
-	clientTransactionId, err := handler.sumupRepository.CreateReaderCheckout(
+	clientTransactionID, err := handler.sumupRepository.CreateReaderCheckout(
 		readerID,
 		purchase.TotalGrossPrice,
 		"Purchase from Kasseapparat",
 		purchase.ID.String(),
-		handler.sumupRepository.GetWebhookUrl(),
+		handler.sumupRepository.GetWebhookURL(),
 	)
 	if err != nil {
 		slog.ErrorContext(c.Request.Context(), "Error creating SumUp reader checkout", "error", err)
@@ -271,19 +271,19 @@ func (handler *Handler) processSumupCheckout(c *gin.Context, purchase *models.Pu
 		return InternalServerError.WithMsg("Failed to create SumUp reader checkout: " + err.Error()).WithCause(err)
 	}
 
-	clientTransactionIdStr := "nil"
-	if clientTransactionId != nil {
-		clientTransactionIdStr = clientTransactionId.String()
+	clientTransactionIDStr := "nil"
+	if clientTransactionID != nil {
+		clientTransactionIDStr = clientTransactionID.String()
 	}
 
 	slog.InfoContext(
 		c.Request.Context(),
 		"Created SumUp reader checkout",
 		"client_transaction_id",
-		clientTransactionIdStr,
+		clientTransactionIDStr,
 	)
 
-	_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(purchase.ID, *clientTransactionId)
+	_, err = handler.repo.UpdatePurchaseSumupClientTransactionIDByID(purchase.ID, *clientTransactionID)
 	if err != nil {
 		return InternalServerError.WithMsg("Failed to update purchase with SumUp transaction ID").WithCause(err)
 	}
@@ -291,7 +291,7 @@ func (handler *Handler) processSumupCheckout(c *gin.Context, purchase *models.Pu
 	slog.DebugContext(c.Request.Context(),
 		"Updated purchase with SumUp client transaction ID",
 		"purchase_id", purchase.ID,
-		"client_transaction_id", clientTransactionIdStr,
+		"client_transaction_id", clientTransactionIDStr,
 	)
 	slog.DebugContext(c.Request.Context(), "Monitor", "handler_monitor", handler.monitor)
 

@@ -26,7 +26,7 @@ type ProductRequestUpdate struct {
 	VATRate    decimal.Decimal `json:"vatRate"    form:"vatRate"    binding:"required"`
 	WrapAfter  bool            `json:"wrapAfter"  form:"wrapAfter"`
 	Pos        int             `json:"pos"        form:"pos"        binding:"numeric,required"`
-	ApiExport  bool            `json:"apiExport"  form:"apiExport"  binding:"boolean"`
+	APIExport  bool            `json:"apiExport"  form:"apiExport"  binding:"boolean"`
 	Hidden     bool            `json:"hidden"     form:"hidden"     binding:"boolean"`
 	SoldOut    bool            `json:"soldOut"    form:"soldOut"    binding:"boolean"`
 	TotalStock int             `json:"totalStock" form:"totalStock" binding:"numeric"`
@@ -161,7 +161,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.VATRate = productRequest.VATRate
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
-	product.ApiExport = productRequest.ApiExport
+	product.APIExport = productRequest.APIExport
 	product.Hidden = productRequest.Hidden
 	product.UpdatedByID = &executingUserObj.ID
 	product.SoldOut = productRequest.SoldOut

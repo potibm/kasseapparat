@@ -18,29 +18,29 @@ type RepositoryInterface interface {
 	ReaderRepository
 	TransactionRepository
 
-	GetWebhookUrl() *string
+	GetWebhookURL() *string
 }
 
 type ReaderRepository interface {
 	GetReaders() ([]Reader, error)
-	GetReader(readerId string) (*Reader, error)
-	CreateReader(pairingCode string, readerName string) (*Reader, error)
-	DeleteReader(readerId string) error
+	GetReader(readerID string) (*Reader, error)
+	CreateReader(pairingCode, readerName string) (*Reader, error)
+	DeleteReader(readerID string) error
 	CreateReaderCheckout(
-		readerId string,
+		readerID string,
 		amount decimal.Decimal,
 		description string,
-		affiliateTransactionId string,
-		returnUrl *string,
+		affiliateTransactionID string,
+		returnURL *string,
 	) (*uuid.UUID, error)
-	CreateReaderTerminateAction(readerId string) error
+	CreateReaderTerminateAction(readerID string) error
 }
 
 type TransactionRepository interface {
 	GetTransactions(oldestTime *time.Time) ([]Transaction, error)
-	GetTransactionById(transactionId uuid.UUID) (*Transaction, error)
-	GetTransactionByClientTransactionId(clientTransactionId uuid.UUID) (*Transaction, error)
-	RefundTransaction(transactionId uuid.UUID) error
+	GetTransactionByID(transactionID uuid.UUID) (*Transaction, error)
+	GetTransactionByClientTransactionID(clientTransactionID uuid.UUID) (*Transaction, error)
+	RefundTransaction(transactionID uuid.UUID) error
 }
 
 func NewRepository(service *sumupService.Service) RepositoryInterface {
@@ -49,6 +49,6 @@ func NewRepository(service *sumupService.Service) RepositoryInterface {
 	}
 }
 
-func (r *Repository) GetWebhookUrl() *string {
-	return r.service.WebhookUrl
+func (r *Repository) GetWebhookURL() *string {
+	return r.service.WebhookURL
 }

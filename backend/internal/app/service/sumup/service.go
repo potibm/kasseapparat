@@ -5,29 +5,29 @@ import "github.com/sumup/sumup-go"
 type Service struct {
 	Client           *sumup.Client
 	MerchantCode     string
-	ApplicationId    string
+	ApplicationID    string
 	AffiliateKey     string
 	PaymentCurrency  string
-	PaymentMinorUnit uint
-	WebhookUrl       *string
+	PaymentMinorUnit int32
+	WebhookURL       *string
 }
 
 func NewService(
 	client *sumup.Client,
 	merchantCode string,
-	applicationId string,
+	applicationID string,
 	affiliateKey string,
 	paymentCurrency string,
-	paymentMinorUnit uint,
-	webhookUrl *string,
+	paymentMinorUnit int32,
+	webhookURL *string,
 ) *Service {
 	return &Service{
 		Client:           client,
 		MerchantCode:     merchantCode,
-		ApplicationId:    applicationId,
+		ApplicationID:    applicationID,
 		AffiliateKey:     affiliateKey,
 		PaymentCurrency:  paymentCurrency,
 		PaymentMinorUnit: paymentMinorUnit,
-		WebhookUrl:       webhookUrl,
+		WebhookURL:       webhookURL,
 	}
 }

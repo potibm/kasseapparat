@@ -6,53 +6,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestVatRatesConfigJson(t *testing.T) {
-	vr := VatRatesConfig{
-		{Name: "Standard", Rate: DefaultStandardVatRate},
-	}
-
-	expectedJson := `[{"Rate":25,"Name":"Standard"}]`
-	assert.Equal(t, expectedJson, vr.Json())
-}
-
-func TestDateFormatOptionsConfigJson(t *testing.T) {
-	dfo := DateFormatOptionsConfig{
-		"weekday": "long",
-	}
-
-	expectedJson := `{"weekday":"long"}`
-	assert.Equal(t, expectedJson, dfo.Json())
-}
-
 func TestRedisUrlUrlObject(t *testing.T) {
 	urlStr := "redis://user:password@localhost:6379/0"
-	ru := RedisUrl(urlStr)
+	ru := RedisURL(urlStr)
 
-	parsedUrl := ru.UrlObject()
-	assert.NotNil(t, parsedUrl)
-	assert.Equal(t, "redis", parsedUrl.Scheme)
-	assert.Equal(t, "localhost:6379", parsedUrl.Host)
-	assert.Equal(t, "/0", parsedUrl.Path)
-	assert.Equal(t, "user:password", parsedUrl.User.String())
+	parsedURL := ru.URLObject()
+	assert.NotNil(t, parsedURL)
+	assert.Equal(t, "redis", parsedURL.Scheme)
+	assert.Equal(t, "localhost:6379", parsedURL.Host)
+	assert.Equal(t, "/0", parsedURL.Path)
+	assert.Equal(t, "user:password", parsedURL.User.String())
 
-	var nilRu *RedisUrl
-	assert.Nil(t, nilRu.UrlObject())
+	var nilRu *RedisURL
+	assert.Nil(t, nilRu.URLObject())
 
-	invalidUrl := RedisUrl(":8000") // an url that cant be parsed
-	assert.Nil(t, invalidUrl.UrlObject())
+	invalidURL := RedisURL(":8000") // an url that cant be parsed
+	assert.Nil(t, invalidURL.URLObject())
 }
 
 func TestRedisUrlIsValid(t *testing.T) {
-	validUrl := RedisUrl("redis://user:password@localhost:6379/0")
-	invalidUrl := RedisUrl("not-a-valid-url")
+	validURL := RedisURL("redis://user:password@localhost:6379/0")
+	invalidURL := RedisURL("not-a-valid-url")
 
-	assert.True(t, validUrl.IsValid())
-	assert.False(t, invalidUrl.IsValid())
+	assert.True(t, validURL.IsValid())
+	assert.False(t, invalidURL.IsValid())
 }
 
 func TestRedisUrlJwtConfig(t *testing.T) {
 	urlStr := "redis://user:password@localhost:6379/12"
-	ru := RedisUrl(urlStr)
+	ru := RedisURL(urlStr)
 
 	jwtConfig := ru.JwtConfig()
 	assert.Equal(t, "localhost:6379", jwtConfig.Addr)

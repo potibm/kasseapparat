@@ -36,10 +36,10 @@ func TestInitializeJwtMiddlewareWithRedis(t *testing.T) {
 		SecureCookie: true,
 	}
 
-	redisUrl := config.RedisUrl("redis://localhost:6379/0")
+	redisURL := config.RedisURL("redis://localhost:6379/0")
 
 	// 2. Act
-	middleware := InitializeJwtMiddleware(nil, jwtConfig, &redisUrl)
+	middleware := InitializeJwtMiddleware(nil, jwtConfig, &redisURL)
 
 	// 3. Assert
 	assert.NotNil(t, middleware)

@@ -15,7 +15,7 @@ var (
 )
 
 func NewDbResetCmd() *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "reset",
 		Short: "Deletes the database, runs migrations and (optionally) seeds it with initial data",
 		RunE: func(cmd *cobra.Command, args []string) error {

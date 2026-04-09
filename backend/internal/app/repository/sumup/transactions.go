@@ -168,15 +168,15 @@ func parseHrefToListTransactionsParams(href string) (*sumup.TransactionsListPara
 	return params, nil
 }
 
-func (r *Repository) GetTransactionById(transactionId uuid.UUID) (*Transaction, error) {
-	transactionIdStr := transactionId.String()
+func (r *Repository) GetTransactionByID(transactionID uuid.UUID) (*Transaction, error) {
+	transactionIDStr := transactionID.String()
 	params := sumup.TransactionsGetParams{
-		ID: &transactionIdStr,
+		ID: &transactionIDStr,
 	}
 
 	transaction, err := r.getTransaction(params)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get transaction by ID %s: %w", transactionId, err)
+		return nil, fmt.Errorf("failed to get transaction by ID %s: %w", transactionID, err)
 	}
 
 	return transaction, nil
@@ -191,26 +191,26 @@ func (r *Repository) getTransaction(params sumup.TransactionsGetParams) (*Transa
 	return fromSDKTransactionFull(transactionResp), nil
 }
 
-func (r *Repository) GetTransactionByClientTransactionId(clientTransactionId uuid.UUID) (*Transaction, error) {
-	clientTransactionIdStr := clientTransactionId.String()
+func (r *Repository) GetTransactionByClientTransactionID(clientTransactionID uuid.UUID) (*Transaction, error) {
+	clientTransactionIDStr := clientTransactionID.String()
 	params := sumup.TransactionsGetParams{
-		ClientTransactionID: &clientTransactionIdStr,
+		ClientTransactionID: &clientTransactionIDStr,
 	}
 
 	transaction, err := r.getTransaction(params)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get transaction by ClientTransactionID %s: %w", clientTransactionIdStr, err)
+		return nil, fmt.Errorf("failed to get transaction by ClientTransactionID %s: %w", clientTransactionIDStr, err)
 	}
 
 	return transaction, nil
 }
 
-func (r *Repository) RefundTransaction(transactionId uuid.UUID) error {
+func (r *Repository) RefundTransaction(transactionID uuid.UUID) error {
 	body := sumup.TransactionsRefundParams{}
 
-	err := r.service.Client.Transactions.Refund(context.Background(), transactionId.String(), body)
+	err := r.service.Client.Transactions.Refund(context.Background(), transactionID.String(), body)
 	if err != nil {
-		slog.Error("Error refunding transaction with ID", "transaction_id", transactionId, "error", err)
+		slog.Error("Error refunding transaction with ID", "transaction_id", transactionID, "error", err)
 
 		return normalizeSumupError(err)
 	}
@@ -219,19 +219,19 @@ func (r *Repository) RefundTransaction(transactionId uuid.UUID) error {
 }
 
 func fromSDKTransaction(sdkCheckout *sumup.TransactionHistory) *Transaction {
-	var transactionId uuid.UUID
+	var transactionID uuid.UUID
 
 	// Prefer parsing TransactionId if present
 	if sdkCheckout.TransactionID != nil {
-		if parsedId, err := uuid.Parse(string(*sdkCheckout.TransactionID)); err == nil {
-			transactionId = parsedId
+		if parsedID, err := uuid.Parse(string(*sdkCheckout.TransactionID)); err == nil {
+			transactionID = parsedID
 		}
 	}
 
 	return &Transaction{
 		ID:              stringOrEmpty(sdkCheckout.ID),
 		TransactionCode: stringOrEmpty(sdkCheckout.TransactionCode),
-		TransactionID:   transactionId,
+		TransactionID:   transactionID,
 		Amount:          utils.F32PtrToDecimal(sdkCheckout.Amount),
 		Currency:        stringOrEmpty(sdkCheckout.Currency),
 		CardType:        stringOrEmpty(sdkCheckout.CardType),
@@ -241,12 +241,12 @@ func fromSDKTransaction(sdkCheckout *sumup.TransactionHistory) *Transaction {
 }
 
 func fromSDKTransactionFull(sdkCheckout *sumup.TransactionFull) *Transaction {
-	var transactionId uuid.UUID
+	var transactionID uuid.UUID
 
 	if sdkCheckout.ID != nil {
-		parsedId, err := uuid.Parse(*sdkCheckout.ID)
+		parsedID, err := uuid.Parse(*sdkCheckout.ID)
 		if err == nil {
-			transactionId = parsedId
+			transactionID = parsedID
 		}
 	}
 
@@ -266,9 +266,9 @@ func fromSDKTransactionFull(sdkCheckout *sumup.TransactionFull) *Transaction {
 	}
 
 	return &Transaction{
-		ID:              transactionId.String(),
+		ID:              transactionID.String(),
 		TransactionCode: stringOrEmpty(sdkCheckout.TransactionCode),
-		TransactionID:   transactionId,
+		TransactionID:   transactionID,
 		Amount:          utils.F32PtrToDecimal(sdkCheckout.Amount),
 		Currency:        stringOrEmpty(sdkCheckout.Currency),
 		CardType:        cardType,

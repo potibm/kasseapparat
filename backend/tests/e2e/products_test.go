@@ -9,15 +9,15 @@ import (
 )
 
 var (
-	productBaseUrl   = "/api/v2/products"
-	productUrlWithId = productBaseUrl + "/1"
+	productBaseURL   = "/api/v2/products"
+	productURLWithID = productBaseURL + "/1"
 )
 
 func TestGetProducts(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(productBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(productBaseURL)).
 		Expect()
 
 	res.Status(http.StatusOK)
@@ -46,7 +46,7 @@ func TestGetProductsEmpty(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	res := withDemoUserAuthToken(e.GET(productBaseUrl)).
+	res := withDemoUserAuthToken(e.GET(productBaseURL)).
 		WithQuery("id", 0).
 		Expect().
 		Status(http.StatusOK)
@@ -63,7 +63,7 @@ func TestGetProductsWithSort(t *testing.T) {
 	sortFields := []string{"id", "name", "vatRate", "grossPrice", "pos"}
 
 	for _, sortField := range sortFields {
-		withDemoUserAuthToken(e.GET(productBaseUrl)).
+		withDemoUserAuthToken(e.GET(productBaseURL)).
 			WithQuery("_sort", sortField).
 			Expect().
 			Status(http.StatusOK)
@@ -74,7 +74,7 @@ func TestGetProduct(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	product := withDemoUserAuthToken(e.GET(productUrlWithId)).
+	product := withDemoUserAuthToken(e.GET(productURLWithID)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
@@ -89,7 +89,7 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 
 	changedName := "Test Product Updated"
 
-	product := withDemoUserAuthToken(e.POST(productBaseUrl)).
+	product := withDemoUserAuthToken(e.POST(productBaseURL)).
 		WithJSON(map[string]any{
 			"name":      originalName,
 			"price":     "10",
@@ -103,17 +103,17 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 	product.Value("id").Number().Gt(0)
 	product.Value("name").String().Contains(originalName)
 
-	productId := product.Value("id").Number().Raw()
-	productUrl := productBaseUrl + "/" + strconv.FormatFloat(productId, 'f', -1, 64)
+	productID := product.Value("id").Number().Raw()
+	productURL := productBaseURL + "/" + strconv.FormatFloat(productID, 'f', -1, 64)
 
-	product = withDemoUserAuthToken(e.GET(productUrl)).
+	product = withDemoUserAuthToken(e.GET(productURL)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	product.Value("id").Number().Gt(0)
 	product.Value("name").String().Contains(originalName)
 
-	withDemoUserAuthToken(e.PUT(productUrl)).
+	withDemoUserAuthToken(e.PUT(productURL)).
 		WithJSON(map[string]any{
 			"name":      changedName,
 			"price":     "20",
@@ -124,18 +124,18 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	product = withDemoUserAuthToken(e.GET(productUrl)).
+	product = withDemoUserAuthToken(e.GET(productURL)).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	product.Value("id").Number().Gt(0)
 	product.Value("name").String().Contains(changedName)
 
-	withAdminUserAuthToken(e.DELETE(productUrl)).
+	withAdminUserAuthToken(e.DELETE(productURL)).
 		Expect().
 		Status(http.StatusNoContent)
 
-	withDemoUserAuthToken(e.GET(productUrl)).
+	withDemoUserAuthToken(e.GET(productURL)).
 		Expect().
 		Status(http.StatusNotFound)
 }
@@ -144,13 +144,13 @@ func TestDemoUserIsNotAllowedToDeleteAProduct(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	withDemoUserAuthToken(e.DELETE(productUrlWithId)).
+	withDemoUserAuthToken(e.DELETE(productURLWithID)).
 		Expect().
 		Status(http.StatusForbidden)
 }
 
 func TestProductAuthentication(t *testing.T) {
-	testAuthenticationForEntityEndpoints(t, productBaseUrl, productUrlWithId)
+	testAuthenticationForEntityEndpoints(t, productBaseURL, productURLWithID)
 }
 
 func validateProduct(product *httpexpect.Object) {

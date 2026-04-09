@@ -89,7 +89,7 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	product.NetPrice = updatedProduct.NetPrice
 	product.VATRate = updatedProduct.VATRate
 	product.WrapAfter = updatedProduct.WrapAfter
-	product.ApiExport = updatedProduct.ApiExport
+	product.APIExport = updatedProduct.APIExport
 	product.UpdatedByID = updatedProduct.UpdatedByID
 	product.Hidden = updatedProduct.Hidden
 	product.SoldOut = updatedProduct.SoldOut
@@ -115,7 +115,7 @@ func (repo *Repository) DeleteProduct(product models.Product, deletedBy models.U
 	repo.db.Delete(&product)
 }
 
-func (repo *Repository) GetAttendedGuestSumByProductID(productID uint) (int, error) {
+func (repo *Repository) GetAttendedGuestSumByProductID(productID int) (int, error) {
 	var sum sql.NullInt64
 
 	err := repo.db.
