@@ -16,7 +16,7 @@ const (
 	defaultFrontendBaseURL = "http://localhost:3000"
 )
 
-type SMPTConfig struct {
+type SMTPConfig struct {
 	user     string
 	password string
 	host     string
@@ -24,7 +24,7 @@ type SMPTConfig struct {
 }
 
 type Mailer struct {
-	smtpConfig SMPTConfig
+	smtpConfig SMTPConfig
 
 	disabled bool
 
@@ -55,7 +55,7 @@ func NewMailer(dsn string) (*Mailer, error) {
 	}, nil
 }
 
-func SMTPConfigFromDSN(dsn string) (*SMPTConfig, error) {
+func SMTPConfigFromDSN(dsn string) (*SMTPConfig, error) {
 	user := defaultSMTPUsername
 	password := defaultSMTPPassword
 	port := defaultSMTPPort
@@ -83,7 +83,7 @@ func SMTPConfigFromDSN(dsn string) (*SMPTConfig, error) {
 		}
 	}
 
-	return &SMPTConfig{
+	return &SMTPConfig{
 		user:     user,
 		password: password,
 		host:     host,
