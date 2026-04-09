@@ -35,7 +35,7 @@ export const usePurchaseHistory = (
 
       if (!isSilent) {
         setLoading(true);
-        if (!history) setHistory([]);
+        setHistory((prev) => prev ?? []);
       }
 
       try {
@@ -72,7 +72,6 @@ export const usePurchaseHistory = (
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [apiHost, getToken, userId, showToast],
   );
 

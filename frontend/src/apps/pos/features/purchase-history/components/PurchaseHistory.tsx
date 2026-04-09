@@ -60,21 +60,27 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
   const [processingRefund, setProcessingRefund] = useState(false);
   const [flash, setFlash] = useState(false);
 
-  const lastTopId = useRef<number | string | null>(null);
+  const lastTopIdRef = useRef<number | string | null>(null);
 
   useEffect(() => {
     if (!history || history.length === 0) return;
 
     const currentTopId = history[0].id;
-    if (lastTopId.current === null) {
-      lastTopId.current = currentTopId;
-    } else if (lastTopId.current !== currentTopId) {
-      requestAnimationFrame(() => {
+    if (lastTopIdRef.current === null) {
+      lastTopIdRef.current = currentTopId;
+    } else if (lastTopIdRef.current !== currentTopId) {
+      let timerId: ReturnType<typeof setTimeout>;
+
+      const rafId = requestAnimationFrame(() => {
         setFlash(true);
-        setTimeout(() => setFlash(false), 500);
+        timerId = setTimeout(() => setFlash(false), 500);
       });
 
-      lastTopId.current = currentTopId;
+      lastTopIdRef.current = currentTopId;
+      return () => {
+        if (rafId) cancelAnimationFrame(rafId);
+        if (timerId) clearTimeout(timerId);
+      };
     }
   }, [history]);
 

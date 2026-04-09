@@ -23,9 +23,7 @@ describe("useConfig", () => {
     } as unknown as AppConfig;
 
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <ConfigContext.Provider value={mockConfig}>
-        {children}
-      </ConfigContext.Provider>
+      <ConfigContext value={mockConfig}>{children}</ConfigContext>
     );
 
     const { result } = renderHook(() => useConfig(), { wrapper });

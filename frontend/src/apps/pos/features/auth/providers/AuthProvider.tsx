@@ -24,7 +24,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const { apiHost } = useConfig();
   const [session, setSession] = useState<SessionType>(getInitialSession);
   const [user, setUser] = useState<AuthUserType | null>(getInitialUser);
-  const refreshingPromise = useRef<Promise<string | null> | null>(null);
+  const refreshingPromiseRef = useRef<Promise<string | null> | null>(null);
 
   const updateSession = React.useCallback(
     (token: string, expiresIn: number) => {
@@ -64,21 +64,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (isTokenValid) return session.token;
     if (!session.token) return null;
 
-    if (refreshingPromise.current) return refreshingPromise.current;
+    if (refreshingPromiseRef.current) return refreshingPromiseRef.current;
 
     log.debug("Token expired or missing, starting refresh...");
 
-    refreshingPromise.current = refreshJwtToken(apiHost)
+    refreshingPromiseRef.current = refreshJwtToken(apiHost)
       .then((res) => updateSession(res.access_token, res.expires_in))
       .catch(() => {
         removeSession();
         return null;
       })
       .finally(() => {
-        refreshingPromise.current = null;
+        refreshingPromiseRef.current = null;
       });
 
-    return refreshingPromise.current;
+    return refreshingPromiseRef.current;
   }, [session, apiHost, updateSession, removeSession]);
 
   const getSafeToken = React.useCallback(async () => {
@@ -87,11 +87,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return token;
   }, [getToken]);
 
+  const isLoggedIn = React.useCallback(
+    async () => !!(await getToken()),
+    [getToken],
+  );
+
   const contextValue = useMemo<AuthContextType>(
     () => ({
       getToken,
       getSafeToken,
-      isLoggedIn: async () => !!(await getToken()),
+      isLoggedIn,
       setSession: updateSession,
       removeSession,
       userdata: user,
@@ -101,13 +106,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       username: user?.username ?? "unknown",
       id: user?.id ?? 0,
     }),
-    [getToken, getSafeToken, updateSession, updateUser, removeSession, user],
+    [
+      getToken,
+      getSafeToken,
+      isLoggedIn,
+      updateSession,
+      updateUser,
+      removeSession,
+      user,
+    ],
   );
 
   // Provide the authentication context to the children components
-  return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext value={contextValue}>{children}</AuthContext>;
 };
 
 export default AuthProvider;

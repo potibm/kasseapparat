@@ -41,9 +41,10 @@ const GuestlistResultTableRow: React.FC<GuestlistResultTableRowProps> = ({
       <span>
         {parts.map((part, i) => {
           const isMatch = part.toLowerCase() === highlight.toLowerCase();
+          const key = `part-${i}-${part}`;
 
           return (
-            <Fragment key={`hl-${part}-${i}`}>
+            <Fragment key={key}>
               {isMatch ? (
                 <span className="font-bold underline">{part}</span>
               ) : (

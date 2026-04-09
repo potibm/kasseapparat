@@ -16,7 +16,7 @@ export const usePaymentWebSocket = (
 ): UsePaymentWebSocketReturn => {
   const [status, setStatus] = useState<PaymentStatus>("pending");
   const [error, setError] = useState<string | null>(null);
-  const [lastMessageAt, setLastMessageAt] = useState<number>(Date.now());
+  const [lastMessageAt, setLastMessageAt] = useState<number>(() => Date.now());
   const [isConnected, setIsConnected] = useState(false);
 
   const statusRef = useRef<PaymentStatus>(status);
