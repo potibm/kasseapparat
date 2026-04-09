@@ -60,6 +60,7 @@ const KasseapparatContent: React.FC = () => {
     isPolling,
     pendingPurchase,
     finalizeCheckout,
+    resumePolling,
   } = useCart(apiHost, getSafeToken);
 
   const {
@@ -94,12 +95,7 @@ const KasseapparatContent: React.FC = () => {
         }
         // on pending we wait for the PollingModal to confirm the purchase before refreshing
       } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "An unknown error has occurred";
-
-        showError(errorMessage);
+        logPurchase.error("Checkout failed:", error);
       }
     },
     [checkout, handlePurchaseSuccess, showError],
@@ -133,6 +129,13 @@ const KasseapparatContent: React.FC = () => {
     [finalizeCheckout, handlePurchaseSuccess, showError],
   );
 
+  const handleResumePolling = useCallback(
+    (purchase: PurchaseType) => {
+      resumePolling(purchase);
+    },
+    [resumePolling],
+  );
+
   return (
     <PosLayout
       topAlert={
@@ -150,7 +153,9 @@ const KasseapparatContent: React.FC = () => {
           <PurchaseHistory
             history={history}
             loading={historyLoading}
+            resumePolling={handleResumePolling}
             removeFromPurchaseHistory={(p: PurchaseType) => handleRefund(p.id)}
+            cartEmpty={cart.isEmpty}
           />
           <Menu username={username} />
           <p className="text-xs mt-10 dark:text-white">

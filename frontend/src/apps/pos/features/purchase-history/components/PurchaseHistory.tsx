@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { HiReceiptRefund } from "react-icons/hi";
+import { HiReceiptRefund, HiRefresh } from "react-icons/hi";
 import {
   Spinner,
   Table,
@@ -14,6 +14,7 @@ import { Purchase } from "../../../utils/api.schemas";
 import Button from "../../../components/Button";
 import { RefundModal } from "./_internal/RefundModal";
 import { createLogger } from "@core/logger/logger";
+import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 
 const log = createLogger("Purchase");
 
@@ -21,6 +22,8 @@ interface PurchaseHistoryProps {
   history: Purchase[] | null;
   loading: boolean;
   removeFromPurchaseHistory: (purchase: Purchase) => Promise<void>;
+  resumePolling: (purchase: Purchase) => void;
+  cartEmpty: boolean;
 }
 
 const compactTableTheme = {
@@ -40,8 +43,11 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
   history,
   loading,
   removeFromPurchaseHistory,
+  resumePolling,
+  cartEmpty,
 }) => {
   const { currency, dateLocale, dateOptions } = useConfig();
+  const { showToast } = useToast();
 
   // State
   const [modalState, setModalState] = useState<{
@@ -133,14 +139,35 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
                   {currency.format(purchase.totalGrossPrice.toNumber())}
                 </TableCell>
                 <TableCell className="flex justify-end">
-                  <Button
-                    color="failure"
-                    aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
-                    onClick={() => setModalState({ show: true, purchase })}
-                    data-testid={`refund-purchase-${purchase.id}`}
-                  >
-                    <HiReceiptRefund />
-                  </Button>
+                  {purchase.status === "confirmed" && (
+                    <Button
+                      color="failure"
+                      aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
+                      onClick={() => setModalState({ show: true, purchase })}
+                      data-testid={`refund-purchase-${purchase.id}`}
+                    >
+                      <HiReceiptRefund />
+                    </Button>
+                  )}
+                  {purchase.status === "pending" && (
+                    <Button
+                      color="warning"
+                      aria-label={`Resume purchase`}
+                      onClick={() => {
+                        if (cartEmpty) {
+                          resumePolling(purchase);
+                        } else {
+                          showToast({
+                            severity: "warning",
+                            message:
+                              "Please complete or clear the current cart before resuming this purchase.",
+                          });
+                        }
+                      }}
+                    >
+                      <HiRefresh className="animate-spin" />
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

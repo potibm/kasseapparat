@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"net"
 	"regexp"
 
@@ -26,6 +27,14 @@ func (c *Config) Validate() error {
 
 	if err := c.Format.Validate(); err != nil {
 		return err
+	}
+
+	if c.Jwt.Secret == DefaultJwtSecret || c.Jwt.Secret == "" {
+		if c.App.Environment == "production" {
+			return fmt.Errorf("JWT_SECRET is set to the default value, which is not allowed in production")
+		} else {
+			slog.Warn("JWT_SECRET is set to the default value. This is not recommended for production use.")
+		}
 	}
 
 	return nil

@@ -94,7 +94,7 @@ describe("PollingModal", () => {
     // Toast needs to be called with success message
     expect(mockShowToast).toHaveBeenCalledWith({
       severity: "success",
-      message: "Purchase of €40.00 using SumUp was successful!",
+      message: "Payment of €40.00 successful via SumUp!",
     });
 
     // onComplete needs to be called with success
@@ -119,7 +119,7 @@ describe("PollingModal", () => {
     expect(mockShowToast).toHaveBeenCalledWith(
       expect.objectContaining({
         severity: "error",
-        message: "Payment using SumUp was cancelled by the user.",
+        message: "Payment via SumUp was cancelled by the user.",
         autoClose: true,
         blocking: false,
       }),
@@ -147,7 +147,7 @@ describe("PollingModal", () => {
     expect(mockShowToast).toHaveBeenCalledWith(
       expect.objectContaining({
         severity: "error",
-        message: "Timeout at the terminal for payment method SumUp.",
+        message: "Timeout: No response from SumUp terminal.",
         autoClose: false, // Real error. needs to be acknowledged by the user.
         blocking: true,
       }),

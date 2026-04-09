@@ -1,11 +1,8 @@
 package tests_e2e
 
 import (
-	"encoding/json"
 	"net/http"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var configUrl = "/api/v2/config"
@@ -29,20 +26,26 @@ func TestGetConfig(t *testing.T) {
 	config.Value("fractionDigitsMin").Number().IsEqual(0)
 	config.Value("fractionDigitsMax").Number().IsEqual(2)
 
-	dateOptionsRaw := config.Value("dateOptions").String().Raw()
+	config.Value("dateOptions").Object()
+	config.Value("dateOptions").Object().Value("weekday").IsEqual("long")
+	config.Value("dateOptions").Object().Value("hour").IsEqual("2-digit")
+	config.Value("dateOptions").Object().Value("minute").IsEqual("2-digit")
 
-	var dateOptions map[string]any
-	if err := json.Unmarshal([]byte(dateOptionsRaw), &dateOptions); err != nil {
-		t.Fatalf("dateOptions is not a valid JSON: %v", err)
+	paymentMethods := config.Value("paymentMethods").Array()
+	paymentMethods.NotEmpty() // Ersetzt assert.Greater(..., 0)
+
+	for _, item := range paymentMethods.Iter() {
+		obj := item.Object()
+		obj.Value("code").String().NotEmpty()
+		obj.Value("name").String().NotEmpty()
 	}
 
-	for _, key := range []string{"weekday", "hour", "minute"} {
-		if _, ok := dateOptions[key]; !ok {
-			t.Fatalf("dateOptions does not contain the expected key %q", key)
-		}
-	}
+	vatRates := config.Value("vatRates").Array()
+	vatRates.NotEmpty()
 
-	assert.Equal(t, "long", dateOptions["weekday"])
-	assert.Equal(t, "2-digit", dateOptions["hour"])
-	assert.Equal(t, "2-digit", dateOptions["minute"])
+	for _, item := range vatRates.Iter() {
+		obj := item.Object()
+		obj.Value("rate").Number()
+		obj.Value("name").String().NotEmpty()
+	}
 }

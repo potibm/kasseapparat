@@ -121,13 +121,13 @@ export const storePurchase = async (
   );
 };
 
-// Fetch all confirmed purchases for a user
+// Fetch all confirmed and pendingpurchases for a user
 export const fetchPurchases = async (
   apiHost: string,
   jwtToken: string,
   userId: number,
 ): Promise<Purchase[]> => {
-  const url = `${apiHost}/api/v2/purchases?createdById=${encodeURIComponent(userId)}&status=confirmed`;
+  const url = `${apiHost}/api/v2/purchases?createdById=${encodeURIComponent(userId)}&status=confirmed&status=pending`;
   return getValidated(url, jwtToken, z.array(PurchaseSchema));
 };
 

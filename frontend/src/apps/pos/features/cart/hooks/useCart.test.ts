@@ -12,10 +12,20 @@ import {
 } from "@pos/utils/api.schemas.mocks";
 import { PaymentMethodData } from "../types/cart.types";
 import Decimal from "decimal.js";
+import {
+  getPurchaseErrorType,
+  getErrorMessage,
+  PurchaseErrorType,
+} from "../services/PurchaseErrorHandler";
 
 // --- 1. MOCKS ---
 vi.mock("../../../utils/api", () => ({
   storePurchase: vi.fn(),
+}));
+
+vi.mock("../services/PurchaseErrorHandler", () => ({
+  getPurchaseErrorType: vi.fn(),
+  getErrorMessage: vi.fn(),
 }));
 
 vi.mock("@core/config/hooks/useConfig", () => ({
@@ -27,6 +37,7 @@ vi.mock("@core/config/hooks/useConfig", () => ({
 vi.mock("@core/logger/logger", () => ({
   createLogger: vi.fn(() => ({
     debug: vi.fn(),
+    warn: vi.fn(),
     info: vi.fn(),
     error: vi.fn(),
   })),
@@ -159,7 +170,7 @@ describe("useCart Hook", () => {
 
       expect(mockShowToast).toHaveBeenCalledWith({
         severity: "success",
-        message: "Purchase at 979.66 confirmed!",
+        message: "Payment of 979.66 successful!",
       });
     });
 
@@ -221,6 +232,110 @@ describe("useCart Hook", () => {
       });
 
       // After an error, it should not be stuck in "Processing" state
+      expect(result.current.checkoutProcessing).toBeNull();
+    });
+  });
+
+  describe("checkout() Specific Error Handling", () => {
+    it("should show a blocking toast when error type is READER_BUSY", async () => {
+      const mockError = new Error("Terminal is busy");
+      vi.mocked(storePurchase).mockRejectedValue(mockError);
+      vi.mocked(getPurchaseErrorType).mockReturnValue(
+        "READER_BUSY" as unknown as PurchaseErrorType,
+      );
+      vi.mocked(getErrorMessage).mockReturnValue("Card reader is busy.");
+
+      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+
+      await act(async () => {
+        await expect(
+          result.current.checkout("sumup", mockPaymentData),
+        ).rejects.toThrow("Terminal is busy");
+      });
+
+      expect(mockShowToast).toHaveBeenCalledWith({
+        severity: "error",
+        message: "Card reader is busy.",
+        blocking: true, // Das ist der kritische Pfad für die Coverage!
+      });
+    });
+
+    it("should show a non-blocking toast for other errors", async () => {
+      const mockError = new Error("General error");
+      vi.mocked(storePurchase).mockRejectedValue(mockError);
+      vi.mocked(getPurchaseErrorType).mockReturnValue(
+        "GENERAL_ERROR" as unknown as PurchaseErrorType,
+      );
+      vi.mocked(getErrorMessage).mockReturnValue("Something went wrong.");
+
+      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+
+      await act(async () => {
+        await expect(
+          result.current.checkout("sumup", mockPaymentData),
+        ).rejects.toThrow("General error");
+      });
+
+      expect(mockShowToast).toHaveBeenCalledWith({
+        severity: "error",
+        message: "Something went wrong.",
+        blocking: false,
+      });
+    });
+  });
+
+  describe("resumePolling()", () => {
+    it("should resume polling for a pending purchase", () => {
+      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const pendingPurchase = createMockPurchase({
+        status: "pending",
+        paymentMethod: "sumup",
+      });
+
+      act(() => {
+        result.current.resumePolling(pendingPurchase);
+      });
+
+      expect(result.current.isPolling).toBe(true);
+      expect(result.current.pendingPurchase).toEqual(pendingPurchase);
+      expect(result.current.checkoutProcessing).toBe("sumup");
+    });
+
+    it("should early return and ignore if already polling", () => {
+      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const purchase1 = createMockPurchase({
+        status: "pending",
+        id: "purchase-1",
+      });
+      const purchase2 = createMockPurchase({
+        status: "pending",
+        id: "purchase-2",
+      });
+
+      // Starte initiales Polling
+      act(() => {
+        result.current.resumePolling(purchase1);
+      });
+
+      // Versuch, zweites Polling zu starten
+      act(() => {
+        result.current.resumePolling(purchase2);
+      });
+
+      // Erwartung: Zustand bleibt beim ersten Purchase
+      expect(result.current.pendingPurchase?.id).toBe("purchase-1");
+    });
+
+    it("should early return if purchase status is not pending", () => {
+      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const confirmedPurchase = createMockPurchase({ status: "confirmed" });
+
+      act(() => {
+        result.current.resumePolling(confirmedPurchase);
+      });
+
+      expect(result.current.isPolling).toBe(false);
+      expect(result.current.pendingPurchase).toBeNull();
       expect(result.current.checkoutProcessing).toBeNull();
     });
   });
