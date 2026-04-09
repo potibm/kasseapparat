@@ -42,7 +42,7 @@ describe("AuthProvider", () => {
     vi.resetAllMocks();
     vi.mocked(ConfigHook.useConfig).mockReturnValue({
       apiHost: "http://api.test",
-    } as any);
+    } as unknown as ReturnType<typeof ConfigHook.useConfig>);
 
     vi.mocked(AuthStorage.getInitialUser).mockReturnValue(null);
     vi.mocked(AuthStorage.getInitialSession).mockReturnValue({
