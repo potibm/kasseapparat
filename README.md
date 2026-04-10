@@ -46,3 +46,8 @@ mise run dev
 - [User Documentation](doc/manual.md)
 - [SumUp Integration Documentation](doc/sumup.md)
 - [Image Signing and SBOM Attestations](doc/supply-chain.md)
+
+## Credits & License
+
+- **Logo Icon:** [Cash Register](https://fontawesome.com/icons/cash-register) by [Font Awesome](https://fontawesome.com) is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- **Software:** Licensed under MIT.
