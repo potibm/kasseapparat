@@ -79,7 +79,7 @@ func Execute() error {
 	rootCmd.PersistentFlags().String(logFormatFlagName, "json", "Log Format (json, text)")
 	_ = viper.BindPFlag("app.log_format", rootCmd.PersistentFlags().Lookup(logFormatFlagName))
 
-	rootCmd.PersistentFlags().String(databaseFileFlagName, "kasseapparat.db", "Dateiname der SQLite Datenbank")
+	rootCmd.PersistentFlags().String(databaseFileFlagName, "kasseapparat.db", "Filename for the SQLite database")
 	_ = viper.BindPFlag("app.db_filename", rootCmd.PersistentFlags().Lookup(databaseFileFlagName))
 
 	rootCmd.AddCommand(NewServeCmd())
