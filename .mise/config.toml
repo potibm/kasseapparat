@@ -12,8 +12,9 @@ actionlint = "1.7.12"
 shellcheck = "0.11.0"
 jq = "1.8.1"
 vale = "3.14.1"
+"go:github.com/google/go-licenses/v2" = "v2.0.1"
 
-# ==========================================
+# ========================================m==
 # 💻 DEVELOPMENT
 # ==========================================
 
@@ -211,4 +212,3 @@ run = """
   : "📊 Opening Playwright Report..."
   npx playwright show-report
 """
-

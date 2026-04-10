@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+#MISE description="Generate third-party license documentation"
+
+FILEPATH="THIRD-PARTY-NOTICES.md"
+
+echo "🔍 Scanning for backend dependencies (Go)..."
+BACKEND_ROWS=$(cd backend && go-licenses csv ./... 2>/dev/null | grep -v "kasseapparat" | sed 's/"//g' | awk -F, '{print "| " $1 " | [" $3 "](" $2 ") |"}')
+
+echo "🔍 Scanning for frontend dependencies (NPM)..."
+FRONTEND_ROWS=$(cd frontend && npx license-checker-rseidelsohn --excludePackages "kasseapparat-frontend" --csv 2>/dev/null | tail -n +2 | sed 's/"//g' | awk -F, '{print "| " $1 " | [" $2 "](" $3 ") |"}')
+
+echo "🖨️ Writiung to ${FILEPATH}..."
+
+cat << EOF > "$FILEPATH"
+# Third-Party Notices
+
+This project is licensed under MIT. Below are the licenses of the dependencies used.
+
+## Backend Dependencies (Go)
+
+| Package | License |
+| --- | --- |
+$BACKEND_ROWS
+
+## Frontend Dependencies (NPM)
+
+| Package | License |
+| --- | --- |
+$FRONTEND_ROWS
+
+## Assets
+
+| Package | License |
+| --- | --- |
+| Logo Icon [Cash Register](https://fontawesome.com/icons/cash-register) by [Font Awesome](https://fontawesome.com)  | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+EOF
+
+echo "🔍 Formatting the generated file..."
+
+npx --prefix frontend prettier --write "THIRD-PARTY-NOTICES.md"
+
+echo "✅Done!"
