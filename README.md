@@ -11,12 +11,18 @@ It is a simple point of sale (POS) system aimed at [demoparties](https://en.wiki
 - [Go](https://go.dev)
   - [Gin Web Framework](https://gin-gonic.com)
   - [GORM](https://gorm.io)
+  - [Cobra](https:/cobra.dev) & [Viper](https://github.com/spf13/viper)
 - [React](https://react.dev)
-  - [Flowbite React](https://flowbite-react.com)
-  - [Tailwind CSS](https://tailwindcss.com)
+  - [Vite](https://vitejs.dev/)
   - [React Admin](https://marmelab.com/react-admin/)
+  - [Flowbite React](https://flowbite-react.com) & [Tailwind CSS](https://tailwindcss.com)
 - [SQLite](https://www.sqlite.org)
-- [mise](https://mise.jdx.dev/)
+- Observability
+  - [Sentry](https://sentry.io)
+  - [OpenTelemetry](https://opentelemetry.io)
+- Development & Ops
+  - [mise](https://mise.jdx.dev/)
+  - [Docker](https://www.docker.com)
 
 ## Quickstart
 
