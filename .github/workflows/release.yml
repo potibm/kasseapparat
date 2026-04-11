@@ -64,6 +64,8 @@ jobs:
           push: true
           targets: kasseapparat
           set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
             kasseapparat.args.VERSION=${{ steps.meta.outputs.version }}
             kasseapparat.args.BUILD_DATE=${{ steps.builddate.outputs.value }}            
             kasseapparat.labels.org.opencontainers.image.version=${{ steps.meta.outputs.version }}
