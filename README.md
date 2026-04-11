@@ -11,7 +11,7 @@ It is a simple point of sale (POS) system aimed at [demoparties](https://en.wiki
 - [Go](https://go.dev)
   - [Gin Web Framework](https://gin-gonic.com)
   - [GORM](https://gorm.io)
-  - [Cobra](https:/cobra.dev) & [Viper](https://github.com/spf13/viper)
+  - [Cobra](https://cobra.dev) & [Viper](https://github.com/spf13/viper)
 - [React](https://react.dev)
   - [Vite](https://vitejs.dev/)
   - [React Admin](https://marmelab.com/react-admin/)

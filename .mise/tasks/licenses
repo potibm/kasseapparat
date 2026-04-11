@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 #MISE description="Generate third-party license documentation"
 
+set -euo pipefail
+
 FILEPATH="THIRD-PARTY-NOTICES.md"
 
 echo "🔍 Scanning for backend dependencies (Go)..."
-BACKEND_ROWS=$(cd backend && go-licenses csv ./... 2>/dev/null | grep -v "kasseapparat" | sed 's/"//g' | awk -F, '{print "| " $1 " | [" $3 "](" $2 ") |"}')
+BACKEND_ROWS=$(cd backend && go-licenses csv ./... --ignore github.com/potibm  | sed 's/"//g' | awk -F, '{print "| " $1 " | [" $3 "](" $2 ") |"}')
 
 echo "🔍 Scanning for frontend dependencies (NPM)..."
-FRONTEND_ROWS=$(cd frontend && npx license-checker-rseidelsohn --excludePackages "kasseapparat-frontend" --csv 2>/dev/null | tail -n +2 | sed 's/"//g' | awk -F, '{print "| " $1 " | [" $2 "](" $3 ") |"}')
+FRONTEND_ROWS=$(cd frontend && npx license-checker-rseidelsohn --excludePackages "kasseapparat" --csv | tail -n +2 | sed 's/"//g' | awk -F, '{print "| " $1 " | [" $2 "](" $3 ") |"}')
 
-echo "🖨️ Writiung to ${FILEPATH}..."
-
+echo "🖨️ Writing to ${FILEPATH}..."
 cat << EOF > "$FILEPATH"
 # Third-Party Notices
 
@@ -39,4 +40,4 @@ echo "🔍 Formatting the generated file..."
 
 npx --prefix frontend prettier --write "THIRD-PARTY-NOTICES.md"
 
-echo "✅Done!"
+echo "✅ Done!"

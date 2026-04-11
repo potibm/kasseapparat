@@ -398,7 +398,6 @@ This project is licensed under MIT. Below are the licenses of the dependencies u
 | json5@2.2.3                                               | [MIT](https://github.com/json5/json5)                                     |
 | jsonexport@3.2.0                                          | [Apache-2.0](https://github.com/kauegimenes/jsonexport)                   |
 | jwt-decode@4.0.0                                          | [MIT](https://github.com/auth0/jwt-decode)                                |
-| kasseapparat@0.0.0                                        | [UNLICENSED]()                                                            |
 | keyv@4.5.4                                                | [MIT](https://github.com/jaredwray/keyv)                                  |
 | klona@2.0.6                                               | [MIT](https://github.com/lukeed/klona)                                    |
 | levn@0.4.1                                                | [MIT](https://github.com/gkz/levn)                                        |
