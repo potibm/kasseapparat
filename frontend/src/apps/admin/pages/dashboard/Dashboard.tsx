@@ -5,7 +5,7 @@ import ProductStatsCard from "./components/ProductStatsCard";
 const Dashboard: React.FC = () => {
   return (
     <>
-      <Title title="Kasseapparat" />
+      <Title title="Dashboard" />
       <ProductStatsCard />
     </>
   );

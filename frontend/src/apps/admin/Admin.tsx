@@ -1,5 +1,5 @@
 import React from "react";
-import { Admin, Resource, Layout, LayoutProps } from "react-admin";
+import { Admin, Resource } from "react-admin";
 import dataProvider from "./providers/data-provider";
 import authProvider from "./providers/auth-provider";
 import products from "./resources/products";
@@ -11,13 +11,14 @@ import sumupreaders from "./resources/sumup-readers";
 import sumuptransactions from "./resources/sumup-transactions";
 import users from "./resources/users";
 import Dashboard from "./pages/dashboard/Dashboard";
-import { Menu } from "./layouts/Menu";
-
-const MyLayout = (props: LayoutProps) => <Layout {...props} menu={Menu} />;
+import { MyTheme, MyDarkTheme } from "./layouts/MyTheme";
+import { MyLayout } from "./layouts/MyLayout";
 
 const AdminPanel: React.FC = () => (
   <Admin
     layout={MyLayout}
+    theme={MyTheme}
+    darkTheme={MyDarkTheme}
     dashboard={Dashboard}
     dataProvider={dataProvider}
     authProvider={authProvider}
