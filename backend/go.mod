@@ -8,7 +8,7 @@ require (
 	github.com/appleboy/gin-jwt/v3 v3.4.1
 	github.com/brianvoe/gofakeit/v7 v7.14.1
 	github.com/gavv/httpexpect/v2 v2.17.0
-	github.com/getsentry/sentry-go v0.44.1
+	github.com/getsentry/sentry-go v0.45.1
 	github.com/getsentry/sentry-go/gin v0.44.1
 	github.com/gin-contrib/cors v1.7.7
 	github.com/gin-contrib/static v1.1.6
