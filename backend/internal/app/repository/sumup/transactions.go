@@ -142,10 +142,16 @@ func parseHrefToListTransactionsParams(href string) (*sumup.TransactionsListPara
 	}
 
 	order := sumup.TransactionsListOrder(values.Get("order"))
+
 	statuses := []sumup.TransactionsListStatusesItem{}
-	statuses = append(statuses, sumup.TransactionsListStatusesItem(values.Get("statuses")))
+	if values.Has("statuses") {
+		statuses = append(statuses, sumup.TransactionsListStatusesItem(values.Get("statuses")))
+	}
+
 	types := []sumup.TransactionsListTypesItem{}
-	types = append(types, sumup.TransactionsListTypesItem(values.Get("types")))
+	if values.Has("types") {
+		types = append(types, sumup.TransactionsListTypesItem(values.Get("types")))
+	}
 
 	params := &sumup.TransactionsListParams{
 		Limit:           getIntPtr(values, "limit"),

@@ -57,9 +57,8 @@ exports[`Layout & AppBar > Snapshot Match 1`] = `
             </svg>
             <h6
               class="MuiTypography-root MuiTypography-h6 css-f0w64e-MuiTypography-root"
-              id="react-admin-title"
             >
-              Kasseapparat 
+              Kasseapparat
             </h6>
             <h6
               class="MuiTypography-root MuiTypography-h6 css-1j36q8a-MuiTypography-root"

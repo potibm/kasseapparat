@@ -26,7 +26,7 @@ func TestParseHrefToListTransactionsParams(t *testing.T) {
 	assert.Equal(t, "0dd170c7-d82a-4fec-b2c0-e6de01c631a8", *params.OldestRef)
 
 	assert.NotNil(t, params.Order)
-	assert.Equal(t, "ascending", *params.Order)
+	assert.Equal(t, sumup.TransactionsListOrder("ascending"), *params.Order)
 
 	assert.NotNil(t, params.ChangesSince)
 
@@ -46,15 +46,15 @@ func TestParseHrefToListTransactionsParams(t *testing.T) {
 	assert.NotNil(t, params.OldestRef)
 	assert.Equal(t, "0dd170c7-d82a-4fec-b2c0-e6de01c631a8", *params.OldestRef)
 	assert.NotNil(t, params.Order)
-	assert.Equal(t, "ascending", *params.Order)
+	assert.Equal(t, sumup.TransactionsListOrder("ascending"), *params.Order)
 	assert.Nil(t, params.ChangesSince)
 	assert.Empty(t, params.Users)
 	assert.Nil(t, params.NewestRef)
 	assert.Nil(t, params.TransactionCode)
 	assert.Nil(t, params.OldestTime)
 	assert.Nil(t, params.NewestTime)
-	assert.Empty(t, params.Statuses)
-	assert.Empty(t, params.Types)
+	assert.Equal(t, len(params.Statuses), 0)
+	assert.Equal(t, len(params.Types), 0)
 }
 
 func TestFindNextHref(t *testing.T) {
