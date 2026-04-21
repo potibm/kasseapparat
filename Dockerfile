@@ -13,8 +13,11 @@ RUN npm run build -- --outDir ./build
 # ==========================================
 # Build the backend
 # ==========================================
-FROM golang:1.26-bookworm AS backend-build
+FROM --platform=$BUILDPLATFORM golang:1.26-bookworm AS backend-build
 WORKDIR /app/backend
+
+ARG TARGETOS
+ARG TARGETARCH
 
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
@@ -22,8 +25,8 @@ RUN go mod download
 COPY backend .
 COPY --from=frontend-build /app/frontend/build ./cmd/assets
 
-ARG VERSION
-RUN CGO_ENABLED=0 go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat . 
+ARG VERSION=dev
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat . 
 
 # ==========================================
 # Create the final image
@@ -34,9 +37,6 @@ WORKDIR /app
 RUN apk update --no-cache && \
     apk add --no-cache ca-certificates bash tzdata && \
     adduser -D -h /app -s /bin/bash appuser
-
-ARG BUILD_DATE
-ARG VERSION
 
 RUN mkdir -p /app/data && chown -R appuser:appuser /app
 
