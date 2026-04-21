@@ -3,10 +3,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @source "../.flowbite-react/class-list.json";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 body {
   margin: 0;
   font-family:

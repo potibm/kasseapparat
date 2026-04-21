@@ -1,0 +1,27 @@
+# git & ci
+.git
+.github
+.gitignore
+
+# Node / Frontend
+**/node_modules
+**/dist
+**/build
+.npm
+package-lock.json.tmp
+
+# Go / Backend
+**/vendor
+**/go.sum.tmp
+**/*.test
+
+# Tooling & IDEs
+.mise/
+.vscode/
+.idea/
+.DS_Store
+*.log
+Thumbs.db
+
+# Docker artefacts
+docker-bake.hcl.tmp

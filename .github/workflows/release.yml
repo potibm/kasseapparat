@@ -54,7 +54,7 @@ jobs:
 
       - name: Build and push image
         id: bake
-        uses: docker/bake-action@82490499d2e5613fcead7e128237ef0b0ea210f7 # v7.0.0
+        uses: docker/bake-action@a66e1c87e2eca0503c343edf1d208c716d54b8a8 # v7.1.0
         with:
           files: |
             ./docker-bake.hcl
@@ -64,6 +64,8 @@ jobs:
           push: true
           targets: kasseapparat
           set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
             kasseapparat.args.VERSION=${{ steps.meta.outputs.version }}
             kasseapparat.args.BUILD_DATE=${{ steps.builddate.outputs.value }}            
             kasseapparat.labels.org.opencontainers.image.version=${{ steps.meta.outputs.version }}

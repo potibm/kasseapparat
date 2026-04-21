@@ -1,0 +1,147 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Layout & AppBar > Snapshot Match 1`] = `
+<DocumentFragment>
+  <div
+    class="layout css-19xx4sz-RaLayout-root"
+  >
+    <button
+      aria-label="ra.navigation.skip_nav"
+      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary skip-nav-button css-ucnk6k-MuiButtonBase-root-MuiButton-root-RaButton-root-RaSkipNavigationButton-root"
+      tabindex="0"
+      type="button"
+    >
+      ra.navigation.skip_nav
+    </button>
+    <div
+      class="RaLayout-appFrame"
+    >
+      <header
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation4 MuiAppBar-root MuiAppBar-colorSecondary MuiAppBar-positionFixed mui-fixed css-m96m1e-MuiPaper-root-MuiAppBar-root-RaAppBar-root"
+        style="--Paper-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12);"
+      >
+        <div
+          class="MuiToolbar-root MuiToolbar-dense RaAppBar-toolbar css-10po6k9-MuiToolbar-root"
+        >
+          <button
+            aria-label="ra.action.close_menu"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium RaAppBar-menuButton css-160m840-MuiButtonBase-root-MuiIconButton-root-RaSidebarToggleButton-root"
+            data-mui-internal-clone-element="true"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root RaSidebarToggleButton-menuButtonIconOpen MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+              data-testid="MenuIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M3 18h18v-2H3zm0-5h18v-2H3zm0-7v2h18V6z"
+              />
+            </svg>
+          </button>
+          <div
+            class="MuiBox-root css-1ypcipt"
+          >
+            <svg
+              style="height: 32px; width: 32px; margin-right: 12px;"
+              viewBox="0 0 512 512"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M64 0C46.3 0 32 14.3 32 32V96c0 17.7 14.3 32 32 32h80v32H87c-31.6 0-58.5 23.1-63.3 54.4L1.1 364.1C.4 368.8 0 373.6 0 378.4V448c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V378.4c0-4.8-.4-9.6-1.1-14.4L488.2 214.4C483.5 183.1 456.6 160 425 160H208V128h80c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H64zM96 48H256c8.8 0 16 7.2 16 16s-7.2 16-16 16H96c-8.8 0-16-7.2-16-16s7.2-16 16-16zM64 432c0-8.8 7.2-16 16-16H432c8.8 0 16 7.2 16 16s-7.2 16-16 16H80c-8.8 0-16-7.2-16-16zm48-168a24 24 0 1 1 0-48 24 24 0 1 1 0 48zm120-24a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zM160 344a24 24 0 1 1 0-48 24 24 0 1 1 0 48zM328 240a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zM256 344a24 24 0 1 1 0-48 24 24 0 1 1 0 48zM424 240a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zM352 344a24 24 0 1 1 0-48 24 24 0 1 1 0 48z"
+                fill="currentColor"
+              />
+            </svg>
+            <h6
+              class="MuiTypography-root MuiTypography-h6 css-f0w64e-MuiTypography-root"
+            >
+              Kasseapparat
+            </h6>
+            <h6
+              class="MuiTypography-root MuiTypography-h6 css-1j36q8a-MuiTypography-root"
+              id="react-admin-title"
+            />
+          </div>
+          <button
+            aria-label="ra.action.toggle_theme"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium css-101la6k-MuiButtonBase-root-MuiIconButton-root-RaToggleThemeButton-root"
+            data-mui-internal-clone-element="true"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+              data-testid="Brightness4Icon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zM12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6c3.31 0 6 2.69 6 6s-2.69 6-6 6"
+              />
+            </svg>
+          </button>
+          <div
+            class="css-xrbcw0-RaLoadingIndicator-root"
+          >
+            <button
+              aria-label="ra.action.refresh"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium RaLoadingIndicator-loadedIcon false css-h7cjts-MuiButtonBase-root-MuiIconButton-root"
+              data-mui-internal-clone-element="true"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                data-testid="RefreshIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+      <main
+        class="RaLayout-contentWithSidebar"
+      >
+        <div
+          class="MuiDrawer-root MuiDrawer-anchorLeft MuiDrawer-docked RaSidebar-docked RaSidebar-open css-1v4eopd-MuiDrawer-docked-RaSidebar-root"
+        >
+          <div
+            class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation0 MuiDrawer-paper RaSidebar-paper MuiDrawer-paperAnchorLeft RaSidebar-paperAnchorLeft MuiDrawer-paperAnchorDockedLeft RaSidebar-paperAnchorDockedLeft css-1lwhjos-MuiPaper-root-MuiDrawer-paper"
+            style="--Paper-shadow: none;"
+          >
+            <div
+              class="RaSidebar-fixed"
+            >
+              <div
+                data-testid="mock-menu"
+              >
+                Mocked Menu
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="RaLayout-content"
+          id="main-content"
+        >
+          <div
+            data-testid="dummy-content"
+          >
+            Content
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</DocumentFragment>
+`;

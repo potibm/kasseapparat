@@ -120,15 +120,11 @@ func NewServeCmd() *cobra.Command {
 			startPollerForPendingPurchases(poller, sqliteRepository)
 			startCleanupForWebsocketConnections()
 
-			// 9. Server hochfahren
+			// 9. Start up HTTP Server
 			portStr := ":" + strconv.Itoa(port)
 			slog.Info("HTTP server listening", slog.Int("port", port))
 
-			if err := router.Run(portStr); err != nil {
-				return fmt.Errorf("failed to start server: %w", err)
-			}
-
-			return nil
+			return router.Run(portStr)
 		},
 	}
 

@@ -11,7 +11,7 @@ export const Menu: React.FC = () => {
 
   return (
     <RaMenu>
-      <RaMenu.DashboardItem />
+      <RaMenu.DashboardItem name="dashboard" />
 
       <MenuDivider name="POS" />
       <RaMenu.ResourceItem name="products" />

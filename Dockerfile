@@ -42,6 +42,7 @@ RUN mkdir -p /app/data && chown -R appuser:appuser /app
 
 # Copy backend build
 COPY --from=backend-build --chown=appuser:appuser /app/backend/kasseapparat ./kasseapparat
+COPY THIRD-PARTY-NOTICES.md /app/THIRD-PARTY-NOTICES.md
 
 RUN chmod +x /app/kasseapparat
 

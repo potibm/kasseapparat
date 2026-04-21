@@ -11,12 +11,18 @@ It is a simple point of sale (POS) system aimed at [demoparties](https://en.wiki
 - [Go](https://go.dev)
   - [Gin Web Framework](https://gin-gonic.com)
   - [GORM](https://gorm.io)
+  - [Cobra](https://cobra.dev) & [Viper](https://github.com/spf13/viper)
 - [React](https://react.dev)
-  - [Flowbite React](https://flowbite-react.com)
-  - [Tailwind CSS](https://tailwindcss.com)
+  - [Vite](https://vitejs.dev/)
   - [React Admin](https://marmelab.com/react-admin/)
+  - [Flowbite React](https://flowbite-react.com) & [Tailwind CSS](https://tailwindcss.com)
 - [SQLite](https://www.sqlite.org)
-- [mise](https://mise.jdx.dev/)
+- Observability
+  - [Sentry](https://sentry.io)
+  - [OpenTelemetry](https://opentelemetry.io)
+- Development & Ops
+  - [mise](https://mise.jdx.dev/)
+  - [Docker](https://www.docker.com)
 
 ## Quickstart
 
@@ -40,3 +46,8 @@ mise run dev
 - [User Documentation](doc/manual.md)
 - [SumUp Integration Documentation](doc/sumup.md)
 - [Image Signing and SBOM Attestations](doc/supply-chain.md)
+
+## Credits & License
+
+- **Logo Icon:** [Cash Register](https://fontawesome.com/icons/cash-register) by [Font Awesome](https://fontawesome.com) is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- **Software:** Licensed under MIT.

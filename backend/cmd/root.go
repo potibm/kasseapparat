@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/go-viper/mapstructure/v2"
@@ -73,13 +76,16 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	rootCmd.PersistentFlags().String(logLevelFlagName, "info", "Log Level (debug, info, warn, error)")
 	_ = viper.BindPFlag("app.log_level", rootCmd.PersistentFlags().Lookup(logLevelFlagName))
 
 	rootCmd.PersistentFlags().String(logFormatFlagName, "json", "Log Format (json, text)")
 	_ = viper.BindPFlag("app.log_format", rootCmd.PersistentFlags().Lookup(logFormatFlagName))
 
-	rootCmd.PersistentFlags().String(databaseFileFlagName, "kasseapparat.db", "Dateiname der SQLite Datenbank")
+	rootCmd.PersistentFlags().String(databaseFileFlagName, "kasseapparat.db", "Filename for the SQLite database")
 	_ = viper.BindPFlag("app.db_filename", rootCmd.PersistentFlags().Lookup(databaseFileFlagName))
 
 	rootCmd.AddCommand(NewServeCmd())
@@ -100,7 +106,7 @@ func Execute() error {
 
 	rootCmd.AddCommand(NewConfigCmd())
 
-	return rootCmd.Execute()
+	return rootCmd.ExecuteContext(ctx)
 }
 
 func loadConfig() error {
