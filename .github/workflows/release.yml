@@ -3,7 +3,7 @@ name: Docker Release Build
 on:
   push:
     tags:
-      - "*.*.*"
+      - "[0-9]+.[0-9]+.[0-9]+"
 
 env:
   REGISTRY: ghcr.io
