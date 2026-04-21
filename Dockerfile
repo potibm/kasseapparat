@@ -26,7 +26,7 @@ COPY backend .
 COPY --from=frontend-build /app/frontend/build ./cmd/assets
 
 ARG VERSION=dev
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat . 
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=${VERSION}" -o kasseapparat .
 
 # ==========================================
 # Create the final image
