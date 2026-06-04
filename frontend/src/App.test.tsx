@@ -85,7 +85,6 @@ describe("App", () => {
     const Stub = createRoutesStub([
       {
         path: "/",
-        // eslint-disable-next-line @eslint-react/component-hook-factories
         Component: () => <LoginComponentWrapped config={mockConfigValue} />,
       },
     ]);
