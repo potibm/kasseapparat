@@ -1,17 +1,17 @@
 [tools]
-node = "25"
+node = "26"
 go = "1.26"
-golangci-lint = "2.11.4"
+golangci-lint = "2.12.2"
 dotenv-linter = "4.0.0"
-air = "1.64.5"
+air = "1.65.3"
 overmind = "2.5.1"
-docker-cli = "29.3.1"
+docker-cli = "29.5.3"
 tmux = "3.6a"
 "go:github.com/icholy/gomajor" = "0.15.0"
 actionlint = "1.7.12"
 shellcheck = "0.11.0"
 jq = "1.8.1"
-vale = "3.14.1"
+vale = "3.14.2"
 "go:github.com/google/go-licenses/v2" = "v2.0.1"
 
 # ==========================================
@@ -142,6 +142,7 @@ run = """
 [tasks."deps:update"]
 description = "Update all dependencies across the project"
 run = """
+  mise up --bump --interactive
   mise run be:deps:update
   mise run fe:deps:update
   mise run actions:deps:update
