@@ -79,7 +79,7 @@ func TestFromSDKTransactionWithUUIDId(t *testing.T) {
 	amount := float32(40.0)
 	currency := sumup.CurrencyEUR
 	cardType := sumup.CardTypeMastercard
-	status := sumup.TransactionHistoryStatus("SUCCESSFUL")
+	status := sumup.TransactionStatusSuccessful
 
 	timestamp := parseTime(t, "2025-06-15T20:45:27.588Z")
 
@@ -112,7 +112,7 @@ func TestFromSDKTransactionWithNonUUIDId(t *testing.T) {
 	amount := float32(40.0)
 	currency := sumup.CurrencyEUR
 	cardType := sumup.CardTypeMastercard
-	status := sumup.TransactionHistoryStatus("REFUNDED")
+	status := sumup.TransactionStatusRefunded
 	timestamp := parseTime(t, "2025-06-15T21:00:13.536Z")
 
 	sdk := &sumup.TransactionHistory{

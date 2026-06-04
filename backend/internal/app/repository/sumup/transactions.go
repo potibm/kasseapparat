@@ -231,7 +231,12 @@ func (r *Repository) GetTransactionByClientTransactionID(clientTransactionID uui
 func (r *Repository) RefundTransaction(transactionID uuid.UUID) error {
 	body := sumup.TransactionsRefundParams{}
 
-	err := r.service.Client.Transactions.Refund(context.Background(), transactionID.String(), body)
+	err := r.service.Client.Transactions.Refund(
+		context.Background(),
+		r.service.MerchantCode,
+		transactionID.String(),
+		body,
+	)
 	if err != nil {
 		slog.Error("Error refunding transaction with ID", "transaction_id", transactionID, "error", err)
 
