@@ -1,7 +1,7 @@
 # ==========================================
 # Build the frontend
 # ==========================================
-FROM --platform=$BUILDPLATFORM node:25 AS frontend-build
+FROM --platform=$BUILDPLATFORM node:26 AS frontend-build
 WORKDIR /app/frontend
 
 COPY frontend/package.json frontend/package-lock.json ./

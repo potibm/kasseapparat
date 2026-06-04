@@ -80,7 +80,6 @@ func makeCheckOrigin(allowedOrigins *config.CorsAllowOriginsConfig) func(r *http
 
 		_, ok := allowed[origin]
 		if !ok {
-			//nolint:gosec // G706: origin is safely escaped using %q
 			slog.Warn("WebSocket connection attempt failed: origin not allowed", "origin", fmt.Sprintf("%q", origin))
 		}
 
