@@ -17,6 +17,7 @@ var defaultTestConfig = Config{
 		LogLevel:    "info",
 		LogFormat:   "json",
 		FrontendURL: "http://localhost:3000",
+		Port:        8080,
 	},
 	Format: FormatConfig{
 		Currency: CurrencyFormatConfig{Locale: "de-DE", Code: "EUR"},

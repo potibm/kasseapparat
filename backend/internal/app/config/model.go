@@ -46,6 +46,9 @@ type AppConfig struct {
 	FrontendURL        string                 `mapstructure:"frontend_url"        validate:"required,http_url"`
 	CorsAllowOrigins   CorsAllowOriginsConfig `mapstructure:"cors_allow_origins"  validate:"dive,required"`
 	EnvironmentMessage string                 `mapstructure:"environment_message"`
+
+	OtelEndpoint string `mapstructure:"otel_endpoint" validate:"omitempty"`
+	Port         int    `mapstructure:"port"          validate:"required,gt=0,lte=65535"`
 }
 
 type FormatConfig struct {

@@ -23,17 +23,21 @@ var Version = "dev"
 var Cfg config.Config
 
 const (
-	logFormatFlagName    = "log-format"
-	logLevelFlagName     = "log-level"
-	databaseFileFlagName = "db-file"
+	logFormatFlagName              = "log-format"
+	logLevelFlagName               = "log-level"
+	databaseFileFlagName           = "db-file"
+	skipConfigValidationAnnotation = "skip-config-validation"
 )
 
 var rootCmd = &cobra.Command{
 	Use:           "kasseapparat",
-	Short:         "Kasseapparat ist a POS system for demoparties",
+	Short:         "Kasseapparat is a POS system for demoparties",
 	Version:       Version,
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	Annotations: map[string]string{
+		skipConfigValidationAnnotation: "true",
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		_ = cmd.Help()
 	},
@@ -57,10 +61,22 @@ var rootCmd = &cobra.Command{
 			return fmt.Errorf("error parsing the config: %w", err)
 		}
 
-		Cfg.App.CorsAllowOrigins = strings.Split(viper.GetString("app.cors_allow_origins"), ",")
+		if len(Cfg.App.CorsAllowOrigins) == 1 && strings.Contains(Cfg.App.CorsAllowOrigins[0], ",") {
+			rawOrigins := strings.Split(Cfg.App.CorsAllowOrigins[0], ",")
+
+			var cleanOrigins []string
+
+			for _, o := range rawOrigins {
+				cleanOrigins = append(cleanOrigins, strings.TrimSpace(o))
+			}
+
+			Cfg.App.CorsAllowOrigins = cleanOrigins
+		}
 
 		if err := Cfg.Validate(); err != nil {
-			return fmt.Errorf("invalid configuration: %w", err)
+			if !skipConfigValidation(cmd) {
+				return fmt.Errorf("invalid configuration: %w", err)
+			}
 		}
 
 		if !cmd.Flags().Changed(logFormatFlagName) {
@@ -85,10 +101,17 @@ func Execute() error {
 	rootCmd.PersistentFlags().String(logFormatFlagName, "json", "Log Format (json, text)")
 	_ = viper.BindPFlag("app.log_format", rootCmd.PersistentFlags().Lookup(logFormatFlagName))
 
-	rootCmd.PersistentFlags().String(databaseFileFlagName, "kasseapparat.db", "Filename for the SQLite database")
+	rootCmd.PersistentFlags().String(databaseFileFlagName, config.DefaultDBFilename, "Filename of the SQLite database")
 	_ = viper.BindPFlag("app.db_filename", rootCmd.PersistentFlags().Lookup(databaseFileFlagName))
 
 	rootCmd.AddCommand(NewServeCmd())
+
+	configCmd := NewConfigCmd()
+	configCmd.AddCommand(
+		NewConfigExportCmd(),
+		NewConfigCreateCmd(),
+	)
+	rootCmd.AddCommand(configCmd)
 
 	dbCmd := NewDatabaseCmd()
 	dbCmd.AddCommand(
@@ -104,21 +127,29 @@ func Execute() error {
 	)
 	rootCmd.AddCommand(userCmd)
 
-	rootCmd.AddCommand(NewConfigCmd())
-
 	return rootCmd.ExecuteContext(ctx)
 }
 
 func loadConfig() error {
 	_ = godotenv.Load()
 
-	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
+	viper.AddConfigPath("config")
 	viper.AddConfigPath(".")
+
+	viper.SetConfigName("config")
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return fmt.Errorf("error reading config file: %w", err)
+		}
+	}
+
+	viper.SetConfigName("config.local")
+
+	if err := viper.MergeInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return fmt.Errorf("error merging local config: %w", err)
 		}
 	}
 
@@ -140,4 +171,36 @@ func confirm(question string) bool {
 	response = strings.TrimSpace(strings.ToLower(response))
 
 	return response == "y" || response == "yes"
+}
+
+func skipConfigValidation(cmd *cobra.Command) bool {
+	cmdPath := cmd.CommandPath()
+
+	if cmd.Annotations[skipConfigValidationAnnotation] == "true" {
+		return true
+	}
+
+	if strings.HasPrefix(cmdPath, "kasseapparat completion") {
+		return true
+	}
+
+	if strings.HasPrefix(cmdPath, "kasseapparat help") {
+		return true
+	}
+
+	return false
+}
+
+func ensureAppInfrastructure() error {
+	subDirs := []string{
+		config.DataDirname,
+	}
+
+	for _, dir := range subDirs {
+		if err := os.MkdirAll(dir, config.DataDirPerm); err != nil {
+			return fmt.Errorf("error creating the directory %s: %w", dir, err)
+		}
+	}
+
+	return nil
 }

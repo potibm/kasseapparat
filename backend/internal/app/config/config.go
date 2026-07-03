@@ -10,6 +10,8 @@ import (
 const (
 	OtelServiceName = "kasseapparat-backend"
 
+	DefaultPort = 8080
+
 	DefaultTraceSampleRate         = 0.1
 	DefaultReplaySessionSampleRate = 0.1
 	DefaultReplayErrorSampleRate   = 0.1
@@ -19,6 +21,12 @@ const (
 	DefaultStandardVatRate = 25
 	DefaultReducedVatRate  = 12
 	DefaultZeroVatRate     = 0
+
+	DataDirname = "./data"
+
+	DefaultDBFilename = "kasseapparat"
+
+	DataDirPerm = 0o755
 )
 
 var (
@@ -43,10 +51,12 @@ func InitViper() {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
+	viper.SetDefault("app.port", DefaultPort)
+	viper.SetDefault("app.otel_endpoint", "")
 	viper.SetDefault("app.gin_mode", "release")
 	viper.SetDefault("app.log_level", "info")
 	viper.SetDefault("app.env", "production")
-	viper.SetDefault("app.db_filename", "kasseapparat")
+	viper.SetDefault("app.db_filename", DefaultDBFilename)
 	viper.SetDefault("app.redis_url", "")
 	viper.SetDefault("app.frontend_url", "")
 	viper.SetDefault("app.cors_allow_origins", []string{})

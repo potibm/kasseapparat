@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
+	"github.com/potibm/kasseapparat/internal/app/config"
 	handlerHttp "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
@@ -24,7 +26,8 @@ import (
 var staticFiles embed.FS
 
 const (
-	defaultPort = 3000
+	otelEndpointFlagName = "otel-endpoint"
+	portFlagName         = "port"
 )
 
 var (
@@ -121,16 +124,19 @@ func NewServeCmd() *cobra.Command {
 			startCleanupForWebsocketConnections()
 
 			// 9. Start up HTTP Server
-			portStr := ":" + strconv.Itoa(port)
-			slog.Info("HTTP server listening", slog.Int("port", port))
+			portStr := ":" + strconv.Itoa(Cfg.App.Port)
+			slog.Info("HTTP server listening", slog.Int("port", Cfg.App.Port))
 
 			return router.Run(portStr)
 		},
 	}
 
-	cmd.Flags().IntVarP(&port, "port", "p", defaultPort, "Set the port number for the server to listen on")
+	cmd.Flags().IntVarP(&port, portFlagName, "p", config.DefaultPort, "Set the port number for the server to listen on")
+	_ = viper.BindPFlag("app.port", cmd.Flags().Lookup(portFlagName))
+
 	cmd.Flags().
-		StringVar(&otelEndpoint, "otel-endpoint", "", "Set the OpenTelemetry endpoint (e.g., localhost:4317)")
+		StringVar(&otelEndpoint, otelEndpointFlagName, "", "Set the OpenTelemetry endpoint (e.g., localhost:4317)")
+	_ = viper.BindPFlag("app.otel_endpoint", cmd.Flags().Lookup(otelEndpointFlagName))
 
 	return cmd
 }
