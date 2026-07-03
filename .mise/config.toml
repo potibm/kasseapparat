@@ -18,10 +18,6 @@ vale = "3.15.1"
 # 💻 DEVELOPMENT
 # ==========================================
 
-[tasks."dev"]
-description = "Start development environment with hot reload for backend and frontend"
-run = "overmind s"
-
 [tasks."be:dev"]
 description = "Start backend in development mode with hot reload"
 dir="backend"
@@ -35,7 +31,7 @@ run = "go run ."
 [tasks."fe:dev"]
 description = "Start frontend in development mode with hot reload"
 dir="frontend"
-run = "npm run dev"
+run = "exec npx vite"
 
 # ==========================================
 # 🧪 TESTING

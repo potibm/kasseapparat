@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+#MISE description="Start development environment with hot reload for backend and frontend"
+
+set -e 
+
+if [ -n "$MISE_TASK_NAME" ]; then
+    echo "⚠️  WARNING: To avoid blocked ports and zombie processes,"
+    echo "this task must not be started via mise."
+    echo ""
+    echo "Please start the environment directly in the terminal using:"
+    echo "👉  .mise/tasks/dev"
+    echo ""
+    
+    exit 1
+fi
+
+if [[ "$1" == "--clean" ]]; then
+  echo "🧹 Performing cleanup..."
+  
+  if [ -e .overmind.sock ]; then
+    echo "Deleting .overmind.sock..."
+    rm -f .overmind.sock
+  fi
+
+  for port in 3000 3001; do
+    pids=$(lsof -ti:$port || true)
+    if [ -n "$pids" ]; then
+      echo "Killing process(es) on port $port (PIDs: $pids)..."
+      echo "$pids" | xargs kill -9
+    fi
+  done
+  
+  echo "Cleanup completed."
+  echo "---"
+fi
+
+echo "🚀 Starting overmind..."
+exec overmind s --timeout 10

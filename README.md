@@ -36,7 +36,7 @@ curl https://mise.run | sh
 mise run setup
 
 # 3. Start the development server (hot-reload for backend & frontend)
-mise run dev
+overmind s --timeout 10
 ```
 
 ## Documentation
