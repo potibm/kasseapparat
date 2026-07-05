@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	OtelServiceName = "kasseapparat-backend"
+	OtelServiceName        = "kasseapparat"
+	OtelBackendServiceName = OtelServiceName + "-backend"
 
 	DefaultPort = 8080
 

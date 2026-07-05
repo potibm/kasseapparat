@@ -23,7 +23,7 @@ func InitTelemetry(ctx context.Context, endpoint, version string) (func(), error
 	}
 
 	res, err := resource.New(ctx, resource.WithAttributes(
-		semconv.ServiceName(config.OtelServiceName),
+		semconv.ServiceName(config.OtelBackendServiceName),
 		semconv.ServiceVersion(version),
 	))
 	if err != nil {

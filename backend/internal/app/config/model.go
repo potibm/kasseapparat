@@ -28,8 +28,6 @@ type MailerConfig struct {
 	FrontendURL       string `mapstructure:"frontend_url"   validate:"required,http_url"`
 }
 
-type RedisURL string
-
 type RedisConfig url.URL
 
 type AppConfig struct {

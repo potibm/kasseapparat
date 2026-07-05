@@ -52,7 +52,7 @@ func InitTXTLogger(level string) *slog.Logger {
 }
 
 func initializeLogger(cmdlineHandler slog.Handler) *slog.Logger {
-	otelHandler := otelslog.NewHandler(config.OtelServiceName)
+	otelHandler := otelslog.NewHandler(config.OtelBackendServiceName)
 
 	finalHandler := slogmulti.Fanout(cmdlineHandler, otelHandler)
 

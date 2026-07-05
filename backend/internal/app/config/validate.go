@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"log/slog"
-	"net"
 	"regexp"
 
 	"github.com/go-playground/validator/v10"
@@ -49,30 +48,6 @@ func (f *AppConfig) Validate() error {
 		if err := f.RedisURL.Validate(); err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (ru *RedisURL) Validate() error {
-	rString := string(*ru)
-
-	if !ru.IsValid() {
-		return fmt.Errorf("redis_url '%s' is not a valid URL", rString)
-	}
-
-	redisURL := ru.URLObject()
-	if redisURL.Scheme != "redis" && redisURL.Scheme != "rediss" {
-		return fmt.Errorf(
-			"redis_url '%s' has invalid scheme '%s' (expected 'redis' or 'rediss')",
-			rString,
-			redisURL.Scheme,
-		)
-	}
-
-	host, _, err := net.SplitHostPort(redisURL.Host)
-	if err != nil || host == "" {
-		return fmt.Errorf("redis_url '%s' has missing host", rString)
 	}
 
 	return nil
