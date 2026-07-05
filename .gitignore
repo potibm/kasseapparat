@@ -16,3 +16,4 @@ VERSION
 *.log
 reference/*
 doc/migration-plan.md
+docker-compose.override.yaml

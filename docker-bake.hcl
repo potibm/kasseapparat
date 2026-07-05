@@ -14,11 +14,6 @@ target "kasseapparat" {
     "org.opencontainers.image.authors" = "potibm"
   }
 
-  attest = [
-    "type=sbom",
-    "type=provenance,mode=max"
-  ]
-  
   annotations = [
     "index,manifest:org.opencontainers.image.title=Kasseapparat",
     "index,manifest:org.opencontainers.image.description=A POS system for demoparties",

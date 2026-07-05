@@ -35,7 +35,7 @@ curl https://mise.run | sh
 # 2. Setup the project (installs dependencies and starts infra)
 mise run setup
 
-# 3. Start local services (Traefik, Dex, etc.)
+# 3. Start local services (Traefik, Redis, MinIO, etc.)
 mise run infra:up
 
 # 4. Start the development server (hot-reload for backend & frontend)

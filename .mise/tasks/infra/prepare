@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# mise description="Prepares local DNS, certs, and routing (Cross-Platform)"
+
+set -euo pipefail
+
+DOMAIN="kasseapparat.test"
+WILDCARD="*.kasseapparat.test"
+CERTS_DIR="infra/.certs"
+
+REQUIRED_DOMAINS=(
+  "$DOMAIN"
+  "mail.$DOMAIN"
+  "observe.$DOMAIN"
+  "redis.$DOMAIN"
+  "minio.$DOMAIN"
+)
+
+echo "==> 🚀 Starting local infrastructure setup..."
+
+# ---------------------------------------------------------
+# 1. macOS Setup
+# ---------------------------------------------------------
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  echo "==> 🍎 Detected macOS..."
+
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "❌ FATAL: Homebrew is not installed. Please install it first."
+    exit 1
+  fi
+
+  echo "==> 🔒 Setting up local Certificate Authority (CA)..."
+  mkcert -install
+
+  if ! command -v dnsmasq >/dev/null 2>&1; then
+    echo "==> 📦 Installing dnsmasq..."
+    brew install dnsmasq
+  fi
+
+  BREW_PREFIX=$(brew --prefix)
+  DNSMASQ_CONF="${BREW_PREFIX}/etc/dnsmasq.conf"
+
+  if ! grep -q "address=/.kasseapparat.test/127.0.0.1" "$DNSMASQ_CONF" 2>/dev/null; then
+    echo "==> ⚙️  Routing *.kasseapparat.test to 127.0.0.1 in dnsmasq..."
+    echo "address=/.kasseapparat.test/127.0.0.1" | sudo tee -a "$DNSMASQ_CONF" > /dev/null
+    echo "==> 🔄 Restarting dnsmasq service (requires sudo)..."
+    sudo brew services restart dnsmasq
+  fi
+
+  if [[ ! -f "/etc/resolver/kasseapparat.test" ]]; then
+    echo "==> ⚙️  Creating macOS resolver..."
+    sudo mkdir -p /etc/resolver
+    echo "nameserver 127.0.0.1" | sudo tee /etc/resolver/kasseapparat.test > /dev/null
+    sudo dscacheutil -flushcache
+    sudo killall -HUP mDNSResponder
+  fi
+
+# ---------------------------------------------------------
+# 2. Linux Setup
+# ---------------------------------------------------------
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  echo "==> 🐧 Detected Linux..."
+
+  echo "==> 🔒 Setting up local Certificate Authority (CA)..."
+  mkcert -install
+
+  echo "==> ⚙️  Checking /etc/hosts for local domains..."
+  MISSING_DOMAINS=()
+
+  for d in "${REQUIRED_DOMAINS[@]}"; do
+    if ! grep -q "[[:space:]]$d\b" /etc/hosts; then
+      MISSING_DOMAINS+=("$d")
+    fi
+  done
+
+  if [[ ${#MISSING_DOMAINS[@]} -gt 0 ]]; then
+    echo "==> Adding missing domains to /etc/hosts (requires sudo)..."
+    for d in "${MISSING_DOMAINS[@]}"; do
+      echo "127.0.0.1 $d" | sudo tee -a /etc/hosts > /dev/null
+      echo "    -> Added $d"
+    done
+  else
+    echo "==> ✅ /etc/hosts is already fully configured."
+  fi
+
+# ---------------------------------------------------------
+# 3. Fallback (Windows/WSL etc.)
+# ---------------------------------------------------------
+else
+  echo "❌ FATAL: Unsupported OS ($OSTYPE). Please setup certs and DNS manually."
+  exit 1
+fi
+
+# ---------------------------------------------------------
+# 4. Generate Certificates (Platform Independent)
+# ---------------------------------------------------------
+echo "==> 📜 Generating project certificates..."
+mkdir -p "$CERTS_DIR"
+
+if [[ ! -f "$CERTS_DIR/cert.pem" || ! -f "$CERTS_DIR/key.pem" ]]; then
+  mkcert -cert-file "$CERTS_DIR/cert.pem" -key-file "$CERTS_DIR/key.pem" "$DOMAIN" "$WILDCARD"
+  echo "==> ✅ Certificates generated in $CERTS_DIR"
+else
+  echo "==> ✅ Certificates already exist. Skipping generation."
+fi
+
+echo "==> 🎉 Setup complete!"

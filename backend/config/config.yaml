@@ -1,16 +1,15 @@
 app:
   cors_allow_origins:
-    - https://localhost:3000
+    - https://kasseapparat.test
   db_filename: kasseapparat
-  env: production
-  frontend_url: https://localhost:3000
-  gin_mode: release
+  env: development
+  frontend_url: https://kasseapparat.test
+  gin_mode: debug
   log_format: json
-  log_level: info
+  log_level: debug
   otel_endpoint: ""
   port: 8080
-  redis_url: ""
-  version: dev
+  redis_url: redis://redis:3051/0
 format:
   currency:
     code: EUR

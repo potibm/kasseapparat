@@ -115,13 +115,17 @@ The `be:setup` task creates the `data/` directory if missing.
 
 `docker compose up -d` starts:
 
-- Mailhog: http://localhost:8025 (SMTP: localhost:1025)
-- OpenObserve UI: http://localhost:8027 (admin@example.com / password123)
-- OTel gRPC: localhost:4317
-- Redis: localhost:6379
-- RedisInsight: http://localhost:8026
+- Traefik: http://localhost:80 (HTTP→HTTPS redirect), https://localhost:443, dashboard: http://localhost:8080
+- Mailhog: https://mail.kasseapparat.test (SMTP: localhost:1025)
+- OpenObserve UI: https://observe.kasseapparat.test (admin@example.com / password123)
+- OTel gRPC: localhost:3017
+- OTel HTTP: localhost:3018
+- Redis: localhost:3051
+- RedisInsight: https://redis.kasseapparat.test
+- MinIO S3 API: localhost:3050
+- MinIO Console: https://minio.kasseapparat.test (local-admin / local-super-secret)
 
-Backend dev (`air`) defaults to `--otel-endpoint=localhost:4317`.
+Backend dev (`air`) defaults to `--otel-endpoint=localhost:3017`.
 
 ---
 
