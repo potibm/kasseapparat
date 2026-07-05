@@ -24,8 +24,8 @@ services:
       - ./backend/logs:/etc/app/logs:ro
     command: ["--config=/etc/otel/config.yaml"]
     ports:
-      - "4317:4317" # OTLP gRPC
-      - "4318:4318" # OTLP HTTP
+      - "3017:3017" # OTLP gRPC
+      - "3018:3018" # OTLP HTTP
     depends_on:
       - openobserve
 

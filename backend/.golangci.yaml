@@ -16,10 +16,13 @@ linters:
     - gocritic
     - revive
     - gosec
+    - gomodguard_v2
+    - gocognit
   disable:
     - wsl
     - testpackage
     - funlen
+    - gomodguard
   settings:
     revive:
       rules:
@@ -56,6 +59,8 @@ linters:
         - gorm
     cyclop:
       max-complexity: 15
+    gocognit:
+      min-complexity: 15
     sloglint:
       key-naming-case: snake
   exclusions:
@@ -80,6 +85,12 @@ linters:
         linters:
           - gosec
         text: "G101"
+      - path: '.*/handlers_admin_.*\.go$'
+        linters:
+          - dupl
+      - path: '.*/.*_repository\.go$'
+        linters:
+          - dupl
 formatters:
   enable:
     - golines
