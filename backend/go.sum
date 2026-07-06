@@ -436,10 +436,10 @@ golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8T
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gonum.org/v1/gonum v0.17.0 h1:VbpOemQlsSMrYmn7T2OUvQ4dqxQXU+ouZFQsZOx50z4=
 gonum.org/v1/gonum v0.17.0/go.mod h1:El3tOrEuMpv2UdMrbNlKEh9vd86bmQ6vqIcDwxEOc1E=
-google.golang.org/genproto/googleapis/api v0.0.0-20260706174457-84412dbb4a06 h1:nZwCNeHit2SZSkrRYVH/brCX0mbBwzzRCBDx9XWZ4yw=
-google.golang.org/genproto/googleapis/api v0.0.0-20260706174457-84412dbb4a06/go.mod h1:lPR/UmlRjtOvYIvuakQr0CWkYpblrl1uCTpazwq7I/4=
-google.golang.org/genproto/googleapis/rpc v0.0.0-20260706174457-84412dbb4a06 h1:+vgC/qyZd0g2HD7T88SjHVLHfccVRoBbHm/4Zxiiea8=
-google.golang.org/genproto/googleapis/rpc v0.0.0-20260706174457-84412dbb4a06/go.mod h1:4Hqkh8ycfw05ld/3BWL7rJOSfebL2Q+DVDeRgYgxUU8=
+google.golang.org/genproto/googleapis/api v0.0.0-20260706195059-b6c8e8128b22 h1:npsTZfx+Sa6KWLwG86gMOI6BakMYw15E/kZ/IGm/S8o=
+google.golang.org/genproto/googleapis/api v0.0.0-20260706195059-b6c8e8128b22/go.mod h1:FPk7EXUKMtImne7AmknoYjT4QXqKIzzRbeQIXzLk6fQ=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20260706195059-b6c8e8128b22 h1:Jmkhu5E6Ny2BEsTY3QKGaq37Sg9WZkSCxUgkkCpUJhY=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20260706195059-b6c8e8128b22/go.mod h1:4Hqkh8ycfw05ld/3BWL7rJOSfebL2Q+DVDeRgYgxUU8=
 google.golang.org/grpc v1.82.0 h1:vguDnZUPjE26w09A63VoxZPnvPjB5Riyc0mkXPFmAIU=
 google.golang.org/grpc v1.82.0/go.mod h1:yzTZ1TB1Z3SG+LIYaI+WiE8D5+PZ3ArnrSp8zF3+/ZA=
 google.golang.org/protobuf v1.36.11 h1:fV6ZwhNocDyBLK0dj+fg8ektcVegBBuEolpbTQyBNVE=
