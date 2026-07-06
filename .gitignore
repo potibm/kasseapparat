@@ -17,3 +17,4 @@ VERSION
 reference/*
 doc/migration-plan.md
 docker-compose.override.yaml
+infra/.certs
