@@ -162,6 +162,8 @@ run = """
   : "🎨 Update Frontend Deps"
   npx npm-check-updates --interactive --format group
   npm install
+  npm update
+  npm audit fix
 """
 
 [tasks."actions:deps:update"]
