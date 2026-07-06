@@ -39,7 +39,7 @@ mise run setup
 mise run infra:up
 
 # 4. Start the development server (hot-reload for backend & frontend)
-overmind s --timeout 10
+.mise/tasks/dev
 ```
 
 ## Documentation

@@ -1,8 +1,6 @@
 package config
 
 import (
-	"net/url"
-
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -27,8 +25,6 @@ type MailerConfig struct {
 	MailSubjectPrefix string `mapstructure:"subject_prefix" validate:"required"`
 	FrontendURL       string `mapstructure:"frontend_url"   validate:"required,http_url"`
 }
-
-type RedisConfig url.URL
 
 type AppConfig struct {
 	Version string `mapstructure:"version"`

@@ -53,7 +53,7 @@ func NewConfigCreateCmd() *cobra.Command {
 			}
 
 			if writeErr != nil {
-				if _, ok := writeErr.(viper.ConfigFileNotFoundError); !ok {
+				if _, ok := writeErr.(viper.ConfigFileAlreadyExistsError); ok {
 					return fmt.Errorf(
 						"file %s already exists or was not able to be created: %w",
 						filename,

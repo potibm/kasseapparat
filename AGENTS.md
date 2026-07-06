@@ -24,10 +24,10 @@ Path aliases (vite + tsconfig): `@core`, `@admin`, `@pos`.
 
 Install mise tools once: `mise install`  
 Full setup (deps + infra): `mise run setup`  
-Dev (hot-reload both): `overmind s --timeout 10` (uses Procfile)
+Dev (hot-reload both): `.mise/tasks/dev` (uses Procfile)
 
 Backend only: `mise run be:dev` (Air, port 3001)  
-Frontend only: `mise run fe:dev` (Vite, port 3000, HTTPS, proxies `/api` → :3001)
+Frontend only: `mise run fe:dev` (Vite, port 3000, HTTP, proxies `/api` → :3001)
 
 Test everything: `mise run test`  
 Backend tests: `mise run be:test`  

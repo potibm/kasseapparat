@@ -26,7 +26,7 @@ docker network create traefik-global
 
 ### 1.2 Create the Master-Traefik Directory
 
-Create a directory outside of your project repositories (e.g., `~/Projects/traefik-proxy`) and set up the following structure:
+Create a directory outside your project repositories (e.g., `~/Projects/traefik-proxy`) and set up the following structure:
 
 ```text
 traefik-proxy/
