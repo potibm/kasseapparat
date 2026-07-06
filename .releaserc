@@ -1,5 +1,9 @@
 {
-  "branches": ["main"],
+  "branches": [
+    "main",
+    { "name": "alpha", "prerelease": true },
+    { "name": "2.x", "range": "2.x.x", "channel": "2.x" }
+  ],
   "tagFormat": "${version}",
   "plugins": [
     [
