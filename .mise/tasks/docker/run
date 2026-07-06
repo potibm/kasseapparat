@@ -3,9 +3,8 @@
 
 set -e 
 
+PORT="3003"
 CONTAINER_NAME="kasseapparat:latest"
-SECRET_KEY=$(openssl rand -hex 32)
-PORT=3003
 
 if ! docker image inspect $CONTAINER_NAME >/dev/null 2>&1; then \
     echo "❌ Docker image '$CONTAINER_NAME' not found. Please run 'mise run docker:build' first."; \
@@ -14,9 +13,9 @@ fi
 
 echo "🚀 Running Docker container '$CONTAINER_NAME' on port $PORT"
 
-docker run -p $PORT:3000 \
+docker run -p $PORT:8080 \
 	-e "APP_CORS_ALLOW_ORIGINS=http://localhost:$PORT" \
 	-e "APP_FRONTEND_URL=http://localhost:$PORT" \
-	-e "JWT_SECRET=${SECRET_KEY}" \
 	-v ./backend/data:/app/data \
+	-v ./backend/config:/app/config:ro \
 	$CONTAINER_NAME

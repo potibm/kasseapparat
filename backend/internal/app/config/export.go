@@ -1,34 +1,10 @@
 package config
 
 import (
-	"net/url"
 	"strconv"
 
 	"github.com/appleboy/gin-jwt/v3/store"
 )
-
-func (ru *RedisURL) URLObject() *url.URL {
-	if ru == nil {
-		return nil
-	}
-
-	parsedURL, err := url.Parse(string(*ru))
-	if err != nil {
-		return nil
-	}
-
-	return parsedURL
-}
-
-func (ru *RedisURL) IsValid() bool {
-	if ru == nil {
-		return true
-	}
-
-	_, err := url.ParseRequestURI(string(*ru))
-
-	return err == nil
-}
 
 func (ru RedisURL) JwtConfig() store.RedisConfig {
 	u := ru.URLObject()

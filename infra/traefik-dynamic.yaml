@@ -1,0 +1,36 @@
+http:
+  routers:
+    api:
+      rule: "Host(`kasseapparat.test`) && PathPrefix(`/api`)"
+      entryPoints:
+        - websecure
+      service: backend-host
+      tls: {}
+
+    vite:
+      rule: "Host(`kasseapparat.test`)"
+      entryPoints:
+        - websecure
+      service: vite-host
+      tls: {}
+
+  services:
+    backend-host:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3001"
+
+    vite-host:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3000"
+
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /certs/cert.pem
+        keyFile: /certs/key.pem
+  certificates:
+    - certFile: /certs/cert.pem
+      keyFile: /certs/key.pem

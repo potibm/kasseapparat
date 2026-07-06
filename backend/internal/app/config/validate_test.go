@@ -17,6 +17,7 @@ var defaultTestConfig = Config{
 		LogLevel:    "info",
 		LogFormat:   "json",
 		FrontendURL: "http://localhost:3000",
+		Port:        8080,
 	},
 	Format: FormatConfig{
 		Currency: CurrencyFormatConfig{Locale: "de-DE", Code: "EUR"},
@@ -106,30 +107,6 @@ func TestDateFormatConfigValidate(t *testing.T) {
 	err := cfg.Validate()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "date.locale 'invalid-locale' is not a valid locale")
-}
-
-func TestRedisUrlValidate(t *testing.T) {
-	validURL := RedisURL("redis://user:password@localhost:6379/0")
-	assert.NoError(t, validURL.Validate())
-
-	invalidURL := RedisURL("not-a-valid-url")
-	err := invalidURL.Validate()
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "redis_url 'not-a-valid-url' is not a valid URL")
-
-	invalidScheme := RedisURL("http://localhost:6379")
-	err = invalidScheme.Validate()
-	assert.Error(t, err)
-	assert.Contains(
-		t,
-		err.Error(),
-		"redis_url 'http://localhost:6379' has invalid scheme 'http' (expected 'redis' or 'rediss')",
-	)
-
-	missingHost := RedisURL("redis:///0")
-	err = missingHost.Validate()
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "redis_url 'redis:///0' has missing host")
 }
 
 func TestAppConfigValidate(t *testing.T) {

@@ -31,7 +31,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags "-X gi
 # ==========================================
 # Create the final image
 # ==========================================
-FROM alpine:3.23 AS runtime
+FROM alpine:3.24 AS runtime
 WORKDIR /app
 
 RUN apk update --no-cache && \

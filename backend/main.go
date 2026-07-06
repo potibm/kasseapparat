@@ -5,17 +5,16 @@ import (
 	"os"
 
 	"github.com/potibm/kasseapparat/cmd"
-	"github.com/potibm/kasseapparat/internal/app/exitcode"
 )
 
 func startup() int {
 	if err := cmd.Execute(); err != nil {
 		log.Printf("Fatal error while starting: %v", err)
 
-		return int(exitcode.Software)
+		return int(cmd.ExitSoftware)
 	}
 
-	return int(exitcode.OK)
+	return int(cmd.ExitOK)
 }
 
 func main() {

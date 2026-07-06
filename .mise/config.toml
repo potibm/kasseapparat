@@ -5,22 +5,19 @@ golangci-lint = "2.12.2"
 dotenv-linter = "4.0.0"
 air = "1.65.3"
 overmind = "2.5.1"
-docker-cli = "29.6.0"
-tmux = "3.6a"
+docker-cli = "29.6.1"
+tmux = "3.7b"
 "go:github.com/icholy/gomajor" = "0.15.0"
 actionlint = "1.7.12"
 shellcheck = "0.11.0"
-jq = "1.8.1"
+jq = "1.8.2"
 vale = "3.15.1"
+mkcert = "1.4.4"
 "go:github.com/google/go-licenses/v2" = "v2.0.1"
 
 # ==========================================
 # 💻 DEVELOPMENT
 # ==========================================
-
-[tasks."dev"]
-description = "Start development environment with hot reload for backend and frontend"
-run = "overmind s"
 
 [tasks."be:dev"]
 description = "Start backend in development mode with hot reload"
@@ -35,7 +32,7 @@ run = "go run ."
 [tasks."fe:dev"]
 description = "Start frontend in development mode with hot reload"
 dir="frontend"
-run = "npm run dev"
+run = "exec npx vite"
 
 # ==========================================
 # 🧪 TESTING

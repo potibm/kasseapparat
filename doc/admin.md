@@ -22,21 +22,30 @@ Find a list below with hardware that was tried and tested at demoparties (feel f
 
 ## Set up directories
 
-- create directory /app/kassepparat
-- create directory /app/kassepparat/data
-- create directory /app/kassepparat/backup
+- create directory /app/kasseapparat
+- create directory /app/kasseapparat/data
+- create directory /app/kasseapparat/backup
+- create directory /app/kasseapparat/config
 
 ## Configuration Strategy
 
-Kasseapparat uses a hybrid configuration approach to give you the best of both worlds:
+Kasseapparat uses a layered configuration approach:
 
-1. `config.yaml`: Used for structured, static business data (like VAT rates, payment methods, and locale formatting).
+1. **Base configuration**: Generated via `kasseapparat config create` command, creates `config/config.yaml` with structured business data (VAT rates, payment methods, locale formatting).
 
-2. `.env`: Used for environment-specific settings (like URLs) and strict secrets (like API keys and JWT passwords).
+2. **Local overrides**: Optional `config/config.local.yaml` for environment-specific settings that shouldn't be committed.
 
-### 1. Create /app/kasseapparat/config.yaml
+3. **Environment variables**: `.env` file for secrets (API keys, JWT passwords) and runtime overrides.
 
-Copy the [`config.yaml.example`](../backend/config.yaml.example) from the repository to your server and rename it to `config.yaml`. Open it and adjust the business rules (like currencies and VAT rates) to your needs.
+### 1. Generate base configuration
+
+Run the config creation command:
+
+```bash
+docker compose run --rm kasseapparat config create
+```
+
+This generates `config/config.yaml` with sensible defaults. Edit it to adjust business rules (currencies, VAT rates, payment methods) to your needs.
 
 ### 2. Create /app/kasseapparat/.env
 
@@ -68,16 +77,17 @@ These flags can be appended to almost any command:
 
 - `--log-level=info` (or debug, warn, error)
 - `--log-format=json` (or text)
-- `--db-file="kasseapparat.db"` (to set the SQLite filename)
+- `--db-file="kasseapparat"` (to set the SQLite filename)
 
 ### Available Commands
 
 - `kasseapparat serve`: Starts the main web server and API.
+- `kasseapparat config create`: Generates `config/config.yaml` with default values (use `--force` to overwrite).
+- `kasseapparat config export`: Prints the final, merged configuration (config.yaml + config.local.yaml + .env + CLI flags) as a JSON tree. Sensitive data like secrets and API keys are automatically redacted for safety.
 - `kasseapparat database migrate`: Creates or updates the database tables to the latest schema.
 - `kasseapparat database seed`: Fills the database with dummy data (useful for development).
 - `kasseapparat database reset`: Drops all tables and recreates them from scratch (WARNING: Deletes all data!).
 - `kasseapparat user create`: Interactive or flag-based command to create a new user.
-- `kasseapparat config`: Prints the final, merged configuration (YAML + .env + CLI flags) as a JSON tree. Sensitive data like secrets and API keys are automatically redacted for safety.
 
 ### SENTRY
 
@@ -102,7 +112,7 @@ Modify MAIL_FROM accordingly. Editing MAIL_SUBJECT_PREFIX is optional.
 ```yaml
 services:
   traefik:
-    image: traefik:v3.0
+    image: traefik:v3.7
     restart: always
     ports:
       - 80:80
@@ -110,7 +120,7 @@ services:
     networks:
       - proxy
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - letsencrypt:/letsencrypt
     command:
       - --api.dashboard=true
@@ -137,14 +147,15 @@ services:
     image: ghcr.io/potibm/kasseapparat:latest
     restart: always
     volumes:
-      - ./data:/app/kasseapparat/data
-      - ./config.yaml:/app/config.yaml
+      - ./data:/app/data
+      - ./config:/app/config:ro
     env_file: ".env"
     environment:
       - "APP_GIN_MODE=release"
       - "JWT_REALM=Kasseapparat"
       - "JWT_SECRET=${JWT_SECRET}"
       - "APP_CORS_ALLOW_ORIGINS=https://kasseapparat.example.com"
+      - "APP_FRONTEND_URL=https://kasseapparat.example.com"
     labels:
       - traefik.enable=true
       - traefik.http.routers.kasseapparat.entrypoints=websecure
@@ -220,10 +231,10 @@ Make the script executable.
 
 ### Correct UID/GUID for data directory
 
-The data directory at /app/kassepparat/data needs the correct UID/GID. That is probably 1000:1000, so
+The data directory at /app/kasseapparat/data needs the correct UID/GID. That is probably 1000:1000, so
 
 ```bash
-sudo chown 1000:1000 /app/kassepparat/data
+sudo chown 1000:1000 /app/kasseapparat/data
 ```
 
 You can check those values by running
@@ -306,7 +317,7 @@ To update the docker image call the update.sh. A backup is performed and stored 
 
 Kasseapparat natively supports **OpenTelemetry (OTel)**. You can enable the export of Traces, Logs, and Metrics by providing the OTLP endpoint:
 
-`--otel-endpoint="localhost:4317"` (compatible with backends like **OpenObserve**, Grafana, or Jaeger).
+`--otel-endpoint="localhost:3017"` (compatible with backends like **OpenObserve**, Grafana, or Jaeger).
 
 ### Key Metrics & Dashboards
 
@@ -327,6 +338,6 @@ Use the following metrics in your monitoring backend (e.g., OpenObserve) to trac
 
 ### OpenObserve
 
-For local development we provide [OpenObserve](https://github.com/openobserve/openobserve) at [localhost:5080](localhost:5080) by running `make infra-up`.
+For local development we provide [OpenObserve](https://github.com/openobserve/openobserve) at [https://observe.kasseapparat.test](https://observe.kasseapparat.test) by running `mise run infra:up`.
 
 Sample dashboard templates can be found at `infra/openobserve`.

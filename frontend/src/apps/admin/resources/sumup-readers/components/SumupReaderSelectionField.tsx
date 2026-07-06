@@ -1,7 +1,7 @@
 import React from "react";
 import { useRecordContext, Button, RaRecord } from "react-admin";
 import { Box, Tooltip } from "@mui/material";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import TouchAppIcon from "@mui/icons-material/TouchApp";
 import { createLogger } from "@core/logger/logger";
 
@@ -35,7 +35,7 @@ export const SumupReaderSelectionField: React.FC<
           fontWeight: 500,
         }}
       >
-        <CheckCircleOutlineIcon sx={{ mr: 1, fontSize: "1.2rem" }} />
+        <CheckCircleOutlinedIcon sx={{ mr: 1, fontSize: "1.2rem" }} />
         Selected
       </Box>
     );

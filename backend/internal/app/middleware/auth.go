@@ -12,12 +12,13 @@ import (
 	ginjwtCore "github.com/appleboy/gin-jwt/v3/core"
 	"github.com/appleboy/gin-jwt/v3/store"
 	"github.com/gin-gonic/gin"
-	"github.com/potibm/kasseapparat/internal/app/exitcode"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
+
+const exitCodeSoftware = 70 // EX_SOFTWARE (sysexits)
 
 type UserAuthenticator interface {
 	GetUserByLoginAndPassword(login, password string) (*models.User, error)
@@ -59,7 +60,7 @@ func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc 
 		errInit := authMiddleware.MiddlewareInit()
 		if errInit != nil {
 			slog.Error("Error initializing auth middleware", "error", errInit)
-			os.Exit(int(exitcode.Software))
+			os.Exit(exitCodeSoftware)
 		}
 	}
 }

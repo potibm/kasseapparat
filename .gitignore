@@ -8,9 +8,13 @@ backend/data/
 backend/cmd/assets/
 backend/.env
 backend/.env.backup.*
-backend/config.yaml
+backend/config/config.*.yaml
 backend/VERSION
 backend/coverage.*
 backend/tmp
 VERSION
 *.log
+reference/*
+doc/migration-plan.md
+docker-compose.override.yaml
+infra/.certs

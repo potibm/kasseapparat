@@ -48,7 +48,7 @@ func InitializeHTTPServer(
 			Repanic: false,
 		}),
 		sloggin.New(logger),
-		otelgin.Middleware("kasseapparat-backend"),
+		otelgin.Middleware(config.OtelBackendServiceName),
 	)
 
 	r.GET("/api/"+APIVersion+"/purchases/stats", httpHdlr.GetPurchaseStats)

@@ -1,0 +1,61 @@
+app:
+  cors_allow_origins:
+    - https://kasseapparat.test
+  db_filename: kasseapparat
+  env: development
+  frontend_url: https://kasseapparat.test
+  gin_mode: debug
+  log_format: json
+  log_level: debug
+  otel_endpoint: ""
+  port: 8080
+  redis_url: redis://redis:3051/0
+format:
+  currency:
+    code: EUR
+    fraction_digits_max: 2
+    fraction_digits_min: 0
+    locale: de-DE
+  date:
+    locale: de-DE
+    options:
+      hour: 2-digit
+      minute: 2-digit
+      weekday: long
+jwt:
+  realm: Kasseapparat
+  secret: very-insecure
+  secure_cookie: true
+mailer:
+  dsn: smtp://localhost:1025
+  from: kasseapparat@example.com
+  subject_prefix: "[Kasseapparat]"
+payment_methods:
+  - code: CASH
+    name: Cash
+  - code: CC
+    name: Credit Card
+  - code: SUMUP
+    name: SumUp
+sentry:
+  dsn: ""
+  environment: production
+  replay_error_sample_rate: 0.1
+  replay_session_sample_rate: 0.1
+  trace_sample_rate: 0.1
+  version: dev
+sumup:
+  affiliate_key: ""
+  api_key: ""
+  application_id: ""
+  currency_code: ""
+  currency_minor_unit: 2
+  merchant_code: ""
+  public_url: ""
+vat_rates:
+  - name: Exempt
+    rate: 0
+  - name: Reduced
+    rate: 7
+  - name: Standard
+    rate: 19

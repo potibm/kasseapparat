@@ -1,21 +1,60 @@
 services:
+  # --------------------------------------------------------
+  # Traefik Reverse Proxy
+  # --------------------------------------------------------
+  traefik:
+    image: traefik:v3.7
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--providers.file.filename=/etc/traefik/dynamic.yaml"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./infra/.certs:/certs:ro
+      - ./infra/traefik-dynamic.yaml:/etc/traefik/dynamic.yaml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # --------------------------------------------------------
+  # Mail
+  # --------------------------------------------------------
   mailhog:
     image: mailhog/mailhog:latest
     platform: linux/amd64
     ports:
-      - "8025:8025" # Web UI
-      - "1025:1025" # SMTP Port
+      - "1025:1025"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailhog-kasse.rule=Host(`mail.kasseapparat.test`)"
+      - "traefik.http.routers.mailhog-kasse.entrypoints=websecure"
+      - "traefik.http.routers.mailhog-kasse.tls=true"
+      - "traefik.http.services.mailhog-kasse.loadbalancer.server.port=8025"
 
-  # Monitoring & logging backend
+  # --------------------------------------------------------
+  # Observability
+  # --------------------------------------------------------
   openobserve:
     image: public.ecr.aws/zinclabs/openobserve:latest
     environment:
       - ZO_ROOT_USER_EMAIL=admin@example.com
       - ZO_ROOT_USER_PASSWORD=password123
-    ports:
-      - "8027:5080" # Web UI
     volumes:
       - o2_data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.observe-kasse.rule=Host(`observe.kasseapparat.test`)"
+      - "traefik.http.routers.observe-kasse.entrypoints=websecure"
+      - "traefik.http.routers.observe-kasse.tls=true"
+      - "traefik.http.services.observe-kasse.loadbalancer.server.port=5080"
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
@@ -24,32 +63,77 @@ services:
       - ./backend/logs:/etc/app/logs:ro
     command: ["--config=/etc/otel/config.yaml"]
     ports:
-      - "4317:4317" # OTLP gRPC
-      - "4318:4318" # OTLP HTTP
+      - "3017:4317"
+      - "3018:4318"
     depends_on:
       - openobserve
 
+  # --------------------------------------------------------
+  # Data Stores
+  # --------------------------------------------------------
   redis:
-    image: redis:latest
+    image: redis:7-alpine
+    container_name: kasseapparat_redis
     ports:
-      - "6379:6379"
+      - "3051:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
 
-  redis-insight:
+  redisinsight:
     image: redis/redisinsight:latest
-    user: root
+    container_name: kasseapparat_redisinsight
     environment:
-      - REDISINSIGHT_HOST=0.0.0.0
+      - RI_APP_PORT=5540
+      - RI_APP_HOST=0.0.0.0
       - RI_ACCEPT_TERMS_AND_CONDITIONS=true
       - RI_REDIS_ALIAS0=Kasseapparat-Redis
-      - RI_REDIS_HOST0=redis
+      - RI_REDIS_HOST0=kasseapparat_redis
       - RI_REDIS_PORT0=6379
-    ports:
-      - "8026:5540"
     volumes:
-      - ri_data:/data
+      - redisinsight_data:/data
     depends_on:
       - redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.redis-kasse.rule=Host(`redis.kasseapparat.test`)"
+      - "traefik.http.routers.redis-kasse.entrypoints=websecure"
+      - "traefik.http.routers.redis-kasse.tls=true"
+      - "traefik.http.services.redis-kasse.loadbalancer.server.port=5540"
+
+  minio:
+    image: minio/minio:latest
+    container_name: kasseapparat_minio
+    ports:
+      - "3050:9000"
+    environment:
+      - MINIO_ROOT_USER=local-admin
+      - MINIO_ROOT_PASSWORD=local-super-secret
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.minio-kasse.rule=Host(`minio.kasseapparat.test`)"
+      - "traefik.http.routers.minio-kasse.entrypoints=websecure"
+      - "traefik.http.routers.minio-kasse.tls=true"
+      - "traefik.http.services.minio-kasse.loadbalancer.server.port=9001"
+
+  minio-init:
+    image: minio/mc
+    container_name: kasseapparat_minio_init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set local_minio http://kasseapparat_minio:9000 local-admin local-super-secret) do echo 'Waiting for MinIO...' && sleep 1; done;
+      /usr/bin/mc mb --ignore-existing local_minio/kasseapparat-exports;
+      /usr/bin/mc anonymous set download local_minio/kasseapparat-exports;
+      exit 0;
+      "
 
 volumes:
   o2_data:
-  ri_data:
+  redis_data:
+  redisinsight_data:
+  minio_data:
