@@ -4,7 +4,7 @@ export class AdminPage {
   constructor(private readonly page: Page) {}
 
   async login(username = "demo", password = "demo") {
-    await this.page.goto("https://localhost:4000/admin/");
+    await this.page.goto("http://localhost:4000/admin/");
 
     const profileInfo = this.page.getByRole("button", {
       name: `Logged in as ${username}`,
