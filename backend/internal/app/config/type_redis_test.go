@@ -98,6 +98,11 @@ func TestRedisURL_RedisOptions(t *testing.T) {
 			wantDB:       2,
 		},
 		{
+			name:    "invalid URL returns nil via URLObject",
+			url:     RedisURL("://invalid"),
+			wantNil: true,
+		},
+		{
 			name:    "invalid db now correctly fails",
 			url:     RedisURL("redis://localhost:6379/notadb"),
 			wantNil: true,
@@ -172,40 +177,51 @@ func TestRedisURL_Redacted(t *testing.T) {
 func TestRedisURL_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
-		url     RedisURL
+		url     *RedisURL
 		wantErr bool
 		errMsg  string
 	}{
 		{
+			name:    "nil receiver",
+			url:     nil,
+			wantErr: false,
+		},
+		{
+			name:    "empty string",
+			url:     ptr(RedisURL("")),
+			wantErr: true,
+			errMsg:  "redis_url is empty",
+		},
+		{
 			name:    "valid redis URL",
-			url:     RedisURL("redis://localhost:6379/0"),
+			url:     ptr(RedisURL("redis://localhost:6379/0")),
 			wantErr: false,
 		},
 		{
 			name:    "valid rediss URL",
-			url:     RedisURL("rediss://redis.example.com:6380/1"),
+			url:     ptr(RedisURL("rediss://redis.example.com:6380/1")),
 			wantErr: false,
 		},
 		{
 			name:    "invalid URL",
-			url:     RedisURL("://invalid"),
+			url:     ptr(RedisURL("://invalid")),
 			wantErr: true,
 			errMsg:  "missing protocol scheme",
 		},
 		{
 			name:    "http scheme",
-			url:     RedisURL("http://localhost:6379/0"),
+			url:     ptr(RedisURL("http://localhost:6379/0")),
 			wantErr: true,
 			errMsg:  "invalid URL scheme: http",
 		},
 		{
 			name:    "missing host IS NOW VALID",
-			url:     RedisURL("redis:///0"),
+			url:     ptr(RedisURL("redis:///0")),
 			wantErr: false,
 		},
 		{
 			name:    "host without port IS NOW VALID",
-			url:     RedisURL("redis://localhost/0"),
+			url:     ptr(RedisURL("redis://localhost/0")),
 			wantErr: false,
 		},
 	}
@@ -222,6 +238,41 @@ func TestRedisURL_Validate(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestRedisURL_IsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		url  *RedisURL
+		want bool
+	}{
+		{
+			name: "nil receiver is valid",
+			url:  nil,
+			want: true,
+		},
+		{
+			name: "valid URL",
+			url:  ptr(RedisURL("redis://localhost:6379/0")),
+			want: true,
+		},
+		{
+			name: "empty string is invalid",
+			url:  ptr(RedisURL("")),
+			want: false,
+		},
+		{
+			name: "invalid scheme",
+			url:  ptr(RedisURL("http://localhost:6379")),
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.url.IsValid())
 		})
 	}
 }
