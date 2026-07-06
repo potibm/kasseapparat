@@ -8,6 +8,7 @@ set -e
 echo "🔧 Preparing backend environment..."
 
 mkdir -p ./data
+mkdir -p ./config
 
 if [ ! -f .env ]; then
     echo "📝 Creating .env from .env.example..."
