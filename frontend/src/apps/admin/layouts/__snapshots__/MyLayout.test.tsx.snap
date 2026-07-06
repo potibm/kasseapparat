@@ -7,7 +7,7 @@ exports[`Layout & AppBar > Snapshot Match 1`] = `
   >
     <button
       aria-label="ra.navigation.skip_nav"
-      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary skip-nav-button css-ucnk6k-MuiButtonBase-root-MuiButton-root-RaButton-root-RaSkipNavigationButton-root"
+      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary skip-nav-button css-ucnk6k-MuiButtonBase-root-MuiButton-root-RaButton-root-RaSkipNavigationButton-root"
       tabindex="0"
       type="button"
     >
@@ -56,12 +56,12 @@ exports[`Layout & AppBar > Snapshot Match 1`] = `
               />
             </svg>
             <h6
-              class="MuiTypography-root MuiTypography-h6 css-f0w64e-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h6 css-1x0gqn7-MuiTypography-root"
             >
               Kasseapparat
             </h6>
             <h6
-              class="MuiTypography-root MuiTypography-h6 css-1j36q8a-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h6 css-xx14r9-MuiTypography-root"
               id="react-admin-title"
             />
           </div>
@@ -116,7 +116,7 @@ exports[`Layout & AppBar > Snapshot Match 1`] = `
           class="MuiDrawer-root MuiDrawer-anchorLeft MuiDrawer-docked RaSidebar-docked RaSidebar-open css-1v4eopd-MuiDrawer-docked-RaSidebar-root"
         >
           <div
-            class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation0 MuiDrawer-paper RaSidebar-paper MuiDrawer-paperAnchorLeft RaSidebar-paperAnchorLeft MuiDrawer-paperAnchorDockedLeft RaSidebar-paperAnchorDockedLeft css-1lwhjos-MuiPaper-root-MuiDrawer-paper"
+            class="MuiPaper-root MuiPaper-elevation MuiPaper-elevation0 MuiDrawer-paper RaSidebar-paper css-1lwhjos-MuiPaper-root-MuiDrawer-paper"
             style="--Paper-shadow: none;"
           >
             <div
