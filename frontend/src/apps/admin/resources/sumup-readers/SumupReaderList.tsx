@@ -30,7 +30,7 @@ export const SumupReaderList: React.FC<ListProps> = (props) => {
 
   if (!sumupEnabled) {
     return (
-      <Box p={2}>
+      <Box sx={{ p: 2 }}>
         <Typography variant="h5">SumUp Readers</Typography>
         <Typography>
           SumUp integration is not enabled. Please enable it in the
