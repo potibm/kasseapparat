@@ -92,7 +92,6 @@ func TestMigrateAndPurgeDatabase(t *testing.T) {
 	err = MigrateDatabase(db)
 	assert.NoError(t, err)
 
-	assert.True(t, db.Migrator().HasTable(&models.User{}), "User table should exist after migration")
 	assert.True(t, db.Migrator().HasTable(&models.Product{}), "Product table should exist after migration")
 
 	// 2. Purge
@@ -100,7 +99,6 @@ func TestMigrateAndPurgeDatabase(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Check if the tables were actually dropped
-	assert.False(t, db.Migrator().HasTable(&models.User{}), "User table should be dropped after purge")
 	assert.False(t, db.Migrator().HasTable(&models.Product{}), "Product table should be dropped after purge")
 }
 

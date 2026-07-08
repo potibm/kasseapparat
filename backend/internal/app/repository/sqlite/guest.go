@@ -205,9 +205,7 @@ func (repo *Repository) CreateGuest(guest models.Guest) (models.Guest, error) {
 	return guest, result.Error
 }
 
-func (repo *Repository) DeleteGuest(guest models.Guest, deletedBy models.User) {
-	repo.db.Model(&models.Guest{}).Where(whereIDEquals, guest.ID).Update("DeletedByID", deletedBy.ID)
-
+func (repo *Repository) DeleteGuest(guest models.Guest) {
 	repo.db.Delete(&guest)
 }
 

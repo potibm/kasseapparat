@@ -18,7 +18,7 @@ type ProductPurchaseStats struct {
 }
 
 type PurchaseFilters struct {
-	CreatedByID            int
+	CreatedBy              string
 	PaymentMethods         []models.PaymentMethod
 	StatusList             *models.PurchaseStatusList
 	TotalGrossPriceLte     *decimal.Decimal
@@ -32,8 +32,8 @@ func (filters PurchaseFilters) AddWhere(query *gorm.DB) *gorm.DB {
 		query = query.Where("purchases.ID IN ?", filters.IDs)
 	}
 
-	if filters.CreatedByID != 0 {
-		query = query.Where("purchases.created_by_id = ?", filters.CreatedByID)
+	if filters.CreatedBy != "" {
+		query = query.Where("purchases.created_by = ?", filters.CreatedBy)
 	}
 
 	if len(filters.PaymentMethods) > 0 {
@@ -64,13 +64,13 @@ func (filters PurchaseFilters) AddWhere(query *gorm.DB) *gorm.DB {
 }
 
 var purchaseSortFieldMappings = map[string]string{
-	"id":                 "purchases.ID",
-	"createdAt":          "purchases.created_at",
-	"totalGrossPrice":    "purchases.total_gross_price",
-	"createdBy.username": "CreatedBy.username",
-	"paymentMethod":      "purchases.payment_method",
-	"status":             "purchases.status",
-	"pos":                "Pos",
+	"id":              "purchases.ID",
+	"createdAt":       "purchases.created_at",
+	"totalGrossPrice": "purchases.total_gross_price",
+	"createdBy":       "purchases.created_by",
+	"paymentMethod":   "purchases.payment_method",
+	"status":          "purchases.status",
+	"pos":             "Pos",
 }
 
 func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchase, error) {
@@ -79,8 +79,7 @@ func (repo *Repository) StorePurchases(purchase models.Purchase) (models.Purchas
 	return purchase, result.Error
 }
 
-func (repo *Repository) DeletePurchaseByID(id uuid.UUID, deletedBy models.User) {
-	repo.db.Model(&models.Purchase{}).Where(whereIDEquals, id).Update("DeletedByID", deletedBy.ID)
+func (repo *Repository) DeletePurchaseByID(id uuid.UUID) {
 	repo.db.Where(whereIDEquals, id).Delete(&models.Purchase{})
 
 	repo.db.Where("purchase_id = ?", id).Delete(&models.PurchaseItem{})
@@ -164,7 +163,7 @@ func (repo *Repository) GetPurchases(
 
 	var purchases []models.Purchase
 
-	query := repo.db.Joins("CreatedBy").
+	query := repo.db.
 		Model(&models.Purchase{}).
 		Preload("PurchaseItems").
 		Preload("PurchaseItems.Product").

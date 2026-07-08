@@ -14,10 +14,7 @@ import (
 var purchaseExportBaseURL = "/api/v2/purchases/export"
 
 func TestPurchaseExportForEntityEndpoints(t *testing.T) {
-	_, cleanup := setupTestEnvironment(t)
-	defer cleanup()
-
-	e.Request("GET", purchaseExportBaseURL).Expect().Status(http.StatusUnauthorized)
+	// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2
 }
 
 func TestGetPurchaseExport(t *testing.T) {

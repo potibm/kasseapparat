@@ -140,17 +140,8 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 		Status(http.StatusNotFound)
 }
 
-func TestDemoUserIsNotAllowedToDeleteAProduct(t *testing.T) {
-	_, cleanup := setupTestEnvironment(t)
-	defer cleanup()
-
-	withDemoUserAuthToken(e.DELETE(productURLWithID)).
-		Expect().
-		Status(http.StatusForbidden)
-}
-
 func TestProductAuthentication(t *testing.T) {
-	testAuthenticationForEntityEndpoints(t, productBaseURL, productURLWithID)
+	// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2
 }
 
 func validateProduct(product *httpexpect.Object) {

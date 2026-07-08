@@ -73,7 +73,6 @@ func NewServeCmd() *cobra.Command {
 			sqliteRepository := sqliteRepo.NewRepository(db, Cfg.Format.Currency.FractionDigitsMax)
 			sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
 			mailer := initializer.InitializeMailer(Cfg.Mailer)
-			jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, Cfg.Jwt, &Cfg.App.RedisURL)
 
 			// 6. Services & Handler
 			purchaseSvc := purchaseService.NewPurchaseService(
@@ -88,7 +87,6 @@ func NewServeCmd() *cobra.Command {
 				sqliteRepository,
 				sumupRepository,
 				purchaseSvc,
-				jwtMiddleware,
 				&Cfg.App.CorsAllowOrigins,
 			)
 			publisher := &websocket.WebsocketPublisher{}
@@ -111,7 +109,6 @@ func NewServeCmd() *cobra.Command {
 				websocketHandler,
 				*sqliteRepository,
 				staticFiles,
-				jwtMiddleware,
 				Cfg,
 				slog.Default(),
 			)

@@ -45,12 +45,7 @@ func (handler *Handler) GetProductInterests(c *gin.Context) {
 }
 
 func (handler *Handler) DeleteProductInterestByID(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
+	c = handler.contextWithUser(c)
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -61,18 +56,13 @@ func (handler *Handler) DeleteProductInterestByID(c *gin.Context) {
 		return
 	}
 
-	handler.repo.DeleteProductInterest(*productInterest, *executingUserObj)
+	handler.repo.DeleteProductInterest(*productInterest)
 
 	c.Status(http.StatusNoContent)
 }
 
 func (handler *Handler) CreateProductInterest(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
+	c = handler.contextWithUser(c)
 
 	var productInterest models.ProductInterest
 
@@ -92,7 +82,7 @@ func (handler *Handler) CreateProductInterest(c *gin.Context) {
 		return
 	}
 
-	productInterest, err = handler.repo.CreateProductInterest(productInterest, *executingUserObj)
+	productInterest, err = handler.repo.CreateProductInterest(productInterest)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCauseMsg(err))
 

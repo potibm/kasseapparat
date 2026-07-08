@@ -1,13 +1,11 @@
 import jsonServerProvider from "ra-data-json-server";
 import {
   fetchUtils,
-  addRefreshAuthToDataProvider,
   DataProvider,
   CreateParams,
   UpdateParams,
 } from "react-admin";
 import * as Sentry from "@sentry/react";
-import { refreshToken } from "./refresh-token";
 import { getSessionToken } from "../utils/auth-utils";
 
 const API_HOST = import.meta.env.VITE_API_HOST && "http://localhost:3001";
@@ -87,7 +85,7 @@ const httpClient = async (url: string, options: HttpClientOptions = {}) => {
 
 const baseProvider = jsonServerProvider(`${API_HOST}/api/v2`, httpClient);
 
-const dataProvider: DataProvider = {
+export const dataProvider: DataProvider = {
   ...baseProvider,
 
   getList: (resource, params) =>
@@ -147,4 +145,6 @@ const dataProvider: DataProvider = {
   },
 };
 
-export default addRefreshAuthToDataProvider(dataProvider, refreshToken);
+export default dataProvider;
+
+//

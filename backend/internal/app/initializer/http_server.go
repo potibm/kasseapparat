@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 
-	jwt "github.com/appleboy/gin-jwt/v3"
 	"github.com/getsentry/sentry-go"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/cors"
@@ -19,7 +17,6 @@ import (
 	httpHandler "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
-	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	sloggin "github.com/samber/slog-gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
@@ -34,7 +31,6 @@ func InitializeHTTPServer(
 	websocketHdlr websocket.TransactionWebSocketHandler,
 	repository sqliteRepo.Repository,
 	staticFiles embed.FS,
-	jwtMiddleware *jwt.GinJWTMiddleware,
 	cfg config.Config,
 	logger *slog.Logger,
 ) (*gin.Engine, error) {
@@ -62,8 +58,8 @@ func InitializeHTTPServer(
 
 	r.Use(static.Serve("/", folder))
 
-	registerAuthMiddleware(jwtMiddleware)
-	registerAPIRoutes(httpHdlr, websocketHdlr, jwtMiddleware)
+	registerAuthMiddleware()
+	registerAPIRoutes(httpHdlr, websocketHdlr)
 
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
@@ -92,11 +88,11 @@ func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 
 func SlogUserID() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, exists := c.Get(middleware.IdentityKey)
+		username, exists := c.Get(middleware.IdentityKey)
 		if exists {
-			if user, ok := user.(*models.User); ok {
+			if usernameStr, ok := username.(string); ok {
 				sloggin.AddCustomAttributes(c,
-					slog.Int("user_id", user.ID),
+					slog.String("username", usernameStr),
 				)
 			}
 		}
@@ -105,22 +101,18 @@ func SlogUserID() gin.HandlerFunc {
 	}
 }
 
-func registerAuthMiddleware(authMiddleware *jwt.GinJWTMiddleware) {
-	r.Use(middleware.HandlerMiddleWare(authMiddleware))
-
-	versionedGroup := r.Group("/api/" + APIVersion)
-
-	middleware.RegisterRoute(versionedGroup, authMiddleware)
+func registerAuthMiddleware() {
+	r.Use(middleware.HandlerMiddleWare())
 }
 
 func SentryMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, exists := c.Get(middleware.IdentityKey)
+		username, exists := c.Get(middleware.IdentityKey)
 		if exists {
-			if user, ok := user.(*models.User); ok {
+			if usernameStr, ok := username.(string); ok {
 				sentry.ConfigureScope(func(scope *sentry.Scope) {
 					scope.SetUser(sentry.User{
-						ID: strconv.Itoa(int(user.ID)),
+						Username: usernameStr,
 					})
 				})
 			}
@@ -133,10 +125,9 @@ func SentryMiddleware() gin.HandlerFunc {
 func registerAPIRoutes(
 	httpHdlr httpHandler.Handler,
 	websocketHdlr websocket.TransactionWebSocketHandler,
-	authMiddleware *jwt.GinJWTMiddleware,
 ) {
 	protectedAPIRouter := r.Group("/api/" + APIVersion)
-	protectedAPIRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware(), SlogUserID())
+	protectedAPIRouter.Use(middleware.HandlerMiddleWare(), SentryMiddleware(), SlogUserID())
 	{
 		registerProductRoutes(protectedAPIRouter, httpHdlr)
 		registerProductInterestRoutes(protectedAPIRouter, httpHdlr)
@@ -147,7 +138,6 @@ func registerAPIRoutes(
 		protectedAPIRouter.POST("/guestsUpload", httpHdlr.ImportGuestsFromDeineTicketsCsv)
 
 		registerPurchaseRoutes(protectedAPIRouter, httpHdlr)
-		registerUserRoutes(protectedAPIRouter, httpHdlr)
 
 		registerSumupReadersRoutes(protectedAPIRouter, httpHdlr)
 		registerSumupTransactionRoutes(protectedAPIRouter, httpHdlr)
@@ -157,9 +147,6 @@ func registerAPIRoutes(
 	unprotectedAPIRouter := r.Group("/api/" + APIVersion)
 	{
 		unprotectedAPIRouter.GET("/config", httpHdlr.GetConfig)
-
-		unprotectedAPIRouter.POST("/auth/changePasswordToken", httpHdlr.RequestChangePasswordToken)
-		unprotectedAPIRouter.POST("/auth/changePassword", httpHdlr.UpdateUserPassword)
 
 		unprotectedAPIRouter.POST("/sumup/webhook", httpHdlr.GetSumupTransactionWebhook)
 
@@ -213,17 +200,6 @@ func registerPurchaseRoutes(
 		purchases.DELETE("/:id", handler.DeletePurchase)
 		purchases.GET("/export", handler.ExportPurchases)
 		purchases.POST("/:id/refund", handler.RefundPurchase)
-	}
-}
-
-func registerUserRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
-	users := rg.Group("/users")
-	{
-		users.GET("", handler.GetUsers)
-		users.GET("/:id", handler.GetUserByID)
-		users.PUT("/:id", handler.UpdateUserByID)
-		users.DELETE("/:id", handler.DeleteUserByID)
-		users.POST("", handler.CreateUser)
 	}
 }
 

@@ -9,7 +9,6 @@ import guests from "./resources/guests";
 import guestlists from "./resources/guestlists";
 import sumupreaders from "./resources/sumup-readers";
 import sumuptransactions from "./resources/sumup-transactions";
-import users from "./resources/users";
 import Dashboard from "./pages/dashboard/Dashboard";
 import { MyTheme, MyDarkTheme } from "./layouts/MyTheme";
 import { MyLayout } from "./layouts/MyLayout";
@@ -40,7 +39,6 @@ const AdminPanel: React.FC = () => (
       {...sumuptransactions}
       options={{ label: "Transactions" }}
     />
-    <Resource name="users" {...users} />
   </Admin>
 );
 

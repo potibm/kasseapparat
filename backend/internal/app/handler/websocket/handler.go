@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"net/http"
 
-	jwt "github.com/appleboy/gin-jwt/v3"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -36,7 +35,6 @@ type Handler struct {
 	sqliteRepository PurchaseGetter
 	purchaseService  purchaseService.Service
 	upgrader         websocket.Upgrader
-	jwtMiddleware    *jwt.GinJWTMiddleware
 }
 
 type PurchaseGetter interface {
@@ -47,7 +45,6 @@ func NewHandler(
 	sqliteRepository PurchaseGetter,
 	sumupRepository sumupRepo.RepositoryInterface,
 	purchaseSvc purchaseService.Service,
-	jwtMiddleware *jwt.GinJWTMiddleware,
 	corsAllowOrigins *config.CorsAllowOriginsConfig,
 ) *Handler {
 	upgrader := websocket.Upgrader{
@@ -59,7 +56,6 @@ func NewHandler(
 		sumupRepository:  sumupRepository,
 		purchaseService:  purchaseSvc,
 		upgrader:         upgrader,
-		jwtMiddleware:    jwtMiddleware,
 	}
 }
 

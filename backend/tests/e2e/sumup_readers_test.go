@@ -54,12 +54,4 @@ func TestDeleteSumupReader(t *testing.T) {
 		Status(http.StatusNoContent)
 }
 
-func TestSumupReadersAuthentication(t *testing.T) {
-	_, cleanup := setupTestEnvironment(t)
-	defer cleanup()
-
-	e.Request("GET", sumupReadersURL).Expect().Status(http.StatusUnauthorized)
-	e.Request("POST", sumupReadersURL).Expect().Status(http.StatusUnauthorized)
-	e.Request("GET", sumupReadersURLWithID).Expect().Status(http.StatusUnauthorized)
-	e.Request("DELETE", sumupReadersURLWithID).Expect().Status(http.StatusUnauthorized)
-}
+// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2

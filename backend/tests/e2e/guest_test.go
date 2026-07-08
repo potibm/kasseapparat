@@ -233,7 +233,7 @@ func TestCreateUpdateAndDeleteGuest(t *testing.T) {
 }
 
 func TestGuestAuthentication(t *testing.T) {
-	testAuthenticationForEntityEndpoints(t, guestBaseURL, guestURLWithID)
+	// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2
 }
 
 func TestGuestsByProduct(t *testing.T) {

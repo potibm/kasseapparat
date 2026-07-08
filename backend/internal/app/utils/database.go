@@ -8,6 +8,7 @@ import (
 
 	"github.com/glebarez/sqlite"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	gormaudit "github.com/potibm/kasseapparat/internal/app/store/gorm"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/gorm"
 )
@@ -64,6 +65,10 @@ func connectToSQLite(dsn string) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	if err := gormaudit.RegisterAuditCallbacks(db); err != nil {
+		return nil, fmt.Errorf("failed to register audit callbacks: %w", err)
+	}
+
 	return db, nil
 }
 
@@ -73,7 +78,6 @@ func PurgeDatabase(db *gorm.DB) error {
 			&models.Product{},
 			&models.Purchase{},
 			&models.PurchaseItem{},
-			&models.User{},
 			&models.Guestlist{},
 			&models.Guest{},
 			&models.ProductInterest{},
@@ -90,7 +94,6 @@ func MigrateDatabase(db *gorm.DB) error {
 		&models.Product{},
 		&models.Purchase{},
 		&models.PurchaseItem{},
-		&models.User{},
 		&models.Guestlist{},
 		&models.Guest{},
 		&models.ProductInterest{},

@@ -96,7 +96,6 @@ func (repo *Repository) UpdateGuestlistByID(id int, updatedGuestlist models.Gues
 	guestlist.Name = updatedGuestlist.Name
 	guestlist.TypeCode = updatedGuestlist.TypeCode
 	guestlist.ProductID = updatedGuestlist.ProductID
-	guestlist.UpdatedByID = updatedGuestlist.UpdatedByID
 
 	if err := repo.db.Save(&guestlist).Error; err != nil {
 		return nil, errors.New("failed to update guestlist")
@@ -111,10 +110,7 @@ func (repo *Repository) CreateGuestlist(guestlist models.Guestlist) (models.Gues
 	return guestlist, result.Error
 }
 
-func (repo *Repository) DeleteGuestlist(guestlist models.Guestlist, deletedBy models.User) {
-	repo.db.Model(&models.Guestlist{}).Where(whereIDEquals, guestlist.ID).Update("DeletedByID", deletedBy.ID)
-	repo.db.Model(&models.Guest{}).Where("guestlist_id = ?", guestlist.ID).Update("DeletedByID", deletedBy.ID)
-
+func (repo *Repository) DeleteGuestlist(guestlist models.Guestlist) {
 	repo.db.Delete(&models.Guest{}, "guestlist_id = ?", guestlist.ID)
 	repo.db.Delete(&guestlist)
 }

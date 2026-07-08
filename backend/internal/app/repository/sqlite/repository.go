@@ -35,7 +35,7 @@ type GuestCRUDRepository interface {
 	GetGuestByID(id int) (*models.Guest, error)
 	UpdateGuestByID(id int, updatedGuest models.Guest) (*models.Guest, error)
 	CreateGuest(guest models.Guest) (models.Guest, error)
-	DeleteGuest(guest models.Guest, deletedBy models.User)
+	DeleteGuest(guest models.Guest)
 	GetTotalGuests(filters *GuestFilters) (int64, error)
 }
 
@@ -52,15 +52,15 @@ type GuestlistRepository interface {
 	GetGuestlistWithTypeCode() (*models.Guestlist, error)
 	UpdateGuestlistByID(id int, updatedGuestlist models.Guestlist) (*models.Guestlist, error)
 	CreateGuestlist(guestlist models.Guestlist) (models.Guestlist, error)
-	DeleteGuestlist(guestlist models.Guestlist, deletedBy models.User)
+	DeleteGuestlist(guestlist models.Guestlist)
 }
 
 type ProductInterestRepository interface {
 	GetProductInterests(limit int, offset int, ids []int) ([]models.ProductInterest, error)
 	GetTotalProductInterests() (int64, error)
 	GetProductInterestByID(id int) (*models.ProductInterest, error)
-	DeleteProductInterest(productInterest models.ProductInterest, deletedBy models.User)
-	CreateProductInterest(productInterest models.ProductInterest, createdBy models.User) (models.ProductInterest, error)
+	DeleteProductInterest(productInterest models.ProductInterest)
+	CreateProductInterest(productInterest models.ProductInterest) (models.ProductInterest, error)
 	GetProductInterestCountByProductID(productID int) (int, error)
 }
 
@@ -71,7 +71,7 @@ type ProductRepository interface {
 	GetProductByID(id int) (*models.Product, error)
 	UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error)
 	CreateProduct(product models.Product) (models.Product, error)
-	DeleteProduct(product models.Product, deletedBy models.User)
+	DeleteProduct(product models.Product)
 	GetAttendedGuestSumByProductID(productID int) (int, error)
 }
 
@@ -92,22 +92,10 @@ type PurchaseRepository interface {
 
 type PurchaseCRUDRepository interface {
 	StorePurchases(purchase models.Purchase) (models.Purchase, error)
-	DeletePurchaseByID(id uuid.UUID, deletedBy models.User)
+	DeletePurchaseByID(id uuid.UUID)
 	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
 	GetTotalPurchases(filters PurchaseFilters) (int64, error)
 	GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error)
-}
-
-type UserRepository interface {
-	GetUserByID(id int) (*models.User, error)
-	GetUsers(limit int, offset int, sort string, order string, filters UserFilters) ([]models.User, error)
-	GetTotalUsers(filters *UserFilters) (int64, error)
-	CreateUser(user models.User) (models.User, error)
-	UpdateUserByID(id int, updatedUser models.User) (*models.User, error)
-	DeleteUser(user models.User) error
-	GetUserByEmail(email string) (*models.User, error)
-	GetUserByUsername(username string) (*models.User, error)
-	GetUserByUsernameOrEmail(usernameOrEmail string) (*models.User, error)
 }
 
 type RepositoryInterface interface {
@@ -117,7 +105,6 @@ type RepositoryInterface interface {
 	ProductInterestRepository
 	ProductRepository
 	PurchaseRepository
-	UserRepository
 }
 
 var _ RepositoryInterface = (*Repository)(nil)

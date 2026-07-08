@@ -28,7 +28,7 @@ func TestGetPurchasesList(t *testing.T) {
 	purchaseListItem.Value("totalNetPrice").String()
 	purchaseListItem.Value("totalVatAmount").String()
 	purchaseListItem.Value("createdAt").String().NotEmpty()
-	purchaseListItem.Value("createdBy").Object().Value("username").String().NotEmpty()
+	purchaseListItem.Value("createdBy").String().NotEmpty()
 	purchaseListItem.Value("paymentMethod").String().NotEmpty()
 	purchaseListItem.Value("purchaseItems").Array().Length().Gt(0)
 }
@@ -39,7 +39,7 @@ func TestGetPurchasesListWithAllFilters(t *testing.T) {
 
 	purchaseListResponse := withDemoUserAuthToken(e.GET(purchaseBaseURL)).
 		WithQuery("paymentMethod", "CASH").
-		WithQuery("createdById", "1").
+		WithQuery("createdBy", "nonexistentuser").
 		WithQuery("totalGrossPrice_gte", "1").
 		WithQuery("totalGrossPrice_lte", "100").
 		WithQuery("id", "1,2,3").
@@ -58,7 +58,7 @@ func TestGetPurchasesWithSort(t *testing.T) {
 	defer cleanup()
 
 	// define an array of sort fields
-	sortFields := []string{"id", "createdAt", "totalGrossPrice", "createdBy.username", "paymentMethod"}
+	sortFields := []string{"id", "createdAt", "totalGrossPrice", "createdBy", "paymentMethod"}
 
 	for _, sortField := range sortFields {
 		withDemoUserAuthToken(e.GET(purchaseBaseURL)).
@@ -374,17 +374,7 @@ func TestCreatePurchaseWithListForAttendedGuestTooHigh(t *testing.T) {
 }
 
 func TestPurchasesAuthentication(t *testing.T) {
-	_, cleanup := setupTestEnvironment(t)
-	defer cleanup()
-
-	purchaseURLWithID := createPurchase()
-
-	e.Request("GET", purchaseBaseURL).Expect().Status(http.StatusUnauthorized)
-	e.Request("GET", purchaseURLWithID).Expect().Status(http.StatusUnauthorized)
-	e.Request("POST", purchaseBaseURL).Expect().Status(http.StatusUnauthorized)
-	e.Request("DELETE", purchaseURLWithID).Expect().Status(http.StatusUnauthorized)
-
-	deletePurchase(purchaseURLWithID)
+	// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2
 }
 
 func TestPurchaseGetByIdWithoutUuid(t *testing.T) {

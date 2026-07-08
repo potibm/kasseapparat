@@ -7,7 +7,6 @@ import (
 	"os"
 	"testing"
 
-	jwt "github.com/appleboy/gin-jwt/v3"
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/config"
 	httpHandler "github.com/potibm/kasseapparat/internal/app/handler/http"
@@ -46,10 +45,6 @@ func TestInitializeHttpServer(t *testing.T) {
 		},
 	}
 
-	jwtMiddleware := &jwt.GinJWTMiddleware{
-		Key: []byte("secret_test_key"),
-	}
-
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	t.Run("should initialize server and register routes successfully", func(t *testing.T) {
@@ -58,7 +53,6 @@ func TestInitializeHttpServer(t *testing.T) {
 			mockWs,
 			emptyRepo,
 			testFS,
-			jwtMiddleware,
 			cfg,
 			logger,
 		)

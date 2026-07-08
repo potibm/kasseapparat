@@ -1,13 +1,11 @@
 package websocket
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	jwt "github.com/appleboy/gin-jwt/v3"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -19,8 +17,6 @@ import (
 )
 
 // --- MOCKS ---
-
-const secWebsocketProtocol = "Sec-WebSocket-Protocol"
 
 // Mock for the SQLite Repository.
 type mockSqliteRepo struct {
@@ -49,25 +45,13 @@ func (m *mockSumupRepo) CreateReaderTerminateAction(readerID string) error {
 
 // --- TEST SETUP ---
 
-func setupTestServer(t *testing.T) (*Handler, *httptest.Server, *mockSqliteRepo, *mockSumupRepo, string) {
+func setupTestServer(t *testing.T) (*Handler, *httptest.Server, *mockSqliteRepo, *mockSumupRepo) {
 	gin.SetMode(gin.TestMode)
 
 	mockSqlite := new(mockSqliteRepo)
 	mockSumup := new(mockSumupRepo)
 
-	// Real JWT Middleware Setup to generate valid tokens for testing
-	jwtMid, err := jwt.New(&jwt.GinJWTMiddleware{
-		Key:         []byte("secret_test_key"),
-		IdentityKey: "id",
-	})
-	require.NoError(t, err)
-
-	// Generate valid token for testing
-	token, err := jwtMid.TokenGenerator(context.Background(), map[string]interface{}{"id": "test-user"})
-	require.NoError(t, err)
-
 	handler := &Handler{
-		jwtMiddleware:    jwtMid,
 		sqliteRepository: mockSqlite,
 		sumupRepository:  mockSumup,
 		upgrader: websocket.Upgrader{
@@ -81,48 +65,24 @@ func setupTestServer(t *testing.T) (*Handler, *httptest.Server, *mockSqliteRepo,
 
 	server := httptest.NewServer(router)
 
-	return handler, server, mockSqlite, mockSumup, token.AccessToken
-}
-
-func TestHandleTransactionWebSocketAuthFailures(t *testing.T) {
-	//nolint:dogsled // intended use for the setup function
-	_, server, _, _, _ := setupTestServer(t)
-	defer server.Close()
-
-	wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws/123e4567-e89b-12d3-a456-426614174000"
-	dialer := websocket.DefaultDialer
-
-	t.Run("Missing Token", func(t *testing.T) {
-		// No headers
-		_, resp, err := dialer.Dial(wsURL, nil)
-		require.Error(t, err)
-		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
-	})
-
-	t.Run("Invalid Token", func(t *testing.T) {
-		headers := http.Header{secWebsocketProtocol: []string{"invalid-token"}}
-		_, resp, err := dialer.Dial(wsURL, headers)
-		require.Error(t, err)
-		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
-	})
+	return handler, server, mockSqlite, mockSumup
 }
 
 func TestHandleTransactionWebSocketInvalidUUID(t *testing.T) {
 	//nolint:dogsled // intended use for the setup function
-	_, server, _, _, validToken := setupTestServer(t)
+	_, server, _, _ := setupTestServer(t)
 	defer server.Close()
 
 	wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws/invalid-uuid-format"
 
-	headers := http.Header{secWebsocketProtocol: []string{validToken}}
-	_, resp, err := websocket.DefaultDialer.Dial(wsURL, headers)
+	_, resp, err := websocket.DefaultDialer.Dial(wsURL, nil)
 
 	require.Error(t, err)
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 }
 
 func TestHandleTransactionWebSocketHappyPath(t *testing.T) {
-	_, server, mockSqlite, mockSumup, validToken := setupTestServer(t)
+	_, server, mockSqlite, mockSumup := setupTestServer(t)
 	defer server.Close()
 
 	transactionID := uuid.New()
@@ -135,8 +95,7 @@ func TestHandleTransactionWebSocketHappyPath(t *testing.T) {
 	mockSumup.On("CreateReaderTerminateAction", "reader-123").Return(nil)
 
 	// 2. Setup connection
-	headers := http.Header{secWebsocketProtocol: []string{validToken}}
-	conn, resp, err := websocket.DefaultDialer.Dial(wsURL, headers)
+	conn, resp, err := websocket.DefaultDialer.Dial(wsURL, nil)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
 
