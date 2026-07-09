@@ -129,6 +129,17 @@ Backend dev (`air`) defaults to `--otel-endpoint=localhost:3017`.
 
 ---
 
+## Architecture Decision Records (ADRs)
+
+Important technical and business decisions are documented as lightweight markdown files in `/docs/decisions/`.
+
+**For AI agents working in this repository:**
+
+- Always check `/docs/decisions/` to understand the historical context and reasoning behind existing features (like time limits or auth rules) before refactoring or removing them.
+- When we discuss and finalize a new architectural or significant business logic decision in our conversations, proactively offer to draft a new ADR markdown file for the `/docs/decisions/` folder.
+
+---
+
 ## Style notes
 
 - Go: `slog` only (depguard blocks `logrus`). Use snake_case for slog keys.

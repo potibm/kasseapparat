@@ -125,9 +125,9 @@ export const storePurchase = async (
 export const fetchPurchases = async (
   apiHost: string,
   jwtToken: string,
-  userId: number,
+  username: string,
 ): Promise<Purchase[]> => {
-  const url = `${apiHost}/api/v2/purchases?createdById=${encodeURIComponent(userId)}&status=confirmed&status=pending`;
+  const url = `${apiHost}/api/v2/purchases?createdById=${encodeURIComponent(username)}&status=confirmed&status=pending`;
   return getValidated(url, jwtToken, z.array(PurchaseSchema));
 };
 

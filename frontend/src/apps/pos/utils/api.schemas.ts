@@ -66,8 +66,7 @@ const PurchaseStatusSchema = z.enum([
 export const PurchaseSchema = z.object({
   id: z.uuid(),
   createdAt: z.string(),
-  createdById: z.number(),
-  createdBy: UserSchema.nullable(),
+  createdBy: z.string(),
   paymentMethod: z.string(),
   totalNetPrice: DecimalSchema,
   totalGrossPrice: DecimalSchema,

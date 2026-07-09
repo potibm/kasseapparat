@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -41,7 +42,21 @@ func (handler *Handler) RefundPurchase(c *gin.Context) {
 		return
 	}
 
-	purchase, err := handler.purchaseService.RefundPurchase(c.Request.Context(), id)
+	purchase, err := handler.repo.GetPurchaseByID(id)
+	if err != nil {
+		_ = c.Error(NotFound.WithMsg("Purchase not found").WithCause(err))
+
+		return
+	}
+
+	// @TODO allow admins to refund older purchases
+	if time.Since(purchase.CreatedAt) > 15*time.Minute {
+		_ = c.Error(Forbidden.WithMsg("You can only refund purchases within 15 minutes of creation"))
+
+		return
+	}
+
+	purchase, err = handler.purchaseService.RefundPurchase(c.Request.Context(), id)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCauseMsg(err))
 

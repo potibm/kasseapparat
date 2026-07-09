@@ -11,7 +11,7 @@ const log = createLogger("Purchase");
 export const usePurchaseHistory = (
   apiHost: string,
   getToken: () => Promise<string>,
-  userId: number,
+  username: string,
 ) => {
   const [history, setHistory] = useState<PurchaseType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -24,8 +24,8 @@ export const usePurchaseHistory = (
    */
   const loadHistory = useCallback(
     async (isSilent = false) => {
-      if (!userId) {
-        log.warn("No user ID provided, cannot load purchase history");
+      if (!username) {
+        log.warn("No username provided, cannot load purchase history");
         if (!isSilent) {
           setHistory([]);
           setLoading(false);
@@ -40,7 +40,7 @@ export const usePurchaseHistory = (
 
       try {
         const token = await getToken();
-        const purchases = await fetchPurchases(apiHost, token, userId);
+        const purchases = await fetchPurchases(apiHost, token, username);
 
         setHistory(purchases);
         log.debug("Purchase history fetched successfully", {
@@ -72,7 +72,7 @@ export const usePurchaseHistory = (
         }
       }
     },
-    [apiHost, getToken, userId, showToast],
+    [apiHost, getToken, username, showToast],
   );
 
   useEffect(() => {

@@ -31,7 +31,7 @@ const logPurchase = createLogger("Purchase");
 
 const KasseapparatContent: React.FC = () => {
   const { apiHost, environmentMessage } = useConfig();
-  const { username, getSafeToken, id: userId } = useAuth();
+  const { username, getSafeToken } = useAuth();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -68,7 +68,7 @@ const KasseapparatContent: React.FC = () => {
     refreshHistory,
     refundPurchase,
     loading: historyLoading,
-  } = usePurchaseHistory(apiHost, getSafeToken, userId);
+  } = usePurchaseHistory(apiHost, getSafeToken, username);
 
   const handlePurchaseSuccess = useCallback(async () => {
     await Promise.all([refreshHistory(), refreshProducts()]);
