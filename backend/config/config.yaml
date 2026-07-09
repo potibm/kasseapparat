@@ -10,6 +10,10 @@ app:
   otel_endpoint: ""
   port: 8080
   redis_url: redis://redis:3051/0
+auth:
+  mode: proxy
+  proxy_admins: []
+  proxy_header: X-Remote-User
 format:
   currency:
     code: EUR

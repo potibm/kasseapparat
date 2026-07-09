@@ -90,6 +90,10 @@ func InitViper() {
 	viper.SetDefault("sumup.application_id", "")
 	viper.SetDefault("sumup.public_url", "")
 
+	viper.SetDefault("auth.mode", "proxy")
+	viper.SetDefault("auth.proxy_header", "X-Remote-User")
+	viper.SetDefault("auth.proxy_admins", []string{})
+
 	viper.SetDefault("vatrates", DefaultVatRates)
 	viper.SetDefault("payment_methods", DefaultPaymentMethods)
 

@@ -31,6 +31,11 @@ var defaultTestConfig = Config{
 		FrontendURL:       "http://localhost:3000",
 	},
 	Sentry: SentryConfig{DSN: ""},
+	Auth: AuthConfig{
+		Mode:        "proxy",
+		ProxyHeader: "X-Remote-User",
+		ProxyAdmins: []string{},
+	},
 }
 
 func TestConfigValidate(t *testing.T) {

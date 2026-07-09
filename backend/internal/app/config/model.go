@@ -90,6 +90,12 @@ type SumupConfig struct {
 	PublicURL         string `mapstructure:"public_url"          validate:"omitempty,https_url"`
 }
 
+type AuthConfig struct {
+	Mode        string   `mapstructure:"mode"         validate:"required,oneof=proxy oidc"`
+	ProxyHeader string   `mapstructure:"proxy_header" validate:"required"`
+	ProxyAdmins []string `mapstructure:"proxy_admins"`
+}
+
 type Config struct {
 	App    AppConfig    `mapstructure:"app"`
 	Format FormatConfig `mapstructure:"format"`
@@ -97,6 +103,7 @@ type Config struct {
 	Jwt    JwtConfig    `mapstructure:"jwt"`
 	Mailer MailerConfig `mapstructure:"mailer"`
 	Sumup  SumupConfig  `mapstructure:"sumup"`
+	Auth   AuthConfig   `mapstructure:"auth"`
 
 	VATRates       VatRatesConfig `mapstructure:"vat_rates"`
 	PaymentMethods PaymentMethods `mapstructure:"payment_methods"`
