@@ -43,7 +43,7 @@ require (
 	go.opentelemetry.io/otel/sdk/log v0.20.0
 	go.opentelemetry.io/otel/sdk/metric v1.44.0
 	golang.org/x/crypto v0.53.0
-	golang.org/x/text v0.39.0
+	golang.org/x/text v0.40.0
 	gorm.io/gorm v1.31.2
 )
 
