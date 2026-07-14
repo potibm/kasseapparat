@@ -6,6 +6,7 @@ export interface AppConfig {
   sentryTraceSampleRate?: number;
   sentryReplaySessionSampleRate?: number;
   sentryReplayErrorSampleRate?: number;
+  sentryEnvironment?: string;
   locale: string;
   currencyCode: string;
   currencyLocale: string;

@@ -3,15 +3,15 @@ import * as Sentry from "@sentry/react";
 import { useAuth } from "../../apps/pos/features/auth/hooks/useAuth";
 
 const SentryUserWatcher = () => {
-  const { id, username } = useAuth();
+  const { username } = useAuth();
 
   useEffect(() => {
-    if (id) {
-      Sentry.setUser({ id: String(id), username });
+    if (username) {
+      Sentry.setUser({ username });
     } else {
       Sentry.setUser(null);
     }
-  }, [id, username]);
+  }, [username]);
 
   return null;
 };

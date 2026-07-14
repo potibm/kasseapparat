@@ -55,7 +55,7 @@ export async function bootstrapApp() {
       log.debug("Configuring Sentry");
       Sentry.init({
         dsn: config.sentryDSN,
-        //environment: config.sentryEnvironment,
+        environment: config.sentryEnvironment,
         release: config.version,
         replaysSessionSampleRate: config.sentryReplaySessionSampleRate,
         replaysOnErrorSampleRate: config.sentryReplayErrorSampleRate,
