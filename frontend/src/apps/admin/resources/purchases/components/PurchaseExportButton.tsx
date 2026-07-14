@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { useConfig } from "@core/config/hooks/useConfig";
-import { getSession } from "@admin/utils/auth-utils";
 
 interface PaymentMethod {
   code: string;
@@ -29,8 +28,6 @@ export const PurchaseExportButton: React.FC<PurchaseExportButtonProps> = ({
   const [selected, setSelected] = useState<string[]>([]);
   const notify = useNotify();
 
-  const sessionData = getSession();
-  const token = sessionData?.token;
   const { apiHost } = useConfig();
 
   const togglePaymentMethod = (code: string) => {
@@ -40,11 +37,6 @@ export const PurchaseExportButton: React.FC<PurchaseExportButtonProps> = ({
   };
 
   const handleExport = async () => {
-    if (!token) {
-      notify("Authentication token missing", { type: "error" });
-      return;
-    }
-
     try {
       const params = new URLSearchParams();
       if (selected.length > 0) {
@@ -55,9 +47,6 @@ export const PurchaseExportButton: React.FC<PurchaseExportButtonProps> = ({
         `${apiHost}/api/v2/purchases/export?${params.toString()}`,
         {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         },
       );
 

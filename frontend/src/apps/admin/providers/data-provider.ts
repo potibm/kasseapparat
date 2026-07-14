@@ -6,7 +6,6 @@ import {
   UpdateParams,
 } from "react-admin";
 import * as Sentry from "@sentry/react";
-import { getSessionToken } from "../utils/auth-utils";
 
 const API_HOST = import.meta.env.VITE_API_HOST && "http://localhost:3001";
 
@@ -32,10 +31,6 @@ const httpClient = async (url: string, options: HttpClientOptions = {}) => {
     headers.set("Content-Type", "application/json");
   }
 
-  const token = getSessionToken();
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
   options.headers = headers;
 
   try {

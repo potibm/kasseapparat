@@ -42,16 +42,7 @@ vi.mock("@sentry/react", () => ({
   captureException: vi.fn(),
 }));
 
-vi.mock("../utils/auth-utils", () => ({
-  getSessionToken: vi.fn(),
-}));
-
-vi.mock("./refresh-token", () => ({
-  refreshToken: vi.fn(),
-}));
-
 import dataProvider from "./data-provider";
-import { getSessionToken } from "../utils/auth-utils";
 
 interface HttpClientOptions extends fetchUtils.Options {
   isUpload?: boolean;
@@ -122,24 +113,12 @@ describe("Data Provider", () => {
       const headers = calledOptions?.headers as Headers;
       expect(headers.get("Content-Type")).toBeNull();
     });
-
-    it("should inject the Authorization token if a session exists", async () => {
-      vi.mocked(getSessionToken).mockReturnValue("valid-test-token");
-      vi.mocked(fetchUtils.fetchJson).mockResolvedValue(mockFetchResponse({}));
-
-      await capturedHttpClient("${API_HOST/api/v2/test");
-
-      const calledOptions = vi.mocked(fetchUtils.fetchJson).mock.calls[0][1];
-      const headers = calledOptions?.headers as Headers;
-      expect(headers.get("Authorization")).toBe("Bearer valid-test-token");
-    });
   });
 
   describe("httpClient Error Handling & Sentry", () => {
     it("should throw and report critical errors to Sentry", async () => {
       const error = new Error("Database connection failed");
       vi.mocked(fetchUtils.fetchJson).mockRejectedValue(error);
-      vi.mocked(getSessionToken).mockReturnValue("secret-token");
 
       await expect(
         capturedHttpClient(`${API_HOST}/api/v2/test`),
@@ -163,9 +142,6 @@ describe("Data Provider", () => {
     it("should scrub the Authorization header before sending extra data to Sentry", async () => {
       const error = new Error("Some critical API fail");
       vi.mocked(fetchUtils.fetchJson).mockRejectedValue(error);
-      vi.mocked(getSessionToken).mockReturnValue(
-        "super-secret-token-do-not-log",
-      );
 
       await expect(
         capturedHttpClient(`${API_HOST}/api/v2/test`),
