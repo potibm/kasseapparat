@@ -1,7 +1,6 @@
 import React from "react";
 import { Admin, Resource } from "react-admin";
 import dataProvider from "./providers/data-provider";
-import authProvider from "./providers/auth-provider";
 import products from "./resources/products";
 import productInterests from "./resources/product-interests";
 import purchases from "./resources/purchases";
@@ -12,6 +11,7 @@ import sumuptransactions from "./resources/sumup-transactions";
 import Dashboard from "./pages/dashboard/Dashboard";
 import { MyTheme, MyDarkTheme } from "./layouts/MyTheme";
 import { MyLayout } from "./layouts/MyLayout";
+import { authProvider } from "@core/auth/authProvider";
 
 const AdminPanel: React.FC = () => (
   <Admin

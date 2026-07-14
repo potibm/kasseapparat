@@ -1,26 +1,16 @@
 import { AuthProvider } from "react-admin";
 
-// 1. Der In-Memory Cache
-// Wir speichern die Rolle hier in einer simplen Variable.
-// So verhindern wir, dass getPermissions() bei jedem Rendern eines Buttons das Backend anpingt.
 let cachedUser: { username: string; role: string } | null = null;
 
 export const authProvider: AuthProvider = {
-  // ----------------------------------------------------------------------
-  // Die Kern-Methoden für beide Frontends
-  // ----------------------------------------------------------------------
-
   checkAuth: async (_params: unknown = {}) => {
-    // Wenn wir die Rolle schon kennen, winken wir den Request sofort durch.
     if (cachedUser) {
       return;
     }
 
-    // Ansonsten fragen wir unser zustandsloses Backend.
     try {
       const response = await fetch("/api/v2/auth/me", {
-        // WICHTIG: Damit Traefik-Header oder spätere Cookies mitgesendet werden!
-        credentials: "omit", // Bei Headern via Proxy oft egal, bei Cookies (OIDC) später 'include'
+        credentials: "omit",
       });
 
       if (!response.ok) {
@@ -37,7 +27,6 @@ export const authProvider: AuthProvider = {
   },
 
   getPermissions: async (params: unknown = {}) => {
-    // Falls checkAuth noch nicht lief, garantieren wir hier, dass es nachgeholt wird.
     if (!cachedUser) {
       await authProvider.checkAuth(params);
     }
@@ -52,13 +41,7 @@ export const authProvider: AuthProvider = {
     };
   },
 
-  // ----------------------------------------------------------------------
-  // Hilfs-Methoden (Primär für React Admin)
-  // ----------------------------------------------------------------------
-
   checkError: async (error) => {
-    // React Admin ruft das auf, wenn ein API-Call fehlschlägt.
-    // Wenn das Backend 401/403 wirft, löschen wir den Cache und loggen den User aus.
     const status = error.status;
     if (status === 401 || status === 403) {
       cachedUser = null;
@@ -66,10 +49,7 @@ export const authProvider: AuthProvider = {
     }
   },
 
-  login: async () => {
-    // Vorerst ein Platzhalter.
-    // In Phase 2/3 (OIDC) machen wir hier ein: window.location.href = '/api/auth/login'
-  },
+  login: async () => {},
 
   logout: async () => {
     cachedUser = null;
