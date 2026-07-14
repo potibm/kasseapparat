@@ -1,35 +1,10 @@
 import React from "react";
 import { Button, Tooltip, ButtonProps } from "flowbite-react";
-import { useAuth } from "../../../auth/hooks/useAuth";
 import { HiShieldCheck } from "react-icons/hi";
-import { getSession, initializeSession } from "@admin/utils/auth-utils";
-import { createLogger } from "@core/logger/logger";
-
-const log = createLogger("Core");
 
 const AdminButton: React.FC<ButtonProps> = ({ ...props }) => {
-  const { getSafeToken, userdata } = useAuth();
-
   const handleAdminClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
-    if (!getSession()) {
-      const token = await getSafeToken();
-
-      if (!userdata?.id || !userdata?.username) {
-        log.error("Cannot initialize admin session: User data missing.");
-        return;
-      }
-
-      const data = {
-        ID: userdata.id,
-        username: userdata.username,
-        role: userdata.role ?? "user",
-        gravatarUrl: userdata.gravatarUrl ?? "",
-      };
-
-      initializeSession(data, token, 5);
-    }
 
     window.open("/admin", "_blank", "noopener,noreferrer");
   };

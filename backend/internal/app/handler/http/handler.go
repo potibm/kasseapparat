@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -52,6 +53,17 @@ func NewHandler(cfg HandlerConfig) *Handler {
 		config:          cfg.AppConfig,
 		decimalPlaces:   cfg.AppConfig.Format.Currency.FractionDigitsMax,
 	}
+}
+
+func (handler *Handler) GetMe(c *gin.Context) {
+	authUser, exists := middleware.GetAuthUser(c)
+	if !exists {
+		_ = c.Error(UnableToRetrieveExecutingUser)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, authUser)
 }
 
 func (handler *Handler) getUsernameFromContext(c *gin.Context) (string, error) {

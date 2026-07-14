@@ -38,24 +38,21 @@ const handleFetchError = async (response: Response): Promise<never> => {
 
 const postValidated = async <S extends z.ZodTypeAny>(
   url: string,
-  token: string,
   body: object,
   schema: S,
 ): Promise<z.infer<S>> => {
-  return performFetch(url, token, schema, "POST", body);
+  return performFetch(url, schema, "POST", body);
 };
 
 const getValidated = async <S extends z.ZodTypeAny>(
   url: string,
-  token: string,
   schema: S,
 ): Promise<z.infer<S>> => {
-  return performFetch(url, token, schema, "GET");
+  return performFetch(url, schema, "GET");
 };
 
 const performFetch = async <S extends z.ZodTypeAny>(
   url: string,
-  token: string,
   schema: S,
   method: string,
   body?: object,
@@ -64,7 +61,6 @@ const performFetch = async <S extends z.ZodTypeAny>(
     method,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   });
@@ -81,19 +77,15 @@ const performFetch = async <S extends z.ZodTypeAny>(
 };
 
 // Fetch all visible products
-export const fetchProducts = async (
-  apiHost: string,
-  jwtToken: string,
-): Promise<Product[]> => {
+export const fetchProducts = async (apiHost: string): Promise<Product[]> => {
   const url = `${apiHost}/api/v2/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true`;
 
-  return getValidated(url, jwtToken, z.array(ProductSchema));
+  return getValidated(url, z.array(ProductSchema));
 };
 
 // Fetch guests for a specific product
 export const fetchGuestlistByProductId = async (
   apiHost: string,
-  jwtToken: string,
   productId: number,
   query: string,
 ): Promise<Guest[]> => {
@@ -104,52 +96,42 @@ export const fetchGuestlistByProductId = async (
     z.array(GuestSchema),
   );
 
-  return getValidated(url, jwtToken, GuestListSchema);
+  return getValidated(url, GuestListSchema);
 };
 
 // Store a new purchase
 export const storePurchase = async (
   apiHost: string,
-  jwtToken: string,
   payload: ApiCreatePayloadPurchase,
 ): Promise<Purchase> => {
-  return postValidated(
-    `${apiHost}/api/v2/purchases`,
-    jwtToken,
-    payload,
-    PurchaseSchema,
-  );
+  return postValidated(`${apiHost}/api/v2/purchases`, payload, PurchaseSchema);
 };
 
 // Fetch all confirmed and pendingpurchases for a user
 export const fetchPurchases = async (
   apiHost: string,
-  jwtToken: string,
   username: string,
 ): Promise<Purchase[]> => {
   const url = `${apiHost}/api/v2/purchases?createdById=${encodeURIComponent(username)}&status=confirmed&status=pending`;
-  return getValidated(url, jwtToken, z.array(PurchaseSchema));
+  return getValidated(url, z.array(PurchaseSchema));
 };
 
 // Refund a purchase by ID
 export const refundPurchaseById = async (
   apiHost: string,
-  jwtToken: string,
   purchaseId: string,
 ): Promise<Purchase> => {
   const url = `${apiHost}/api/v2/purchases/${purchaseId}/refund`;
-  return postValidated(url, jwtToken, {}, PurchaseSchema);
+  return postValidated(url, {}, PurchaseSchema);
 };
 
 // Add interest in a product
 export const addProductInterest = async (
   apiHost: string,
-  jwtToken: string,
   productId: number,
 ): Promise<ProductInterest> => {
   return postValidated(
     `${apiHost}/api/v2/productInterests`,
-    jwtToken,
     { productId },
     ProductInterestSchema,
   );

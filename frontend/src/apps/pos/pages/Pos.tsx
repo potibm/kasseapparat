@@ -29,9 +29,14 @@ import { ToastProvider } from "@pos/features/ui/toast/providers/ToastProvider";
 
 const logPurchase = createLogger("Purchase");
 
-const KasseapparatContent: React.FC = () => {
+interface KasseapparatContentProps {
+  username: string;
+}
+
+const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
+  username,
+}) => {
   const { apiHost, environmentMessage } = useConfig();
-  const { username, getSafeToken } = useAuth();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -48,7 +53,7 @@ const KasseapparatContent: React.FC = () => {
     loading: _productsLoading,
     refreshProducts,
     addInterest,
-  } = useProducts(apiHost, getSafeToken);
+  } = useProducts(apiHost);
 
   const {
     cart,
@@ -61,14 +66,14 @@ const KasseapparatContent: React.FC = () => {
     pendingPurchase,
     finalizeCheckout,
     resumePolling,
-  } = useCart(apiHost, getSafeToken);
+  } = useCart(apiHost);
 
   const {
     history,
     refreshHistory,
     refundPurchase,
     loading: historyLoading,
-  } = usePurchaseHistory(apiHost, getSafeToken, username);
+  } = usePurchaseHistory(apiHost, username);
 
   const handlePurchaseSuccess = useCallback(async () => {
     await Promise.all([refreshHistory(), refreshProducts()]);
@@ -187,9 +192,20 @@ const KasseapparatContent: React.FC = () => {
 };
 
 export const Kasseapparat: React.FC = () => {
+  const { username } = useAuth();
+
+  if (!username) {
+    // @TODO centralize those errors
+    return (
+      <div className="flex h-screen items-center justify-center p-4">
+        <Alert color="failure">Critical Error. No Username was set.</Alert>
+      </div>
+    );
+  }
+
   return (
     <ToastProvider>
-      <KasseapparatContent />
+      <KasseapparatContent username={username} />
     </ToastProvider>
   );
 };

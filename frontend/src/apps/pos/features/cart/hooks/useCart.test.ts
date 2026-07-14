@@ -30,7 +30,7 @@ vi.mock("../services/PurchaseErrorHandler", () => ({
 
 vi.mock("@core/config/hooks/useConfig", () => ({
   useConfig: () => ({
-    currency: new Intl.NumberFormat(),
+    currency: new Intl.NumberFormat("en-US"),
   }),
 }));
 
@@ -52,7 +52,6 @@ vi.mock("@pos/features/ui/toast/hooks/useToast", () => ({
 
 // --- 2. FIXTURES (Dummy Data) ---
 const mockApiHost = "https://api.example.com";
-const mockGetToken = vi.fn(async () => "fake-token");
 
 const mockProduct: ProductType = createMockProduct();
 const mockPaymentData = { type: "empty" } as PaymentMethodData;
@@ -65,7 +64,7 @@ describe("useCart Hook", () => {
 
   describe("Cart Manipulation (add, remove, clear)", () => {
     it("should initialize with an empty cart and default states", () => {
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
 
       expect(result.current.cart.isEmpty).toBe(true);
       expect(result.current.isPolling).toBe(false);
@@ -74,7 +73,7 @@ describe("useCart Hook", () => {
     });
 
     it("should add, remove, and clear products", () => {
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
 
       act(() => {
         result.current.add(mockProduct, 2, null);
@@ -98,7 +97,7 @@ describe("useCart Hook", () => {
 
   describe("finalizeCheckout()", () => {
     it("should reset states and clear cart on success", () => {
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
 
       act(() => {
         result.current.add(mockProduct, 1, null);
@@ -115,7 +114,7 @@ describe("useCart Hook", () => {
     });
 
     it("should reset states but KEEP the cart on failure", () => {
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
 
       act(() => {
         result.current.add(mockProduct, 1, null);
@@ -140,7 +139,7 @@ describe("useCart Hook", () => {
       });
       vi.mocked(storePurchase).mockResolvedValue(confirmedPurchase);
 
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
 
       act(() => {
         result.current.add(mockProduct, 1, null);
@@ -157,11 +156,7 @@ describe("useCart Hook", () => {
         purchaseResult = await result.current.checkout("cash", mockPaymentData);
       });
 
-      expect(storePurchase).toHaveBeenCalledWith(
-        mockApiHost,
-        "fake-token",
-        expectedPayload,
-      );
+      expect(storePurchase).toHaveBeenCalledWith(mockApiHost, expectedPayload);
       expect(purchaseResult).toEqual(confirmedPurchase);
 
       expect(result.current.isPolling).toBe(false);
@@ -178,7 +173,7 @@ describe("useCart Hook", () => {
       const pendingPurchase = createMockPurchase({ status: "pending" });
       vi.mocked(storePurchase).mockResolvedValue(pendingPurchase);
 
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
 
       act(() => {
         result.current.add(mockProduct, 1, null);
@@ -210,7 +205,7 @@ describe("useCart Hook", () => {
 
       vi.mocked(storePurchase).mockResolvedValue(weirdPurchase);
 
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
 
       await act(async () => {
         await expect(
@@ -223,7 +218,7 @@ describe("useCart Hook", () => {
       const networkError = new Error("Network timeout");
       vi.mocked(storePurchase).mockRejectedValue(networkError);
 
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
 
       await act(async () => {
         await expect(
@@ -245,7 +240,7 @@ describe("useCart Hook", () => {
       );
       vi.mocked(getErrorMessage).mockReturnValue("Card reader is busy.");
 
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
 
       await act(async () => {
         await expect(
@@ -268,7 +263,7 @@ describe("useCart Hook", () => {
       );
       vi.mocked(getErrorMessage).mockReturnValue("Something went wrong.");
 
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
 
       await act(async () => {
         await expect(
@@ -286,7 +281,7 @@ describe("useCart Hook", () => {
 
   describe("resumePolling()", () => {
     it("should resume polling for a pending purchase", () => {
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
       const pendingPurchase = createMockPurchase({
         status: "pending",
         paymentMethod: "sumup",
@@ -302,7 +297,7 @@ describe("useCart Hook", () => {
     });
 
     it("should early return and ignore if already polling", () => {
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
       const purchase1 = createMockPurchase({
         status: "pending",
         id: "purchase-1",
@@ -327,7 +322,7 @@ describe("useCart Hook", () => {
     });
 
     it("should early return if purchase status is not pending", () => {
-      const { result } = renderHook(() => useCart(mockApiHost, mockGetToken));
+      const { result } = renderHook(() => useCart(mockApiHost));
       const confirmedPurchase = createMockPurchase({ status: "confirmed" });
 
       act(() => {

@@ -17,7 +17,6 @@ import {
   createMockPurchase,
 } from "./api.schemas.mocks";
 
-// mock external dependencies
 vi.mock("@sentry/react", () => ({
   captureException: vi.fn(),
 }));
@@ -48,11 +47,9 @@ const convertDecimalsToStrings = (obj: any): any => {
 
 describe("Api Service", () => {
   const apiHost = "https://api.example.com";
-  const fakeToken = "fake-token";
 
   beforeEach(() => {
     vi.restoreAllMocks();
-    // Stub global fetch
     vi.stubGlobal("fetch", vi.fn());
   });
 
@@ -72,16 +69,13 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await fetchProducts(apiHost, fakeToken);
+      const result = await fetchProducts(apiHost);
       const url = `${apiHost}/api/v2/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
         expect.objectContaining({
           method: "GET",
-          headers: expect.objectContaining({
-            Authorization: "Bearer " + fakeToken,
-          }),
         }),
       );
 
@@ -105,22 +99,13 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await fetchGuestlistByProductId(
-        apiHost,
-        fakeToken,
-        12,
-        "Hans",
-      );
+      const result = await fetchGuestlistByProductId(apiHost, 12, "Hans");
       const url = `${apiHost}/api/v2/products/12/guests?q=Hans`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
         expect.objectContaining({
           method: "GET",
-          headers: expect.objectContaining({
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + fakeToken,
-          }),
         }),
       );
 
@@ -136,12 +121,7 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await fetchGuestlistByProductId(
-        apiHost,
-        fakeToken,
-        12,
-        "Hans",
-      );
+      const result = await fetchGuestlistByProductId(apiHost, 12, "Hans");
 
       expect(result).toEqual([]);
     });
@@ -174,21 +154,13 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await storePurchase(
-        apiHost,
-        fakeToken,
-        createPurchasePayload,
-      );
+      const result = await storePurchase(apiHost, createPurchasePayload);
       const url = `${apiHost}/api/v2/purchases`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
         expect.objectContaining({
           method: "POST",
-          headers: expect.objectContaining({
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + fakeToken,
-          }),
           body: JSON.stringify(createPurchasePayload),
         }),
       );
@@ -213,17 +185,13 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await fetchPurchases(apiHost, fakeToken, 1);
-      const url = `${apiHost}/api/v2/purchases?createdById=1&status=confirmed&status=pending`;
+      const result = await fetchPurchases(apiHost, "testuser");
+      const url = `${apiHost}/api/v2/purchases?createdById=testuser&status=confirmed&status=pending`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
         expect.objectContaining({
           method: "GET",
-          headers: expect.objectContaining({
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + fakeToken,
-          }),
         }),
       );
 
@@ -248,17 +216,13 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await refundPurchaseById(apiHost, fakeToken, purchaseId);
+      const result = await refundPurchaseById(apiHost, purchaseId);
       const url = `${apiHost}/api/v2/purchases/${purchaseId}/refund`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
         expect.objectContaining({
           method: "POST",
-          headers: expect.objectContaining({
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + fakeToken,
-          }),
         }),
       );
 
@@ -278,17 +242,13 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await addProductInterest(apiHost, fakeToken, 12);
+      const result = await addProductInterest(apiHost, 12);
       const url = `${apiHost}/api/v2/productInterests`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
         expect.objectContaining({
           method: "POST",
-          headers: expect.objectContaining({
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + fakeToken,
-          }),
           body: JSON.stringify({ productId: 12 }),
         }),
       );
@@ -304,7 +264,7 @@ describe("Api Service", () => {
         json: async () => ({ wrong_key: "garbage" }),
       } as Response);
 
-      await expect(fetchProducts(apiHost, fakeToken)).rejects.toThrow(
+      await expect(fetchProducts(apiHost)).rejects.toThrow(
         "API Response format mismatch",
       );
     });
@@ -320,9 +280,7 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      await expect(fetchProducts(apiHost, fakeToken)).rejects.toThrow(
-        "Server error",
-      );
+      await expect(fetchProducts(apiHost)).rejects.toThrow("Server error");
 
       expect(Sentry.captureException).toHaveBeenCalled();
     });

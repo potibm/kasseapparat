@@ -3,40 +3,78 @@ package middleware
 import (
 	"log/slog"
 	"net/http"
+	"slices"
 
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/config"
+	"github.com/potibm/kasseapparat/internal/app/models"
+	gormaudit "github.com/potibm/kasseapparat/internal/app/store/gorm"
 )
 
 const (
 	IdentityKey      = "username"
+	AuthUserKey      = "auth_user"
 	RemoteUserHeader = "X-Remote-User"
 	DefaultUsername  = "anonymous"
 )
 
-func HandlerMiddleWare() gin.HandlerFunc {
-	return PlaceholderAuthMiddleware()
+func HandlerMiddleWare(cfg config.Config) gin.HandlerFunc {
+	return ProxyAuthMiddleware(cfg)
 }
 
-func PlaceholderAuthMiddleware() gin.HandlerFunc {
+func ProxyAuthMiddleware(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		username := c.GetHeader(RemoteUserHeader)
+		if cfg.Auth.Mode != "proxy" {
+			c.Next()
+
+			return
+		}
+
+		username := c.GetHeader(cfg.Auth.ProxyHeader)
 		if username == "" {
-			username = DefaultUsername
-			slog.Debug("No remote user header found, using default", "username", username)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    http.StatusUnauthorized,
+				"message": "authentication required: missing proxy header",
+			})
+			c.Abort()
+
+			return
+		}
+
+		role := "user"
+		if slices.Contains(cfg.Auth.ProxyAdmins, username) {
+			role = "admin"
+		}
+
+		authUser := models.AuthUser{
+			Username: username,
+			Role:     role,
 		}
 
 		c.Set(IdentityKey, username)
+		c.Set(AuthUserKey, authUser)
+
+		ctx := gormaudit.WithUserID(c.Request.Context(), username)
+		c.Request = c.Request.WithContext(ctx)
+
+		slog.Debug("Proxy authentication successful", "username", username, "role", role)
+
 		c.Next()
 	}
 }
 
-func Unauthorized() func(c *gin.Context, code int, message string) {
-	return func(c *gin.Context, code int, message string) {
-		c.JSON(code, gin.H{
-			"code":    code,
-			"message": message,
-		})
+func GetAuthUser(c *gin.Context) (*models.AuthUser, bool) {
+	authUser, exists := c.Get(AuthUserKey)
+	if !exists {
+		return nil, false
 	}
+
+	user, ok := authUser.(models.AuthUser)
+	if !ok {
+		return nil, false
+	}
+
+	return &user, true
 }
 
 func GetUsername(c *gin.Context) string {
@@ -51,21 +89,4 @@ func GetUsername(c *gin.Context) string {
 	}
 
 	return usernameStr
-}
-
-func RequireAuth() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		username := GetUsername(c)
-		if username == "" || username == DefaultUsername {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code":    http.StatusUnauthorized,
-				"message": "authentication required",
-			})
-			c.Abort()
-
-			return
-		}
-
-		c.Next()
-	}
 }

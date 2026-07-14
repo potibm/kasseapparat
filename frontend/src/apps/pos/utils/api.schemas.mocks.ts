@@ -104,8 +104,7 @@ export const createMockPurchase = (
   return {
     id: faker.string.uuid(),
     createdAt: faker.date.recent().toISOString(),
-    createdById: user.id,
-    createdBy: user,
+    createdBy: user.username,
     paymentMethod: faker.helpers.arrayElement(["CASH", "CC"]),
     totalNetPrice: totalNetPrice,
     totalGrossPrice: totalGrossPrice,

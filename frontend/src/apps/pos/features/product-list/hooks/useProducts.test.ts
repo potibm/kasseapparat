@@ -30,7 +30,6 @@ vi.mock("@pos/features/ui/toast/hooks/useToast", () => ({
 
 // fixtures
 const mockApiHost = "https://api.example.com";
-const mockGetToken = vi.fn(async () => "fake-token");
 
 const mockProducts = [
   createMockProduct({ id: 1, name: "Product A" }),
@@ -46,9 +45,7 @@ describe("useProducts Hook", () => {
     it("should fetch and load products automatically on mount", async () => {
       vi.mocked(fetchProducts).mockResolvedValue(mockProducts);
 
-      const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken),
-      );
+      const { result } = renderHook(() => useProducts(mockApiHost));
 
       expect(result.current.loading).toBe(true);
 
@@ -56,7 +53,7 @@ describe("useProducts Hook", () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(fetchProducts).toHaveBeenCalledWith(mockApiHost, "fake-token");
+      expect(fetchProducts).toHaveBeenCalledWith(mockApiHost);
       expect(result.current.products).toEqual(mockProducts);
       expect(mockShowToast).not.toHaveBeenCalled();
     });
@@ -65,9 +62,7 @@ describe("useProducts Hook", () => {
       const apiError = new Error("Network offline");
       vi.mocked(fetchProducts).mockRejectedValue(apiError);
 
-      const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken),
-      );
+      const { result } = renderHook(() => useProducts(mockApiHost));
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -84,9 +79,7 @@ describe("useProducts Hook", () => {
     it("should trigger onError with a fallback message if fetching throws a non-Error (unknown)", async () => {
       vi.mocked(fetchProducts).mockRejectedValue("Some weird string error");
 
-      const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken),
-      );
+      const { result } = renderHook(() => useProducts(mockApiHost));
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -107,9 +100,7 @@ describe("useProducts Hook", () => {
         undefined as unknown as ProductInterestType,
       );
 
-      const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken),
-      );
+      const { result } = renderHook(() => useProducts(mockApiHost));
 
       await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -119,11 +110,7 @@ describe("useProducts Hook", () => {
         await result.current.addInterest(99, "Test Product");
       });
 
-      expect(addProductInterest).toHaveBeenCalledWith(
-        mockApiHost,
-        "fake-token",
-        99,
-      );
+      expect(addProductInterest).toHaveBeenCalledWith(mockApiHost, 99);
 
       expect(fetchProducts).toHaveBeenCalledTimes(1);
     });
@@ -134,9 +121,7 @@ describe("useProducts Hook", () => {
         new Error("Item not found"),
       );
 
-      const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken),
-      );
+      const { result } = renderHook(() => useProducts(mockApiHost));
 
       await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -155,9 +140,7 @@ describe("useProducts Hook", () => {
       vi.mocked(fetchProducts).mockResolvedValue(mockProducts);
       vi.mocked(addProductInterest).mockRejectedValue(12345);
 
-      const { result } = renderHook(() =>
-        useProducts(mockApiHost, mockGetToken),
-      );
+      const { result } = renderHook(() => useProducts(mockApiHost));
 
       await waitFor(() => expect(result.current.loading).toBe(false));
 

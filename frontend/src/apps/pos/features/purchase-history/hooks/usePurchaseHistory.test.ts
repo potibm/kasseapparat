@@ -34,8 +34,7 @@ vi.mock("@pos/features/ui/toast/hooks/useToast", () => ({
 
 // fixture data
 const mockApiHost = "https://api.example.com";
-const mockGetToken = vi.fn(async () => "fake-token");
-const mockUserId = 42;
+const mockUsername = "testuser";
 
 const mockPurchases = [
   createMockPurchase({
@@ -56,10 +55,8 @@ describe("usePurchaseHistory Hook", () => {
   });
 
   describe("Initialization (loadHistory)", () => {
-    it("should NOT fetch anything and return an empty array if userId is falsy", async () => {
-      const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, 0),
-      );
+    it("should NOT fetch anything and return an empty array if username is falsy", async () => {
+      const { result } = renderHook(() => usePurchaseHistory(mockApiHost, ""));
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -73,7 +70,7 @@ describe("usePurchaseHistory Hook", () => {
       vi.mocked(fetchPurchases).mockResolvedValue(mockPurchases);
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
+        usePurchaseHistory(mockApiHost, mockUsername),
       );
 
       expect(result.current.loading).toBe(true);
@@ -82,11 +79,7 @@ describe("usePurchaseHistory Hook", () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(fetchPurchases).toHaveBeenCalledWith(
-        mockApiHost,
-        "fake-token",
-        mockUserId,
-      );
+      expect(fetchPurchases).toHaveBeenCalledWith(mockApiHost, mockUsername);
       expect(result.current.history).toEqual(mockPurchases);
       expect(mockShowToast).not.toHaveBeenCalled();
     });
@@ -96,7 +89,7 @@ describe("usePurchaseHistory Hook", () => {
       vi.mocked(fetchPurchases).mockRejectedValue(apiError);
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
+        usePurchaseHistory(mockApiHost, mockUsername),
       );
 
       await waitFor(() => {
@@ -116,7 +109,7 @@ describe("usePurchaseHistory Hook", () => {
       vi.mocked(fetchPurchases).mockRejectedValue("Weird backend crash string");
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
+        usePurchaseHistory(mockApiHost, mockUsername),
       );
 
       await waitFor(() => {
@@ -138,7 +131,7 @@ describe("usePurchaseHistory Hook", () => {
       vi.mocked(refundPurchaseById).mockResolvedValue(createMockPurchase());
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
+        usePurchaseHistory(mockApiHost, mockUsername),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -151,7 +144,6 @@ describe("usePurchaseHistory Hook", () => {
 
       expect(refundPurchaseById).toHaveBeenCalledWith(
         mockApiHost,
-        "fake-token",
         "purchase-123",
       );
       expect(fetchPurchases).toHaveBeenCalledTimes(1);
@@ -164,7 +156,7 @@ describe("usePurchaseHistory Hook", () => {
       vi.mocked(refundPurchaseById).mockRejectedValue(refundError);
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
+        usePurchaseHistory(mockApiHost, mockUsername),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));
@@ -188,7 +180,7 @@ describe("usePurchaseHistory Hook", () => {
       vi.mocked(refundPurchaseById).mockRejectedValue({ some: "weird object" });
 
       const { result } = renderHook(() =>
-        usePurchaseHistory(mockApiHost, mockGetToken, mockUserId),
+        usePurchaseHistory(mockApiHost, mockUsername),
       );
 
       await waitFor(() => expect(result.current.loading).toBe(false));

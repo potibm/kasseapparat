@@ -4,7 +4,6 @@ import { fetchGuestlistByProductId } from "../../../utils/api";
 import { HiOutlineX } from "react-icons/hi";
 import SidebarKeyboard from "./_internal/SidebarKeyboard";
 import { useConfig } from "@core/config/hooks/useConfig";
-import { useAuth } from "../../auth/hooks/useAuth";
 import Button from "../../../components/Button";
 import GuestlistResultTable from "./_internal/GuestlistResultTable";
 import {
@@ -43,7 +42,6 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   } | null>(null);
 
   const { apiHost } = useConfig();
-  const { getSafeToken } = useAuth();
 
   const hasCodes = product.guestlists?.some((list) => list.typeCode) ?? false;
 
@@ -74,11 +72,8 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
     async (query = "") => {
       setLoading(true);
       try {
-        const token = await getSafeToken();
-
         const response = await fetchGuestlistByProductId(
           apiHost,
-          token,
           product.id,
           query,
         );
@@ -93,7 +88,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
         setLoading(false);
       }
     },
-    [product.id, apiHost, getSafeToken],
+    [product.id, apiHost],
   );
 
   useEffect(() => {

@@ -58,8 +58,8 @@ func InitializeHTTPServer(
 
 	r.Use(static.Serve("/", folder))
 
-	registerAuthMiddleware()
-	registerAPIRoutes(httpHdlr, websocketHdlr)
+	registerAuthMiddleware(cfg)
+	registerAPIRoutes(httpHdlr, websocketHdlr, cfg)
 
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
@@ -101,8 +101,8 @@ func SlogUserID() gin.HandlerFunc {
 	}
 }
 
-func registerAuthMiddleware() {
-	r.Use(middleware.HandlerMiddleWare())
+func registerAuthMiddleware(cfg config.Config) {
+	r.Use(middleware.HandlerMiddleWare(cfg))
 }
 
 func SentryMiddleware() gin.HandlerFunc {
@@ -125,10 +125,13 @@ func SentryMiddleware() gin.HandlerFunc {
 func registerAPIRoutes(
 	httpHdlr httpHandler.Handler,
 	websocketHdlr websocket.TransactionWebSocketHandler,
+	cfg config.Config,
 ) {
 	protectedAPIRouter := r.Group("/api/" + APIVersion)
-	protectedAPIRouter.Use(middleware.HandlerMiddleWare(), SentryMiddleware(), SlogUserID())
+	protectedAPIRouter.Use(middleware.HandlerMiddleWare(cfg), SentryMiddleware(), SlogUserID())
 	{
+		protectedAPIRouter.GET("/auth/me", httpHdlr.GetMe)
+
 		registerProductRoutes(protectedAPIRouter, httpHdlr)
 		registerProductInterestRoutes(protectedAPIRouter, httpHdlr)
 		protectedAPIRouter.GET("/productStats", httpHdlr.GetProductStats)

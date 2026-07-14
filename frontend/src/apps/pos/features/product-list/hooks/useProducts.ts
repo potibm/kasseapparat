@@ -7,10 +7,7 @@ import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 
 const log = createLogger("Product");
 
-export const useProducts = (
-  apiHost: string,
-  getToken: () => Promise<string>,
-) => {
+export const useProducts = (apiHost: string) => {
   const [products, setProducts] = useState<ProductType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const { showToast } = useToast();
@@ -18,8 +15,7 @@ export const useProducts = (
   const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const token = await getToken();
-      const fetchedProducts = await fetchProducts(apiHost, token);
+      const fetchedProducts = await fetchProducts(apiHost);
 
       setProducts(fetchedProducts);
       log.debug("Products fetched successfully", {
@@ -38,12 +34,11 @@ export const useProducts = (
     } finally {
       setLoading(false);
     }
-  }, [apiHost, getToken, showToast]);
+  }, [apiHost, showToast]);
 
   const addInterest = async (productId: number, productName: string) => {
     try {
-      const token = await getToken();
-      await addProductInterest(apiHost, token, productId);
+      await addProductInterest(apiHost, productId);
       showToast({
         severity: "success",
         message: `Interest in ${productName} registered successfully!`,

@@ -8,11 +8,7 @@ import { useConfig } from "@core/config/hooks/useConfig";
 
 const log = createLogger("Purchase");
 
-export const usePurchaseHistory = (
-  apiHost: string,
-  getToken: () => Promise<string>,
-  username: string,
-) => {
+export const usePurchaseHistory = (apiHost: string, username: string) => {
   const [history, setHistory] = useState<PurchaseType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const { showToast } = useToast();
@@ -39,8 +35,7 @@ export const usePurchaseHistory = (
       }
 
       try {
-        const token = await getToken();
-        const purchases = await fetchPurchases(apiHost, token, username);
+        const purchases = await fetchPurchases(apiHost, username);
 
         setHistory(purchases);
         log.debug("Purchase history fetched successfully", {
@@ -72,7 +67,7 @@ export const usePurchaseHistory = (
         }
       }
     },
-    [apiHost, getToken, username, showToast],
+    [apiHost, username, showToast],
   );
 
   useEffect(() => {
@@ -100,8 +95,7 @@ export const usePurchaseHistory = (
 
   const refund = async (purchaseId: string) => {
     try {
-      const token = await getToken();
-      const purchase = await refundPurchaseById(apiHost, token, purchaseId);
+      const purchase = await refundPurchaseById(apiHost, purchaseId);
       showToast({
         severity: "success",
         message: `Purchase of ${currency.format(purchase.totalGrossPrice.toNumber())} refunded successfully!`,

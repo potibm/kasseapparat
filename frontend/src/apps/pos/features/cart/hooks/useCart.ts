@@ -18,7 +18,7 @@ import {
 const cartLog = createLogger("Cart");
 const purchaseLog = createLogger("Purchase");
 
-export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
+export const useCart = (apiHost: string) => {
   const [cart, setCart] = useState(() => new Cart());
   const [isPolling, setIsPolling] = useState(false);
   const [pendingPurchase, setPendingPurchase] = useState<PurchaseType | null>(
@@ -70,9 +70,8 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
       purchaseLog.debug("Initiating purchase", { paymentMethodCode });
 
       try {
-        const token = await getToken();
         const payload = cart.toApiPayload(paymentMethodCode, paymentMethodData);
-        const createdPurchase = await storePurchase(apiHost, token, payload);
+        const createdPurchase = await storePurchase(apiHost, payload);
 
         if (createdPurchase.status === "pending") {
           setPendingPurchase(createdPurchase);
@@ -113,7 +112,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
         throw error;
       }
     },
-    [apiHost, getToken, cart, currency, showToast, clear],
+    [apiHost, cart, currency, showToast, clear],
   );
 
   const resumePolling = useCallback(
