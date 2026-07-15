@@ -1,6 +1,9 @@
 import { ReactNode, useState, useEffect, useMemo } from "react";
-import { authProvider } from "@core/auth/authProvider";
+import { createAuthProvider } from "@core/auth/authProvider";
 import { AuthContext } from "../context/AuthContext";
+
+const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3100";
+const authProvider = createAuthProvider(API_HOST);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -13,10 +16,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Wir starten den Motor: Prüfen, ob eine Session/Header da ist
         await authProvider.checkAuth({});
 
-        // Wenn das geklappt hat, holen wir uns die Rolle
         const currentRole = await authProvider.getPermissions?.({});
         const identity = await authProvider.getIdentity?.();
 
@@ -24,12 +25,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         setRole(currentRole as string);
         setUsername(identity?.fullName as string);
       } catch {
-        // 3. Variable "(error)" weggelassen, da sie nicht genutzt wird
         setIsAuthenticated(false);
         setRole(null);
         setUsername(null);
       } finally {
-        // Egal ob Erfolg oder Fehler: Wir sind mit dem Laden fertig
         setIsLoading(false);
       }
     };
@@ -42,11 +41,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     [isLoading, isAuthenticated, role, username], // NEU
   );
 
-  // Solange das Backend noch nicht geantwortet hat, zeigen wir nichts (oder einen Spinner)
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        Loading Kasseapparat...
+        ⏳ Loading Kasseapparat...
       </div>
     );
   }

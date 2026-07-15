@@ -11,7 +11,10 @@ import sumuptransactions from "./resources/sumup-transactions";
 import Dashboard from "./pages/dashboard/Dashboard";
 import { MyTheme, MyDarkTheme } from "./layouts/MyTheme";
 import { MyLayout } from "./layouts/MyLayout";
-import { authProvider } from "@core/auth/authProvider";
+import { createAuthProvider } from "@core/auth/authProvider";
+
+const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3100";
+const authProvider = createAuthProvider(API_HOST);
 
 const AdminPanel: React.FC = () => (
   <Admin
