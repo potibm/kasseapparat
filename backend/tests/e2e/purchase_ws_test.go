@@ -47,6 +47,7 @@ func connectWS(t *testing.T, url, origin string) (*websocket.Conn, *http.Respons
 
 	reqHeader := http.Header{}
 	reqHeader.Set("Origin", origin)
+	reqHeader.Set("X-Remote-User", "testuser")
 
 	return dialer.Dial(url, reqHeader)
 }

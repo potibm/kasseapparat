@@ -86,7 +86,7 @@ describe("usePaymentWebSocket Hook", () => {
 
       expect(globalThis.WebSocket).toHaveBeenCalledWith(
         "wss://test.com/api/v2/purchases/purchase-123/ws",
-        ["fake-ws-token"],
+        [],
       );
 
       act(() => {

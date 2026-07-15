@@ -35,6 +35,7 @@ type Config struct {
 	FractionDigitsMax             int32                   `json:"fractionDigitsMax"`
 	EnvironmentMessage            string                  `json:"environmentMessage"`
 	PaymentMethods                []PaymentMethodsConfig  `json:"paymentMethods"`
+	AuthMode                      string                  `json:"authMode"`
 }
 
 func (handler *Handler) GetConfig(c *gin.Context) {
@@ -54,6 +55,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		DateOptions:                   DateFormatOptionsConfig(handler.config.Format.Date.Options),
 		EnvironmentMessage:            handler.config.App.EnvironmentMessage,
 		PaymentMethods:                convertPaymentMethods(handler.config.PaymentMethods),
+		AuthMode:                      handler.config.Auth.Mode,
 	}
 
 	c.JSON(nethttp.StatusOK, config)

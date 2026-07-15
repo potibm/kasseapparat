@@ -86,6 +86,10 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 			Realm:  "",
 			Secret: "test",
 		},
+		Auth: config.AuthConfig{
+			Mode:        "proxy",
+			ProxyHeader: "X-Remote-User",
+		},
 		VATRates: config.DefaultVatRates,
 		PaymentMethods: config.PaymentMethods{
 			{Code: models.PaymentMethodCash, Name: "Cash"},

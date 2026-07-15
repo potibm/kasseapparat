@@ -18,4 +18,5 @@ export interface AppConfig {
   paymentMethods: Array<{ code: string; name: string }>;
   sumupEnabled: boolean;
   environmentMessage?: string;
+  authMode: string;
 }

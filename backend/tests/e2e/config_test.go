@@ -12,6 +12,7 @@ func TestGetConfig(t *testing.T) {
 	defer cleanup()
 
 	config := e.GET(configURL).
+		WithHeader("X-Remote-User", "testuser").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
@@ -25,6 +26,7 @@ func TestGetConfig(t *testing.T) {
 	config.Value("dateLocale").String().Match("^[a-z]{2}-[A-Z]{2}$")
 	config.Value("fractionDigitsMin").Number().IsEqual(0)
 	config.Value("fractionDigitsMax").Number().IsEqual(2)
+	config.Value("authMode").String().Match("^(proxy|oidc)$")
 
 	config.Value("dateOptions").Object()
 	config.Value("dateOptions").Object().Value("weekday").IsEqual("long")
