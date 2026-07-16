@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -92,8 +94,59 @@ type SumupConfig struct {
 
 type AuthConfig struct {
 	Mode        string   `mapstructure:"mode"         validate:"required,oneof=proxy oidc"`
-	ProxyHeader string   `mapstructure:"proxy_header" validate:"required"`
+	ProxyHeader string   `mapstructure:"proxy_header"`
 	ProxyAdmins []string `mapstructure:"proxy_admins"`
+
+	OidcIssuer       string `mapstructure:"oidc_issuer"`
+	OidcClientID     string `mapstructure:"oidc_client_id"`
+	OidcClientSecret string `mapstructure:"oidc_client_secret"`
+	OidcCallbackURL  string `mapstructure:"oidc_callback_url"`
+	SessionSecret    string `mapstructure:"session_secret"`
+}
+
+func (a *AuthConfig) Validate() error {
+	if a.Mode == "proxy" {
+		if a.ProxyHeader == "" {
+			return fmt.Errorf("auth.proxy_header is required when mode is 'proxy'")
+		}
+
+		return nil
+	}
+
+	if a.Mode == "oidc" {
+		return a.validateOIDC()
+	}
+
+	return nil
+}
+
+const MinSessionSecretLength = 32
+
+func (a *AuthConfig) validateOIDC() error {
+	if a.OidcIssuer == "" {
+		return fmt.Errorf("auth.oidc_issuer is required when mode is 'oidc'")
+	}
+
+	if a.OidcClientID == "" {
+		return fmt.Errorf("auth.oidc_client_id is required when mode is 'oidc'")
+	}
+
+	if a.OidcClientSecret == "" {
+		return fmt.Errorf("auth.oidc_client_secret is required when mode is 'oidc'")
+	}
+
+	if a.OidcCallbackURL == "" {
+		return fmt.Errorf("auth.oidc_callback_url is required when mode is 'oidc'")
+	}
+
+	if len(a.SessionSecret) < MinSessionSecretLength {
+		return fmt.Errorf(
+			"auth.session_secret must be at least %d characters when mode is 'oidc'",
+			MinSessionSecretLength,
+		)
+	}
+
+	return nil
 }
 
 type Config struct {

@@ -56,6 +56,7 @@ const performFetch = async <S extends z.ZodTypeAny>(
   schema: S,
   method: string,
   body?: object,
+  options?: RequestInit,
 ): Promise<z.infer<S>> => {
   const response = await fetch(url, {
     method,
@@ -63,6 +64,7 @@ const performFetch = async <S extends z.ZodTypeAny>(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+    credentials: options?.credentials ?? "include",
   });
   if (!response.ok) await handleFetchError(response);
 

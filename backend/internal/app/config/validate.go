@@ -28,6 +28,10 @@ func (c *Config) Validate() error {
 		return err
 	}
 
+	if err := c.Auth.Validate(); err != nil {
+		return err
+	}
+
 	if c.Jwt.Secret == DefaultJwtSecret || c.Jwt.Secret == "" {
 		if c.App.Environment == "production" {
 			return fmt.Errorf("JWT_SECRET is set to the default value, which is not allowed in production")

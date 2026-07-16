@@ -18,7 +18,7 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
 
       try {
         const response = await fetch(`${apiHost}/api/v2/auth/me`, {
-          credentials: "omit",
+          credentials: "include",
         });
 
         if (response.status === 401) {

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/session"
 	gormaudit "github.com/potibm/kasseapparat/internal/app/store/gorm"
 )
 
@@ -19,6 +20,10 @@ const (
 )
 
 func HandlerMiddleWare(cfg config.Config) gin.HandlerFunc {
+	if cfg.Auth.Mode == "oidc" {
+		return OIDCAuthMiddleware(cfg)
+	}
+
 	return ProxyAuthMiddleware(cfg)
 }
 
@@ -58,6 +63,56 @@ func ProxyAuthMiddleware(cfg config.Config) gin.HandlerFunc {
 		c.Request = c.Request.WithContext(ctx)
 
 		slog.Debug("Proxy authentication successful", "username", username, "role", role)
+
+		c.Next()
+	}
+}
+
+func OIDCAuthMiddleware(cfg config.Config) gin.HandlerFunc {
+	sessionMgr := session.NewManager(cfg.Auth.SessionSecret)
+
+	return func(c *gin.Context) {
+		if cfg.Auth.Mode != "oidc" {
+			c.Next()
+
+			return
+		}
+
+		sessionCookie, err := c.Cookie(session.SessionCookieName)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    http.StatusUnauthorized,
+				"message": "authentication required: missing session cookie",
+			})
+			c.Abort()
+
+			return
+		}
+
+		sessionData, err := sessionMgr.DecodeSession(sessionCookie)
+		if err != nil {
+			slog.Debug("Invalid session", "error", err)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    http.StatusUnauthorized,
+				"message": "authentication required: invalid session",
+			})
+			c.Abort()
+
+			return
+		}
+
+		authUser := models.AuthUser{
+			Username: sessionData.Username,
+			Role:     sessionData.Role,
+		}
+
+		c.Set(IdentityKey, sessionData.Username)
+		c.Set(AuthUserKey, authUser)
+
+		ctx := gormaudit.WithUserID(c.Request.Context(), sessionData.Username)
+		c.Request = c.Request.WithContext(ctx)
+
+		slog.Debug("OIDC authentication successful", "username", sessionData.Username, "role", sessionData.Role)
 
 		c.Next()
 	}

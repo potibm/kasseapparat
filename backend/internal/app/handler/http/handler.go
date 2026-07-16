@@ -30,6 +30,7 @@ type Handler struct {
 	mailer          mailer.Mailer
 	config          config.Config
 	decimalPlaces   int32
+	oidcHandler     *OIDCAuthHandler
 }
 
 type HandlerConfig struct {
@@ -40,6 +41,7 @@ type HandlerConfig struct {
 	StatusPublisher StatusPublisher
 	Mailer          mailer.Mailer
 	AppConfig       config.Config
+	OIDCHandler     *OIDCAuthHandler
 }
 
 func NewHandler(cfg HandlerConfig) *Handler {
@@ -52,7 +54,12 @@ func NewHandler(cfg HandlerConfig) *Handler {
 		mailer:          cfg.Mailer,
 		config:          cfg.AppConfig,
 		decimalPlaces:   cfg.AppConfig.Format.Currency.FractionDigitsMax,
+		oidcHandler:     cfg.OIDCHandler,
 	}
+}
+
+func (handler *Handler) GetOIDCHandler() *OIDCAuthHandler {
+	return handler.oidcHandler
 }
 
 func (handler *Handler) GetMe(c *gin.Context) {

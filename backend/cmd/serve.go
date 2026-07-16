@@ -92,6 +92,11 @@ func NewServeCmd() *cobra.Command {
 			publisher := &websocket.WebsocketPublisher{}
 			poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseSvc, publisher)
 
+			oidcHandler, err := initializer.InitializeOIDCHandler(ctx, Cfg)
+			if err != nil {
+				return fmt.Errorf("failed to initialize OIDC handler: %w", err)
+			}
+
 			httpHandlerConfig := handlerHttp.HandlerConfig{
 				Repo:            sqliteRepository,
 				SumupRepository: sumupRepository,
@@ -100,6 +105,7 @@ func NewServeCmd() *cobra.Command {
 				StatusPublisher: publisher,
 				Mailer:          mailer,
 				AppConfig:       Cfg,
+				OIDCHandler:     oidcHandler,
 			}
 			httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 

@@ -93,6 +93,11 @@ func InitViper() {
 	viper.SetDefault("auth.mode", "proxy")
 	viper.SetDefault("auth.proxy_header", "X-Remote-User")
 	viper.SetDefault("auth.proxy_admins", []string{})
+	viper.SetDefault("auth.oidc_issuer", "")
+	viper.SetDefault("auth.oidc_client_id", "")
+	viper.SetDefault("auth.oidc_client_secret", "")
+	viper.SetDefault("auth.oidc_callback_url", "")
+	viper.SetDefault("auth.session_secret", "")
 
 	viper.SetDefault("vatrates", DefaultVatRates)
 	viper.SetDefault("payment_methods", DefaultPaymentMethods)

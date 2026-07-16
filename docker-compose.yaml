@@ -69,6 +69,20 @@ services:
       - openobserve
 
   # --------------------------------------------------------
+  # Identity
+  # --------------------------------------------------------
+  dex:
+    image: ghcr.io/dexidp/dex:v2.38.0
+    volumes:
+      - ./infra/dex-config.yaml:/etc/dex/config.docker.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dex-funk.rule=Host(`dex.kasseapparat.test`)"
+      - "traefik.http.routers.dex-funk.entrypoints=websecure"
+      - "traefik.http.routers.dex-funk.tls=true"
+      - "traefik.http.services.dex-funk.loadbalancer.server.port=5556"
+
+  # --------------------------------------------------------
   # Data Stores
   # --------------------------------------------------------
   redis:

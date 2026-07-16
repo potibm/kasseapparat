@@ -7,7 +7,7 @@ import {
 } from "react-admin";
 import * as Sentry from "@sentry/react";
 
-const API_HOST = import.meta.env.VITE_API_HOST && "http://localhost:3001";
+const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3001";
 
 interface HttpClientOptions extends fetchUtils.Options {
   isUpload?: boolean;
@@ -32,6 +32,7 @@ const httpClient = async (url: string, options: HttpClientOptions = {}) => {
   }
 
   options.headers = headers;
+  options.credentials = "include";
 
   try {
     return await fetchUtils.fetchJson(url, options);

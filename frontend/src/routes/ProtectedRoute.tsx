@@ -10,7 +10,7 @@ export const ProtectedRoute: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    window.location.href = "/api/auth/login";
+    window.location.href = "/api/v2/auth/login";
     return;
   }
 

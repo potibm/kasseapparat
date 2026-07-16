@@ -2,6 +2,7 @@
 package initializer
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"log/slog"
@@ -58,7 +59,6 @@ func InitializeHTTPServer(
 
 	r.Use(static.Serve("/", folder))
 
-	registerAuthMiddleware(cfg)
 	registerAPIRoutes(httpHdlr, websocketHdlr, cfg)
 
 	r.NoRoute(func(c *gin.Context) {
@@ -73,6 +73,23 @@ func InitializeHTTPServer(
 	})
 
 	return r, nil
+}
+
+func InitializeOIDCHandler(ctx context.Context, cfg config.Config) (*httpHandler.OIDCAuthHandler, error) {
+	if cfg.Auth.Mode != "oidc" {
+		return nil, nil
+	}
+
+	return httpHandler.NewOIDCAuthHandler(
+		ctx,
+		cfg.Auth.OidcIssuer,
+		cfg.Auth.OidcClientID,
+		cfg.Auth.OidcClientSecret,
+		cfg.Auth.OidcCallbackURL,
+		cfg.App.FrontendURL,
+		cfg.Auth.SessionSecret,
+		cfg.Auth.ProxyAdmins,
+	)
 }
 
 func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
@@ -99,10 +116,6 @@ func SlogUserID() gin.HandlerFunc {
 
 		c.Next()
 	}
-}
-
-func registerAuthMiddleware(cfg config.Config) {
-	r.Use(middleware.HandlerMiddleWare(cfg))
 }
 
 func SentryMiddleware() gin.HandlerFunc {
@@ -154,6 +167,15 @@ func registerAPIRoutes(
 		unprotectedAPIRouter.POST("/sumup/webhook", httpHdlr.GetSumupTransactionWebhook)
 
 		unprotectedAPIRouter.GET("/purchases/:id/ws", websocketHdlr.HandleTransactionWebSocket)
+
+		if cfg.Auth.Mode == "oidc" {
+			oidcHandler := httpHdlr.GetOIDCHandler()
+			if oidcHandler != nil {
+				unprotectedAPIRouter.GET("/auth/login", oidcHandler.Login)
+				unprotectedAPIRouter.GET("/auth/callback", oidcHandler.Callback)
+				unprotectedAPIRouter.POST("/auth/logout", oidcHandler.Logout)
+			}
+		}
 	}
 }
 

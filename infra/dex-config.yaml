@@ -1,0 +1,30 @@
+issuer: https://dex.kasseapparat.test/dex
+storage:
+  type: memory
+web:
+  http: 0.0.0.0:5556
+  allowedOrigins: ['https://kasseapparat.test']
+staticClients:
+- id: kasseapparat-backend
+  redirectURIs:
+  - 'https://kasseapparat.test/api/v2/auth/callback'
+  name: 'Kasseapparat Admin'
+  secret: "super-secret-kasseapparat-client-string"
+
+enablePasswordDB: true
+staticPasswords:
+  - email: "admin@example.com"
+    # bcrypted hash for "password"
+    hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+    username: "admin"
+    userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+  - email: "user@example.com"
+    # bcrypted hash for "password"
+    hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+    username: "user"
+    userID: "1a8f94cb-5de2-4c27-84f9-2c6b4121bb6e"
+  - email: "gast@example.com"
+    # bcrypted hash for "password"
+    hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+    username: "gast"
+    userID: "6a4a15ef-7fc8-48b4-9277-2e11894a7375"
