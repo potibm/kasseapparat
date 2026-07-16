@@ -140,6 +140,17 @@ Important technical and business decisions are documented as lightweight markdow
 
 ---
 
+## Documentation structure
+
+The primary documentation folder is `/docs/`. Agent-generated output is organized into dedicated subdirectories:
+
+- **Plans**: All generated implementation plans must be placed in `/docs/plans/`.
+- **Reviews**: All generated review documents must be placed in `/docs/reviews/`.
+
+These directories are gitignored to keep the repository clean of ephemeral agent output.
+
+---
+
 ## Style notes
 
 - Go: `slog` only (depguard blocks `logrus`). Use snake_case for slog keys.

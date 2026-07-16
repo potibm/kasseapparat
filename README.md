@@ -1,6 +1,6 @@
 # Kasseapparat
 
-![Kasseapparat Logo](doc/kasseapparat.svg)
+![Kasseapparat Logo](docs/kasseapparat.svg)
 
 > _Kasseapparat_ is the Danish term for cash register.
 
@@ -44,11 +44,11 @@ mise run infra:up
 
 ## Documentation
 
-- [Developer Guide](doc/dev.md)
-- [Admin Documentation](doc/admin.md)
-- [User Documentation](doc/manual.md)
-- [SumUp Integration Documentation](doc/sumup.md)
-- [Image Signing and SBOM Attestations](doc/supply-chain.md)
+- [Developer Guide](docs/dev.md)
+- [Admin Documentation](docs/admin.md)
+- [User Documentation](docs/manual.md)
+- [SumUp Integration Documentation](docs/sumup.md)
+- [Image Signing and SBOM Attestations](docs/supply-chain.md)
 
 ## Credits & License
 

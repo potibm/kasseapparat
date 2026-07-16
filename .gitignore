@@ -15,6 +15,7 @@ backend/tmp
 VERSION
 *.log
 reference/*
-doc/*-plan.md
+docs/plans/*
+docs/reviews/*
 docker-compose.override.yaml
 infra/.certs
