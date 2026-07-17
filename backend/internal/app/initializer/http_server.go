@@ -80,15 +80,21 @@ func InitializeOIDCHandler(ctx context.Context, cfg config.Config) (*httpHandler
 		return nil, nil
 	}
 
+	opts := httpHandler.OIDCOptions{
+		Issuer:          cfg.Auth.OidcIssuer,
+		ClientID:        cfg.Auth.OidcClientID,
+		ClientSecret:    cfg.Auth.OidcClientSecret,
+		CallbackURL:     cfg.Auth.OidcCallbackURL,
+		FrontendURL:     cfg.App.FrontendURL,
+		SessionSecret:   cfg.Auth.SessionSecret,
+		SessionDuration: cfg.Auth.SessionDuration,
+		Admins:          cfg.Auth.ProxyAdmins,
+		IsProduction:    cfg.App.Environment == "production",
+	}
+
 	return httpHandler.NewOIDCAuthHandler(
 		ctx,
-		cfg.Auth.OidcIssuer,
-		cfg.Auth.OidcClientID,
-		cfg.Auth.OidcClientSecret,
-		cfg.Auth.OidcCallbackURL,
-		cfg.App.FrontendURL,
-		cfg.Auth.SessionSecret,
-		cfg.Auth.ProxyAdmins,
+		opts,
 	)
 }
 
@@ -175,6 +181,10 @@ func registerAPIRoutes(
 				unprotectedAPIRouter.GET("/auth/callback", oidcHandler.Callback)
 				unprotectedAPIRouter.POST("/auth/logout", oidcHandler.Logout)
 			}
+		} else {
+			unprotectedAPIRouter.POST("/auth/logout", func(c *gin.Context) {
+				c.JSON(http.StatusOK, gin.H{"message": "logged out (proxy mode)"})
+			})
 		}
 	}
 }

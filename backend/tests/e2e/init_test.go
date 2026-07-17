@@ -82,10 +82,6 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 				Options: config.DefaultDateOptions,
 			},
 		},
-		Jwt: config.JwtConfig{
-			Realm:  "",
-			Secret: "test",
-		},
 		Auth: config.AuthConfig{
 			Mode:        "proxy",
 			ProxyHeader: "X-Remote-User",

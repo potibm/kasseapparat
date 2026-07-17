@@ -51,7 +51,7 @@ const httpClient = async (url: string, options: HttpClientOptions = {}) => {
       ).toLowerCase();
     }
 
-    // 🧽 Filter known, non-critical messages
+    // 🧽 Filter known authentication errors that don't require error reporting
     const knownNonCritical = ["cookie token is empty"];
 
     const isExpected = knownNonCritical.some((msg) =>

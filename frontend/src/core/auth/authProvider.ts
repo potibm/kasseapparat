@@ -1,5 +1,8 @@
 import { AuthProvider } from "react-admin";
 import { z } from "zod";
+import { createLogger } from "../logger/logger";
+
+const logger = createLogger("Auth");
 
 const AuthUserSchema = z.object({
   username: z.string(),
@@ -67,6 +70,15 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
 
     logout: async () => {
       cachedUser = null;
+
+      try {
+        await fetch(`${apiHost}/api/v2/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch (error) {
+        logger.warn("Backend logout failed", error);
+      }
     },
   };
 };

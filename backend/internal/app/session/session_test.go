@@ -21,12 +21,12 @@ func TestGenerateRandomString(t *testing.T) {
 }
 
 func TestSessionManager_EncodeDecode(t *testing.T) {
-	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long")
+	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long", 24*time.Hour)
 
 	data := SessionData{
 		Username:  "testuser",
 		Role:      "admin",
-		ExpiresAt: time.Now().Add(SessionDuration),
+		ExpiresAt: time.Now().Add(24 * time.Hour),
 	}
 
 	encoded, err := mgr.EncodeSession(data)
@@ -40,7 +40,7 @@ func TestSessionManager_EncodeDecode(t *testing.T) {
 }
 
 func TestSessionManager_RejectExpired(t *testing.T) {
-	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long")
+	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long", 24*time.Hour)
 
 	data := SessionData{
 		Username:  "testuser",
@@ -57,14 +57,14 @@ func TestSessionManager_RejectExpired(t *testing.T) {
 }
 
 func TestSessionManager_RejectInvalid(t *testing.T) {
-	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long")
+	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long", 24*time.Hour)
 
 	_, err := mgr.DecodeSession("invalid-session-data")
 	assert.Error(t, err)
 }
 
 func TestStateManager_EncodeDecode(t *testing.T) {
-	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long")
+	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long", 24*time.Hour)
 
 	data := StateData{
 		State:     "test-state-value",
@@ -83,7 +83,7 @@ func TestStateManager_EncodeDecode(t *testing.T) {
 }
 
 func TestStateManager_RejectExpired(t *testing.T) {
-	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long")
+	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long", 24*time.Hour)
 
 	data := StateData{
 		State:     "test-state",
@@ -100,20 +100,20 @@ func TestStateManager_RejectExpired(t *testing.T) {
 }
 
 func TestStateManager_RejectInvalid(t *testing.T) {
-	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long")
+	mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long", 24*time.Hour)
 
 	_, err := mgr.DecodeState("invalid-state-data")
 	assert.Error(t, err)
 }
 
 func TestDifferentManagersCannotDecodeEachOther(t *testing.T) {
-	mgr1 := NewManager("secret-key-one-that-is-long-enough")
-	mgr2 := NewManager("secret-key-two-that-is-long-enough")
+	mgr1 := NewManager("secret-key-one-that-is-long-enough", 24*time.Hour)
+	mgr2 := NewManager("secret-key-two-that-is-long-enough", 24*time.Hour)
 
 	data := SessionData{
 		Username:  "testuser",
 		Role:      "user",
-		ExpiresAt: time.Now().Add(SessionDuration),
+		ExpiresAt: time.Now().Add(24 * time.Hour),
 	}
 
 	encoded, err := mgr1.EncodeSession(data)

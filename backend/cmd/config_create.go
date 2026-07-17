@@ -27,10 +27,6 @@ func NewConfigCreateCmd() *cobra.Command {
 			viper.SetDefault("app.frontend_url", defaultFrontendURL)
 			viper.SetDefault("app.cors_allow_origins", []string{defaultFrontendURL})
 
-			viper.SetDefault("jwt.realm", "Kasseapparat")
-			viper.SetDefault("jwt.secret", config.DefaultJwtSecret)
-			viper.SetDefault("jwt.secure_cookie", true)
-
 			viper.SetDefault("mailer.dsn", "smtp://localhost:1025")
 			viper.SetDefault("mailer.from", "kasseapparat@example.com")
 			viper.SetDefault("mailer.subject_prefix", "[Kasseapparat]")

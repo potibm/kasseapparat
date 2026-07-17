@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
@@ -13,12 +14,6 @@ type SentryConfig struct {
 	ReplayErrorSampleRate   float64 `mapstructure:"replay_error_sample_rate"   validate:"omitempty,gte=0,lte=1"`
 	Environment             string  `mapstructure:"environment"`
 	Version                 string  `mapstructure:"version"`
-}
-
-type JwtConfig struct {
-	Secret       string `mapstructure:"secret"        validate:"required,min=8"`
-	Realm        string `mapstructure:"realm"         validate:"required"`
-	SecureCookie bool   `mapstructure:"secure_cookie"`
 }
 
 type MailerConfig struct {
@@ -97,11 +92,12 @@ type AuthConfig struct {
 	ProxyHeader string   `mapstructure:"proxy_header"`
 	ProxyAdmins []string `mapstructure:"proxy_admins"`
 
-	OidcIssuer       string `mapstructure:"oidc_issuer"`
-	OidcClientID     string `mapstructure:"oidc_client_id"`
-	OidcClientSecret string `mapstructure:"oidc_client_secret"`
-	OidcCallbackURL  string `mapstructure:"oidc_callback_url"`
-	SessionSecret    string `mapstructure:"session_secret"`
+	OidcIssuer       string        `mapstructure:"oidc_issuer"`
+	OidcClientID     string        `mapstructure:"oidc_client_id"`
+	OidcClientSecret string        `mapstructure:"oidc_client_secret"`
+	OidcCallbackURL  string        `mapstructure:"oidc_callback_url"`
+	SessionSecret    string        `mapstructure:"session_secret"`
+	SessionDuration  time.Duration `mapstructure:"session_duration"`
 }
 
 func (a *AuthConfig) Validate() error {
@@ -153,7 +149,6 @@ type Config struct {
 	App    AppConfig    `mapstructure:"app"`
 	Format FormatConfig `mapstructure:"format"`
 	Sentry SentryConfig `mapstructure:"sentry"`
-	Jwt    JwtConfig    `mapstructure:"jwt"`
 	Mailer MailerConfig `mapstructure:"mailer"`
 	Sumup  SumupConfig  `mapstructure:"sumup"`
 	Auth   AuthConfig   `mapstructure:"auth"`

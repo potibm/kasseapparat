@@ -13,7 +13,6 @@ import (
 const (
 	SessionCookieName = "auth_session"
 	StateCookieName   = "oidc_state"
-	SessionDuration   = 24 * time.Hour
 	StateDuration     = 10 * time.Minute
 
 	RandomStringLength = 32
@@ -32,17 +31,22 @@ type StateData struct {
 }
 
 type Manager struct {
-	cookie *securecookie.SecureCookie
+	cookie          *securecookie.SecureCookie
+	sessionDuration time.Duration
 }
 
-func NewManager(sessionSecret string) *Manager {
+func NewManager(sessionSecret string, sessionDuration time.Duration) *Manager {
 	hashKey := deriveKey(sessionSecret, "hash")
 	blockKey := deriveKey(sessionSecret, "block")
 
 	sc := securecookie.New(hashKey, blockKey)
-	sc.MaxAge(int(SessionDuration.Seconds()))
+	sc.MaxAge(int(sessionDuration.Seconds()))
 
-	return &Manager{cookie: sc}
+	return &Manager{cookie: sc, sessionDuration: sessionDuration}
+}
+
+func (m *Manager) GetSessionDuration() time.Duration {
+	return m.sessionDuration
 }
 
 func deriveKey(secret, purpose string) []byte {

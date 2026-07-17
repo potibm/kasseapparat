@@ -7,7 +7,6 @@ const redacted = "***REDACTED***"
 func (c Config) RedactConfigForDisplay() Config {
 	result := c
 
-	result.Jwt.Secret = redacted
 	result.Sumup.APIKey = redacted
 	result.Sentry.DSN = redacted
 

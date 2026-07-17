@@ -109,7 +109,7 @@ export const storePurchase = async (
   return postValidated(`${apiHost}/api/v2/purchases`, payload, PurchaseSchema);
 };
 
-// Fetch all confirmed and pendingpurchases for a user
+// Fetch all confirmed and pending purchases for a user
 export const fetchPurchases = async (
   apiHost: string,
   username: string,

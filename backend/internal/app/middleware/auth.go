@@ -69,7 +69,7 @@ func ProxyAuthMiddleware(cfg config.Config) gin.HandlerFunc {
 }
 
 func OIDCAuthMiddleware(cfg config.Config) gin.HandlerFunc {
-	sessionMgr := session.NewManager(cfg.Auth.SessionSecret)
+	sessionMgr := session.NewManager(cfg.Auth.SessionSecret, cfg.Auth.SessionDuration)
 
 	return func(c *gin.Context) {
 		if cfg.Auth.Mode != "oidc" {

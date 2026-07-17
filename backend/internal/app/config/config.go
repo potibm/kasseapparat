@@ -2,6 +2,7 @@ package config
 
 import (
 	"strings"
+	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/spf13/viper"
@@ -17,7 +18,7 @@ const (
 	DefaultReplaySessionSampleRate = 0.1
 	DefaultReplayErrorSampleRate   = 0.1
 	DefaultMinorUnit               = 2
-	DefaultJwtSecret               = "very-insecure"
+	DefaultSessionDuration         = 24 * time.Hour
 
 	DefaultStandardVatRate = 25
 	DefaultReducedVatRate  = 12
@@ -74,10 +75,6 @@ func InitViper() {
 	viper.SetDefault("sentry.replay_session_sample_rate", DefaultReplaySessionSampleRate)
 	viper.SetDefault("sentry.replay_error_sample_rate", DefaultReplayErrorSampleRate)
 
-	viper.SetDefault("jwt.realm", "Kasseapparat")
-	viper.SetDefault("jwt.secret", DefaultJwtSecret)
-	viper.SetDefault("jwt.secure_cookie", true)
-
 	viper.SetDefault("mailer.dsn", "smtp://user:password@localhost:1025")
 	viper.SetDefault("mailer.from", "kasseapparat@example.com")
 	viper.SetDefault("mailer.subject_prefix", "[Kasseapparat]")
@@ -98,6 +95,7 @@ func InitViper() {
 	viper.SetDefault("auth.oidc_client_secret", "")
 	viper.SetDefault("auth.oidc_callback_url", "")
 	viper.SetDefault("auth.session_secret", "")
+	viper.SetDefault("auth.session_duration", DefaultSessionDuration)
 
 	viper.SetDefault("vatrates", DefaultVatRates)
 	viper.SetDefault("payment_methods", DefaultPaymentMethods)
