@@ -19,6 +19,7 @@ const authProvider = createAuthProvider(API_HOST);
 const AdminPanel: React.FC = () => (
   <Admin
     layout={MyLayout}
+    loginPage={false}
     theme={MyTheme}
     darkTheme={MyDarkTheme}
     dashboard={Dashboard}

@@ -24,12 +24,10 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
           credentials: "include",
         });
 
-        if (response.status === 401) {
-          throw new Error("Not authenticated");
-        }
-
-        if (!response.ok) {
-          throw new Error(`API Error: ${response.statusText}`);
+        if (response.status === 401 || !response.ok) {
+          cachedUser = null;
+          window.location.href = `${apiHost}/api/v2/auth/login`;
+          return new Promise(() => {});
         }
 
         const rawData = await response.json();
@@ -37,9 +35,10 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
         cachedUser = AuthUserSchema.parse(rawData);
 
         return;
-      } catch (error) {
+      } catch {
         cachedUser = null;
-        throw error;
+        window.location.href = `${apiHost}/api/v2/auth/login`;
+        return new Promise(() => {});
       }
     },
 
@@ -62,7 +61,8 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
       const status = error.status;
       if (status === 401 || status === 403) {
         cachedUser = null;
-        throw new Error("Unauthorized");
+        window.location.href = `${apiHost}/api/v2/auth/login`;
+        return new Promise(() => {});
       }
     },
 

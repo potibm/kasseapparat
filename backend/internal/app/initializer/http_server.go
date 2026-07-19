@@ -182,6 +182,9 @@ func registerAPIRoutes(
 				unprotectedAPIRouter.POST("/auth/logout", oidcHandler.Logout)
 			}
 		} else {
+			unprotectedAPIRouter.GET("/auth/login", func(c *gin.Context) {
+				c.Redirect(http.StatusFound, "/")
+			})
 			unprotectedAPIRouter.POST("/auth/logout", func(c *gin.Context) {
 				c.JSON(http.StatusOK, gin.H{"message": "logged out (proxy mode)"})
 			})
