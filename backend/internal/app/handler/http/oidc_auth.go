@@ -171,13 +171,10 @@ func (h *OIDCAuthHandler) Login(c *gin.Context) {
 	})
 
 	returnTo := c.Query("returnTo")
-	slog.Debug("Return URL read as", "url", returnTo)
 
-	if returnTo == "" || !strings.HasPrefix(returnTo, "/") || strings.HasPrefix(returnTo, "//") {
-		returnTo = "/" // Standard-Fallback
+	if returnTo == "" || len(returnTo) > 2000 || !strings.HasPrefix(returnTo, "/") || strings.HasPrefix(returnTo, "//") {
+		returnTo = "/" // default fallback
 	}
-
-	slog.Debug("Return URL set to", "url", returnTo)
 
 	http.SetCookie(c.Writer, &http.Cookie{ //nolint:gosec // Secure is set dynamically via h.secureCookie
 		Name:     returnToCookieName,
@@ -260,8 +257,6 @@ func (h *OIDCAuthHandler) Callback(c *gin.Context) {
 			redirectPath = cookiePath
 		}
 	}
-
-	slog.Debug("Return path read as", "url", redirectPath)
 
 	finalURL := strings.TrimRight(h.frontendURL, "/") + redirectPath
 

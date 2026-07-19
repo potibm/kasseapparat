@@ -6,9 +6,9 @@ import {
   DarkThemeToggle,
   Tooltip,
 } from "flowbite-react";
-import { HiLogout, HiOutlineUserCircle } from "react-icons/hi";
-import { Link } from "react-router";
+import { HiOutlineUserCircle } from "react-icons/hi";
 import AdminButton from "./_internal/AdminButton";
+import { LogoutButton } from "./_internal/LogoutButton";
 
 interface MenuProps extends ButtonGroupProps {
   username: string;
@@ -32,12 +32,7 @@ const Menu: React.FC<MenuProps> = ({ username, ...props }) => {
           {username}
         </span>
       </Button>
-      <Button as={Link} to="/logout" size="sm" className={buttonClass}>
-        <Tooltip content="Logout">
-          <HiLogout className="h-5 w-5" />
-        </Tooltip>
-        <span className="ml-2 max-xl:hidden text-sm">Logout</span>
-      </Button>
+      <LogoutButton className={buttonClass} />
       <AdminButton className={buttonClass} />
       <DarkThemeToggle
         aria-label="Toggle dark mode"
