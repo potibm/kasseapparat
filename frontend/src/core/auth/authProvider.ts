@@ -13,6 +13,17 @@ type AuthUser = z.infer<typeof AuthUserSchema>;
 export const createAuthProvider = (apiHost: string): AuthProvider => {
   let cachedUser: AuthUser | null = null;
 
+  const redirectToLogin = () => {
+    cachedUser = null;
+    const returnTo = encodeURIComponent(
+      window.location.pathname + window.location.search,
+    );
+
+    window.location.href = `${apiHost}/api/v2/auth/login?returnTo=${returnTo}`;
+
+    return new Promise<void>(() => {});
+  };
+
   return {
     checkAuth: async (_params: unknown = {}) => {
       if (cachedUser) {
@@ -24,10 +35,12 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
           credentials: "include",
         });
 
-        if (response.status === 401 || !response.ok) {
-          cachedUser = null;
-          window.location.href = `${apiHost}/api/v2/auth/login`;
-          return new Promise(() => {});
+        if (response.status === 401 || response.status === 403) {
+          return redirectToLogin();
+        }
+
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.statusText}`);
         }
 
         const rawData = await response.json();
@@ -35,10 +48,9 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
         cachedUser = AuthUserSchema.parse(rawData);
 
         return;
-      } catch {
+      } catch (error) {
         cachedUser = null;
-        window.location.href = `${apiHost}/api/v2/auth/login`;
-        return new Promise(() => {});
+        throw error;
       }
     },
 
@@ -60,9 +72,7 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
     checkError: async (error) => {
       const status = error.status;
       if (status === 401 || status === 403) {
-        cachedUser = null;
-        window.location.href = `${apiHost}/api/v2/auth/login`;
-        return new Promise(() => {});
+        return redirectToLogin();
       }
     },
 

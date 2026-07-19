@@ -40,8 +40,9 @@ import (
 )
 
 const (
-	stateCookieName   = "oidc_state"
-	sessionCookieName = "auth_session"
+	stateCookieName    = "oidc_state"
+	returnToCookieName = "oidc_return_to"
+	sessionCookieName  = "auth_session"
 )
 
 type OIDCOptions struct {
@@ -169,6 +170,25 @@ func (h *OIDCAuthHandler) Login(c *gin.Context) {
 		SameSite: http.SameSiteLaxMode,
 	})
 
+	returnTo := c.Query("returnTo")
+	slog.Debug("Return URL read as", "url", returnTo)
+
+	if returnTo == "" || !strings.HasPrefix(returnTo, "/") || strings.HasPrefix(returnTo, "//") {
+		returnTo = "/" // Standard-Fallback
+	}
+
+	slog.Debug("Return URL set to", "url", returnTo)
+
+	http.SetCookie(c.Writer, &http.Cookie{ //nolint:gosec // Secure is set dynamically via h.secureCookie
+		Name:     returnToCookieName,
+		Value:    returnTo,
+		MaxAge:   int(session.StateDuration.Seconds()),
+		Path:     "/",
+		Secure:   h.secureCookie,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
 	authURL := h.oauth2Config.AuthCodeURL(state, oauth2.SetAuthURLParam("nonce", nonce))
 
 	slog.Debug("Redirecting to OIDC provider", "url", authURL)
@@ -196,6 +216,7 @@ func (h *OIDCAuthHandler) Login(c *gin.Context) {
 //   - Session expiration is configurable via auth.session_duration
 func (h *OIDCAuthHandler) Callback(c *gin.Context) {
 	defer h.clearCookie(c, stateCookieName)
+	defer h.clearCookie(c, returnToCookieName)
 
 	code := c.Query("code")
 	stateParam := c.Query("state")
@@ -232,11 +253,21 @@ func (h *OIDCAuthHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(stateCookieName, "", -1, "/", "", false, true)
+	redirectPath := "/"
+
+	if cookiePath, err := c.Cookie(returnToCookieName); err == nil && cookiePath != "" {
+		if strings.HasPrefix(cookiePath, "/") && !strings.HasPrefix(cookiePath, "//") {
+			redirectPath = cookiePath
+		}
+	}
+
+	slog.Debug("Return path read as", "url", redirectPath)
+
+	finalURL := strings.TrimRight(h.frontendURL, "/") + redirectPath
 
 	slog.Info("OIDC authentication successful", "username", username, "role", role)
 
-	c.Redirect(http.StatusFound, h.frontendURL)
+	c.Redirect(http.StatusFound, finalURL)
 }
 
 // Logout terminates the user's session by clearing the session cookie.
