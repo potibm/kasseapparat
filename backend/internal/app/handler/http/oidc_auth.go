@@ -172,7 +172,8 @@ func (h *OIDCAuthHandler) Login(c *gin.Context) {
 
 	returnTo := c.Query("returnTo")
 
-	if returnTo == "" || len(returnTo) > 2000 || !strings.HasPrefix(returnTo, "/") || strings.HasPrefix(returnTo, "//") {
+	if returnTo == "" || len(returnTo) > 2000 || !strings.HasPrefix(returnTo, "/") ||
+		strings.HasPrefix(returnTo, "//") {
 		returnTo = "/" // default fallback
 	}
 
