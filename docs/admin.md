@@ -9,7 +9,7 @@ This documentation will give hints how to set up Kasseapparat on a server.
 - Server with minimal specs (the staging environment is running smoothly on a VPS with 2 cores and 2 GB ram)
 - Current Ubuntu (as we are using docker a different setup will probably work just as fine.)
 - Docker including docker compose installed
-- A mail account (will be used to send password reset mails)
+- A mail account (will be used to send visitor arrival notifications)
 
 ### Client
 
@@ -27,45 +27,38 @@ Find a list below with hardware that was tried and tested at demoparties (feel f
 - create directory /app/kasseapparat/backup
 - create directory /app/kasseapparat/config
 
-## Configuration Strategy
+## Configuration
 
-Kasseapparat uses a layered configuration approach:
+Kasseapparat uses a layered configuration approach. The primary source of truth is the `config.yaml` file, while the `.env` file is strictly reserved for sensitive secrets (like passwords).
 
-1. **Base configuration**: Generated via `kasseapparat config create` command, creates `config/config.yaml` with structured business data (VAT rates, payment methods, locale formatting).
+### 1. Main Configuration (`config.yaml`)
 
-2. **Local overrides**: Optional `config/config.local.yaml` for environment-specific settings that shouldn't be committed.
-
-3. **Environment variables**: `.env` file for secrets (API keys, JWT passwords) and runtime overrides.
-
-### 1. Generate base configuration
-
-Run the config creation command:
+Run the following command to generate the base configuration:
 
 ```bash
 docker compose run --rm kasseapparat config create
 ```
 
-This generates `config/config.yaml` with sensible defaults. Edit it to adjust business rules (currencies, VAT rates, payment methods) to your needs.
+This generates `config/config.yaml` with sensible defaults. You should edit this file to adjust the core behavior and business rules of the application. Key areas to configure include:
 
-### 2. Create /app/kasseapparat/.env
+- **Authentication Mode:** Kasseapparat relies entirely on external identity providers. Set the mode to `proxy` (default, e.g., Traefik with ForwardAuth) or `oidc` (e.g., Dex, Keycloak). In proxy mode, login/logout UI elements are disabled, and the backend trusts the `Remote-User` header.
+- **System URLs:** Define your frontend URL to ensure correct link generation within the application and notifications.
+- **Localization:** Adjust locale, currency codes, and fraction digits to your local preferences.
+- **Mail Settings:** Configure your sender address and subject prefixes for automated visitor arrival notifications.
+- **Business Rules:** Define VAT rates and accepted payment methods.
 
-Copy the [`.env.example`](../backend/.env.example) from the repository to your server and rename it to `.env`. Fill in your specific URLs, SMTP credentials, and API keys.
+_Optional:_ You can create a `config/config.local.yaml` for environment-specific settings that shouldn't be committed to version control.
 
-#### Important: JWT_SECRET
+### 2. Secrets & Credentials (`.env`)
 
-Generate a random JWT secret using one of these commands:
+While the YAML file handles the application structure, sensitive credentials must be kept in the `.env` file.
 
-```bash
-< /dev/urandom tr -dc 'A-Za-z0-9!@#$%^&*()_+=' | head -c 32
-```
+Copy the `.env.example` from the repository to your server and rename it to `.env`. Here you only need to fill in:
 
-or
+- Your SMTP login credentials (e.g., `MAIL_DSN`)
+- Any required API keys
 
-```bash
-openssl rand -base64 32
-```
-
-Using the default value is a major security risk. You must provide a secure key (minimum 8 characters, 32+ recommended).
+_(Note: While it is technically possible to override YAML settings via environment variables like `APP_AUTH_MODE`, sticking to the `config.yaml` is highly recommended for a clean setup)._
 
 ## Command Line Interface (CLI)
 
@@ -87,25 +80,10 @@ These flags can be appended to almost any command:
 - `kasseapparat database migrate`: Creates or updates the database tables to the latest schema.
 - `kasseapparat database seed`: Fills the database with dummy data (useful for development).
 - `kasseapparat database reset`: Drops all tables and recreates them from scratch (WARNING: Deletes all data!).
-- `kasseapparat user create`: Interactive or flag-based command to create a new user.
 
 ### SENTRY
 
-We are using https://sentry.io/ for fetching some bugs. Please ignore those settings.
-
-### LOCALE
-
-You can set LOCALE, CURRENCY_CODE, FRACTION_DIGITS_MIN and FRACTION_DIGITS_MAX to your local preferences.
-
-### FRONTEND_URL
-
-For generating correct urls (within mails e.g.) set the URL here.
-
-### MAIL
-
-We will need the SMTP login for the mail account in MAIL_DSN.
-
-Modify MAIL_FROM accordingly. Editing MAIL_SUBJECT_PREFIX is optional.
+We are using [https://sentry.io/](https://sentry.io/) for fetching some bugs. Please ignore those settings in the config file.
 
 ## Create a /app/kasseapparat/docker-compose.yml
 
@@ -152,8 +130,6 @@ services:
     env_file: ".env"
     environment:
       - "APP_GIN_MODE=release"
-      - "JWT_REALM=Kasseapparat"
-      - "JWT_SECRET=${JWT_SECRET}"
       - "APP_CORS_ALLOW_ORIGINS=https://kasseapparat.example.com"
       - "APP_FRONTEND_URL=https://kasseapparat.example.com"
     labels:
@@ -165,6 +141,12 @@ services:
       - traefik.http.middlewares.mywwwredirect.redirectregex.regex=^https://www\.(.*)
       - traefik.http.middlewares.mywwwredirect.redirectregex.replacement=https://$${1}
       - traefik.http.routers.kasseapparat.middlewares=mywwwredirect
+      # --- Uncomment the following lines if you are using proxy auth ---
+      # - traefik.http.routers.kasseapparat.middlewares=mywwwredirect,forward-auth
+      # - traefik.http.middlewares.forward-auth.forwardauth.address=http://authelia:9091/api/verify?rd=https://auth.example.com/
+      # - traefik.http.middlewares.forward-auth.forwardauth.trustForwardHeader=true
+      # - traefik.http.middlewares.forward-auth.forwardauth.authResponseHeaders=Remote-User,Remote-Groups
+      # -----------------------------------------------------------------
     networks:
       - proxy
 
@@ -248,60 +230,6 @@ docker run --rm ghcr.io/potibm/kasseapparat:latest id appuser
 ```bash
 docker compose run --rm kasseapparat database seed --test-data
 ```
-
-### Username and Email Requirements
-
-- Username: Must be 3-20 characters, alphanumeric with underscores
-- Email: Must be a valid email format
-- Admin flag: Set to 'true' for admin privileges, 'false' for regular users
-
-#### User roles and permissions
-
-Kasseapparat is built on trust: **we assume that users act responsibly and collaboratively**. Therefore, all users can perform most operations in the system — such as creating guestlists, managing products, or viewing purchases.
-
-Only a small set of **critical or security-sensitive actions** are restricted to admins:
-
-- Changing another user's password
-- Changing a user's role (e.g., making someone an admin)
-- Creating a new user **with** admin rights
-- Deleting users
-- Deleting a product
-- Deleting a guestlist created by another user
-- Deleting a guest added by someone else
-- Deleting a purchase
-- Refunding a SumUp purchase
-
-This minimal restriction model allows flexibility for everyone while ensuring that core system integrity is maintained.
-
-### Create single user
-
-Call
-
-```bash
-docker compose run --rm kasseapparat user create
-```
-
-to create a user called "username" with the email "email@example.com" as an admin. You should receive an email to change your password.
-
-Just edit the command accordingly.
-
-### Create multiple users
-
-Create `/app/kasseapparat/data/user.txt` with the following structure (please, edit accordingly)
-
-```csv
-john_doe,john.doe@company.com,true
-jane_smith,jane.smith@company.com,false
-tech_lead,tech.lead@company.com,true
-```
-
-Call
-
-```bash
-docker compose run --rm kasseapparat user import /data/user.txt
-```
-
-to create the three users provided. Each user should receive an email to change their password.
 
 ## Startup
 
