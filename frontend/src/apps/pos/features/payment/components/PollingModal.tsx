@@ -8,7 +8,7 @@ import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 import { ToastSeverity } from "@pos/features/ui/toast/types/toast.types";
 import { useConfig } from "@core/config/hooks/useConfig";
-import { Purchase as PurchaseType } from "../../../utils/api.schemas";
+import { Purchase as PurchaseType } from "../../../api/schemas";
 
 const log = createLogger("Payment");
 

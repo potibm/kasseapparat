@@ -1,10 +1,10 @@
 import Decimal from "decimal.js";
 import { CartItem, PaymentMethodData } from "../types/cart.types";
-import { ApiCreatePayloadPurchase } from "../../../utils/api.types";
+import { ApiCreatePayloadPurchase } from "../../../api/types";
 import {
   Product as ProductType,
   Guest as GuestType,
-} from "../../../utils/api.schemas";
+} from "../../../api/schemas";
 import { createLogger } from "@core/logger/logger";
 
 const log = createLogger("Cart");

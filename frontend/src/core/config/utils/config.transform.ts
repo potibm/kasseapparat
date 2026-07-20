@@ -9,6 +9,9 @@ export const transformConfig = (
   // Converts http:// -> ws:// and https:// -> wss:// for the websocket endpoint.
   const websocketHost = apiHost.replace(/^http/, "ws");
 
+  const apiBaseUrl = `${apiHost}/api/v2`;
+  const websocketBaseUrl = `${websocketHost}/api/v2`;
+
   const currencyOptions: Intl.NumberFormatOptions = {
     style: "currency",
     currency: rawData.currencyCode,
@@ -19,7 +22,9 @@ export const transformConfig = (
   return {
     ...rawData,
     apiHost,
+    apiBaseUrl,
     websocketHost,
+    websocketBaseUrl,
     sumupEnabled,
     currencyOptions,
     currency: new Intl.NumberFormat(rawData.currencyLocale, currencyOptions),

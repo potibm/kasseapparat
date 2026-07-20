@@ -1,7 +1,9 @@
 export interface AppConfig {
   version: string;
   apiHost: string;
+  apiBaseUrl: string;
   websocketHost: string;
+  websocketBaseUrl: string;
   sentryDSN?: string;
   sentryTraceSampleRate?: number;
   sentryReplaySessionSampleRate?: number;

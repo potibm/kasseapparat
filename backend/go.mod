@@ -1,9 +1,7 @@
 module github.com/potibm/kasseapparat
 
-go 1.25.0
-
-toolchain go1.25.1
-
+go 1.26.5
+ 
 require (
 	github.com/brianvoe/gofakeit/v7 v7.15.0
 	github.com/coreos/go-oidc/v3 v3.20.0

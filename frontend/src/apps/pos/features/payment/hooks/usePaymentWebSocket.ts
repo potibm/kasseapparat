@@ -25,7 +25,7 @@ export const usePaymentWebSocket = (
   }, [status]);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const { websocketHost } = useConfig();
+  const { websocketBaseUrl } = useConfig();
 
   /**
    * Send message over websocket, when connection is open.
@@ -67,7 +67,7 @@ export const usePaymentWebSocket = (
 
     const initialize = async () => {
       try {
-        const wsUrl = `${websocketHost}/api/v2/purchases/${purchaseId}/ws`;
+        const wsUrl = `${websocketBaseUrl}/purchases/${purchaseId}/ws`;
         const ws = new WebSocket(wsUrl, []);
         wsRef.current = ws;
 
@@ -151,7 +151,7 @@ export const usePaymentWebSocket = (
         wsRef.current = null;
       }
     };
-  }, [purchaseId, websocketHost]);
+  }, [purchaseId, websocketBaseUrl]);
 
   return {
     status,

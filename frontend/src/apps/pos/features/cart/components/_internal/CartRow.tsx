@@ -5,7 +5,7 @@ import Button from "../../../../components/Button";
 import {
   Product as ProductType,
   Guest as GuestType,
-} from "../../../../utils/api.schemas";
+} from "../../../../api/schemas";
 import { CartItem as CartItemType } from "../../types/cart.types";
 
 interface CartRowProps {

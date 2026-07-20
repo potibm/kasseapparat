@@ -23,7 +23,7 @@ import {
   Product as ProductType,
   Purchase as PurchaseType,
   Guest as GuestType,
-} from "../utils/api.schemas";
+} from "../api/schemas";
 import { createLogger } from "@core/logger/logger";
 import { ToastProvider } from "@pos/features/ui/toast/providers/ToastProvider";
 
@@ -36,7 +36,7 @@ interface KasseapparatContentProps {
 const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
   username,
 }) => {
-  const { apiHost, environmentMessage } = useConfig();
+  const { environmentMessage } = useConfig();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -53,7 +53,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
     loading: _productsLoading,
     refreshProducts,
     addInterest,
-  } = useProducts(apiHost);
+  } = useProducts();
 
   const {
     cart,
@@ -66,14 +66,14 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
     pendingPurchase,
     finalizeCheckout,
     resumePolling,
-  } = useCart(apiHost);
+  } = useCart();
 
   const {
     history,
     refreshHistory,
     refundPurchase,
     loading: historyLoading,
-  } = usePurchaseHistory(apiHost, username);
+  } = usePurchaseHistory(username);
 
   const handlePurchaseSuccess = useCallback(async () => {
     await Promise.all([refreshHistory(), refreshProducts()]);

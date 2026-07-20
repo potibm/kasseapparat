@@ -42,7 +42,7 @@ vi.mock("@sentry/react", () => ({
   captureException: vi.fn(),
 }));
 
-import dataProvider from "./data-provider";
+import { createDataProvider } from "./dataProvider";
 
 interface HttpClientOptions extends fetchUtils.Options {
   isUpload?: boolean;
@@ -52,8 +52,6 @@ type HttpClient = (
   url: string,
   options?: HttpClientOptions,
 ) => ReturnType<typeof fetchUtils.fetchJson>;
-const capturedHttpClient = vi.mocked(jsonServerProvider).mock
-  .calls[0][1] as HttpClient;
 
 const mockFetchResponse = (jsonPayload: unknown) =>
   ({ json: jsonPayload }) as Awaited<ReturnType<typeof fetchUtils.fetchJson>>;
@@ -61,10 +59,16 @@ const mockFetchResponse = (jsonPayload: unknown) =>
 // tests
 
 describe("Data Provider", () => {
-  const API_HOST = "";
+  const API_BASE_URL = "/api/v2";
+
+  let dataProvider: ReturnType<typeof createDataProvider>;
+  let capturedHttpClient: HttpClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    dataProvider = createDataProvider(API_BASE_URL);
+    capturedHttpClient = vi.mocked(jsonServerProvider).mock
+      .calls[0][1] as HttpClient;
   });
 
   describe("Resource Resolution & Alias Mapping", () => {
@@ -93,7 +97,7 @@ describe("Data Provider", () => {
     it("should set default headers and Content-Type", async () => {
       vi.mocked(fetchUtils.fetchJson).mockResolvedValue(mockFetchResponse({}));
 
-      await capturedHttpClient(`${API_HOST}/api/v2/test`);
+      await capturedHttpClient(`${API_BASE_URL}/test`);
 
       const calledOptions = vi.mocked(fetchUtils.fetchJson).mock.calls[0][1];
       const headers = calledOptions?.headers as Headers;
@@ -105,7 +109,7 @@ describe("Data Provider", () => {
     it("should skip Content-Type if isUpload is true", async () => {
       vi.mocked(fetchUtils.fetchJson).mockResolvedValue(mockFetchResponse({}));
 
-      await capturedHttpClient("${API_HOST/api/v2/test", {
+      await capturedHttpClient(`${API_BASE_URL}/test`, {
         isUpload: true,
       });
 
@@ -120,9 +124,9 @@ describe("Data Provider", () => {
       const error = new Error("Database connection failed");
       vi.mocked(fetchUtils.fetchJson).mockRejectedValue(error);
 
-      await expect(
-        capturedHttpClient(`${API_HOST}/api/v2/test`),
-      ).rejects.toThrow("Database connection failed");
+      await expect(capturedHttpClient(`${API_BASE_URL}/test`)).rejects.toThrow(
+        "Database connection failed",
+      );
 
       expect(Sentry.captureException).toHaveBeenCalledTimes(1);
     });
@@ -131,9 +135,9 @@ describe("Data Provider", () => {
       const expectedError = new Error("Cookie token is empty"); // Should be caught by the filter
       vi.mocked(fetchUtils.fetchJson).mockRejectedValue(expectedError);
 
-      await expect(
-        capturedHttpClient(`${API_HOST}/api/v2/test`),
-      ).rejects.toThrow("Cookie token is empty");
+      await expect(capturedHttpClient(`${API_BASE_URL}/test`)).rejects.toThrow(
+        "Cookie token is empty",
+      );
 
       // The filter logic should prevent Sentry from being called
       expect(Sentry.captureException).not.toHaveBeenCalled();
@@ -144,7 +148,7 @@ describe("Data Provider", () => {
       vi.mocked(fetchUtils.fetchJson).mockRejectedValue(error);
 
       await expect(
-        capturedHttpClient(`${API_HOST}/api/v2/test`),
+        capturedHttpClient(`${API_BASE_URL}/test`),
       ).rejects.toThrow();
 
       // Check the exact payload sent to Sentry
@@ -182,7 +186,7 @@ describe("Data Provider", () => {
       const [url, options] = vi.mocked(fetchUtils.fetchJson).mock.calls[0];
       const headers = options?.headers as Headers;
 
-      expect(url).toBe(`${API_HOST}/api/v2/images`);
+      expect(url).toBe(`${API_BASE_URL}/images`);
       expect(options?.method).toBe("POST");
       expect(options?.body).toBe(fileBody);
       // isUpload flag is stripped before passing to fetchJson, but we know it bypassed Content-Type
@@ -218,7 +222,7 @@ describe("Data Provider", () => {
       expect(result.data).toEqual({ refunded: true });
 
       const [url, options] = vi.mocked(fetchUtils.fetchJson).mock.calls[0];
-      expect(url).toBe(`${API_HOST}/api/v2/purchases/123/refund`);
+      expect(url).toBe(`${API_BASE_URL}/purchases/123/refund`);
       expect(options?.method).toBe("POST");
       expect(options?.body).toBe(JSON.stringify(payload));
     });

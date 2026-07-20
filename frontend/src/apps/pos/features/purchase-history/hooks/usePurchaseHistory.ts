@@ -1,18 +1,19 @@
 // src/apps/pos/features/purchase-history/hooks/usePurchaseHistory.ts
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { fetchPurchases, refundPurchaseById } from "../../../utils/api";
-import { Purchase as PurchaseType } from "../../../utils/api.schemas";
+import { Purchase as PurchaseType } from "../../../api/schemas";
 import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 import { useConfig } from "@core/config/hooks/useConfig";
+import { usePosApi } from "@pos/api/usePosApi";
 
 const log = createLogger("Purchase");
 
-export const usePurchaseHistory = (apiHost: string, username: string) => {
+export const usePurchaseHistory = (username: string) => {
   const [history, setHistory] = useState<PurchaseType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const { showToast } = useToast();
   const { currency } = useConfig();
+  const { fetchPurchases, refundPurchaseById } = usePosApi();
 
   /**
    * Load history of purchases for the current user.
@@ -35,7 +36,7 @@ export const usePurchaseHistory = (apiHost: string, username: string) => {
       }
 
       try {
-        const purchases = await fetchPurchases(apiHost, username);
+        const purchases = await fetchPurchases(username);
 
         setHistory(purchases);
         log.debug("Purchase history fetched successfully", {
@@ -67,7 +68,7 @@ export const usePurchaseHistory = (apiHost: string, username: string) => {
         }
       }
     },
-    [apiHost, username, showToast],
+    [username, showToast, fetchPurchases],
   );
 
   useEffect(() => {
@@ -95,7 +96,7 @@ export const usePurchaseHistory = (apiHost: string, username: string) => {
 
   const refund = async (purchaseId: string) => {
     try {
-      const purchase = await refundPurchaseById(apiHost, purchaseId);
+      const purchase = await refundPurchaseById(purchaseId);
       showToast({
         severity: "success",
         message: `Purchase of ${currency.format(purchase.totalGrossPrice.toNumber())} refunded successfully!`,

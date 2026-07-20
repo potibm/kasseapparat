@@ -6,7 +6,7 @@ import {
   Guest as GuestType,
   Purchase as PurchaseType,
   PurchaseItem as PurchaseItemType,
-} from "./api.schemas";
+} from "./schemas";
 
 /**
  * Generates a realistic mock Product object for testing purposes.

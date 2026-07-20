@@ -10,11 +10,15 @@ export default defineConfig({
   reporter: "html",
   use: {
     baseURL: "http://localhost:4000",
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     screenshot: "only-on-failure",
 
     locale: "da-DK",
     timezoneId: "Europe/Berlin",
+
+    extraHTTPHeaders: {
+      "X-Remote-User": "e2e-demo-user",
+    },
   },
 
   projects: [
@@ -42,6 +46,7 @@ export default defineConfig({
         FORMAT_CURRENCY_FRACTION_DIGITS_MAX: "2",
         FORMAT_CURRENCY_FRACTION_DIGITS_MIN: "0",
         FORMAT_DATE_LOCALE: "de-DE",
+        AUTH_MODE: "proxy",
       },
     },
     {

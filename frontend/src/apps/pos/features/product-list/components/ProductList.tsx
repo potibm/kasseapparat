@@ -3,7 +3,7 @@ import Product from "./_internal/Product";
 import {
   Product as ProductType,
   Guest as GuestType,
-} from "../../../utils/api.schemas";
+} from "../../../api/schemas";
 
 interface ProductListProps {
   products: ProductType[] | null;

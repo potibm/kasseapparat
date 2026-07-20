@@ -3,10 +3,7 @@ import { Cart } from "./Cart";
 import Decimal from "decimal.js";
 import { PaymentMethodData } from "../types/cart.types";
 import { createLogger } from "@core/logger/logger";
-import {
-  createMockProduct,
-  createMockGuest,
-} from "@pos/utils/api.schemas.mocks";
+import { createMockProduct, createMockGuest } from "@pos/api/schemas.mocks";
 
 vi.mock("@core/logger/logger", () => {
   const mockLogger = {

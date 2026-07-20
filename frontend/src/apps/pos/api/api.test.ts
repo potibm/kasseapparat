@@ -1,21 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as Sentry from "@sentry/react";
-import {
-  fetchProducts,
-  fetchGuestlistByProductId,
-  storePurchase,
-  fetchPurchases,
-  refundPurchaseById,
-  addProductInterest,
-} from "./api";
-import { Purchase as PurchaseType } from "./api.schemas";
+import { createPosApiClient } from "./factory";
+import { Purchase as PurchaseType } from "./schemas";
 import Decimal from "decimal.js";
-import { ApiCreatePayloadPurchase } from "./api.types";
+import { ApiCreatePayloadPurchase } from "./types";
 import {
   createMockProduct,
   createMockGuest,
   createMockPurchase,
-} from "./api.schemas.mocks";
+} from "./schemas.mocks";
 
 vi.mock("@sentry/react", () => ({
   captureException: vi.fn(),
@@ -45,16 +38,70 @@ const convertDecimalsToStrings = (obj: any): any => {
   return obj;
 };
 
-describe("Api Service", () => {
-  const apiHost = "https://api.example.com";
+describe("POS API Client", () => {
+  const apiBaseUrl = "https://api.example.com/api/v2";
 
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.stubGlobal("fetch", vi.fn());
   });
 
+  describe("createPosApiClient", () => {
+    it("should create a client with all expected methods", () => {
+      const client = createPosApiClient(apiBaseUrl);
+
+      expect(client.fetchProducts).toBeDefined();
+      expect(client.fetchGuestlistByProductId).toBeDefined();
+      expect(client.storePurchase).toBeDefined();
+      expect(client.fetchPurchases).toBeDefined();
+      expect(client.refundPurchaseById).toBeDefined();
+      expect(client.addProductInterest).toBeDefined();
+    });
+  });
+
+  describe("URL building", () => {
+    it("should handle trailing slash in base URL", async () => {
+      const client = createPosApiClient("https://api.example.com/api/v2/");
+
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: async () => [],
+        } as Response),
+      );
+
+      await client.fetchProducts();
+
+      expect(fetch).toHaveBeenCalledWith(
+        "https://api.example.com/api/v2/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true",
+        expect.any(Object),
+      );
+    });
+
+    it("should handle leading slash in endpoint", async () => {
+      const client = createPosApiClient(apiBaseUrl);
+
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: async () => [],
+        } as Response),
+      );
+
+      await client.fetchProducts();
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/products"),
+        expect.any(Object),
+      );
+    });
+  });
+
   describe("fetchProducts", () => {
     it("should return products on successful response", async () => {
+      const client = createPosApiClient(apiBaseUrl);
       const mockProducts = [
         createMockProduct({ id: 1, name: "Product A" }),
         createMockProduct({ id: 2, name: "Product B" }),
@@ -69,8 +116,8 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await fetchProducts(apiHost);
-      const url = `${apiHost}/api/v2/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true`;
+      const result = await client.fetchProducts();
+      const url = `${apiBaseUrl}/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
@@ -85,6 +132,7 @@ describe("Api Service", () => {
 
   describe("fetchGuestlistByProductId", () => {
     it("should return guests on successful response", async () => {
+      const client = createPosApiClient(apiBaseUrl);
       const mockGuests = [
         createMockGuest({ id: 1, name: "Guest A" }),
         createMockGuest({ id: 2, name: "Guest B" }),
@@ -99,8 +147,8 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await fetchGuestlistByProductId(apiHost, 12, "Hans");
-      const url = `${apiHost}/api/v2/products/12/guests?q=Hans`;
+      const result = await client.fetchGuestlistByProductId(12, "Hans");
+      const url = `${apiBaseUrl}/products/12/guests?q=Hans`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
@@ -113,6 +161,8 @@ describe("Api Service", () => {
     });
 
     it("should return empty array if no guests found", async () => {
+      const client = createPosApiClient(apiBaseUrl);
+
       vi.stubGlobal(
         "fetch",
         vi.fn().mockResolvedValue({
@@ -121,14 +171,15 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await fetchGuestlistByProductId(apiHost, 12, "Hans");
+      const result = await client.fetchGuestlistByProductId(12, "Hans");
 
       expect(result).toEqual([]);
     });
   });
 
   describe("storePurchase", () => {
-    it("should return purchase on successful response ", async () => {
+    it("should return purchase on successful response", async () => {
+      const client = createPosApiClient(apiBaseUrl);
       const mockPurchase = createMockPurchase();
       const requestPurchase = convertDecimalsToStrings(mockPurchase);
 
@@ -154,8 +205,8 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await storePurchase(apiHost, createPurchasePayload);
-      const url = `${apiHost}/api/v2/purchases`;
+      const result = await client.storePurchase(createPurchasePayload);
+      const url = `${apiBaseUrl}/purchases`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
@@ -171,6 +222,7 @@ describe("Api Service", () => {
 
   describe("fetchPurchases", () => {
     it("should return purchases on successful response", async () => {
+      const client = createPosApiClient(apiBaseUrl);
       const mockPurchases: PurchaseType[] = [
         createMockPurchase({ id: "123e4567-e89b-12d3-a456-426614174000" }),
         createMockPurchase({ id: "123e4567-e89b-12d3-a456-426614174001" }),
@@ -185,8 +237,8 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await fetchPurchases(apiHost, "testuser");
-      const url = `${apiHost}/api/v2/purchases?createdById=testuser&status=confirmed&status=pending`;
+      const result = await client.fetchPurchases("testuser");
+      const url = `${apiBaseUrl}/purchases?createdById=testuser&status=confirmed&status=pending`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
@@ -201,6 +253,7 @@ describe("Api Service", () => {
 
   describe("refundPurchaseById", () => {
     it("should return purchase on successful response", async () => {
+      const client = createPosApiClient(apiBaseUrl);
       const purchaseId = "123e4567-e89b-12d3-a456-426614174000";
       const mockPurchase = createMockPurchase({
         id: purchaseId,
@@ -216,8 +269,8 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await refundPurchaseById(apiHost, purchaseId);
-      const url = `${apiHost}/api/v2/purchases/${purchaseId}/refund`;
+      const result = await client.refundPurchaseById(purchaseId);
+      const url = `${apiBaseUrl}/purchases/${purchaseId}/refund`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
@@ -232,6 +285,7 @@ describe("Api Service", () => {
 
   describe("addProductInterest", () => {
     it("should return id on successful response", async () => {
+      const client = createPosApiClient(apiBaseUrl);
       const productInterest = { id: 98 };
 
       vi.stubGlobal(
@@ -242,8 +296,8 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      const result = await addProductInterest(apiHost, 12);
-      const url = `${apiHost}/api/v2/productInterests`;
+      const result = await client.addProductInterest(12);
+      const url = `${apiBaseUrl}/productInterests`;
 
       expect(fetch).toHaveBeenCalledWith(
         url,
@@ -259,17 +313,21 @@ describe("Api Service", () => {
 
   describe("error handling", () => {
     it("should throw an error if Zod validation fails", async () => {
+      const client = createPosApiClient(apiBaseUrl);
+
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
         json: async () => ({ wrong_key: "garbage" }),
       } as Response);
 
-      await expect(fetchProducts(apiHost)).rejects.toThrow(
+      await expect(client.fetchProducts()).rejects.toThrow(
         "API Response format mismatch",
       );
     });
 
     it("should throw an error on non-ok response and call sentry", async () => {
+      const client = createPosApiClient(apiBaseUrl);
+
       vi.stubGlobal(
         "fetch",
         vi.fn().mockResolvedValue({
@@ -280,7 +338,7 @@ describe("Api Service", () => {
         } as Response),
       );
 
-      await expect(fetchProducts(apiHost)).rejects.toThrow("Server error");
+      await expect(client.fetchProducts()).rejects.toThrow("Server error");
 
       expect(Sentry.captureException).toHaveBeenCalled();
     });

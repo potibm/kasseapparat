@@ -10,7 +10,7 @@ import {
   TableBody,
 } from "flowbite-react";
 import { useConfig } from "@core/config/hooks/useConfig";
-import { Purchase } from "../../../utils/api.schemas";
+import { Purchase } from "../../../api/schemas";
 import Button from "../../../components/Button";
 import { RefundModal } from "./_internal/RefundModal";
 import { createLogger } from "@core/logger/logger";

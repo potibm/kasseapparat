@@ -1,17 +1,24 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useProducts } from "./useProducts";
-import { fetchProducts, addProductInterest } from "../../../utils/api";
 import {
   Product as ProductType,
   ProductInterest as ProductInterestType,
-} from "../../../utils/api.schemas";
-import { createMockProduct } from "@pos/utils/api.schemas.mocks";
+} from "../../../api/schemas";
+import { createMockProduct } from "@pos/api/schemas.mocks";
+import React from "react";
+import { ConfigContext } from "@core/config/context/ConfigContext";
+import { AppConfig } from "@core/config/types/config.types";
 
 // mocks
-vi.mock("../../../utils/api", () => ({
-  fetchProducts: vi.fn(),
-  addProductInterest: vi.fn(),
+const mockFetchProducts = vi.fn();
+const mockAddProductInterest = vi.fn();
+
+vi.mock("@pos/api/usePosApi", () => ({
+  usePosApi: () => ({
+    fetchProducts: mockFetchProducts,
+    addProductInterest: mockAddProductInterest,
+  }),
 }));
 
 vi.mock("@core/logger/logger", () => ({
@@ -29,12 +36,32 @@ vi.mock("@pos/features/ui/toast/hooks/useToast", () => ({
 }));
 
 // fixtures
-const mockApiHost = "https://api.example.com";
+const mockConfig: AppConfig = {
+  version: "1.0.0",
+  apiHost: "https://api.example.com",
+  apiBaseUrl: "https://api.example.com/api/v2",
+  websocketHost: "wss://api.example.com",
+  websocketBaseUrl: "wss://api.example.com/api/v2",
+  locale: "en",
+  currencyCode: "USD",
+  currencyLocale: "en-US",
+  currency: new Intl.NumberFormat("en-US"),
+  currencyOptions: {},
+  dateLocale: "en-US",
+  dateOptions: {},
+  vatRates: [],
+  paymentMethods: [],
+  sumupEnabled: false,
+  authMode: "proxy",
+};
 
 const mockProducts = [
   createMockProduct({ id: 1, name: "Product A" }),
   createMockProduct({ id: 2, name: "Product B" }),
 ] as ProductType[];
+
+const wrapper = ({ children }: { children: React.ReactNode }) =>
+  React.createElement(ConfigContext.Provider, { value: mockConfig }, children);
 
 describe("useProducts Hook", () => {
   beforeEach(() => {
@@ -43,9 +70,9 @@ describe("useProducts Hook", () => {
 
   describe("Initialization (loadProducts)", () => {
     it("should fetch and load products automatically on mount", async () => {
-      vi.mocked(fetchProducts).mockResolvedValue(mockProducts);
+      mockFetchProducts.mockResolvedValue(mockProducts);
 
-      const { result } = renderHook(() => useProducts(mockApiHost));
+      const { result } = renderHook(() => useProducts(), { wrapper });
 
       expect(result.current.loading).toBe(true);
 
@@ -53,16 +80,16 @@ describe("useProducts Hook", () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(fetchProducts).toHaveBeenCalledWith(mockApiHost);
+      expect(mockFetchProducts).toHaveBeenCalled();
       expect(result.current.products).toEqual(mockProducts);
       expect(mockShowToast).not.toHaveBeenCalled();
     });
 
     it("should trigger onError and set loading to false if fetching throws an Error object", async () => {
       const apiError = new Error("Network offline");
-      vi.mocked(fetchProducts).mockRejectedValue(apiError);
+      mockFetchProducts.mockRejectedValue(apiError);
 
-      const { result } = renderHook(() => useProducts(mockApiHost));
+      const { result } = renderHook(() => useProducts(), { wrapper });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -77,9 +104,9 @@ describe("useProducts Hook", () => {
     });
 
     it("should trigger onError with a fallback message if fetching throws a non-Error (unknown)", async () => {
-      vi.mocked(fetchProducts).mockRejectedValue("Some weird string error");
+      mockFetchProducts.mockRejectedValue("Some weirdstring error");
 
-      const { result } = renderHook(() => useProducts(mockApiHost));
+      const { result } = renderHook(() => useProducts(), { wrapper });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -95,33 +122,31 @@ describe("useProducts Hook", () => {
 
   describe("addInterest()", () => {
     it("should call the API and then reload the products", async () => {
-      vi.mocked(fetchProducts).mockResolvedValue(mockProducts);
-      vi.mocked(addProductInterest).mockResolvedValue(
+      mockFetchProducts.mockResolvedValue(mockProducts);
+      mockAddProductInterest.mockResolvedValue(
         undefined as unknown as ProductInterestType,
       );
 
-      const { result } = renderHook(() => useProducts(mockApiHost));
+      const { result } = renderHook(() => useProducts(), { wrapper });
 
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      vi.mocked(fetchProducts).mockClear();
+      vi.mocked(mockFetchProducts).mockClear();
 
       await act(async () => {
         await result.current.addInterest(99, "Test Product");
       });
 
-      expect(addProductInterest).toHaveBeenCalledWith(mockApiHost, 99);
+      expect(mockAddProductInterest).toHaveBeenCalledWith(99);
 
-      expect(fetchProducts).toHaveBeenCalledTimes(1);
+      expect(mockFetchProducts).toHaveBeenCalledTimes(1);
     });
 
     it("should trigger onError if adding interest fails with an Error object", async () => {
-      vi.mocked(fetchProducts).mockResolvedValue(mockProducts);
-      vi.mocked(addProductInterest).mockRejectedValue(
-        new Error("Item not found"),
-      );
+      mockFetchProducts.mockResolvedValue(mockProducts);
+      mockAddProductInterest.mockRejectedValue(new Error("Item not found"));
 
-      const { result } = renderHook(() => useProducts(mockApiHost));
+      const { result } = renderHook(() => useProducts(), { wrapper });
 
       await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -137,10 +162,10 @@ describe("useProducts Hook", () => {
     });
 
     it("should trigger onError with a fallback message if adding interest throws a non-Error", async () => {
-      vi.mocked(fetchProducts).mockResolvedValue(mockProducts);
-      vi.mocked(addProductInterest).mockRejectedValue(12345);
+      mockFetchProducts.mockResolvedValue(mockProducts);
+      mockAddProductInterest.mockRejectedValue(12345);
 
-      const { result } = renderHook(() => useProducts(mockApiHost));
+      const { result } = renderHook(() => useProducts(), { wrapper });
 
       await waitFor(() => expect(result.current.loading).toBe(false));
 

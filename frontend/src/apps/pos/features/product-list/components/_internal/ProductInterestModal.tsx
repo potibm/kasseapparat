@@ -1,7 +1,7 @@
 import { Modal, Spinner, ModalBody, ModalHeader } from "flowbite-react";
 import Button from "../../../../components/Button";
 import React, { useState } from "react";
-import { Product as ProductType } from "../../../../utils/api.schemas";
+import { Product as ProductType } from "../../../../api/schemas";
 import { createLogger } from "@core/logger/logger";
 
 const log = createLogger("Product");

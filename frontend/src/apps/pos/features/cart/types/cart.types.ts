@@ -2,7 +2,7 @@ import Decimal from "decimal.js";
 import {
   Product as ProductType,
   Guest as GuestType,
-} from "../../../utils/api.schemas";
+} from "../../../api/schemas";
 
 export interface CartItem extends ProductType {
   quantity: number;

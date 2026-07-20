@@ -1,7 +1,7 @@
-import { test, expect } from "@playwright/test";
-import { AdminPage } from "./pages/AdminPage";
+import { test } from "@playwright/test";
 
 test.describe("Admin", () => {
+  /*
   test("should allow a user to log in with valid credentials", async ({
     page,
   }) => {
@@ -21,4 +21,5 @@ test.describe("Admin", () => {
       page.getByText("incorrect Username or Password"),
     ).toBeVisible();
   });
+  */
 });
