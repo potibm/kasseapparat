@@ -56,7 +56,7 @@ func TestNewOIDCAuthHandler_InvalidIssuer(t *testing.T) {
 			FrontendURL:     "http://localhost:3000",
 			SessionSecret:   "session-secret-that-is-long-enough",
 			SessionDuration: 24 * time.Hour,
-			Admins:          []string{},
+			AdminGroup:      "",
 			IsProduction:    false,
 		},
 	)
@@ -68,32 +68,40 @@ func TestOIDCAuthHandler_Getters(t *testing.T) {
 	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
 
 	handler := &OIDCAuthHandler{
-		admins:     []string{"admin1", "admin2"},
+		adminGroup: "kasseapparat-admins",
 		sessionMgr: sessionMgr,
 	}
 
-	assert.Equal(t, []string{"admin1", "admin2"}, handler.GetAdmins())
+	assert.Equal(t, "kasseapparat-admins", handler.GetAdminGroup())
 	assert.Equal(t, sessionMgr, handler.GetSessionManager())
 }
 
 func TestOIDCAuthHandler_DetermineRole(t *testing.T) {
 	handler := &OIDCAuthHandler{
-		admins: []string{"admin1", "admin2@example.com"},
+		adminGroup: "kasseapparat-admins",
 	}
 
 	tests := []struct {
-		username string
-		expected string
+		name            string
+		groups          []string
+		expected        string
+		emptyAdminGroup bool
 	}{
-		{"admin1", "admin"},
-		{"admin2@example.com", "admin"},
-		{"regularuser", "user"},
-		{"user@example.com", "user"},
+		{"admin with matching group", []string{"kasseapparat-admins", "other-group"}, "admin", false},
+		{"admin only", []string{"kasseapparat-admins"}, "admin", false},
+		{"user with no groups", []string{}, "user", false},
+		{"user with different groups", []string{"other-group", "another-group"}, "user", false},
+		{"user with empty admin group config", []string{"kasseapparat-admins"}, "user", true},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.username, func(t *testing.T) {
-			role := handler.determineRole(tt.username)
+		t.Run(tt.name, func(t *testing.T) {
+			testHandler := handler
+			if tt.emptyAdminGroup {
+				testHandler = &OIDCAuthHandler{adminGroup: ""}
+			}
+
+			role := testHandler.determineRole(tt.groups)
 			assert.Equal(t, tt.expected, role)
 		})
 	}
@@ -109,7 +117,7 @@ func TestSessionManagerIntegration(t *testing.T) {
 
 	handler := &OIDCAuthHandler{
 		sessionMgr:  sessionMgr,
-		admins:      []string{"admin@example.com"},
+		adminGroup:  "kasseapparat-admins",
 		frontendURL: "http://localhost:3000",
 	}
 

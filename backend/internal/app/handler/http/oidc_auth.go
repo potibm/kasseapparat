@@ -22,7 +22,7 @@
 //     and Secure flag in production (HTTPS only)
 //   - Encrypted Sessions: Session data is encrypted using gorilla/securecookie with derived keys
 //   - Configurable Duration: Session lifetime is configurable via auth.session_duration
-//   - Admin Detection: Users in the configured admin list receive "admin" role, others get "user"
+//   - Admin Detection: Users with the configured admin group claim receive "admin" role, others get "user"
 package http
 
 import (
@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -53,7 +54,7 @@ type OIDCOptions struct {
 	FrontendURL     string
 	SessionSecret   string
 	SessionDuration time.Duration
-	Admins          []string
+	AdminGroup      string
 	IsProduction    bool
 }
 
@@ -62,7 +63,7 @@ type OIDCAuthHandler struct {
 	oauth2Config *oauth2.Config
 	verifier     *oidc.IDTokenVerifier
 	sessionMgr   *session.Manager
-	admins       []string
+	adminGroup   string
 	frontendURL  string
 	callbackURL  string
 	secureCookie bool
@@ -100,7 +101,7 @@ func NewOIDCAuthHandler(
 		ClientSecret: opts.ClientSecret,
 		RedirectURL:  opts.CallbackURL,
 		Endpoint:     provider.Endpoint(),
-		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email", "groups"},
 	}
 
 	verifier := provider.Verifier(&oidc.Config{ClientID: opts.ClientID})
@@ -111,7 +112,7 @@ func NewOIDCAuthHandler(
 		oauth2Config: oauth2Config,
 		verifier:     verifier,
 		sessionMgr:   sessionMgr,
-		admins:       opts.Admins,
+		adminGroup:   opts.AdminGroup,
 		frontendURL:  opts.FrontendURL,
 		callbackURL:  opts.CallbackURL,
 		secureCookie: opts.IsProduction,
@@ -202,7 +203,7 @@ func (h *OIDCAuthHandler) Login(c *gin.Context) {
 //  3. Exchange authorization code for tokens with the IdP
 //  4. Verify ID token signature, issuer, audience, and nonce (replay protection)
 //  5. Extract username from preferred_username, name, or email claims
-//  6. Determine user role (admin if in configured admin list, otherwise user)
+//  6. Determine user role (admin if in configured admin group, otherwise user)
 //  7. Create encrypted session cookie with username and role
 //  8. Clear state cookie and redirect to frontend
 //
@@ -240,12 +241,12 @@ func (h *OIDCAuthHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	username, err := h.extractUsername(c, idToken)
+	username, groups, err := h.extractUserClaims(c, idToken)
 	if err != nil {
 		return
 	}
 
-	role := h.determineRole(username)
+	role := h.determineRole(groups)
 
 	if err := h.createSession(c, username, role); err != nil {
 		return
@@ -279,8 +280,8 @@ func (h *OIDCAuthHandler) GetSessionManager() *session.Manager {
 	return h.sessionMgr
 }
 
-func (h *OIDCAuthHandler) GetAdmins() []string {
-	return h.admins
+func (h *OIDCAuthHandler) GetAdminGroup() string {
+	return h.adminGroup
 }
 
 // validateState verifies the state parameter from the OIDC callback matches
@@ -368,23 +369,27 @@ func (h *OIDCAuthHandler) verifyIDToken(
 	return idToken, nil
 }
 
-// extractUsername retrieves the username from the ID token claims.
+// extractUserClaims retrieves the username and groups from the ID token claims.
 // It tries claims in order: preferred_username, name, then email (local part).
 // Returns an error if no suitable username claim is found.
-func (h *OIDCAuthHandler) extractUsername(c *gin.Context, idToken *oidc.IDToken) (string, error) {
+func (h *OIDCAuthHandler) extractUserClaims(
+	c *gin.Context,
+	idToken *oidc.IDToken,
+) (username string, groups []string, err error) {
 	var claims struct {
-		PreferredUsername string `json:"preferred_username"`
-		Name              string `json:"name"`
-		Email             string `json:"email"`
+		PreferredUsername string   `json:"preferred_username"`
+		Name              string   `json:"name"`
+		Email             string   `json:"email"`
+		Groups            []string `json:"groups"`
 	}
 	if err := idToken.Claims(&claims); err != nil {
 		slog.Error("Failed to parse claims", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse claims"})
 
-		return "", err
+		return "", nil, err
 	}
 
-	username := claims.PreferredUsername
+	username = claims.PreferredUsername
 	if username == "" {
 		username = claims.Name
 	}
@@ -396,26 +401,20 @@ func (h *OIDCAuthHandler) extractUsername(c *gin.Context, idToken *oidc.IDToken)
 	if username == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not determine username"})
 
-		return "", fmt.Errorf("could not determine username")
+		return "", nil, fmt.Errorf("could not determine username")
 	}
 
-	return username, nil
+	return username, claims.Groups, nil
 }
 
-// determineRole assigns a role to the user based on the configured admin list.
-// Returns "admin" if the username is in the admin list, otherwise "user".
-func (h *OIDCAuthHandler) determineRole(username string) string {
-	role := "user"
-
-	for _, admin := range h.admins {
-		if admin == username {
-			role = "admin"
-
-			break
-		}
+// determineRole assigns a role to the user based on their OIDC groups.
+// Returns "admin" if the user belongs to the configured admin group, otherwise "user".
+func (h *OIDCAuthHandler) determineRole(groups []string) string {
+	if h.adminGroup != "" && slices.Contains(groups, h.adminGroup) {
+		return "admin"
 	}
 
-	return role
+	return "user"
 }
 
 // createSession generates an encrypted session cookie containing the user's

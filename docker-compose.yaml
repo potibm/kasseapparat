@@ -72,7 +72,7 @@ services:
   # Identity
   # --------------------------------------------------------
   dex:
-    image: ghcr.io/dexidp/dex:v2.38.0
+    image: ghcr.io/dexidp/dex:v2.45.1
     volumes:
       - ./infra/dex-config.yaml:/etc/dex/config.docker.yaml
     labels:

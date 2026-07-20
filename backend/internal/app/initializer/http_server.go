@@ -80,15 +80,22 @@ func InitializeOIDCHandler(ctx context.Context, cfg config.Config) (*httpHandler
 		return nil, nil
 	}
 
+	if cfg.Auth.OidcAdminGroup == "" {
+		slog.Warn(
+			"OIDC admin group not configured - no users will have admin privileges. " +
+				"Set auth.oidc_admin_group to enable admin access.",
+		)
+	}
+
 	opts := httpHandler.OIDCOptions{
 		Issuer:          cfg.Auth.OidcIssuer,
 		ClientID:        cfg.Auth.OidcClientID,
 		ClientSecret:    cfg.Auth.OidcClientSecret,
 		CallbackURL:     cfg.Auth.OidcCallbackURL,
+		AdminGroup:      cfg.Auth.OidcAdminGroup,
 		FrontendURL:     cfg.App.FrontendURL,
 		SessionSecret:   cfg.Auth.SessionSecret,
 		SessionDuration: cfg.Auth.SessionDuration,
-		Admins:          cfg.Auth.ProxyAdmins,
 		IsProduction:    cfg.App.Environment == "production",
 	}
 

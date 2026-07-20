@@ -88,16 +88,19 @@ type SumupConfig struct {
 }
 
 type AuthConfig struct {
-	Mode        string   `mapstructure:"mode"         validate:"required,oneof=proxy oidc"`
+	Mode string `mapstructure:"mode" validate:"required,oneof=proxy oidc"`
+
 	ProxyHeader string   `mapstructure:"proxy_header"`
 	ProxyAdmins []string `mapstructure:"proxy_admins"`
 
-	OidcIssuer       string        `mapstructure:"oidc_issuer"`
-	OidcClientID     string        `mapstructure:"oidc_client_id"`
-	OidcClientSecret string        `mapstructure:"oidc_client_secret"`
-	OidcCallbackURL  string        `mapstructure:"oidc_callback_url"`
-	SessionSecret    string        `mapstructure:"session_secret"`
-	SessionDuration  time.Duration `mapstructure:"session_duration"`
+	OidcIssuer       string `mapstructure:"oidc_issuer"`
+	OidcClientID     string `mapstructure:"oidc_client_id"`
+	OidcClientSecret string `mapstructure:"oidc_client_secret"`
+	OidcCallbackURL  string `mapstructure:"oidc_callback_url"`
+	OidcAdminGroup   string `mapstructure:"oidc_admin_group"`
+
+	SessionSecret   string        `mapstructure:"session_secret"`
+	SessionDuration time.Duration `mapstructure:"session_duration"`
 }
 
 func (a *AuthConfig) Validate() error {
