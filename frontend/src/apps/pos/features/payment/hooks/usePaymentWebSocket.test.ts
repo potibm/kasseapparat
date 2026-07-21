@@ -52,7 +52,7 @@ describe("usePaymentWebSocket Hook", () => {
       getToken: vi.fn(async () => "fake-ws-token"),
     } as unknown as ReturnType<typeof useAuth>);
     vi.mocked(useConfig).mockReturnValue({
-      websocketBaseUrl: "wss://test.com/api/v2",
+      websocketBaseUrl: "wss://test.com/api/v3",
     } as unknown as ReturnType<typeof useConfig>);
 
     const MockWSConstructor = Object.assign(
@@ -85,7 +85,7 @@ describe("usePaymentWebSocket Hook", () => {
       });
 
       expect(globalThis.WebSocket).toHaveBeenCalledWith(
-        "wss://test.com/api/v2/purchases/purchase-123/ws",
+        "wss://test.com/api/v3/purchases/purchase-123/ws",
         [],
       );
 

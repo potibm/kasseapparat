@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	guestBaseURL   = "/api/v2/guests"
+	guestBaseURL   = "/api/v3/guests"
 	guestURLWithID = guestBaseURL + "/1"
 )
 

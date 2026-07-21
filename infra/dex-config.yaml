@@ -7,7 +7,7 @@ web:
 staticClients:
 - id: kasseapparat-backend
   redirectURIs:
-  - 'https://kasseapparat.test/api/v2/auth/callback'
+  - 'https://kasseapparat.test/api/v3/auth/callback'
   name: 'Kasseapparat Admin'
   secret: "super-secret-kasseapparat-client-string"
 

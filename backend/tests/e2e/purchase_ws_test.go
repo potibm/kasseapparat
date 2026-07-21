@@ -15,7 +15,7 @@ func TestGetPurchaseWebsocketWithInvalidOrigin(t *testing.T) {
 	ts, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/api/v2/purchases/01982971-a954-74ed-9735-a75e08efa8f6/ws"
+	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/api/v3/purchases/01982971-a954-74ed-9735-a75e08efa8f6/ws"
 
 	conn, resp, err := connectWS(t, wsURL, "http://example.com:3000")
 	require.Error(t, err)
@@ -31,7 +31,7 @@ func TestGetPurchaseWebsocketWithValidOrigin(t *testing.T) {
 	ts, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/api/v2/purchases/01982971-a954-74ed-9735-a75e08efa8f6/ws"
+	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/api/v3/purchases/01982971-a954-74ed-9735-a75e08efa8f6/ws"
 
 	conn, resp, err := connectWS(t, wsURL, originURL)
 	require.NoError(t, err)

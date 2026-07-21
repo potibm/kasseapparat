@@ -25,7 +25,7 @@ import (
 
 var r *gin.Engine
 
-const APIVersion = "v2"
+const APIVersion = "v3"
 
 func InitializeHTTPServer(
 	httpHdlr httpHandler.Handler,

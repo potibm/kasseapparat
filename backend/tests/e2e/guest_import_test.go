@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	guestsImportURL       = "/api/v2/guestsUpload"
+	guestsImportURL       = "/api/v3/guestsUpload"
 	guestsImportCsvHeader = "Code;LastName;FirstName;Subject;Blocked;Notiz;\n"
 	deineTicketProductID  = 4
 )

@@ -11,7 +11,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-var purchaseExportBaseURL = "/api/v2/purchases/export"
+var purchaseExportBaseURL = "/api/v3/purchases/export"
 
 func TestPurchaseExportForEntityEndpoints(t *testing.T) {
 	// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2

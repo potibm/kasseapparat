@@ -13,9 +13,10 @@ import { MyTheme, MyDarkTheme } from "./layouts/MyTheme";
 import { MyLayout } from "./layouts/MyLayout";
 import { createAuthProvider } from "@core/auth/authProvider";
 import useConfig from "@core/config/hooks/useConfig";
+import { buildApiBaseUrl } from "@core/config/constants";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3100";
-const authProvider = createAuthProvider(API_HOST);
+const authProvider = createAuthProvider(buildApiBaseUrl(API_HOST));
 
 const AdminPanel: React.FC = () => {
   const { apiBaseUrl } = useConfig();

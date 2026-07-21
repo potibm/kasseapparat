@@ -59,7 +59,7 @@ const mockFetchResponse = (jsonPayload: unknown) =>
 // tests
 
 describe("Data Provider", () => {
-  const API_BASE_URL = "/api/v2";
+  const API_BASE_URL = "/api/v3";
 
   let dataProvider: ReturnType<typeof createDataProvider>;
   let capturedHttpClient: HttpClient;

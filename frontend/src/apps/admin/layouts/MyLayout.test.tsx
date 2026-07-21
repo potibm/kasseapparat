@@ -12,9 +12,9 @@ vi.mock("./Menu", () => ({
 const mockConfig: AppConfig = {
   version: "1.0.0",
   apiHost: "http://localhost:3001",
-  apiBaseUrl: "http://localhost:3001/api/v2",
+  apiBaseUrl: "http://localhost:3001/api/v3",
   websocketHost: "ws://localhost:3001",
-  websocketBaseUrl: "ws://localhost:3001/api/v2",
+  websocketBaseUrl: "ws://localhost:3001/api/v3",
   locale: "en",
   currencyCode: "USD",
   currencyLocale: "en-US",

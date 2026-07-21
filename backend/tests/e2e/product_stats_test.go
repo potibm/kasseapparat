@@ -7,7 +7,7 @@ import (
 	"github.com/gavv/httpexpect/v2"
 )
 
-var productStatsURL = "/api/v2/productStats"
+var productStatsURL = "/api/v3/productStats"
 
 func TestProductStats(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)

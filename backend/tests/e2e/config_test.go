@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var configURL = "/api/v2/config"
+var configURL = "/api/v3/config"
 
 func TestGetConfig(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
@@ -34,7 +34,7 @@ func TestGetConfig(t *testing.T) {
 	config.Value("dateOptions").Object().Value("minute").IsEqual("2-digit")
 
 	paymentMethods := config.Value("paymentMethods").Array()
-	paymentMethods.NotEmpty() // Ersetzt assert.Greater(..., 0)
+	paymentMethods.NotEmpty()
 
 	for _, item := range paymentMethods.Iter() {
 		obj := item.Object()

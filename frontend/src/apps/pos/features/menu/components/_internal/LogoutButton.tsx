@@ -2,9 +2,10 @@ import { Tooltip, Button, ButtonProps } from "flowbite-react";
 import { HiLogout } from "react-icons/hi";
 import useConfig from "@core/config/hooks/useConfig";
 import { createAuthProvider } from "@core/auth/authProvider";
+import { buildApiBaseUrl } from "@core/config/constants";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3100";
-const authProvider = createAuthProvider(API_HOST);
+const authProvider = createAuthProvider(buildApiBaseUrl(API_HOST));
 
 export const LogoutButton: React.FC<ButtonProps> = ({ ...props }) => {
   const { authMode } = useConfig();

@@ -1,9 +1,10 @@
 import { ReactNode, useState, useEffect, useMemo } from "react";
 import { createAuthProvider } from "@core/auth/authProvider";
 import { AuthContext } from "../context/AuthContext";
+import { buildApiBaseUrl } from "@core/config/constants";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3100";
-const authProvider = createAuthProvider(API_HOST);
+const authProvider = createAuthProvider(buildApiBaseUrl(API_HOST));
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,

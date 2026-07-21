@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	sumupReadersURL       = "/api/v2/sumup/readers"
+	sumupReadersURL       = "/api/v3/sumup/readers"
 	sumupReadersURLWithID = sumupReadersURL + "/reader_1"
 )
 

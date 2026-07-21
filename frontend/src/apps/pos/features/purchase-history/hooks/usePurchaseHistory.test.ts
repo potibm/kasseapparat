@@ -37,9 +37,9 @@ vi.mock("@pos/features/ui/toast/hooks/useToast", () => ({
 const mockConfig: AppConfig = {
   version: "1.0.0",
   apiHost: "https://api.example.com",
-  apiBaseUrl: "https://api.example.com/api/v2",
+  apiBaseUrl: "https://api.example.com/api/v3",
   websocketHost: "wss://api.example.com",
-  websocketBaseUrl: "wss://api.example.com/api/v2",
+  websocketBaseUrl: "wss://api.example.com/api/v3",
   locale: "en",
   currencyCode: "USD",
   currencyLocale: "en-US",

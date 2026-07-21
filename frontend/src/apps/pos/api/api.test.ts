@@ -39,7 +39,7 @@ const convertDecimalsToStrings = (obj: any): any => {
 };
 
 describe("POS API Client", () => {
-  const apiBaseUrl = "https://api.example.com/api/v2";
+  const apiBaseUrl = "https://api.example.com/api/v3";
 
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -61,7 +61,7 @@ describe("POS API Client", () => {
 
   describe("URL building", () => {
     it("should handle trailing slash in base URL", async () => {
-      const client = createPosApiClient("https://api.example.com/api/v2/");
+      const client = createPosApiClient("https://api.example.com/api/v3/");
 
       vi.stubGlobal(
         "fetch",
@@ -74,7 +74,7 @@ describe("POS API Client", () => {
       await client.fetchProducts();
 
       expect(fetch).toHaveBeenCalledWith(
-        "https://api.example.com/api/v2/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true",
+        "https://api.example.com/api/v3/products?_end=1000&_sort=pos&_order=asc&_filter_hidden=true",
         expect.any(Object),
       );
     });

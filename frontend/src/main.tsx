@@ -9,6 +9,7 @@ import { createLogger } from "@core/logger/logger.ts";
 import { ConfigSchema } from "@core/config/schemas/config.schemas.ts";
 import * as Sentry from "@sentry/react";
 import { transformConfig } from "@core/config/utils/config.transform.ts";
+import { buildApiBaseUrl } from "@core/config/constants.ts";
 
 const log = createLogger("Bootstrapper");
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3100";
@@ -36,7 +37,7 @@ export async function bootstrapApp() {
 
     // 1. Fetch config and validate
     try {
-      const res = await fetch(`${API_HOST}/api/v2/config`, {
+      const res = await fetch(`${buildApiBaseUrl(API_HOST)}/config`, {
         signal: controller.signal,
       });
       if (!res.ok) throw new Error(`Config error: ${res.statusText}`);

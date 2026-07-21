@@ -10,7 +10,7 @@ const AuthUserSchema = z.object({
 });
 type AuthUser = z.infer<typeof AuthUserSchema>;
 
-export const createAuthProvider = (apiHost: string): AuthProvider => {
+export const createAuthProvider = (apiBaseUrl: string): AuthProvider => {
   let cachedUser: AuthUser | null = null;
 
   const redirectToLogin = () => {
@@ -19,7 +19,7 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
       window.location.pathname + window.location.search,
     );
 
-    window.location.href = `${apiHost}/api/v2/auth/login?returnTo=${returnTo}`;
+    window.location.href = `${apiBaseUrl}/auth/login?returnTo=${returnTo}`;
 
     return new Promise<void>(() => {});
   };
@@ -31,7 +31,7 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
       }
 
       try {
-        const response = await fetch(`${apiHost}/api/v2/auth/me`, {
+        const response = await fetch(`${apiBaseUrl}/auth/me`, {
           credentials: "include",
         });
 
@@ -82,7 +82,7 @@ export const createAuthProvider = (apiHost: string): AuthProvider => {
       cachedUser = null;
 
       try {
-        await fetch(`${apiHost}/api/v2/auth/logout`, {
+        await fetch(`${apiBaseUrl}/auth/logout`, {
           method: "POST",
           credentials: "include",
         });

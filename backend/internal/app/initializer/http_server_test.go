@@ -65,13 +65,13 @@ func TestInitializeHttpServer(t *testing.T) {
 		var foundConfigRoute bool
 
 		for _, r := range routes {
-			if r.Path == "/api/v2/config" && r.Method == http.MethodGet {
+			if r.Path == "/api/v3/config" && r.Method == http.MethodGet {
 				foundConfigRoute = true
 
 				break
 			}
 		}
 
-		assert.True(t, foundConfigRoute, "The route /api/v2/config should be registered")
+		assert.True(t, foundConfigRoute, "The route /api/v3/config should be registered")
 	})
 }

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var purchaseBaseURL = "/api/v2/purchases"
+var purchaseBaseURL = "/api/v3/purchases"
 
 func TestGetPurchasesList(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
