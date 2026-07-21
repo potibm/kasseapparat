@@ -51,7 +51,9 @@ describe("usePosApi", () => {
 
   it("should throw an error when ConfigContext is missing", () => {
     // Suppress console.error for this test
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
 
     expect(() => {
       renderHook(() => usePosApi());

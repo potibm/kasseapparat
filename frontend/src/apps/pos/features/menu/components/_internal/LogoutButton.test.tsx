@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { LogoutButton } from "./LogoutButton";
 import useConfig from "@core/config/hooks/useConfig";
+import { AppConfig } from "@core/config/types/config.types";
 
 vi.mock("@core/config/hooks/useConfig");
 
@@ -15,7 +16,7 @@ describe("LogoutButton", () => {
   it("should not render when authMode is not oidc", () => {
     mockUseConfig.mockReturnValue({
       authMode: "proxy",
-    } as any);
+    } as unknown as AppConfig);
 
     const { container } = render(<LogoutButton />);
     expect(container.firstChild).toBeNull();
@@ -24,7 +25,7 @@ describe("LogoutButton", () => {
   it("should render when authMode is oidc", () => {
     mockUseConfig.mockReturnValue({
       authMode: "oidc",
-    } as any);
+    } as unknown as AppConfig);
 
     render(<LogoutButton />);
     expect(screen.getByRole("button")).toBeDefined();
@@ -34,10 +35,10 @@ describe("LogoutButton", () => {
   it("should call logout and redirect when clicked", async () => {
     mockUseConfig.mockReturnValue({
       authMode: "oidc",
-    } as any);
+    } as unknown as AppConfig);
 
     render(<LogoutButton />);
-    
+
     const button = screen.getByRole("button");
     fireEvent.click(button);
 
@@ -48,10 +49,10 @@ describe("LogoutButton", () => {
   it("should redirect to home after logout even if logout fails", async () => {
     mockUseConfig.mockReturnValue({
       authMode: "oidc",
-    } as any);
+    } as unknown as AppConfig);
 
     render(<LogoutButton />);
-    
+
     const button = screen.getByRole("button");
     fireEvent.click(button);
 
