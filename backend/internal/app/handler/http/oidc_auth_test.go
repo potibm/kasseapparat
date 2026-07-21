@@ -582,6 +582,9 @@ func TestOIDCAuthHandler_Login_InvalidReturnTo(t *testing.T) {
 	}
 }
 
+// Note: extractUserClaims requires a real *oidc.IDToken which is difficult to mock.
+// The function is covered indirectly through integration tests and the Callback flow.
+
 func TestOIDCAuthHandler_ExchangeCode(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 

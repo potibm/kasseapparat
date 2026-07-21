@@ -122,3 +122,30 @@ func TestDifferentManagersCannotDecodeEachOther(t *testing.T) {
 	_, err = mgr2.DecodeSession(encoded)
 	assert.Error(t, err, "Different managers should not be able to decode each other's data")
 }
+
+func TestManager_GetSessionDuration(t *testing.T) {
+	tests := []struct {
+		name     string
+		duration time.Duration
+	}{
+		{
+			name:     "24 hours",
+			duration: 24 * time.Hour,
+		},
+		{
+			name:     "1 hour",
+			duration: 1 * time.Hour,
+		},
+		{
+			name:     "30 minutes",
+			duration: 30 * time.Minute,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mgr := NewManager("test-secret-key-that-is-at-least-32-characters-long", tt.duration)
+			assert.Equal(t, tt.duration, mgr.GetSessionDuration())
+		})
+	}
+}
