@@ -581,3 +581,105 @@ func TestOIDCAuthHandler_Login_InvalidReturnTo(t *testing.T) {
 		})
 	}
 }
+
+func TestOIDCAuthHandler_ExchangeCode(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name        string
+		handler     *OIDCAuthHandler
+		code        string
+		expectError bool
+	}{
+		{
+			name: "exchange code with invalid oauth config",
+			handler: &OIDCAuthHandler{
+				oauth2Config: &oauth2.Config{
+					ClientID:     "test-client",
+					ClientSecret: "wrong-secret",
+					Endpoint: oauth2.Endpoint{
+						TokenURL: "http://invalid-endpoint-that-does-not-exist.example.com/token",
+					},
+				},
+			},
+			code:        "test-code",
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Request = httptest.NewRequest(http.MethodGet, "/callback", http.NoBody)
+
+			token, err := tt.handler.exchangeCode(c, tt.code)
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Nil(t, token)
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, token)
+			}
+		})
+	}
+}
+
+func TestOIDCAuthHandler_VerifyIDToken(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	tests := []struct {
+		name        string
+		handler     *OIDCAuthHandler
+		token       *oauth2.Token
+		nonce       string
+		expectError bool
+		expectCode  int
+	}{
+		{
+			name: "missing id_token in oauth token",
+			handler: &OIDCAuthHandler{
+				sessionMgr: sessionMgr,
+			},
+			token:       &oauth2.Token{},
+			nonce:       "test-nonce",
+			expectError: true,
+			expectCode:  http.StatusInternalServerError,
+		},
+		{
+			name: "id_token is not a string",
+			handler: &OIDCAuthHandler{
+				sessionMgr: sessionMgr,
+			},
+			token: (&oauth2.Token{}).WithExtra(map[string]any{
+				"id_token": 12345,
+			}),
+			nonce:       "test-nonce",
+			expectError: true,
+			expectCode:  http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Request = httptest.NewRequest(http.MethodGet, "/callback", http.NoBody)
+
+			idToken, err := tt.handler.verifyIDToken(c, tt.token, tt.nonce)
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Nil(t, idToken)
+				assert.Equal(t, tt.expectCode, w.Code)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, idToken)
+			}
+		})
+	}
+}

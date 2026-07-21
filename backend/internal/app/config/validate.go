@@ -79,3 +79,46 @@ func (f *CurrencyFormatConfig) Validate() error {
 
 	return nil
 }
+
+func (a *AuthConfig) Validate() error {
+	if a.Mode == "proxy" {
+		if a.ProxyHeader == "" {
+			return fmt.Errorf("auth.proxy_header is required when mode is 'proxy'")
+		}
+
+		return nil
+	}
+
+	if a.Mode == "oidc" {
+		return a.validateOIDC()
+	}
+
+	return nil
+}
+
+func (a *AuthConfig) validateOIDC() error {
+	if a.OidcIssuer == "" {
+		return fmt.Errorf("auth.oidc_issuer is required when mode is 'oidc'")
+	}
+
+	if a.OidcClientID == "" {
+		return fmt.Errorf("auth.oidc_client_id is required when mode is 'oidc'")
+	}
+
+	if a.OidcClientSecret == "" {
+		return fmt.Errorf("auth.oidc_client_secret is required when mode is 'oidc'")
+	}
+
+	if a.OidcCallbackURL == "" {
+		return fmt.Errorf("auth.oidc_callback_url is required when mode is 'oidc'")
+	}
+
+	if len(a.SessionSecret) < MinSessionSecretLength {
+		return fmt.Errorf(
+			"auth.session_secret must be at least %d characters when mode is 'oidc'",
+			MinSessionSecretLength,
+		)
+	}
+
+	return nil
+}

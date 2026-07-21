@@ -79,3 +79,119 @@ func TestAppConfigValidate(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "db_filename '../invalid' contains invalid characters")
 }
+
+func TestAuthConfigValidate(t *testing.T) {
+	tests := []struct {
+		name        string
+		config      AuthConfig
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name: "valid proxy config",
+			config: AuthConfig{
+				Mode:        "proxy",
+				ProxyHeader: "X-Remote-User",
+			},
+			expectError: false,
+		},
+		{
+			name: "valid oidc config",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "https://auth.example.com",
+				OidcClientID:     "client-id",
+				OidcClientSecret: "client-secret",
+				OidcCallbackURL:  "http://localhost:8080/callback",
+				SessionSecret:    "this-is-a-very-long-secret-that-is-at-least-32-chars",
+			},
+			expectError: false,
+		},
+		{
+			name: "proxy mode without header",
+			config: AuthConfig{
+				Mode:        "proxy",
+				ProxyHeader: "",
+			},
+			expectError: true,
+			errorMsg:    "auth.proxy_header is required when mode is 'proxy'",
+		},
+		{
+			name: "oidc mode without issuer",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "",
+				OidcClientID:     "client-id",
+				OidcClientSecret: "client-secret",
+				OidcCallbackURL:  "http://localhost:8080/callback",
+				SessionSecret:    "this-is-a-very-long-secret-that-is-at-least-32-chars",
+			},
+			expectError: true,
+			errorMsg:    "auth.oidc_issuer is required when mode is 'oidc'",
+		},
+		{
+			name: "oidc mode without client id",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "https://auth.example.com",
+				OidcClientID:     "",
+				OidcClientSecret: "client-secret",
+				OidcCallbackURL:  "http://localhost:8080/callback",
+				SessionSecret:    "this-is-a-very-long-secret-that-is-at-least-32-chars",
+			},
+			expectError: true,
+			errorMsg:    "auth.oidc_client_id is required when mode is 'oidc'",
+		},
+		{
+			name: "oidc mode without client secret",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "https://auth.example.com",
+				OidcClientID:     "client-id",
+				OidcClientSecret: "",
+				OidcCallbackURL:  "http://localhost:8080/callback",
+				SessionSecret:    "this-is-a-very-long-secret-that-is-at-least-32-chars",
+			},
+			expectError: true,
+			errorMsg:    "auth.oidc_client_secret is required when mode is 'oidc'",
+		},
+		{
+			name: "oidc mode without callback url",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "https://auth.example.com",
+				OidcClientID:     "client-id",
+				OidcClientSecret: "client-secret",
+				OidcCallbackURL:  "",
+				SessionSecret:    "this-is-a-very-long-secret-that-is-at-least-32-chars",
+			},
+			expectError: true,
+			errorMsg:    "auth.oidc_callback_url is required when mode is 'oidc'",
+		},
+		{
+			name: "oidc mode with short session secret",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "https://auth.example.com",
+				OidcClientID:     "client-id",
+				OidcClientSecret: "client-secret",
+				OidcCallbackURL:  "http://localhost:8080/callback",
+				SessionSecret:    "too-short",
+			},
+			expectError: true,
+			errorMsg:    "auth.session_secret must be at least 32 characters when mode is 'oidc'",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.config.Validate()
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

@@ -217,3 +217,129 @@ func TestSentryMiddleware_WithUsername(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 }
+
+func TestRegisterRoutes(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	handler := httpHandler.Handler{}
+
+	tests := []struct {
+		name          string
+		registerFunc  func(rg *gin.RouterGroup, handler httpHandler.Handler)
+		expectedPaths []string
+	}{
+		{
+			name: "register product routes",
+			registerFunc: func(rg *gin.RouterGroup, handler httpHandler.Handler) {
+				registerProductRoutes(rg, handler)
+			},
+			expectedPaths: []string{
+				"/products",
+				"/products/:id",
+				"/products/:id/guests",
+				"/products/:id",
+				"/products/:id",
+				"/products",
+			},
+		},
+		{
+			name: "register guestlist routes",
+			registerFunc: func(rg *gin.RouterGroup, handler httpHandler.Handler) {
+				registerGuestlistRoutes(rg, handler)
+			},
+			expectedPaths: []string{
+				"/guestlists",
+				"/guestlists/:id",
+				"/guestlists/:id",
+				"/guestlists/:id",
+				"/guestlists",
+			},
+		},
+		{
+			name: "register guest routes",
+			registerFunc: func(rg *gin.RouterGroup, handler httpHandler.Handler) {
+				registerGuestRoutes(rg, handler)
+			},
+			expectedPaths: []string{
+				"/guests",
+				"/guests/:id",
+				"/guests/:id",
+				"/guests/:id",
+				"/guests",
+			},
+		},
+		{
+			name: "register purchase routes",
+			registerFunc: func(rg *gin.RouterGroup, handler httpHandler.Handler) {
+				registerPurchaseRoutes(rg, handler)
+			},
+			expectedPaths: []string{
+				"/purchases",
+				"/purchases/:id",
+				"/purchases",
+				"/purchases/:id",
+				"/purchases/export",
+				"/purchases/:id/refund",
+			},
+		},
+		{
+			name: "register product interest routes",
+			registerFunc: func(rg *gin.RouterGroup, handler httpHandler.Handler) {
+				registerProductInterestRoutes(rg, handler)
+			},
+			expectedPaths: []string{
+				"/productInterests",
+				"/productInterests/:id",
+				"/productInterests",
+			},
+		},
+		{
+			name: "register sumup readers routes",
+			registerFunc: func(rg *gin.RouterGroup, handler httpHandler.Handler) {
+				registerSumupReadersRoutes(rg, handler)
+			},
+			expectedPaths: []string{
+				"/sumup/readers",
+				"/sumup/readers/:id",
+				"/sumup/readers/:id",
+				"/sumup/readers",
+			},
+		},
+		{
+			name: "register sumup transaction routes",
+			registerFunc: func(rg *gin.RouterGroup, handler httpHandler.Handler) {
+				registerSumupTransactionRoutes(rg, handler)
+			},
+			expectedPaths: []string{
+				"/sumup/transactions",
+				"/sumup/transactions/:id",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			router := gin.New()
+			group := router.Group("/api/v3")
+
+			tt.registerFunc(group, handler)
+
+			routes := router.Routes()
+			assert.NotEmpty(t, routes, "routes should be registered")
+
+			for _, expectedPath := range tt.expectedPaths {
+				found := false
+
+				for _, route := range routes {
+					if route.Path == "/api/v3"+expectedPath {
+						found = true
+
+						break
+					}
+				}
+
+				assert.True(t, found, "expected path %s to be registered", expectedPath)
+			}
+		})
+	}
+}
