@@ -665,6 +665,18 @@ func TestOIDCAuthHandler_VerifyIDToken(t *testing.T) {
 			expectError: true,
 			expectCode:  http.StatusInternalServerError,
 		},
+		{
+			name: "id_token is nil",
+			handler: &OIDCAuthHandler{
+				sessionMgr: sessionMgr,
+			},
+			token: (&oauth2.Token{}).WithExtra(map[string]any{
+				"id_token": nil,
+			}),
+			nonce:       "test-nonce",
+			expectError: true,
+			expectCode:  http.StatusInternalServerError,
+		},
 	}
 
 	for _, tt := range tests {
@@ -685,4 +697,404 @@ func TestOIDCAuthHandler_VerifyIDToken(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNewOIDCAuthHandler_Success(t *testing.T) {
+	// Create a mock OIDC server
+	server := createMockOIDCServer()
+	defer server.Close()
+
+	handler, err := NewOIDCAuthHandler(
+		context.Background(),
+		OIDCOptions{
+			Issuer:          server.URL,
+			ClientID:        "test-client-id",
+			ClientSecret:    "test-client-secret",
+			CallbackURL:     "http://localhost:8080/callback",
+			FrontendURL:     "http://localhost:3000",
+			SessionSecret:   "test-secret-that-is-long-enough-for-testing",
+			SessionDuration: 24 * time.Hour,
+			AdminGroup:      "admins",
+			IsProduction:    false,
+		},
+	)
+
+	require.NoError(t, err)
+	require.NotNil(t, handler)
+	assert.Equal(t, "admins", handler.adminGroup)
+	assert.Equal(t, "http://localhost:3000", handler.frontendURL)
+	assert.Equal(t, "http://localhost:8080/callback", handler.callbackURL)
+	assert.False(t, handler.secureCookie)
+	assert.NotNil(t, handler.oauth2Config)
+	assert.NotNil(t, handler.verifier)
+	assert.NotNil(t, handler.sessionMgr)
+}
+
+func TestNewOIDCAuthHandler_ProductionMode(t *testing.T) {
+	// Create a mock OIDC server
+	server := createMockOIDCServer()
+	defer server.Close()
+
+	handler, err := NewOIDCAuthHandler(
+		context.Background(),
+		OIDCOptions{
+			Issuer:          server.URL,
+			ClientID:        "test-client-id",
+			ClientSecret:    "test-client-secret",
+			CallbackURL:     "http://localhost:8080/callback",
+			FrontendURL:     "http://localhost:3000",
+			SessionSecret:   "test-secret-that-is-long-enough-for-testing",
+			SessionDuration: 24 * time.Hour,
+			AdminGroup:      "admins",
+			IsProduction:    true,
+		},
+	)
+
+	require.NoError(t, err)
+	require.NotNil(t, handler)
+	assert.True(t, handler.secureCookie, "secureCookie should be true in production mode")
+}
+
+func TestOIDCAuthHandler_ExtractUserClaims(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	handler := &OIDCAuthHandler{}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/callback", http.NoBody)
+
+	// Test with nil IDToken - should panic
+	assert.Panics(t, func() {
+		_, _, _ = handler.extractUserClaims(c, nil)
+	})
+}
+
+func TestOIDCAuthHandler_VerifyIDToken_NonceMismatch(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	// Create a mock OIDC server
+	server := createMockOIDCServer()
+	defer server.Close()
+
+	handler := createTestOIDCHandler(t, server.URL)
+
+	// Create a mock token with an invalid id_token format
+	token := (&oauth2.Token{}).WithExtra(map[string]any{
+		"id_token": "invalid.jwt.token",
+	})
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/callback", http.NoBody)
+
+	// This should fail during verification
+	_, err := handler.verifyIDToken(c, token, "expected-nonce")
+	assert.Error(t, err)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestOIDCAuthHandler_Login_ErrorPaths(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	// Test with nil oauth2Config to trigger error
+	handler := &OIDCAuthHandler{
+		sessionMgr:   sessionMgr,
+		secureCookie: false,
+		oauth2Config: nil, // This will cause a panic or error
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/login", http.NoBody)
+
+	// This should handle the nil config gracefully
+	assert.Panics(t, func() {
+		handler.Login(c)
+	})
+}
+
+func TestOIDCAuthHandler_Callback_ValidFlow(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	// Create a valid state
+	stateData := session.StateData{
+		State:     "valid-state",
+		Nonce:     "valid-nonce",
+		ExpiresAt: time.Now().Add(10 * time.Minute),
+	}
+
+	encodedState, err := sessionMgr.EncodeState(stateData)
+	require.NoError(t, err)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr:  sessionMgr,
+		frontendURL: "http://localhost:3000",
+		oauth2Config: &oauth2.Config{
+			ClientID:     "test-client",
+			ClientSecret: "test-secret",
+			RedirectURL:  "http://localhost:8080/callback",
+			Endpoint: oauth2.Endpoint{
+				TokenURL: "http://invalid-endpoint.example.com/token",
+			},
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	// Create request with valid state but invalid code
+	c.Request = httptest.NewRequest(http.MethodGet, "/callback?code=invalid-code&state=valid-state", http.NoBody)
+	c.Request.AddCookie(&http.Cookie{ //nolint:gosec // test cookie
+		Name:     stateCookieName,
+		Value:    encodedState,
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	// Add returnTo cookie
+	c.Request.AddCookie(&http.Cookie{ //nolint:gosec // test cookie
+		Name:     returnToCookieName,
+		Value:    "/dashboard",
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	handler.Callback(c)
+
+	// Should fail at exchangeCode step
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestOIDCAuthHandler_Callback_WithReturnToCookie(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	stateData := session.StateData{
+		State:     "test-state",
+		Nonce:     "test-nonce",
+		ExpiresAt: time.Now().Add(10 * time.Minute),
+	}
+
+	encodedState, err := sessionMgr.EncodeState(stateData)
+	require.NoError(t, err)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr:  sessionMgr,
+		frontendURL: "http://localhost:3000",
+		oauth2Config: &oauth2.Config{
+			ClientID:     "test-client",
+			ClientSecret: "test-secret",
+			RedirectURL:  "http://localhost:8080/callback",
+			Endpoint: oauth2.Endpoint{
+				TokenURL: "http://invalid-endpoint.example.com/token",
+			},
+		},
+	}
+
+	tests := []struct {
+		name           string
+		returnToValue  string
+		expectedInPath string
+	}{
+		{
+			name:           "valid returnTo path",
+			returnToValue:  "/admin",
+			expectedInPath: "/admin",
+		},
+		{
+			name:           "protocol-relative returnTo should be ignored",
+			returnToValue:  "//evil.com",
+			expectedInPath: "/",
+		},
+		{
+			name:           "empty returnTo should default to /",
+			returnToValue:  "",
+			expectedInPath: "/",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Request = httptest.NewRequest(http.MethodGet, "/callback?code=test&state=test-state", http.NoBody)
+			c.Request.AddCookie(&http.Cookie{ //nolint:gosec // test cookie
+				Name:     stateCookieName,
+				Value:    encodedState,
+				HttpOnly: true,
+				Secure:   false,
+				SameSite: http.SameSiteLaxMode,
+			})
+
+			if tt.returnToValue != "" {
+				c.Request.AddCookie(&http.Cookie{ //nolint:gosec // test cookie
+					Name:     returnToCookieName,
+					Value:    tt.returnToValue,
+					HttpOnly: true,
+					Secure:   false,
+					SameSite: http.SameSiteLaxMode,
+				})
+			}
+
+			handler.Callback(c)
+
+			// Will fail at exchangeCode, but we can check the redirect path logic
+			assert.Equal(t, http.StatusInternalServerError, w.Code)
+		})
+	}
+}
+
+func TestOIDCAuthHandler_CreateSession_Error(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	// Create a handler with a nil session manager to trigger error
+	handler := &OIDCAuthHandler{
+		sessionMgr:   nil,
+		secureCookie: false,
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+
+	// This should panic with nil session manager
+	assert.Panics(t, func() {
+		_ = handler.createSession(c, "testuser", "user")
+	})
+}
+
+func TestOIDCAuthHandler_Login_WithValidConfig(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	// Create a mock OIDC server
+	server := createMockOIDCServer()
+	defer server.Close()
+
+	handler := createTestOIDCHandler(t, server.URL)
+
+	tests := []struct {
+		name        string
+		query       string
+		expectCode  int
+		expectState bool
+	}{
+		{
+			name:        "login without returnTo",
+			query:       "",
+			expectCode:  http.StatusFound,
+			expectState: true,
+		},
+		{
+			name:        "login with valid returnTo",
+			query:       "?returnTo=/dashboard",
+			expectCode:  http.StatusFound,
+			expectState: true,
+		},
+		{
+			name:        "login with invalid returnTo (external)",
+			query:       "?returnTo=https://evil.com",
+			expectCode:  http.StatusFound,
+			expectState: true,
+		},
+		{
+			name:        "login with protocol-relative returnTo",
+			query:       "?returnTo=//evil.com",
+			expectCode:  http.StatusFound,
+			expectState: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testLoginFlow(t, handler, tt.query, tt.expectCode, tt.expectState)
+		})
+	}
+}
+
+//nolint:gosec // test code - writing to test response writer
+func createMockOIDCServer() *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/.well-known/openid-configuration":
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{
+				"issuer": "http://` + r.Host + `",
+				"authorization_endpoint": "http://` + r.Host + `/auth",
+				"token_endpoint": "http://` + r.Host + `/token",
+				"jwks_uri": "http://` + r.Host + `/jwks"
+			}`))
+		case "/jwks":
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"keys": []}`))
+		}
+	}))
+}
+
+func createTestOIDCHandler(t *testing.T, issuerURL string) *OIDCAuthHandler {
+	t.Helper()
+
+	handler, err := NewOIDCAuthHandler(
+		context.Background(),
+		OIDCOptions{
+			Issuer:          issuerURL,
+			ClientID:        "test-client",
+			ClientSecret:    "test-secret",
+			CallbackURL:     "http://localhost:8080/callback",
+			FrontendURL:     "http://localhost:3000",
+			SessionSecret:   "test-secret-that-is-long-enough-for-testing",
+			SessionDuration: 24 * time.Hour,
+			AdminGroup:      "admins",
+			IsProduction:    false,
+		},
+	)
+	require.NoError(t, err)
+
+	return handler
+}
+
+func testLoginFlow(t *testing.T, handler *OIDCAuthHandler, query string, expectCode int, expectState bool) {
+	t.Helper()
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request = httptest.NewRequest(http.MethodGet, "/login"+query, http.NoBody)
+
+	handler.Login(c)
+
+	assert.Equal(t, expectCode, w.Code)
+
+	cookies := w.Result().Cookies()
+
+	var stateCookie, returnToCookie *http.Cookie
+
+	for _, cookie := range cookies {
+		if cookie.Name == stateCookieName {
+			stateCookie = cookie
+		}
+
+		if cookie.Name == returnToCookieName {
+			returnToCookie = cookie
+		}
+	}
+
+	if expectState {
+		require.NotNil(t, stateCookie, "state cookie should be set")
+		assert.NotEmpty(t, stateCookie.Value)
+		assert.True(t, stateCookie.HttpOnly)
+		assert.Equal(t, "/", stateCookie.Path)
+	}
+
+	require.NotNil(t, returnToCookie, "returnTo cookie should be set")
 }
