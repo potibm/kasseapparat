@@ -11,6 +11,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/session"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/oauth2"
 )
 
 func TestOIDCAuthHandler_Callback_MissingParams(t *testing.T) {
@@ -43,6 +44,22 @@ func TestOIDCAuthHandler_Logout(t *testing.T) {
 	handler.Logout(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+
+	cookies := w.Result().Cookies()
+
+	var sessionCookie *http.Cookie
+
+	for _, cookie := range cookies {
+		if cookie.Name == sessionCookieName {
+			sessionCookie = cookie
+
+			break
+		}
+	}
+
+	require.NotNil(t, sessionCookie, "session cookie should be set")
+	assert.Equal(t, -1, sessionCookie.MaxAge, "session cookie should be invalidated")
+	assert.Equal(t, "", sessionCookie.Value, "session cookie value should be empty")
 }
 
 func TestNewOIDCAuthHandler_InvalidIssuer(t *testing.T) {
@@ -150,4 +167,212 @@ func TestOIDCAuthHandler_SecureCookieSettings(t *testing.T) {
 			assert.Equal(t, tt.expectSecure, handler.secureCookie)
 		})
 	}
+}
+
+func TestOIDCAuthHandler_Login(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr:   sessionMgr,
+		secureCookie: false,
+		frontendURL:  "http://localhost:3000",
+		oauth2Config: &oauth2.Config{
+			ClientID:     "test-client",
+			ClientSecret: "test-secret",
+			RedirectURL:  "http://localhost:8080/callback",
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  "https://provider.example.com/auth",
+				TokenURL: "https://provider.example.com/token",
+			},
+		},
+	}
+
+	tests := []struct {
+		name        string
+		query       string
+		expectCode  int
+		expectState bool
+	}{
+		{
+			name:        "login without returnTo",
+			query:       "",
+			expectCode:  http.StatusFound,
+			expectState: true,
+		},
+		{
+			name:        "login with valid returnTo",
+			query:       "?returnTo=/dashboard",
+			expectCode:  http.StatusFound,
+			expectState: true,
+		},
+		{
+			name:        "login with invalid returnTo (external)",
+			query:       "?returnTo=https://evil.com",
+			expectCode:  http.StatusFound,
+			expectState: true,
+		},
+		{
+			name:        "login with protocol-relative returnTo",
+			query:       "?returnTo=//evil.com",
+			expectCode:  http.StatusFound,
+			expectState: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Request = httptest.NewRequest(http.MethodGet, "/login"+tt.query, http.NoBody)
+
+			handler.Login(c)
+
+			assert.Equal(t, tt.expectCode, w.Code)
+
+			cookies := w.Result().Cookies()
+
+			var stateCookie, returnToCookie *http.Cookie
+
+			for _, cookie := range cookies {
+				if cookie.Name == stateCookieName {
+					stateCookie = cookie
+				}
+
+				if cookie.Name == returnToCookieName {
+					returnToCookie = cookie
+				}
+			}
+
+			if tt.expectState {
+				require.NotNil(t, stateCookie, "state cookie should be set")
+				assert.NotEmpty(t, stateCookie.Value)
+				assert.True(t, stateCookie.HttpOnly)
+				assert.Equal(t, "/", stateCookie.Path)
+			}
+
+			require.NotNil(t, returnToCookie, "returnTo cookie should be set")
+		})
+	}
+}
+
+func TestOIDCAuthHandler_Callback_MissingStateCookie(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr: sessionMgr,
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request = httptest.NewRequest(http.MethodGet, "/callback?code=testcode&state=teststate", http.NoBody)
+
+	handler.Callback(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestOIDCAuthHandler_Callback_InvalidState(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr: sessionMgr,
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request = httptest.NewRequest(http.MethodGet, "/callback?code=testcode&state=teststate", http.NoBody)
+	c.Request.AddCookie(&http.Cookie{ //nolint:gosec // test cookie
+		Name:     stateCookieName,
+		Value:    "invalid-state-value",
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	handler.Callback(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestOIDCAuthHandler_ClearCookie(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	handler := &OIDCAuthHandler{
+		secureCookie: false,
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+
+	handler.clearCookie(c, "test-cookie")
+
+	cookies := w.Result().Cookies()
+
+	var foundCookie *http.Cookie
+
+	for _, cookie := range cookies {
+		if cookie.Name == "test-cookie" {
+			foundCookie = cookie
+
+			break
+		}
+	}
+
+	require.NotNil(t, foundCookie, "cookie should be set")
+	assert.Equal(t, -1, foundCookie.MaxAge)
+	assert.Equal(t, "", foundCookie.Value)
+	assert.True(t, foundCookie.HttpOnly)
+	assert.Equal(t, "/", foundCookie.Path)
+}
+
+func TestOIDCAuthHandler_CreateSession(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr:   sessionMgr,
+		secureCookie: false,
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+
+	err := handler.createSession(c, "testuser", "admin")
+	require.NoError(t, err)
+
+	cookies := w.Result().Cookies()
+
+	var sessionCookie *http.Cookie
+
+	for _, cookie := range cookies {
+		if cookie.Name == sessionCookieName {
+			sessionCookie = cookie
+
+			break
+		}
+	}
+
+	require.NotNil(t, sessionCookie, "session cookie should be set")
+	assert.NotEmpty(t, sessionCookie.Value)
+	assert.True(t, sessionCookie.HttpOnly)
+	assert.Equal(t, "/", sessionCookie.Path)
+
+	sessionData, err := sessionMgr.DecodeSession(sessionCookie.Value)
+	require.NoError(t, err)
+	assert.Equal(t, "testuser", sessionData.Username)
+	assert.Equal(t, "admin", sessionData.Role)
 }
