@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createAuthProvider } from "./authProvider";
 
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 describe("authProvider", () => {
   const apiBaseUrl = "http://localhost:3001/api/v3";
