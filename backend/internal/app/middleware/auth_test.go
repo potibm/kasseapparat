@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/potibm/kasseapparat/internal/app/session"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -264,4 +265,179 @@ func TestHandlerMiddleWare_OIDCMode(t *testing.T) {
 
 	middleware := HandlerMiddleWare(cfg)
 	assert.NotNil(t, middleware)
+}
+
+func TestOIDCAuthMiddleware_MissingSessionCookie(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	cfg := config.Config{
+		Auth: config.AuthConfig{
+			Mode:            "oidc",
+			SessionSecret:   "test-secret-that-is-long-enough-for-testing",
+			SessionDuration: 24 * time.Hour,
+		},
+	}
+
+	router := gin.New()
+	router.Use(OIDCAuthMiddleware(cfg))
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+	var response map[string]interface{}
+
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	require.NoError(t, err)
+	assert.Contains(t, response["message"], "missing session cookie")
+}
+
+func TestOIDCAuthMiddleware_InvalidSessionCookie(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	cfg := config.Config{
+		Auth: config.AuthConfig{
+			Mode:            "oidc",
+			SessionSecret:   "test-secret-that-is-long-enough-for-testing",
+			SessionDuration: 24 * time.Hour,
+		},
+	}
+
+	router := gin.New()
+	router.Use(OIDCAuthMiddleware(cfg))
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	req.AddCookie(&http.Cookie{ //nolint:gosec // test cookie
+		Name:     "auth_session",
+		Value:    "invalid-session-data",
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+	var response map[string]interface{}
+
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	require.NoError(t, err)
+	assert.Contains(t, response["message"], "invalid session")
+}
+
+func TestOIDCAuthMiddleware_NonOIDCMode(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	cfg := config.Config{
+		Auth: config.AuthConfig{
+			Mode:        "proxy",
+			ProxyHeader: "X-Remote-User",
+		},
+	}
+
+	router := gin.New()
+	router.Use(OIDCAuthMiddleware(cfg))
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestOIDCAuthMiddleware_ValidSession(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+	sessionData := session.SessionData{
+		Username:  "testuser",
+		Role:      "admin",
+		ExpiresAt: time.Now().Add(24 * time.Hour),
+	}
+
+	encodedSession, err := sessionMgr.EncodeSession(sessionData)
+	require.NoError(t, err)
+
+	cfg := config.Config{
+		Auth: config.AuthConfig{
+			Mode:            "oidc",
+			SessionSecret:   "test-secret-that-is-long-enough-for-testing",
+			SessionDuration: 24 * time.Hour,
+		},
+	}
+
+	router := gin.New()
+	router.Use(OIDCAuthMiddleware(cfg))
+
+	var capturedUser *models.AuthUser
+
+	var capturedUsername string
+
+	router.GET("/test", func(c *gin.Context) {
+		user, ok := GetAuthUser(c)
+		if ok {
+			capturedUser = user
+		}
+
+		capturedUsername = GetUsername(c)
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	req.AddCookie(&http.Cookie{ //nolint:gosec // test cookie
+		Name:     "auth_session",
+		Value:    encodedSession,
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusOK, w.Code)
+	require.NotNil(t, capturedUser)
+	assert.Equal(t, "testuser", capturedUser.Username)
+	assert.Equal(t, "admin", capturedUser.Role)
+	assert.Equal(t, "testuser", capturedUsername)
+}
+
+func TestGetAuthUser_InvalidType(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+
+	c.Set(AuthUserKey, "not-an-auth-user")
+
+	user, ok := GetAuthUser(c)
+	assert.False(t, ok)
+	assert.Nil(t, user)
+}
+
+func TestGetUsername_InvalidType(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+
+	c.Set(IdentityKey, 12345)
+
+	username := GetUsername(c)
+	assert.Equal(t, DefaultUsername, username)
 }

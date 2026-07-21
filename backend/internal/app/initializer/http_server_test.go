@@ -1,9 +1,11 @@
 package initializer
 
 import (
+	"context"
 	"embed"
 	"log/slog"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -11,6 +13,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/config"
 	httpHandler "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
+	"github.com/potibm/kasseapparat/internal/app/middleware"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/stretchr/testify/assert"
 )
@@ -74,4 +77,143 @@ func TestInitializeHttpServer(t *testing.T) {
 
 		assert.True(t, foundConfigRoute, "The route /api/v3/config should be registered")
 	})
+}
+
+func TestInitializeOIDCHandler_ProxyMode(t *testing.T) {
+	cfg := config.Config{
+		Auth: config.AuthConfig{
+			Mode: "proxy",
+		},
+	}
+
+	handler, err := InitializeOIDCHandler(context.Background(), cfg)
+	assert.NoError(t, err)
+	assert.Nil(t, handler)
+}
+
+func TestInitializeOIDCHandler_OIDCMode_MissingConfig(t *testing.T) {
+	cfg := config.Config{
+		Auth: config.AuthConfig{
+			Mode:             "oidc",
+			OidcIssuer:       "",
+			OidcClientID:     "",
+			OidcClientSecret: "",
+			OidcCallbackURL:  "",
+			SessionSecret:    "test-secret-that-is-long-enough-for-testing",
+		},
+		App: config.AppConfig{
+			FrontendURL: "http://localhost:3000",
+		},
+	}
+
+	handler, err := InitializeOIDCHandler(context.Background(), cfg)
+	assert.Error(t, err)
+	assert.Nil(t, handler)
+}
+
+func TestCreateCorsMiddleware(t *testing.T) {
+	allowedOrigins := []string{"http://localhost:3000", "http://localhost:8080"}
+
+	corsMiddleware := CreateCorsMiddleware(allowedOrigins)
+	assert.NotNil(t, corsMiddleware)
+
+	gin.SetMode(gin.TestMode)
+
+	router := gin.New()
+	router.Use(corsMiddleware)
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	req.Header.Set("Origin", "http://localhost:3000")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestSlogUserID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	slogMiddleware := SlogUserID()
+	assert.NotNil(t, slogMiddleware)
+
+	router := gin.New()
+	router.Use(slogMiddleware)
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	req.Header.Set("X-Test", "value")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestSlogUserID_WithUsername(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	slogMiddleware := SlogUserID()
+
+	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		c.Set(middleware.IdentityKey, "testuser")
+		c.Next()
+	})
+	router.Use(slogMiddleware)
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestSentryMiddleware(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sentryMiddleware := SentryMiddleware()
+	assert.NotNil(t, sentryMiddleware)
+
+	router := gin.New()
+	router.Use(sentryMiddleware)
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestSentryMiddleware_WithUsername(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sentryMiddleware := SentryMiddleware()
+
+	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		c.Set(middleware.IdentityKey, "testuser")
+		c.Next()
+	})
+	router.Use(sentryMiddleware)
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
 }

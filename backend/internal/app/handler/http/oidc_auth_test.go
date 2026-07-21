@@ -376,3 +376,208 @@ func TestOIDCAuthHandler_CreateSession(t *testing.T) {
 	assert.Equal(t, "testuser", sessionData.Username)
 	assert.Equal(t, "admin", sessionData.Role)
 }
+
+func TestOIDCAuthHandler_ValidateState_Mismatch(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr: sessionMgr,
+	}
+
+	stateData := session.StateData{
+		State:     "correct-state",
+		Nonce:     "test-nonce",
+		ExpiresAt: time.Now().Add(10 * time.Minute),
+	}
+
+	encodedState, err := sessionMgr.EncodeState(stateData)
+	require.NoError(t, err)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request = httptest.NewRequest(http.MethodGet, "/callback", http.NoBody)
+	c.Request.AddCookie(&http.Cookie{ //nolint:gosec // test cookie
+		Name:     stateCookieName,
+		Value:    encodedState,
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	result, err := handler.validateState(c, "wrong-state")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestOIDCAuthHandler_ValidateState_MissingCookie(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr: sessionMgr,
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request = httptest.NewRequest(http.MethodGet, "/callback", http.NoBody)
+
+	result, err := handler.validateState(c, "any-state")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestOIDCAuthHandler_ValidateState_ExpiredState(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr: sessionMgr,
+	}
+
+	stateData := session.StateData{
+		State:     "test-state",
+		Nonce:     "test-nonce",
+		ExpiresAt: time.Now().Add(-1 * time.Hour),
+	}
+
+	encodedState, err := sessionMgr.EncodeState(stateData)
+	require.NoError(t, err)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request = httptest.NewRequest(http.MethodGet, "/callback", http.NoBody)
+	c.Request.AddCookie(&http.Cookie{ //nolint:gosec // test cookie
+		Name:     stateCookieName,
+		Value:    encodedState,
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	result, err := handler.validateState(c, "test-state")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestOIDCAuthHandler_Callback_StateMismatch(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr: sessionMgr,
+	}
+
+	stateData := session.StateData{
+		State:     "correct-state",
+		Nonce:     "test-nonce",
+		ExpiresAt: time.Now().Add(10 * time.Minute),
+	}
+
+	encodedState, err := sessionMgr.EncodeState(stateData)
+	require.NoError(t, err)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request = httptest.NewRequest(http.MethodGet, "/callback?code=testcode&state=wrong-state", http.NoBody)
+	c.Request.AddCookie(&http.Cookie{ //nolint:gosec // test cookie
+		Name:     stateCookieName,
+		Value:    encodedState,
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	handler.Callback(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestOIDCAuthHandler_Login_InvalidReturnTo(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
+
+	handler := &OIDCAuthHandler{
+		sessionMgr:   sessionMgr,
+		secureCookie: false,
+		oauth2Config: &oauth2.Config{
+			ClientID:     "test-client",
+			ClientSecret: "test-secret",
+			RedirectURL:  "http://localhost:8080/callback",
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  "https://provider.example.com/auth",
+				TokenURL: "https://provider.example.com/token",
+			},
+		},
+	}
+
+	tests := []struct {
+		name             string
+		returnTo         string
+		expectedFallback string
+	}{
+		{
+			name:             "empty returnTo defaults to /",
+			returnTo:         "",
+			expectedFallback: "/",
+		},
+		{
+			name:             "external URL defaults to /",
+			returnTo:         "https://evil.com",
+			expectedFallback: "/",
+		},
+		{
+			name:             "protocol-relative URL defaults to /",
+			returnTo:         "//evil.com",
+			expectedFallback: "/",
+		},
+		{
+			name:             "valid path is preserved",
+			returnTo:         "/dashboard",
+			expectedFallback: "/dashboard",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			query := ""
+			if tt.returnTo != "" {
+				query = "?returnTo=" + tt.returnTo
+			}
+
+			c.Request = httptest.NewRequest(http.MethodGet, "/login"+query, http.NoBody)
+
+			handler.Login(c)
+
+			assert.Equal(t, http.StatusFound, w.Code)
+
+			cookies := w.Result().Cookies()
+
+			var returnToCookie *http.Cookie
+
+			for _, cookie := range cookies {
+				if cookie.Name == returnToCookieName {
+					returnToCookie = cookie
+
+					break
+				}
+			}
+
+			require.NotNil(t, returnToCookie)
+			assert.Equal(t, tt.expectedFallback, returnToCookie.Value)
+		})
+	}
+}
