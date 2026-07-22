@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	response "github.com/potibm/kasseapparat/internal/app/response"
@@ -49,8 +50,16 @@ func (handler *Handler) RefundPurchase(c *gin.Context) {
 		return
 	}
 
-	// @TODO allow admins to refund older purchases
-	if time.Since(purchase.CreatedAt) > 15*time.Minute {
+	// Get authenticated user from context
+	authUser, exists := middleware.GetAuthUser(c)
+	if !exists {
+		_ = c.Error(UnableToRetrieveExecutingUser)
+
+		return
+	}
+
+	// Only enforce 15-minute limit for non-admin users
+	if authUser.Role != "admin" && time.Since(purchase.CreatedAt) > 15*time.Minute {
 		_ = c.Error(Forbidden.WithMsg("You can only refund purchases within 15 minutes of creation"))
 
 		return
