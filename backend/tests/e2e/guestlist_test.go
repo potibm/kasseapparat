@@ -154,6 +154,52 @@ func TestGuestlistAuthentication(t *testing.T) {
 	// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2
 }
 
+func TestGetGuestlistWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withDemoUserAuthToken(e.GET(guestlistBaseURL + "/99999")).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
+func TestCreateGuestlistWithInvalidData(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	errorResponse := withDemoUserAuthToken(e.POST(guestlistBaseURL)).
+		WithJSON(map[string]any{
+			"name": "",
+		}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	errorResponse.Value("details").String().NotEmpty()
+}
+
+func TestUpdateGuestlistWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withDemoUserAuthToken(e.PUT(guestlistBaseURL + "/99999")).
+		WithJSON(map[string]any{
+			"name":      "Updated Name",
+			"typeCode":  false,
+			"productId": 2,
+		}).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
+func TestDeleteGuestlistWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withDemoUserAuthToken(e.DELETE(guestlistBaseURL + "/99999")).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
 func validateGuestlistObject(guestlist *httpexpect.Object) {
 	guestlist.Value("id").Number().Gt(0)
 	guestlist.Value("name").String().NotEmpty()

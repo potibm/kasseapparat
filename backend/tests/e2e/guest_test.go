@@ -236,6 +236,50 @@ func TestGuestAuthentication(t *testing.T) {
 	// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2
 }
 
+func TestGetGuestWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withDemoUserAuthToken(e.GET(guestBaseURL + "/99999")).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
+func TestCreateGuestWithInvalidData(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	errorResponse := withDemoUserAuthToken(e.POST(guestBaseURL)).
+		WithJSON(map[string]any{
+			"name": "",
+		}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	errorResponse.Value("details").String().NotEmpty()
+}
+
+func TestUpdateGuestWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withDemoUserAuthToken(e.PUT(guestBaseURL + "/99999")).
+		WithJSON(map[string]any{
+			"name": "Updated Name",
+		}).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
+func TestDeleteGuestWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withDemoUserAuthToken(e.DELETE(guestBaseURL + "/99999")).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
 func TestGuestsByProduct(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()

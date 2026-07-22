@@ -140,6 +140,54 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 		Status(http.StatusNotFound)
 }
 
+func TestGetProductWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withDemoUserAuthToken(e.GET(productBaseURL + "/99999")).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
+func TestCreateProductWithInvalidData(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	errorResponse := withDemoUserAuthToken(e.POST(productBaseURL)).
+		WithJSON(map[string]any{
+			"name": "",
+		}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	errorResponse.Value("details").String().NotEmpty()
+}
+
+func TestUpdateProductWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withDemoUserAuthToken(e.PUT(productBaseURL + "/99999")).
+		WithJSON(map[string]any{
+			"name":      "Updated Name",
+			"price":     "10",
+			"wrapAfter": false,
+			"pos":       123,
+			"hidden":    false,
+		}).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
+func TestDeleteProductWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withAdminUserAuthToken(e.DELETE(productBaseURL + "/99999")).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
 func TestProductAuthentication(t *testing.T) {
 	// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2
 }

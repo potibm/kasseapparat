@@ -401,6 +401,101 @@ func TestPurchaseDeleteWithoutUuid(t *testing.T) {
 	validateErrorDetailMessage(errorResponse, "Invalid purchase ID")
 }
 
+func TestRefundPurchaseWithInvalidUUID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL + "/invalid-uuid/refund")).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	validateErrorDetailMessage(errorResponse, "Invalid purchase ID")
+}
+
+func TestRefundPurchaseWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL + "/00000000-0000-0000-0000-000000000000/refund")).
+		Expect().
+		Status(http.StatusNotFound).JSON().Object()
+
+	validateErrorDetailMessage(errorResponse, "Purchase not found")
+}
+
+func TestRefundPurchaseAfterTimeLimitAsNonAdmin(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	purchaseURL := createPurchase()
+	purchaseID := purchaseURL[len(purchaseBaseURL)+1:]
+
+	// Manually update the purchase to be older than 15 minutes
+	db.Exec("UPDATE purchases SET created_at = datetime('now', '-20 minutes') WHERE id = ?", purchaseID)
+
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseURL + "/refund")).
+		Expect().
+		Status(http.StatusForbidden).JSON().Object()
+
+	validateErrorDetailMessage(errorResponse, "You can only refund purchases within 15 minutes of creation")
+
+	deletePurchase(purchaseURL)
+}
+
+func TestPostPurchasesWithInvalidPayload(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
+		WithJSON(map[string]any{
+			"invalidField": "value",
+		}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	errorResponse.Value("details").String().NotEmpty()
+}
+
+func TestPostPurchasesWithMissingPaymentMethod(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
+		WithJSON(map[string]any{
+			"totalNetPrice":   "18.69",
+			"totalGrossPrice": "20",
+			"cart": []map[string]any{
+				{
+					"ID":        2,
+					"quantity":  1,
+					"netPrice":  "18.69",
+					"listItems": []map[string]any{},
+				},
+			},
+		}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	errorResponse.Value("details").String().NotEmpty()
+}
+
+func TestPostPurchasesWithEmptyCart(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	errorResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
+		WithJSON(map[string]any{
+			"paymentMethod":   "CASH",
+			"totalNetPrice":   "0",
+			"totalGrossPrice": "0",
+			"cart":            []map[string]any{},
+		}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	errorResponse.Value("details").String().NotEmpty()
+}
+
 func createPurchase() string {
 	purchaseResponse := withDemoUserAuthToken(e.POST(purchaseBaseURL)).
 		WithJSON(map[string]any{
