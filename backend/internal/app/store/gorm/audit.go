@@ -56,7 +56,7 @@ func getUserIDFromContext(tx *gorm.DB) string {
 }
 
 func setAuditColumn(tx *gorm.DB, columnName, userID string) {
-	if field := tx.Statement.Schema.LookUpField(columnName); field != nil {
+	if tx.Statement.Schema.LookUpField(columnName) != nil {
 		tx.Statement.SetColumn(columnName, userID)
 	}
 }

@@ -10,6 +10,7 @@ import { ConfigSchema } from "@core/config/schemas/config.schemas.ts";
 import * as Sentry from "@sentry/react";
 import { transformConfig } from "@core/config/utils/config.transform.ts";
 import { buildApiBaseUrl } from "@core/config/constants.ts";
+import { CriticalError } from "@core/components/CriticalError.tsx";
 
 const log = createLogger("Bootstrapper");
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3100";
@@ -17,12 +18,13 @@ const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3100";
 export async function bootstrapApp() {
   const rootElement = document.getElementById("root");
   if (!rootElement) {
-    document.body.innerHTML = `
-      <div style="padding: 20px; color: red; font-family: sans-serif;">
-        <h2>System Configuration Error</h2>
-        <pre>Failed to find the root element in index.html</pre>
-      </div>
-    `;
+    const root = createRoot(document.body);
+    root.render(
+      <CriticalError
+        title="System Configuration Error"
+        message="Failed to find the root element in index.html"
+      />,
+    );
     log.error("Bootstrap failed: Root element missing");
     return;
   }
@@ -79,14 +81,15 @@ export async function bootstrapApp() {
     log.error("Bootstrap failed:", err);
 
     root.render(
-      <div style={{ padding: 20, color: "red", fontFamily: "sans-serif" }}>
-        <h2>System Configuration Error</h2>
-        <pre>{err instanceof Error ? err.message : "Unknown error"}</pre>
-      </div>,
+      <CriticalError
+        title="System Configuration Error"
+        message="Failed to initialize application"
+        details={err instanceof Error ? err.message : "Unknown error"}
+      />,
     );
   }
 }
 
 if (!import.meta.env.TEST) {
-  bootstrapApp();
+  await bootstrapApp();
 }

@@ -1,13 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { LogoutButton } from "./LogoutButton";
-import useConfig from "@core/config/hooks/useConfig";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AppConfig } from "@core/config/types/config.types";
 
 vi.mock("@core/config/hooks/useConfig");
+vi.mock("@core/auth/authProvider", () => {
+  const mockLogout = vi.fn();
+  return {
+    createAuthProvider: vi.fn(() => ({
+      logout: mockLogout,
+    })),
+    __mockLogout: mockLogout,
+  };
+});
+
+// Import after mocks are set up
+import { LogoutButton } from "./LogoutButton";
+import useConfig from "@core/config/hooks/useConfig";
+import { createAuthProvider } from "@core/auth/authProvider";
 
 describe("LogoutButton", () => {
   const mockUseConfig = vi.mocked(useConfig);
+  const mockedAuthProvider = vi.mocked(createAuthProvider);
+  const mockLogout = mockedAuthProvider().logout;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -32,7 +46,7 @@ describe("LogoutButton", () => {
     expect(screen.getAllByText("Logout").length).toBeGreaterThan(0);
   });
 
-  it("should call logout and redirect when clicked", async () => {
+  it("should call logout when clicked", async () => {
     mockUseConfig.mockReturnValue({
       authMode: "oidc",
     } as unknown as AppConfig);
@@ -42,11 +56,13 @@ describe("LogoutButton", () => {
     const button = screen.getByRole("button");
     fireEvent.click(button);
 
-    // The logout is called asynchronously, so we need to wait
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitFor(() => {
+      expect(mockLogout).toHaveBeenCalledWith({});
+    });
   });
 
   it("should redirect to home after logout even if logout fails", async () => {
+    mockLogout.mockRejectedValueOnce(new Error("Logout failed"));
     mockUseConfig.mockReturnValue({
       authMode: "oidc",
     } as unknown as AppConfig);
@@ -56,7 +72,8 @@ describe("LogoutButton", () => {
     const button = screen.getByRole("button");
     fireEvent.click(button);
 
-    // Wait for async operations
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitFor(() => {
+      expect(mockLogout).toHaveBeenCalledWith({});
+    });
   });
 });

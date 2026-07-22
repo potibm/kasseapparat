@@ -207,11 +207,9 @@ describe("usePurchaseHistory Hook", () => {
 
       await waitFor(() => expect(result.current.loading).toBe(false));
 
-      await act(async () => {
-        await expect(
-          result.current.refundPurchase("purchase-123"),
-        ).rejects.toEqual({ some: "weird object" });
-      });
+      await expect(
+        result.current.refundPurchase("purchase-123"),
+      ).rejects.toEqual({ some: "weird object" });
 
       expect(mockShowToast).toHaveBeenCalledWith({
         autoClose: false,

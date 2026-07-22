@@ -26,6 +26,7 @@ import {
 } from "../api/schemas";
 import { createLogger } from "@core/logger/logger";
 import { ToastProvider } from "@pos/features/ui/toast/providers/ToastProvider";
+import { CriticalError } from "@core/components/CriticalError";
 
 const logPurchase = createLogger("Purchase");
 
@@ -195,11 +196,11 @@ export const Kasseapparat: React.FC = () => {
   const { username } = useAuth();
 
   if (!username) {
-    // @TODO centralize those errors
     return (
-      <div className="flex h-screen items-center justify-center p-4">
-        <Alert color="failure">Critical Error. No Username was set.</Alert>
-      </div>
+      <CriticalError
+        title="Authentication Error"
+        message="Critical Error. No Username was set."
+      />
     );
   }
 
