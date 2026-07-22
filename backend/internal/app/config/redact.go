@@ -10,7 +10,6 @@ func (c Config) RedactConfigForDisplay() Config {
 	result.Sumup.APIKey = redacted
 	result.Sentry.DSN = redacted
 
-	result.App.RedisURL = result.App.RedisURL.Redacted()
 	result.Mailer.DSN = redactURLPassword(c.Mailer.DSN)
 
 	return result

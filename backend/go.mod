@@ -18,7 +18,6 @@ require (
 	github.com/gorilla/securecookie v1.1.2
 	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
-	github.com/redis/go-redis/v9 v9.21.0
 	github.com/samber/slog-gin v1.21.1
 	github.com/samber/slog-multi v1.8.0
 	github.com/shopspring/decimal v1.4.0
@@ -120,7 +119,6 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.44.0 // indirect
 	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.29.0 // indirect
 	golang.org/x/crypto v0.54.0 // indirect

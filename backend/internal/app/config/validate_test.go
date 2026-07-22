@@ -9,7 +9,6 @@ import (
 var defaultTestConfig = Config{
 	App: AppConfig{
 		DbFilename:  "kasseapparat",
-		RedisURL:    "",
 		GinMode:     "release",
 		Environment: "production",
 		LogLevel:    "info",
@@ -66,15 +65,15 @@ func TestDateFormatConfigValidate(t *testing.T) {
 }
 
 func TestAppConfigValidate(t *testing.T) {
-	cfg := AppConfig{DbFilename: "kasseapparat", RedisURL: ""}
+	cfg := AppConfig{DbFilename: "kasseapparat"}
 	assert.NoError(t, cfg.Validate())
 
-	cfg = AppConfig{DbFilename: "", RedisURL: ""}
+	cfg = AppConfig{DbFilename: ""}
 	err := cfg.Validate()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "db_filename '' contains invalid characters")
 
-	cfg = AppConfig{DbFilename: "../invalid", RedisURL: ""}
+	cfg = AppConfig{DbFilename: "../invalid"}
 	err = cfg.Validate()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "db_filename '../invalid' contains invalid characters")

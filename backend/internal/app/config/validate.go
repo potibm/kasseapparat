@@ -39,12 +39,6 @@ func (f *AppConfig) Validate() error {
 		return fmt.Errorf("db_filename '%s' contains invalid characters", f.DbFilename)
 	}
 
-	if f.RedisURL != "" {
-		if err := f.RedisURL.Validate(); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 

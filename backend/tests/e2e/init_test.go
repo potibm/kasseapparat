@@ -65,7 +65,6 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 			GinMode:            "debug",
 			LogLevel:           "debug",
 			LogFormat:          "text",
-			RedisURL:           "",
 			Environment:        "test",
 			EnvironmentMessage: "Test environment",
 			CorsAllowOrigins:   []string{"http://localhost:3000"},

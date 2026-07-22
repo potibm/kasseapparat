@@ -11,7 +11,6 @@ func TestRedactConfigForDisplay(t *testing.T) {
 	cfg := Config{}
 	cfg.Sumup.APIKey = "sup_sk_12345"
 	cfg.Sentry.DSN = "https://public@sentry.io/1"
-	cfg.App.RedisURL = "redis://:p@ssword@localhost:6379/0"
 	cfg.Mailer.DSN = "smtp://user:secret-mail-pass@smtp.example.com:587"
 
 	// Execute redaction
@@ -23,7 +22,6 @@ func TestRedactConfigForDisplay(t *testing.T) {
 	assert.Equal(t, redacted, redactedCfg.Sentry.DSN)
 
 	// Verify URL passwords are redacted but structure remains
-	assert.Contains(t, string(redactedCfg.App.RedisURL), urlEncodedRedacted)
 	assert.Contains(t, redactedCfg.Mailer.DSN, urlEncodedRedacted)
 	assert.Contains(t, redactedCfg.Mailer.DSN, "user") // Username should still be visible
 	assert.NotContains(t, redactedCfg.Mailer.DSN, "secret-mail-pass")
