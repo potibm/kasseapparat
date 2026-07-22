@@ -134,7 +134,7 @@ services:
       - "traefik.http.services.minio-kasse.loadbalancer.server.port=9001"
 
   minio-init:
-    image: minio/mc
+    image: minio/mc:latest
     container_name: kasseapparat_minio_init
     depends_on:
       - minio

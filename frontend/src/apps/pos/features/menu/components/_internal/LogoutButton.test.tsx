@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AppConfig } from "@core/config/types/config.types";
 
@@ -21,7 +21,7 @@ import { createAuthProvider } from "@core/auth/authProvider";
 describe("LogoutButton", () => {
   const mockUseConfig = vi.mocked(useConfig);
   const mockedAuthProvider = vi.mocked(createAuthProvider);
-  const mockLogout = mockedAuthProvider().logout;
+  const mockLogout = mockedAuthProvider.mock.results[0]?.value.logout as Mock;
 
   beforeEach(() => {
     vi.clearAllMocks();

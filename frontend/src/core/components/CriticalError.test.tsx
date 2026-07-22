@@ -69,9 +69,7 @@ describe("CriticalError", () => {
 
   it("should handle special characters in message", () => {
     const specialMessage = "Error: <script>alert('xss')</script>";
-    render(
-      <CriticalError title="Title" message={specialMessage} />,
-    );
+    render(<CriticalError title="Title" message={specialMessage} />);
 
     // React should escape the HTML
     expect(screen.getByText(specialMessage)).toBeDefined();
