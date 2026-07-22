@@ -5,7 +5,6 @@ test.describe("System", () => {
     page,
   }) => {
     await page.goto("/");
-    await page.pause();
 
     await expect(page).toHaveTitle(/Kasseapparat/);
 
