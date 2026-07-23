@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { TableCell, TableRow } from "flowbite-react";
 import { HiShoppingCart } from "react-icons/hi";
 import Button from "../../../../components/Button";
-import { Guest as GuestType } from "@pos/utils/api.schemas";
+import { Guest as GuestType } from "@pos/api/schemas";
 import { GuestlistAvatar } from "./GuestlistAvatar";
 
 interface GuestlistResultTableRowProps {

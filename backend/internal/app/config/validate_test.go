@@ -1,8 +1,6 @@
 package config
 
 import (
-	"bytes"
-	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +9,6 @@ import (
 var defaultTestConfig = Config{
 	App: AppConfig{
 		DbFilename:  "kasseapparat",
-		RedisURL:    "",
 		GinMode:     "release",
 		Environment: "production",
 		LogLevel:    "info",
@@ -23,7 +20,6 @@ var defaultTestConfig = Config{
 		Currency: CurrencyFormatConfig{Locale: "de-DE", Code: "EUR"},
 		Date:     DateFormatConfig{Locale: "en-US"},
 	},
-	Jwt: JwtConfig{Secret: "asecretforsec", Realm: "kasseapparat"},
 	Mailer: MailerConfig{
 		DSN:               "smtp://user:pass@localhost:587",
 		FromEmail:         "noreply@example.com",
@@ -31,57 +27,16 @@ var defaultTestConfig = Config{
 		FrontendURL:       "http://localhost:3000",
 	},
 	Sentry: SentryConfig{DSN: ""},
+	Auth: AuthConfig{
+		Mode:        "proxy",
+		ProxyHeader: "X-Remote-User",
+		ProxyAdmins: []string{},
+	},
 }
 
 func TestConfigValidate(t *testing.T) {
-	var buf bytes.Buffer
-
-	h := slog.NewJSONHandler(&buf, nil)
-	logger := slog.New(h)
-	oldLogger := slog.Default()
-
-	slog.SetDefault(logger)
-	t.Cleanup(func() { slog.SetDefault(oldLogger) })
-
 	cfg := defaultTestConfig
 	assert.NoError(t, cfg.Validate())
-
-	assert.NotContains(t, buf.String(), "WARN", "Expected no warnings when using a non-default JWT secret")
-}
-
-func TestConfigValidateWithDefaultJwtSecretReturningErrorInProduction(t *testing.T) {
-	cfg := defaultTestConfig
-	cfg.App.Environment = "production"
-	cfg.Jwt.Secret = DefaultJwtSecret
-
-	err := cfg.Validate()
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "JWT_SECRET is set to the default value, which is not allowed in production")
-}
-
-func TestConfigValidateWithDefaultJwtSecretShowingWarning(t *testing.T) {
-	var buf bytes.Buffer
-
-	h := slog.NewJSONHandler(&buf, nil)
-	logger := slog.New(h)
-	oldLogger := slog.Default()
-
-	slog.SetDefault(logger)
-	t.Cleanup(func() { slog.SetDefault(oldLogger) })
-
-	cfg := defaultTestConfig
-	cfg.App.Environment = "development"
-	cfg.Jwt.Secret = DefaultJwtSecret
-
-	err := cfg.Validate()
-	assert.NoError(t, err)
-
-	assert.Contains(
-		t,
-		buf.String(),
-		"\"level\":\"WARN\"",
-		"The expected warning about using the default JWT secret was not logged",
-	)
 }
 
 func TestCurrencyFormatConfigValidate(t *testing.T) {
@@ -110,16 +65,132 @@ func TestDateFormatConfigValidate(t *testing.T) {
 }
 
 func TestAppConfigValidate(t *testing.T) {
-	cfg := AppConfig{DbFilename: "kasseapparat", RedisURL: ""}
+	cfg := AppConfig{DbFilename: "kasseapparat"}
 	assert.NoError(t, cfg.Validate())
 
-	cfg = AppConfig{DbFilename: "", RedisURL: ""}
+	cfg = AppConfig{DbFilename: ""}
 	err := cfg.Validate()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "db_filename '' contains invalid characters")
 
-	cfg = AppConfig{DbFilename: "../invalid", RedisURL: ""}
+	cfg = AppConfig{DbFilename: "../invalid"}
 	err = cfg.Validate()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "db_filename '../invalid' contains invalid characters")
+}
+
+func TestAuthConfigValidate(t *testing.T) {
+	tests := []struct {
+		name        string
+		config      AuthConfig
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name: "valid proxy config",
+			config: AuthConfig{
+				Mode:        "proxy",
+				ProxyHeader: "X-Remote-User",
+			},
+			expectError: false,
+		},
+		{
+			name: "valid oidc config",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "https://auth.example.com",
+				OidcClientID:     "client-id",
+				OidcClientSecret: "client-secret",
+				OidcCallbackURL:  "http://localhost:8080/callback",
+				SessionSecret:    "this-is-a-very-long-secret-that-is-at-least-32-chars",
+			},
+			expectError: false,
+		},
+		{
+			name: "proxy mode without header",
+			config: AuthConfig{
+				Mode:        "proxy",
+				ProxyHeader: "",
+			},
+			expectError: true,
+			errorMsg:    "auth.proxy_header is required when mode is 'proxy'",
+		},
+		{
+			name: "oidc mode without issuer",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "",
+				OidcClientID:     "client-id",
+				OidcClientSecret: "client-secret",
+				OidcCallbackURL:  "http://localhost:8080/callback",
+				SessionSecret:    "this-is-a-very-long-secret-that-is-at-least-32-chars",
+			},
+			expectError: true,
+			errorMsg:    "auth.oidc_issuer is required when mode is 'oidc'",
+		},
+		{
+			name: "oidc mode without client id",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "https://auth.example.com",
+				OidcClientID:     "",
+				OidcClientSecret: "client-secret",
+				OidcCallbackURL:  "http://localhost:8080/callback",
+				SessionSecret:    "this-is-a-very-long-secret-that-is-at-least-32-chars",
+			},
+			expectError: true,
+			errorMsg:    "auth.oidc_client_id is required when mode is 'oidc'",
+		},
+		{
+			name: "oidc mode without client secret",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "https://auth.example.com",
+				OidcClientID:     "client-id",
+				OidcClientSecret: "",
+				OidcCallbackURL:  "http://localhost:8080/callback",
+				SessionSecret:    "this-is-a-very-long-secret-that-is-at-least-32-chars",
+			},
+			expectError: true,
+			errorMsg:    "auth.oidc_client_secret is required when mode is 'oidc'",
+		},
+		{
+			name: "oidc mode without callback url",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "https://auth.example.com",
+				OidcClientID:     "client-id",
+				OidcClientSecret: "client-secret",
+				OidcCallbackURL:  "",
+				SessionSecret:    "this-is-a-very-long-secret-that-is-at-least-32-chars",
+			},
+			expectError: true,
+			errorMsg:    "auth.oidc_callback_url is required when mode is 'oidc'",
+		},
+		{
+			name: "oidc mode with short session secret",
+			config: AuthConfig{
+				Mode:             "oidc",
+				OidcIssuer:       "https://auth.example.com",
+				OidcClientID:     "client-id",
+				OidcClientSecret: "client-secret",
+				OidcCallbackURL:  "http://localhost:8080/callback",
+				SessionSecret:    "too-short",
+			},
+			expectError: true,
+			errorMsg:    "auth.session_secret must be at least 32 characters when mode is 'oidc'",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.config.Validate()
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

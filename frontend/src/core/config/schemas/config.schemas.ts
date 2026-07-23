@@ -6,6 +6,7 @@ export const ConfigSchema = z.object({
   sentryTraceSampleRate: z.number().min(0).max(1).optional(),
   sentryReplaySessionSampleRate: z.number().min(0).max(1).optional(),
   sentryReplayErrorSampleRate: z.number().min(0).max(1).optional(),
+  sentryEnvironment: z.string().optional(),
   currencyLocale: z.string().default("da-DK"),
   currencyCode: z.string().default("DKK"),
   fractionDigitsMin: z.number().default(0),
@@ -28,6 +29,7 @@ export const ConfigSchema = z.object({
       }),
     )
     .default([]),
+  authMode: z.enum(["proxy", "oidc"]).default("proxy"),
   /** @deprecated: Will be removed in favor of dateLocale or currencyLocale */
   locale: z.string().default("da-DK"),
 });

@@ -9,10 +9,8 @@ import (
 func TestRedactConfigForDisplay(t *testing.T) {
 	// Initialize a config with sensitive data
 	cfg := Config{}
-	cfg.Jwt.Secret = "super-secret-key"
 	cfg.Sumup.APIKey = "sup_sk_12345"
 	cfg.Sentry.DSN = "https://public@sentry.io/1"
-	cfg.App.RedisURL = "redis://:p@ssword@localhost:6379/0"
 	cfg.Mailer.DSN = "smtp://user:secret-mail-pass@smtp.example.com:587"
 
 	// Execute redaction
@@ -20,18 +18,13 @@ func TestRedactConfigForDisplay(t *testing.T) {
 	urlEncodedRedacted := "%2A%2A%2AREDACTED%2A%2A%2A"
 
 	// Verify standard fields are redacted
-	assert.Equal(t, redacted, redactedCfg.Jwt.Secret)
 	assert.Equal(t, redacted, redactedCfg.Sumup.APIKey)
 	assert.Equal(t, redacted, redactedCfg.Sentry.DSN)
 
 	// Verify URL passwords are redacted but structure remains
-	assert.Contains(t, string(redactedCfg.App.RedisURL), urlEncodedRedacted)
 	assert.Contains(t, redactedCfg.Mailer.DSN, urlEncodedRedacted)
 	assert.Contains(t, redactedCfg.Mailer.DSN, "user") // Username should still be visible
 	assert.NotContains(t, redactedCfg.Mailer.DSN, "secret-mail-pass")
-
-	// Ensure the original config was not modified (Immutability check)
-	assert.Equal(t, "super-secret-key", cfg.Jwt.Secret)
 }
 
 func TestRedactUrlPassword(t *testing.T) {

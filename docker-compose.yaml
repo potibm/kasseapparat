@@ -69,37 +69,18 @@ services:
       - openobserve
 
   # --------------------------------------------------------
-  # Data Stores
+  # Identity
   # --------------------------------------------------------
-  redis:
-    image: redis:7-alpine
-    container_name: kasseapparat_redis
-    ports:
-      - "3051:6379"
+  dex:
+    image: ghcr.io/dexidp/dex:v2.45.1
     volumes:
-      - redis_data:/data
-    command: redis-server --save 60 1 --loglevel warning
-
-  redisinsight:
-    image: redis/redisinsight:latest
-    container_name: kasseapparat_redisinsight
-    environment:
-      - RI_APP_PORT=5540
-      - RI_APP_HOST=0.0.0.0
-      - RI_ACCEPT_TERMS_AND_CONDITIONS=true
-      - RI_REDIS_ALIAS0=Kasseapparat-Redis
-      - RI_REDIS_HOST0=kasseapparat_redis
-      - RI_REDIS_PORT0=6379
-    volumes:
-      - redisinsight_data:/data
-    depends_on:
-      - redis
+      - ./infra/dex-config.yaml:/etc/dex/config.docker.yaml
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.redis-kasse.rule=Host(`redis.kasseapparat.test`)"
-      - "traefik.http.routers.redis-kasse.entrypoints=websecure"
-      - "traefik.http.routers.redis-kasse.tls=true"
-      - "traefik.http.services.redis-kasse.loadbalancer.server.port=5540"
+      - "traefik.http.routers.dex-funk.rule=Host(`dex.kasseapparat.test`)"
+      - "traefik.http.routers.dex-funk.entrypoints=websecure"
+      - "traefik.http.routers.dex-funk.tls=true"
+      - "traefik.http.services.dex-funk.loadbalancer.server.port=5556"
 
   minio:
     image: minio/minio:latest
@@ -120,7 +101,7 @@ services:
       - "traefik.http.services.minio-kasse.loadbalancer.server.port=9001"
 
   minio-init:
-    image: minio/mc
+    image: minio/mc:latest
     container_name: kasseapparat_minio_init
     depends_on:
       - minio
@@ -134,6 +115,5 @@ services:
 
 volumes:
   o2_data:
-  redis_data:
-  redisinsight_data:
+
   minio_data:

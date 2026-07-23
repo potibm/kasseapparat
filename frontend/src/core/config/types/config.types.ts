@@ -1,11 +1,14 @@
 export interface AppConfig {
   version: string;
   apiHost: string;
+  apiBaseUrl: string;
   websocketHost: string;
+  websocketBaseUrl: string;
   sentryDSN?: string;
   sentryTraceSampleRate?: number;
   sentryReplaySessionSampleRate?: number;
   sentryReplayErrorSampleRate?: number;
+  sentryEnvironment?: string;
   locale: string;
   currencyCode: string;
   currencyLocale: string;
@@ -17,4 +20,5 @@ export interface AppConfig {
   paymentMethods: Array<{ code: string; name: string }>;
   sumupEnabled: boolean;
   environmentMessage?: string;
+  authMode: string;
 }

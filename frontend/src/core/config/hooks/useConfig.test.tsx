@@ -10,7 +10,7 @@ describe("useConfig", () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(() => renderHook(() => useConfig())).toThrow(
-      "useConfig must be used within a ConfigProvider",
+      "useAppConfig must be used within a ConfigContext.Provider",
     );
 
     consoleSpy.mockRestore();

@@ -8,7 +8,7 @@ import ProductInterestModal from "./ProductInterestModal";
 import {
   Product as ProductType,
   Guest as GuestType,
-} from "../../../../utils/api.schemas";
+} from "../../../../api/schemas";
 
 interface ProductProps {
   product: ProductType;

@@ -6,7 +6,7 @@ import * as ToastHookModule from "@pos/features/ui/toast/hooks/useToast";
 import * as ConfigHookModule from "@core/config/hooks/useConfig";
 import * as LocalStorageModule from "@core/localstorage/helper/local-storage-reader";
 import "@testing-library/jest-dom";
-import { Purchase as PurchaseType } from "../../../utils/api.schemas";
+import { Purchase as PurchaseType } from "../../../api/schemas";
 import { AppConfig } from "@core/config/types/config.types";
 import { UsePaymentWebSocketReturn } from "../types/payment.types";
 

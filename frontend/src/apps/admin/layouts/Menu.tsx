@@ -48,9 +48,6 @@ export const Menu: React.FC = () => {
             />,
           ]}
 
-      <MenuDivider name="Admin" />
-      <RaMenu.ResourceItem name="users" />
-
       {environmentMessage && isSidebarOpen && (
         <MenuMessage message={environmentMessage} />
       )}

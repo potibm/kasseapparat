@@ -10,7 +10,7 @@ import {
 } from "flowbite-react";
 import { HiInformationCircle, HiXCircle } from "react-icons/hi";
 import GuestlistResultTableRow from "./GuestlistResultTableRow";
-import { Guest as GuestType } from "@pos/utils/api.schemas";
+import { Guest as GuestType } from "@pos/api/schemas";
 
 interface GuestlistResultTableProps {
   loading: boolean;

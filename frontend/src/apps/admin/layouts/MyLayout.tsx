@@ -4,13 +4,22 @@ import {
   TitlePortal,
   Layout,
   LayoutProps,
+  UserMenu,
+  Logout,
 } from "react-admin";
 import { Typography, Box } from "@mui/material";
 import { Logo } from "@core/logo/Logo";
 import { Menu } from "./Menu";
+import useConfig from "@core/config/hooks/useConfig";
+
+const MyUserMenu = () => {
+  const { authMode } = useConfig();
+
+  return <UserMenu>{authMode === "oidc" ? <Logout /> : <></>}</UserMenu>;
+};
 
 export const MyAppBar = (props: AppBarProps) => (
-  <AppBar {...props} color="secondary">
+  <AppBar {...props} userMenu={<MyUserMenu />} color="secondary">
     <Box sx={{ flex: 1, display: "flex", alignItems: "center" }}>
       <Logo
         style={{

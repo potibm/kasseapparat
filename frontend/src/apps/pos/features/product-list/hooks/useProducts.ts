@@ -1,25 +1,22 @@
 // src/apps/pos/features/product-list/hooks/useProducts.ts
 import { useState, useEffect, useCallback } from "react";
-import { fetchProducts, addProductInterest } from "../../../utils/api";
-import { Product as ProductType } from "../../../utils/api.schemas";
+import { Product as ProductType } from "../../../api/schemas";
 import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
+import { usePosApi } from "@pos/api/usePosApi";
 
 const log = createLogger("Product");
 
-export const useProducts = (
-  apiHost: string,
-  getToken: () => Promise<string>,
-) => {
+export const useProducts = () => {
   const [products, setProducts] = useState<ProductType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const { showToast } = useToast();
+  const { fetchProducts, addProductInterest } = usePosApi();
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const token = await getToken();
-      const fetchedProducts = await fetchProducts(apiHost, token);
+      const fetchedProducts = await fetchProducts();
 
       setProducts(fetchedProducts);
       log.debug("Products fetched successfully", {
@@ -38,12 +35,11 @@ export const useProducts = (
     } finally {
       setLoading(false);
     }
-  }, [apiHost, getToken, showToast]);
+  }, [fetchProducts, showToast]);
 
   const addInterest = async (productId: number, productName: string) => {
     try {
-      const token = await getToken();
-      await addProductInterest(apiHost, token, productId);
+      await addProductInterest(productId);
       showToast({
         severity: "success",
         message: `Interest in ${productName} registered successfully!`,

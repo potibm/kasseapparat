@@ -1,17 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { FloatingLabel, Modal, ModalBody } from "flowbite-react";
-import { fetchGuestlistByProductId } from "../../../utils/api";
 import { HiOutlineX } from "react-icons/hi";
 import SidebarKeyboard from "./_internal/SidebarKeyboard";
-import { useConfig } from "@core/config/hooks/useConfig";
-import { useAuth } from "../../auth/hooks/useAuth";
 import Button from "../../../components/Button";
 import GuestlistResultTable from "./_internal/GuestlistResultTable";
-import {
-  Product as ProductType,
-  Guest as GuestType,
-} from "@pos/utils/api.schemas";
+import { Product as ProductType, Guest as GuestType } from "@pos/api/schemas";
 import GuestlistArrivalNoteModal from "./_internal/GuestlistArrivalNoteModal";
+import { usePosApi } from "@pos/api/usePosApi";
 
 interface GuestlistModalProps {
   isOpen: boolean;
@@ -42,8 +37,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
     note: string;
   } | null>(null);
 
-  const { apiHost } = useConfig();
-  const { getSafeToken } = useAuth();
+  const { fetchGuestlistByProductId } = usePosApi();
 
   const hasCodes = product.guestlists?.some((list) => list.typeCode) ?? false;
 
@@ -74,14 +68,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
     async (query = "") => {
       setLoading(true);
       try {
-        const token = await getSafeToken();
-
-        const response = await fetchGuestlistByProductId(
-          apiHost,
-          token,
-          product.id,
-          query,
-        );
+        const response = await fetchGuestlistByProductId(product.id, query);
         setGuestlistEntries(response);
         setError(null);
         setLoadedSearchQuery(query);
@@ -93,7 +80,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
         setLoading(false);
       }
     },
-    [product.id, apiHost, getSafeToken],
+    [product.id, fetchGuestlistByProductId],
   );
 
   useEffect(() => {

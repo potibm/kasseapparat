@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { LoginPage } from "./pages/LoginPage";
 import { PosPage } from "./pages/PosPage";
 import { resetDatabase } from "./helpers/db";
 import { TEST_PRODUCTS } from "./fixtures/products";
@@ -11,8 +10,7 @@ test.describe("checkout", () => {
   test.beforeEach(async ({ page }) => {
     await resetDatabase();
 
-    const loginPage = new LoginPage(page);
-    await loginPage.loginSuccessfully("demo", "demo");
+    await page.goto("/");
   });
 
   test("should have an empty cart on start", async ({ page }) => {

@@ -15,6 +15,7 @@ describe("transformConfig", () => {
     dateLocale: "de-DE",
     dateOptions: {},
     vatRates: [],
+    authMode: "proxy",
   };
 
   const mockApiHost = "https://api.example.com";

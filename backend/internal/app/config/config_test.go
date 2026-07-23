@@ -17,7 +17,6 @@ func TestInitViper(t *testing.T) {
 	assert.Equal(t, "release", viper.GetString("app.gin_mode"))
 	assert.Equal(t, "kasseapparat", viper.GetString("app.db_filename"))
 	assert.Equal(t, "da-DK", viper.GetString("format.currency.locale"))
-	assert.Equal(t, true, viper.GetBool("jwt.secure_cookie"))
 
 	// 2. Testing the EnvKeyReplacer (Dots to underscores)
 	// We set an environment variable simulated via Viper

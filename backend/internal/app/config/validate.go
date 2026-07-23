@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log/slog"
 	"regexp"
 
 	"github.com/go-playground/validator/v10"
@@ -28,12 +27,8 @@ func (c *Config) Validate() error {
 		return err
 	}
 
-	if c.Jwt.Secret == DefaultJwtSecret || c.Jwt.Secret == "" {
-		if c.App.Environment == "production" {
-			return fmt.Errorf("JWT_SECRET is set to the default value, which is not allowed in production")
-		} else {
-			slog.Warn("JWT_SECRET is set to the default value. This is not recommended for production use.")
-		}
+	if err := c.Auth.Validate(); err != nil {
+		return err
 	}
 
 	return nil
@@ -42,12 +37,6 @@ func (c *Config) Validate() error {
 func (f *AppConfig) Validate() error {
 	if !validDbFilename.MatchString(f.DbFilename) {
 		return fmt.Errorf("db_filename '%s' contains invalid characters", f.DbFilename)
-	}
-
-	if f.RedisURL != "" {
-		if err := f.RedisURL.Validate(); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -80,6 +69,49 @@ func (f *CurrencyFormatConfig) Validate() error {
 
 	if !validCurrency.MatchString(f.Code) {
 		return fmt.Errorf("currency.code '%s' is not a valid ISO 4217 code", f.Code)
+	}
+
+	return nil
+}
+
+func (a *AuthConfig) Validate() error {
+	if a.Mode == "proxy" {
+		if a.ProxyHeader == "" {
+			return fmt.Errorf("auth.proxy_header is required when mode is 'proxy'")
+		}
+
+		return nil
+	}
+
+	if a.Mode == "oidc" {
+		return a.validateOIDC()
+	}
+
+	return nil
+}
+
+func (a *AuthConfig) validateOIDC() error {
+	if a.OidcIssuer == "" {
+		return fmt.Errorf("auth.oidc_issuer is required when mode is 'oidc'")
+	}
+
+	if a.OidcClientID == "" {
+		return fmt.Errorf("auth.oidc_client_id is required when mode is 'oidc'")
+	}
+
+	if a.OidcClientSecret == "" {
+		return fmt.Errorf("auth.oidc_client_secret is required when mode is 'oidc'")
+	}
+
+	if a.OidcCallbackURL == "" {
+		return fmt.Errorf("auth.oidc_callback_url is required when mode is 'oidc'")
+	}
+
+	if len(a.SessionSecret) < MinSessionSecretLength {
+		return fmt.Errorf(
+			"auth.session_secret must be at least %d characters when mode is 'oidc'",
+			MinSessionSecretLength,
+		)
 	}
 
 	return nil

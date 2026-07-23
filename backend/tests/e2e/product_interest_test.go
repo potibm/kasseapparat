@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	productInterestBaseURL   = "/api/v2/productInterests"
+	productInterestBaseURL   = "/api/v3/productInterests"
 	productInterestURLWithID = productInterestBaseURL + "/1"
 )
 
@@ -75,11 +75,41 @@ func getTotalCountOfProductInterests() *httpexpect.Number {
 	return res.Header(totalCountHeader).AsNumber()
 }
 
-func TestProductInterestAuthentication(t *testing.T) {
+func TestCreateProductInterestWithNonExistentProduct(t *testing.T) {
 	_, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	e.Request("GET", productInterestBaseURL).Expect().Status(http.StatusUnauthorized)
-	e.Request("POST", productInterestBaseURL).Expect().Status(http.StatusUnauthorized)
-	e.Request("DELETE", productInterestURLWithID).Expect().Status(http.StatusUnauthorized)
+	errorResponse := withDemoUserAuthToken(e.POST(productInterestBaseURL)).
+		WithJSON(map[string]any{
+			"productId": 99999,
+		}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	errorResponse.Value("details").String().NotEmpty()
+}
+
+func TestCreateProductInterestWithMissingProductId(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	errorResponse := withDemoUserAuthToken(e.POST(productInterestBaseURL)).
+		WithJSON(map[string]any{}).
+		Expect().
+		Status(http.StatusBadRequest).JSON().Object()
+
+	errorResponse.Value("details").String().NotEmpty()
+}
+
+func TestDeleteProductInterestWithNonExistentID(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	withDemoUserAuthToken(e.DELETE(productInterestBaseURL + "/99999")).
+		Expect().
+		Status(http.StatusNotFound)
+}
+
+func TestProductInterestAuthentication(t *testing.T) {
+	// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2
 }

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useAuth } from "@pos/features/auth/hooks/useAuth";
 import { useConfig } from "@core/config/hooks/useConfig";
 import {
   UsePaymentWebSocketReturn,
@@ -26,8 +25,7 @@ export const usePaymentWebSocket = (
   }, [status]);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const { getToken } = useAuth();
-  const { websocketHost } = useConfig();
+  const { websocketBaseUrl } = useConfig();
 
   /**
    * Send message over websocket, when connection is open.
@@ -69,11 +67,8 @@ export const usePaymentWebSocket = (
 
     const initialize = async () => {
       try {
-        const token = await getToken();
-        if (!token) throw new Error("No authentication token available");
-
-        const wsUrl = `${websocketHost}/api/v2/purchases/${purchaseId}/ws`;
-        const ws = new WebSocket(wsUrl, [token]);
+        const wsUrl = `${websocketBaseUrl}/purchases/${purchaseId}/ws`;
+        const ws = new WebSocket(wsUrl, []);
         wsRef.current = ws;
 
         // security timeout
@@ -156,7 +151,7 @@ export const usePaymentWebSocket = (
         wsRef.current = null;
       }
     };
-  }, [purchaseId, getToken, websocketHost]);
+  }, [purchaseId, websocketBaseUrl]);
 
   return {
     status,

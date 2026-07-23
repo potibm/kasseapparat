@@ -4,7 +4,7 @@ import Cart from "./Cart";
 import { Cart as CartObject } from "../services/Cart";
 import * as ConfigHookModule from "@core/config/hooks/useConfig";
 import { Decimal } from "decimal.js";
-import { Product } from "@pos/utils/api.schemas";
+import { Product } from "@pos/api/schemas";
 
 // Mock für useConfig
 vi.mock("@core/config/hooks/useConfig", () => ({

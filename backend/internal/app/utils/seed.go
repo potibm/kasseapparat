@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"context"
+
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/potibm/kasseapparat/internal/app/models"
+	gormaudit "github.com/potibm/kasseapparat/internal/app/store/gorm"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
@@ -17,8 +20,6 @@ type DatabaseSeed struct {
 	reducedDkevGuestlist  *models.Guestlist
 	reducedLdGuestlist    *models.Guestlist
 	deineTicketsGuestlist *models.Guestlist
-	demoUser              *models.User
-	adminUser             *models.User
 }
 
 func NewDatabaseSeed(db *gorm.DB) *DatabaseSeed {
@@ -37,7 +38,6 @@ func (ds *DatabaseSeed) Seed(includeTestData bool) {
 
 	_ = gofakeit.Seed(1)
 
-	ds.seedUsers()
 	ds.seedProducts()
 	ds.seedGuestlists()
 
@@ -46,17 +46,6 @@ func (ds *DatabaseSeed) Seed(includeTestData bool) {
 		ds.seedUserGuests(DefaultGuestlistCount, MaxNotPresentEntriesPerGuestlist, MaxPresentEntriesPerGuestlist)
 		ds.seedPurchases(DefaultPurchaseCount)
 	}
-}
-
-func (ds *DatabaseSeed) seedUsers() {
-	ds.adminUser = &models.User{Username: "admin", Email: "admin@example.com", Admin: true}
-	_ = ds.adminUser.SetPassword("admin") // Ensure password is hashed
-
-	ds.demoUser = &models.User{Username: "demo", Email: "demo@example.com", Admin: false}
-	_ = ds.demoUser.SetPassword("demo") // Ensure password is hashed
-
-	ds.db.Create(ds.adminUser)
-	ds.db.Create(ds.demoUser)
 }
 
 func (ds *DatabaseSeed) seedProducts() {
@@ -341,7 +330,9 @@ func (ds *DatabaseSeed) seedPurchases(purchaseCount int) {
 		return
 	}
 
-	_ = ds.db.Transaction(func(tx *gorm.DB) error {
+	ctx := gormaudit.WithUserID(context.Background(), "seed")
+
+	_ = ds.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		for i := 1; i < purchaseCount; i++ {
 			purchase := models.Purchase{
 				// generate a random PaymentMethod from models.PaymentMethodCash and models.PaymentMethodCC
@@ -369,9 +360,7 @@ func (ds *DatabaseSeed) seedPurchases(purchaseCount int) {
 				purchase.PurchaseItems = append(purchase.PurchaseItems, purchaseItem)
 			}
 
-			purchase.CreatedByID = &ds.demoUser.ID
-
-			ds.db.Create(&purchase)
+			ds.db.WithContext(ctx).Create(&purchase)
 		}
 
 		return nil

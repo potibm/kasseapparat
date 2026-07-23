@@ -121,12 +121,6 @@ func Execute() error {
 	)
 	rootCmd.AddCommand(dbCmd)
 
-	userCmd := NewUserCmd()
-	userCmd.AddCommand(
-		NewUserCreateCmd(),
-	)
-	rootCmd.AddCommand(userCmd)
-
 	return rootCmd.ExecuteContext(ctx)
 }
 

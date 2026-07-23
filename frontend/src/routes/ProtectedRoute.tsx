@@ -1,29 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { Navigate, Outlet } from "react-router";
+import React from "react";
+import { Outlet } from "react-router";
 import { useAuth } from "../apps/pos/features/auth/hooks/useAuth";
+import useConfig from "@core/config/hooks/useConfig";
 
 export const ProtectedRoute: React.FC = () => {
-  const { isLoggedIn } = useAuth() || {};
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const { isAuthenticated, isLoading } = useAuth();
+  const { apiBaseUrl } = useConfig();
 
-  useEffect(() => {
-    if (!isLoggedIn) return;
-    isLoggedIn()
-      .then(setLoggedIn)
-      .catch(() => setLoggedIn(false));
-  }, [isLoggedIn]);
-
-  // Check if the user is authenticated
-  if (loggedIn === false) {
-    // If not authenticated, redirect to the login page
-    return <Navigate to="/login" />;
+  if (isLoading) {
+    return <div>⏳ Loading Permissions...</div>;
   }
 
-  if (loggedIn === null) {
-    // Still loading
-    return null;
+  if (!isAuthenticated) {
+    window.location.href = `${apiBaseUrl}/auth/login`;
+    return;
   }
 
-  // If authenticated, render the child routes
   return <Outlet />;
 };

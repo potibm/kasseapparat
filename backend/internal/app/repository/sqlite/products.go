@@ -90,7 +90,6 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	product.VATRate = updatedProduct.VATRate
 	product.WrapAfter = updatedProduct.WrapAfter
 	product.APIExport = updatedProduct.APIExport
-	product.UpdatedByID = updatedProduct.UpdatedByID
 	product.Hidden = updatedProduct.Hidden
 	product.SoldOut = updatedProduct.SoldOut
 	product.TotalStock = updatedProduct.TotalStock
@@ -109,9 +108,7 @@ func (repo *Repository) CreateProduct(product models.Product) (models.Product, e
 	return product, result.Error
 }
 
-func (repo *Repository) DeleteProduct(product models.Product, deletedBy models.User) {
-	repo.db.Model(&models.Product{}).Where(whereIDEquals, product.ID).Update("DeletedByID", deletedBy.ID)
-
+func (repo *Repository) DeleteProduct(product models.Product) {
 	repo.db.Delete(&product)
 }
 

@@ -17,6 +17,7 @@ export const LOGGER_COMPONENTS: Record<string, LoggerComponentBadgeStyle> = {
   Purchase: { emoji: "📜", color: "brown" },
   Core: { emoji: "⚪", color: "black" },
   Product: { emoji: "📦", color: "cyan" },
+  Bootstrapper: { emoji: "🚀", color: "yellow" },
 } as const;
 
 type ComponentKey = keyof typeof LOGGER_COMPONENTS;

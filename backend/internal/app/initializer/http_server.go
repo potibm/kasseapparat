@@ -2,14 +2,13 @@
 package initializer
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 
-	jwt "github.com/appleboy/gin-jwt/v3"
 	"github.com/getsentry/sentry-go"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/cors"
@@ -19,7 +18,6 @@ import (
 	httpHandler "github.com/potibm/kasseapparat/internal/app/handler/http"
 	"github.com/potibm/kasseapparat/internal/app/handler/websocket"
 	"github.com/potibm/kasseapparat/internal/app/middleware"
-	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	sloggin "github.com/samber/slog-gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
@@ -27,14 +25,13 @@ import (
 
 var r *gin.Engine
 
-const APIVersion = "v2"
+const APIVersion = "v3"
 
 func InitializeHTTPServer(
 	httpHdlr httpHandler.Handler,
 	websocketHdlr websocket.TransactionWebSocketHandler,
 	repository sqliteRepo.Repository,
 	staticFiles embed.FS,
-	jwtMiddleware *jwt.GinJWTMiddleware,
 	cfg config.Config,
 	logger *slog.Logger,
 ) (*gin.Engine, error) {
@@ -62,8 +59,7 @@ func InitializeHTTPServer(
 
 	r.Use(static.Serve("/", folder))
 
-	registerAuthMiddleware(jwtMiddleware)
-	registerAPIRoutes(httpHdlr, websocketHdlr, jwtMiddleware)
+	registerAPIRoutes(httpHdlr, websocketHdlr, cfg)
 
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
@@ -79,6 +75,36 @@ func InitializeHTTPServer(
 	return r, nil
 }
 
+func InitializeOIDCHandler(ctx context.Context, cfg config.Config) (*httpHandler.OIDCAuthHandler, error) {
+	if cfg.Auth.Mode != "oidc" {
+		return nil, nil
+	}
+
+	if cfg.Auth.OidcAdminGroup == "" {
+		slog.Warn(
+			"OIDC admin group not configured - no users will have admin privileges. " +
+				"Set auth.oidc_admin_group to enable admin access.",
+		)
+	}
+
+	opts := httpHandler.OIDCOptions{
+		Issuer:          cfg.Auth.OidcIssuer,
+		ClientID:        cfg.Auth.OidcClientID,
+		ClientSecret:    cfg.Auth.OidcClientSecret,
+		CallbackURL:     cfg.Auth.OidcCallbackURL,
+		AdminGroup:      cfg.Auth.OidcAdminGroup,
+		FrontendURL:     cfg.App.FrontendURL,
+		SessionSecret:   cfg.Auth.SessionSecret,
+		SessionDuration: cfg.Auth.SessionDuration,
+		IsProduction:    cfg.App.Environment == "production",
+	}
+
+	return httpHandler.NewOIDCAuthHandler(
+		ctx,
+		opts,
+	)
+}
+
 func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = allowedOrigins
@@ -92,11 +118,11 @@ func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 
 func SlogUserID() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, exists := c.Get(middleware.IdentityKey)
+		username, exists := c.Get(middleware.IdentityKey)
 		if exists {
-			if user, ok := user.(*models.User); ok {
+			if usernameStr, ok := username.(string); ok {
 				sloggin.AddCustomAttributes(c,
-					slog.Int("user_id", user.ID),
+					slog.String("username", usernameStr),
 				)
 			}
 		}
@@ -105,22 +131,14 @@ func SlogUserID() gin.HandlerFunc {
 	}
 }
 
-func registerAuthMiddleware(authMiddleware *jwt.GinJWTMiddleware) {
-	r.Use(middleware.HandlerMiddleWare(authMiddleware))
-
-	versionedGroup := r.Group("/api/" + APIVersion)
-
-	middleware.RegisterRoute(versionedGroup, authMiddleware)
-}
-
 func SentryMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, exists := c.Get(middleware.IdentityKey)
+		username, exists := c.Get(middleware.IdentityKey)
 		if exists {
-			if user, ok := user.(*models.User); ok {
+			if usernameStr, ok := username.(string); ok {
 				sentry.ConfigureScope(func(scope *sentry.Scope) {
 					scope.SetUser(sentry.User{
-						ID: strconv.Itoa(int(user.ID)),
+						Username: usernameStr,
 					})
 				})
 			}
@@ -133,11 +151,13 @@ func SentryMiddleware() gin.HandlerFunc {
 func registerAPIRoutes(
 	httpHdlr httpHandler.Handler,
 	websocketHdlr websocket.TransactionWebSocketHandler,
-	authMiddleware *jwt.GinJWTMiddleware,
+	cfg config.Config,
 ) {
 	protectedAPIRouter := r.Group("/api/" + APIVersion)
-	protectedAPIRouter.Use(authMiddleware.MiddlewareFunc(), SentryMiddleware(), SlogUserID())
+	protectedAPIRouter.Use(middleware.HandlerMiddleWare(cfg), SentryMiddleware(), SlogUserID())
 	{
+		protectedAPIRouter.GET("/auth/me", httpHdlr.GetMe)
+
 		registerProductRoutes(protectedAPIRouter, httpHdlr)
 		registerProductInterestRoutes(protectedAPIRouter, httpHdlr)
 		protectedAPIRouter.GET("/productStats", httpHdlr.GetProductStats)
@@ -147,7 +167,6 @@ func registerAPIRoutes(
 		protectedAPIRouter.POST("/guestsUpload", httpHdlr.ImportGuestsFromDeineTicketsCsv)
 
 		registerPurchaseRoutes(protectedAPIRouter, httpHdlr)
-		registerUserRoutes(protectedAPIRouter, httpHdlr)
 
 		registerSumupReadersRoutes(protectedAPIRouter, httpHdlr)
 		registerSumupTransactionRoutes(protectedAPIRouter, httpHdlr)
@@ -158,12 +177,25 @@ func registerAPIRoutes(
 	{
 		unprotectedAPIRouter.GET("/config", httpHdlr.GetConfig)
 
-		unprotectedAPIRouter.POST("/auth/changePasswordToken", httpHdlr.RequestChangePasswordToken)
-		unprotectedAPIRouter.POST("/auth/changePassword", httpHdlr.UpdateUserPassword)
-
 		unprotectedAPIRouter.POST("/sumup/webhook", httpHdlr.GetSumupTransactionWebhook)
 
 		unprotectedAPIRouter.GET("/purchases/:id/ws", websocketHdlr.HandleTransactionWebSocket)
+
+		if cfg.Auth.Mode == "oidc" {
+			oidcHandler := httpHdlr.GetOIDCHandler()
+			if oidcHandler != nil {
+				unprotectedAPIRouter.GET("/auth/login", oidcHandler.Login)
+				unprotectedAPIRouter.GET("/auth/callback", oidcHandler.Callback)
+				unprotectedAPIRouter.POST("/auth/logout", oidcHandler.Logout)
+			}
+		} else {
+			unprotectedAPIRouter.GET("/auth/login", func(c *gin.Context) {
+				c.Redirect(http.StatusFound, "/")
+			})
+			unprotectedAPIRouter.POST("/auth/logout", func(c *gin.Context) {
+				c.JSON(http.StatusOK, gin.H{"message": "logged out (proxy mode)"})
+			})
+		}
 	}
 }
 
@@ -213,17 +245,6 @@ func registerPurchaseRoutes(
 		purchases.DELETE("/:id", handler.DeletePurchase)
 		purchases.GET("/export", handler.ExportPurchases)
 		purchases.POST("/:id/refund", handler.RefundPurchase)
-	}
-}
-
-func registerUserRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
-	users := rg.Group("/users")
-	{
-		users.GET("", handler.GetUsers)
-		users.GET("/:id", handler.GetUserByID)
-		users.PUT("/:id", handler.UpdateUserByID)
-		users.DELETE("/:id", handler.DeleteUserByID)
-		users.POST("", handler.CreateUser)
 	}
 }
 

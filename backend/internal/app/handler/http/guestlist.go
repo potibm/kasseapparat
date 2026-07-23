@@ -62,12 +62,7 @@ func (handler *Handler) GetGuestlistByID(c *gin.Context) {
 }
 
 func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
+	c = handler.contextWithUser(c)
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -92,8 +87,6 @@ func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 		guestlist.ProductID = guestlistRequest.ProductID
 	}
 
-	guestlist.UpdatedByID = &executingUserObj.ID
-
 	guestlist, err = handler.repo.UpdateGuestlistByID(id, *guestlist)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCause(err))
@@ -105,12 +98,7 @@ func (handler *Handler) UpdateGuestlistByID(c *gin.Context) {
 }
 
 func (handler *Handler) CreateGuestlist(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
+	c = handler.contextWithUser(c)
 
 	var guestlist models.Guestlist
 
@@ -124,7 +112,6 @@ func (handler *Handler) CreateGuestlist(c *gin.Context) {
 	guestlist.Name = guestlistRequest.Name
 	guestlist.TypeCode = guestlistRequest.TypeCode
 	guestlist.ProductID = guestlistRequest.ProductID
-	guestlist.CreatedByID = &executingUserObj.ID
 
 	newGuestlist, err := handler.repo.CreateGuestlist(guestlist)
 	if err != nil {
@@ -137,12 +124,7 @@ func (handler *Handler) CreateGuestlist(c *gin.Context) {
 }
 
 func (handler *Handler) DeleteGuestlistByID(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
+	c = handler.contextWithUser(c)
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -153,13 +135,7 @@ func (handler *Handler) DeleteGuestlistByID(c *gin.Context) {
 		return
 	}
 
-	if !executingUserObj.Admin && *guestlist.CreatedByID != executingUserObj.ID {
-		_ = c.Error(Forbidden)
-
-		return
-	}
-
-	handler.repo.DeleteGuestlist(*guestlist, *executingUserObj)
+	handler.repo.DeleteGuestlist(*guestlist)
 
 	c.Status(http.StatusNoContent)
 }

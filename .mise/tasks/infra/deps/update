@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# mise description="Check for newer versions of pinned Docker tags"
+# mise tool="go:github.com/google/go-containerregistry/cmd/crane@latest"
+
+set -euo pipefail
+
+COMPOSE_FILE="docker-compose.yaml"
+
+if [ ! -f "$COMPOSE_FILE" ]; then
+    echo "❌ Error: File $COMPOSE_FILE not found."
+    exit 1
+fi
+
+echo "🔍 Scanning for newer tags in $COMPOSE_FILE..."
+echo "------------------------------------------------"
+
+grep -E '^[[:space:]]*image:' "$COMPOSE_FILE" | awk '{print $2}' | grep -v 'latest' | while read -r FULL_IMAGE; do
+    
+    # Skip images that don't have a specific tag defined (implicit latest)
+    if [[ "$FULL_IMAGE" != *":"* ]]; then
+        continue
+    fi
+    
+    IMAGE_NAME="${FULL_IMAGE%%:*}"
+    CURRENT_TAG="${FULL_IMAGE##*:}"
+    
+    echo -e "📦 Image: \033[1;34m$IMAGE_NAME\033[0m"
+    echo -e "   Current: \033[1;33m$CURRENT_TAG\033[0m"
+    echo "   Latest versions:"
+    
+    if [[ "$CURRENT_TAG" == v* ]]; then
+        FILTER='^v[0-9]'
+    else
+        FILTER='^[0-9]'
+    fi
+
+    crane ls "$IMAGE_NAME" 2>/dev/null \
+        | grep -E "$FILTER" \
+        | grep -v -iE 'rc|alpha|beta|-amd64|-arm64|nanoserver|windows|32bit|stretch|buster|bullseye|bookworm' \
+        | sort -Vr \
+        | head -n 5 \
+        | while read -r TAG; do
+            if [ "$TAG" == "$CURRENT_TAG" ]; then
+                echo -e "   -> \033[1;32m$TAG (current)\033[0m"
+            else
+                echo "   -  $TAG"
+            fi
+        done || true
+        
+    echo "------------------------------------------------"
+done

@@ -11,8 +11,7 @@ import (
 type PurchaseResponse struct {
 	ID                       uuid.UUID              `json:"id"`
 	CreatedAt                time.Time              `json:"createdAt"`
-	CreatedByID              *int                   `json:"createdById"`
-	CreatedBy                *models.User           `json:"createdBy"`
+	CreatedBy                string                 `json:"createdBy"`
 	PaymentMethod            models.PaymentMethod   `json:"paymentMethod"`
 	TotalNetPrice            decimal.Decimal        `json:"totalNetPrice"`
 	SumupTransactionID       uuid.UUID              `json:"sumupTransactionId,omitempty"`
@@ -27,7 +26,6 @@ func ToPurchaseResponse(purchase models.Purchase, decimalPlaces int32) PurchaseR
 	response := PurchaseResponse{
 		ID:                       purchase.ID,
 		CreatedAt:                purchase.CreatedAt,
-		CreatedByID:              purchase.CreatedByID,
 		CreatedBy:                purchase.CreatedBy,
 		PaymentMethod:            purchase.PaymentMethod,
 		TotalNetPrice:            purchase.TotalNetPrice,

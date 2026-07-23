@@ -23,15 +23,21 @@ import {
   Product as ProductType,
   Purchase as PurchaseType,
   Guest as GuestType,
-} from "../utils/api.schemas";
+} from "../api/schemas";
 import { createLogger } from "@core/logger/logger";
 import { ToastProvider } from "@pos/features/ui/toast/providers/ToastProvider";
+import { CriticalError } from "@core/components/CriticalError";
 
 const logPurchase = createLogger("Purchase");
 
-const KasseapparatContent: React.FC = () => {
-  const { apiHost, environmentMessage } = useConfig();
-  const { username, getSafeToken, id: userId } = useAuth();
+interface KasseapparatContentProps {
+  username: string;
+}
+
+const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
+  username,
+}) => {
+  const { environmentMessage } = useConfig();
 
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -48,7 +54,7 @@ const KasseapparatContent: React.FC = () => {
     loading: _productsLoading,
     refreshProducts,
     addInterest,
-  } = useProducts(apiHost, getSafeToken);
+  } = useProducts();
 
   const {
     cart,
@@ -61,14 +67,14 @@ const KasseapparatContent: React.FC = () => {
     pendingPurchase,
     finalizeCheckout,
     resumePolling,
-  } = useCart(apiHost, getSafeToken);
+  } = useCart();
 
   const {
     history,
     refreshHistory,
     refundPurchase,
     loading: historyLoading,
-  } = usePurchaseHistory(apiHost, getSafeToken, userId);
+  } = usePurchaseHistory(username);
 
   const handlePurchaseSuccess = useCallback(async () => {
     await Promise.all([refreshHistory(), refreshProducts()]);
@@ -187,9 +193,20 @@ const KasseapparatContent: React.FC = () => {
 };
 
 export const Kasseapparat: React.FC = () => {
+  const { username } = useAuth();
+
+  if (!username) {
+    return (
+      <CriticalError
+        title="Authentication Error"
+        message="Critical Error. No Username was set."
+      />
+    );
+  }
+
   return (
     <ToastProvider>
-      <KasseapparatContent />
+      <KasseapparatContent username={username} />
     </ToastProvider>
   );
 };

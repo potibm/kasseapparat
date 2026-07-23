@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import * as Sentry from "@sentry/react";
 import { useConfig } from "../config/hooks/useConfig";
 import { createLogger } from "@core/logger/logger";
+import { CriticalError } from "@core/components/CriticalError";
 
 const log = createLogger("Core");
 
@@ -44,7 +45,14 @@ const SentryInitializer: React.FC<{ children: React.ReactNode }> = ({
   ]);
 
   return (
-    <Sentry.ErrorBoundary fallback={<p>Critical Error in Kasseapparat.</p>}>
+    <Sentry.ErrorBoundary
+      fallback={
+        <CriticalError
+          title="Application Error"
+          message="Critical Error in Kasseapparat."
+        />
+      }
+    >
       {children}
     </Sentry.ErrorBoundary>
   );

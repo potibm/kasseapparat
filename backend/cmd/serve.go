@@ -73,7 +73,6 @@ func NewServeCmd() *cobra.Command {
 			sqliteRepository := sqliteRepo.NewRepository(db, Cfg.Format.Currency.FractionDigitsMax)
 			sumupRepository := sumupRepo.NewRepository(initializer.GetSumupService())
 			mailer := initializer.InitializeMailer(Cfg.Mailer)
-			jwtMiddleware := initializer.InitializeJwtMiddleware(sqliteRepository, Cfg.Jwt, &Cfg.App.RedisURL)
 
 			// 6. Services & Handler
 			purchaseSvc := purchaseService.NewPurchaseService(
@@ -88,11 +87,15 @@ func NewServeCmd() *cobra.Command {
 				sqliteRepository,
 				sumupRepository,
 				purchaseSvc,
-				jwtMiddleware,
 				&Cfg.App.CorsAllowOrigins,
 			)
 			publisher := &websocket.WebsocketPublisher{}
 			poller := monitor.NewPoller(sumupRepository, sqliteRepository, purchaseSvc, publisher)
+
+			oidcHandler, err := initializer.InitializeOIDCHandler(ctx, Cfg)
+			if err != nil {
+				return fmt.Errorf("failed to initialize OIDC handler: %w", err)
+			}
 
 			httpHandlerConfig := handlerHttp.HandlerConfig{
 				Repo:            sqliteRepository,
@@ -102,6 +105,7 @@ func NewServeCmd() *cobra.Command {
 				StatusPublisher: publisher,
 				Mailer:          mailer,
 				AppConfig:       Cfg,
+				OIDCHandler:     oidcHandler,
 			}
 			httpHandler := handlerHttp.NewHandler(httpHandlerConfig)
 
@@ -111,7 +115,6 @@ func NewServeCmd() *cobra.Command {
 				websocketHandler,
 				*sqliteRepository,
 				staticFiles,
-				jwtMiddleware,
 				Cfg,
 				slog.Default(),
 			)

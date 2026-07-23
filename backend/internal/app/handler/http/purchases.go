@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/potibm/kasseapparat/internal/app/middleware"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	response "github.com/potibm/kasseapparat/internal/app/response"
@@ -18,12 +19,7 @@ import (
 const invalidPurchaseIDMsg = "Invalid purchase ID"
 
 func (handler *Handler) DeletePurchase(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
+	c = handler.contextWithUser(c)
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -32,7 +28,7 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 		return
 	}
 
-	handler.repo.DeletePurchaseByID(id, *executingUserObj)
+	handler.repo.DeletePurchaseByID(id)
 
 	_ = handler.repo.RollbackVisitedGuestsByPurchaseID(id)
 
@@ -40,13 +36,6 @@ func (handler *Handler) DeletePurchase(c *gin.Context) {
 }
 
 func (handler *Handler) RefundPurchase(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
-
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		_ = c.Error(InvalidRequest.WithMsg(invalidPurchaseIDMsg).WithCause(err))
@@ -61,14 +50,16 @@ func (handler *Handler) RefundPurchase(c *gin.Context) {
 		return
 	}
 
-	isCreator := purchase.CreatedByID != nil && *purchase.CreatedByID == executingUserObj.ID
-	if !executingUserObj.Admin && !isCreator {
-		_ = c.Error(Forbidden.WithMsg("You are not allowed to refund this purchase"))
+	// Get authenticated user from context
+	authUser, exists := middleware.GetAuthUser(c)
+	if !exists {
+		_ = c.Error(UnableToRetrieveExecutingUser)
 
 		return
 	}
 
-	if !executingUserObj.Admin && time.Since(purchase.CreatedAt) > 15*time.Minute {
+	// Only enforce 15-minute limit for non-admin users
+	if authUser.Role != "admin" && time.Since(purchase.CreatedAt) > 15*time.Minute {
 		_ = c.Error(Forbidden.WithMsg("You can only refund purchases within 15 minutes of creation"))
 
 		return
@@ -87,12 +78,7 @@ func (handler *Handler) RefundPurchase(c *gin.Context) {
 }
 
 func (handler *Handler) PostPurchases(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
+	c = handler.contextWithUser(c)
 
 	var req PurchaseRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -101,7 +87,7 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		return
 	}
 
-	err = handler.ValidatePaymentMethodPayload(req.PaymentMethod, req.SumupReaderID)
+	err := handler.ValidatePaymentMethodPayload(req.PaymentMethod, req.SumupReaderID)
 	if err != nil {
 		_ = c.Error(InvalidRequest.WithCauseMsg(err))
 
@@ -123,13 +109,11 @@ func (handler *Handler) PostPurchases(c *gin.Context) {
 		purchase, err = handler.purchaseService.CreatePendingPurchase(
 			c.Request.Context(),
 			input,
-			executingUserObj.ID,
 		)
 	} else {
 		purchase, err = handler.purchaseService.CreateConfirmedPurchase(
 			c.Request.Context(),
 			input,
-			executingUserObj.ID,
 		)
 	}
 
@@ -165,7 +149,7 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 
 	filters := sqliteRepo.PurchaseFilters{}
 	filters.PaymentMethods = queryPaymentMethods(c, "paymentMethod", handler.config.PaymentMethods)
-	filters.CreatedByID, _ = strconv.Atoi(c.DefaultQuery("createdById", "0"))
+	filters.CreatedBy = c.DefaultQuery("createdBy", "")
 	filters.TotalGrossPriceGte = queryDecimal(c, "totalGrossPrice_gte")
 	filters.TotalGrossPriceLte = queryDecimal(c, "totalGrossPrice_lte")
 	filters.IDs = queryArrayInt(c, "id")

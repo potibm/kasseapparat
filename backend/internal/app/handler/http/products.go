@@ -133,12 +133,7 @@ func (handler *Handler) GetProductByID(c *gin.Context) {
 }
 
 func (handler *Handler) UpdateProductByID(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
+	c = handler.contextWithUser(c)
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -163,7 +158,6 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.Pos = productRequest.Pos
 	product.APIExport = productRequest.APIExport
 	product.Hidden = productRequest.Hidden
-	product.UpdatedByID = &executingUserObj.ID
 	product.SoldOut = productRequest.SoldOut
 	product.TotalStock = productRequest.TotalStock
 
@@ -178,12 +172,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 }
 
 func (handler *Handler) CreateProduct(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
+	c = handler.contextWithUser(c)
 
 	var product models.Product
 
@@ -200,9 +189,8 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.Hidden = productRequest.Hidden
-	product.CreatedByID = &executingUserObj.ID
 
-	product, err = handler.repo.CreateProduct(product)
+	product, err := handler.repo.CreateProduct(product)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCause(err))
 
@@ -213,12 +201,7 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 }
 
 func (handler *Handler) DeleteProductByID(c *gin.Context) {
-	executingUserObj, err := handler.getUserFromContext(c)
-	if err != nil {
-		_ = c.Error(UnableToRetrieveExecutingUser.WithCause(err))
-
-		return
-	}
+	c = handler.contextWithUser(c)
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -229,13 +212,7 @@ func (handler *Handler) DeleteProductByID(c *gin.Context) {
 		return
 	}
 
-	if !executingUserObj.Admin {
-		_ = c.Error(Forbidden)
-
-		return
-	}
-
-	handler.repo.DeleteProduct(*product, *executingUserObj)
+	handler.repo.DeleteProduct(*product)
 
 	c.Status(http.StatusNoContent)
 }

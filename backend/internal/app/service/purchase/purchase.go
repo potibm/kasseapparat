@@ -26,8 +26,8 @@ var (
 )
 
 type Service interface {
-	CreateConfirmedPurchase(ctx context.Context, input PurchaseInput, userID int) (*models.Purchase, error)
-	CreatePendingPurchase(ctx context.Context, input PurchaseInput, userID int) (*models.Purchase, error)
+	CreateConfirmedPurchase(ctx context.Context, input PurchaseInput) (*models.Purchase, error)
+	CreatePendingPurchase(ctx context.Context, input PurchaseInput) (*models.Purchase, error)
 	FinalizePurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
 	CancelPurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
 	FailPurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
@@ -83,10 +83,6 @@ var (
 	ErrTooManyAdditionalGuests = errors.New("additional guests exceed available guests")
 	ErrListItemWrongProduct    = errors.New("list item does not belong to product")
 )
-
-func intPtr(v int) *int {
-	return &v
-}
 
 func NewPurchaseService(
 	sqliteRepo sqlite.RepositoryInterface,
@@ -158,9 +154,8 @@ func (s *PurchaseService) ValidateAndPrepareGuests(input PurchaseInput) ([]model
 func (s *PurchaseService) CreateConfirmedPurchase(
 	ctx context.Context,
 	input PurchaseInput,
-	userID int,
 ) (*models.Purchase, error) {
-	savedPurchase, guests, err := s.createPurchaseWithStatus(ctx, input, userID, models.PurchaseStatusConfirmed)
+	savedPurchase, guests, err := s.createPurchaseWithStatus(ctx, input, models.PurchaseStatusConfirmed)
 	if err != nil {
 		return nil, err
 	}
@@ -181,9 +176,8 @@ func (s *PurchaseService) CreateConfirmedPurchase(
 func (s *PurchaseService) CreatePendingPurchase(
 	ctx context.Context,
 	input PurchaseInput,
-	userID int,
 ) (*models.Purchase, error) {
-	savedPurchase, _, err := s.createPurchaseWithStatus(ctx, input, userID, models.PurchaseStatusPending)
+	savedPurchase, _, err := s.createPurchaseWithStatus(ctx, input, models.PurchaseStatusPending)
 
 	return savedPurchase, err
 }
@@ -365,7 +359,6 @@ func (s *PurchaseService) notifyGuests(guests []models.Guest) {
 func (s *PurchaseService) createPurchaseWithStatus(
 	ctx context.Context,
 	input PurchaseInput,
-	userID int,
 	status models.PurchaseStatus,
 ) (*models.Purchase, []models.Guest, error) {
 	net, gross, err := s.ValidateAndCalculatePrices(input)
@@ -387,7 +380,6 @@ func (s *PurchaseService) createPurchaseWithStatus(
 			PaymentMethod:   input.PaymentMethod,
 			Status:          status,
 		}
-		purchase.CreatedByID = intPtr(userID)
 
 		for _, item := range input.Cart {
 			product, err := txRepo.GetProductByID(item.ID)

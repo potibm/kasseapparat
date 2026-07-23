@@ -1,22 +1,19 @@
 // src/apps/pos/features/purchase-history/hooks/usePurchaseHistory.ts
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { fetchPurchases, refundPurchaseById } from "../../../utils/api";
-import { Purchase as PurchaseType } from "../../../utils/api.schemas";
+import { Purchase as PurchaseType } from "../../../api/schemas";
 import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 import { useConfig } from "@core/config/hooks/useConfig";
+import { usePosApi } from "@pos/api/usePosApi";
 
 const log = createLogger("Purchase");
 
-export const usePurchaseHistory = (
-  apiHost: string,
-  getToken: () => Promise<string>,
-  userId: number,
-) => {
+export const usePurchaseHistory = (username: string) => {
   const [history, setHistory] = useState<PurchaseType[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const { showToast } = useToast();
   const { currency } = useConfig();
+  const { fetchPurchases, refundPurchaseById } = usePosApi();
 
   /**
    * Load history of purchases for the current user.
@@ -24,8 +21,8 @@ export const usePurchaseHistory = (
    */
   const loadHistory = useCallback(
     async (isSilent = false) => {
-      if (!userId) {
-        log.warn("No user ID provided, cannot load purchase history");
+      if (!username) {
+        log.warn("No username provided, cannot load purchase history");
         if (!isSilent) {
           setHistory([]);
           setLoading(false);
@@ -39,8 +36,7 @@ export const usePurchaseHistory = (
       }
 
       try {
-        const token = await getToken();
-        const purchases = await fetchPurchases(apiHost, token, userId);
+        const purchases = await fetchPurchases(username);
 
         setHistory(purchases);
         log.debug("Purchase history fetched successfully", {
@@ -72,7 +68,7 @@ export const usePurchaseHistory = (
         }
       }
     },
-    [apiHost, getToken, userId, showToast],
+    [username, showToast, fetchPurchases],
   );
 
   useEffect(() => {
@@ -100,8 +96,7 @@ export const usePurchaseHistory = (
 
   const refund = async (purchaseId: string) => {
     try {
-      const token = await getToken();
-      const purchase = await refundPurchaseById(apiHost, token, purchaseId);
+      const purchase = await refundPurchaseById(purchaseId);
       showToast({
         severity: "success",
         message: `Purchase of ${currency.format(purchase.totalGrossPrice.toNumber())} refunded successfully!`,

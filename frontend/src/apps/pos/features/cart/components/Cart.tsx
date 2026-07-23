@@ -18,7 +18,7 @@ import {
   CartItem as CartItemType,
   PaymentMethodData as PaymentMethodDataType,
 } from "../types/cart.types";
-import { Product as ProductType } from "../../../utils/api.schemas";
+import { Product as ProductType } from "../../../api/schemas.ts";
 import CartRow from "./_internal/CartRow.tsx";
 
 interface CartProps {

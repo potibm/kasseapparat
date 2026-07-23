@@ -25,6 +25,7 @@ type Config struct {
 	SentryTraceSampleRate         float64                 `json:"sentryTraceSampleRate"`
 	SentryReplaySessionSampleRate float64                 `json:"sentryReplaySessionSampleRate"`
 	SentryReplayErrorSampleRate   float64                 `json:"sentryReplayErrorSampleRate"`
+	SentryEnvironment             string                  `json:"sentryEnvironment"`
 	CurrencyLocale                string                  `json:"currencyLocale"`
 	CurrencyCode                  string                  `json:"currencyCode"`
 	VATRates                      []VatRateConfig         `json:"vatRates"`
@@ -34,6 +35,7 @@ type Config struct {
 	FractionDigitsMax             int32                   `json:"fractionDigitsMax"`
 	EnvironmentMessage            string                  `json:"environmentMessage"`
 	PaymentMethods                []PaymentMethodsConfig  `json:"paymentMethods"`
+	AuthMode                      string                  `json:"authMode"`
 }
 
 func (handler *Handler) GetConfig(c *gin.Context) {
@@ -43,6 +45,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		SentryTraceSampleRate:         handler.config.Sentry.TraceSampleRate,
 		SentryReplaySessionSampleRate: handler.config.Sentry.ReplaySessionSampleRate,
 		SentryReplayErrorSampleRate:   handler.config.Sentry.ReplayErrorSampleRate,
+		SentryEnvironment:             handler.config.Sentry.Environment,
 		CurrencyLocale:                handler.config.Format.Currency.Locale,
 		CurrencyCode:                  handler.config.Format.Currency.Code,
 		FractionDigitsMin:             handler.config.Format.Currency.FractionDigitsMin,
@@ -52,6 +55,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		DateOptions:                   DateFormatOptionsConfig(handler.config.Format.Date.Options),
 		EnvironmentMessage:            handler.config.App.EnvironmentMessage,
 		PaymentMethods:                convertPaymentMethods(handler.config.PaymentMethods),
+		AuthMode:                      handler.config.Auth.Mode,
 	}
 
 	c.JSON(nethttp.StatusOK, config)

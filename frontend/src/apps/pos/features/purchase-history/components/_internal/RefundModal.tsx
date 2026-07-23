@@ -9,7 +9,7 @@ import {
   TableBody,
 } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
-import { Purchase } from "../../../../utils/api.schemas";
+import { Purchase } from "../../../../api/schemas";
 import { useConfig } from "@core/config/hooks/useConfig";
 import Button from "../../../../components/Button";
 

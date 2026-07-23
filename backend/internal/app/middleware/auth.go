@@ -1,232 +1,147 @@
 package middleware
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
-	"os"
-	"strings"
-	"time"
+	"slices"
 
-	ginjwt "github.com/appleboy/gin-jwt/v3"
-	ginjwtCore "github.com/appleboy/gin-jwt/v3/core"
-	"github.com/appleboy/gin-jwt/v3/store"
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/models"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
+	"github.com/potibm/kasseapparat/internal/app/session"
+	gormaudit "github.com/potibm/kasseapparat/internal/app/store/gorm"
 )
-
-const exitCodeSoftware = 70 // EX_SOFTWARE (sysexits)
-
-type UserAuthenticator interface {
-	GetUserByLoginAndPassword(login, password string) (*models.User, error)
-}
 
 const (
-	RefreshTokenLifetime = 7 * 24 * time.Hour
-	loginEndpoint        = "/auth/login"
-	refreshEndpoint      = "/auth/refresh"
-	logoutEndpoint       = "/auth/logout"
+	IdentityKey      = "username"
+	AuthUserKey      = "auth_user"
+	RemoteUserHeader = "X-Remote-User"
+	DefaultUsername  = "anonymous"
 )
 
-var (
-	IdentityKey = "ID"
-	meter       = otel.Meter("kasseapparat-auth")
-)
-
-var authEventsCounter, _ = meter.Int64Counter("kasseapparat_auth_events_total",
-	metric.WithDescription("Number of authentication events"))
-
-type login struct {
-	Login    string `json:"login"    form:"login"    binding:"required"`
-	Password string `json:"password" form:"password" binding:"required"`
-}
-
-type loginResponseDTO struct {
-	AccessToken  string  `json:"access_token"`
-	TokenType    string  `json:"token_type"`
-	ExpiresIn    int64   `json:"expires_in"`
-	RefreshToken string  `json:"refresh_token,omitempty"`
-	Role         *string `json:"role"`
-	Username     *string `json:"username"`
-	GravatarURL  *string `json:"gravatarUrl"`
-	ID           *int    `json:"id"`
-}
-
-func HandlerMiddleWare(authMiddleware *ginjwt.GinJWTMiddleware) gin.HandlerFunc {
-	return func(context *gin.Context) {
-		errInit := authMiddleware.MiddlewareInit()
-		if errInit != nil {
-			slog.Error("Error initializing auth middleware", "error", errInit)
-			os.Exit(exitCodeSoftware)
-		}
+func HandlerMiddleWare(cfg config.Config) gin.HandlerFunc {
+	if cfg.Auth.Mode == "oidc" {
+		return OIDCAuthMiddleware(cfg)
 	}
+
+	return ProxyAuthMiddleware(cfg)
 }
 
-func RegisterRoute(r *gin.RouterGroup, handle *ginjwt.GinJWTMiddleware) {
-	r.POST(loginEndpoint, handle.LoginHandler)
-	r.POST(refreshEndpoint, func(c *gin.Context) {
-		handle.RefreshHandler(c)
+func ProxyAuthMiddleware(cfg config.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if cfg.Auth.Mode != "proxy" {
+			c.Next()
 
-		if c.Writer.Status() == http.StatusOK {
-			authEventsCounter.Add(c.Request.Context(), 1,
-				metric.WithAttributes(
-					attribute.String("event_type", "refresh"),
-					attribute.String("status", "success"),
-				),
-			)
-		}
-	})
-	r.POST(logoutEndpoint, func(c *gin.Context) {
-		authEventsCounter.Add(c.Request.Context(), 1,
-			metric.WithAttributes(
-				attribute.String("event_type", "logout"),
-				attribute.String("status", "success"),
-			),
-		)
-
-		handle.LogoutHandler(c)
-	})
-}
-
-func InitParams(
-	repo UserAuthenticator,
-	realm string,
-	secret string,
-	timeout int,
-	secureCookie bool,
-	redisConfig *store.RedisConfig,
-) *ginjwt.GinJWTMiddleware {
-	useRedisStore := redisConfig != nil
-
-	return &ginjwt.GinJWTMiddleware{
-		Realm:      realm,
-		Key:        []byte(secret),
-		Timeout:    time.Minute * time.Duration(timeout), // Short-lived access tokens
-		MaxRefresh: RefreshTokenLifetime,
-
-		SecureCookie:   secureCookie,            // HTTPS only
-		CookieHTTPOnly: true,                    // Prevent XSS
-		CookieSameSite: http.SameSiteStrictMode, // CSRF protection
-		SendCookie:     true,                    // Enable secure cookies
-
-		IdentityKey:     IdentityKey,
-		PayloadFunc:     payloadFunc(),
-		IdentityHandler: identityHandler(),
-		Authenticator:   authenticator(repo),
-		Authorizer:      authorizer(),
-		Unauthorized:    unauthorized(),
-		LoginResponse:   loginResponse,
-
-		UseRedisStore: useRedisStore,
-		RedisConfig:   redisConfig,
-	}
-}
-
-func authenticator(repo UserAuthenticator) func(c *gin.Context) (any, error) {
-	return func(c *gin.Context) (any, error) {
-		var loginVals login
-		if err := c.ShouldBind(&loginVals); err != nil {
-			slog.Warn("Missing login values", "error", err)
-
-			return "", ginjwt.ErrMissingLoginValues
+			return
 		}
 
-		login := strings.TrimSpace(loginVals.Login)
-		password := strings.TrimSpace(loginVals.Password)
+		username := c.GetHeader(cfg.Auth.ProxyHeader)
+		if username == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    http.StatusUnauthorized,
+				"message": "authentication required: missing proxy header",
+			})
+			c.Abort()
 
-		user, err := repo.GetUserByLoginAndPassword(login, password)
-		if err == nil {
-			c.Set(IdentityKey, user) // Set the user in the context
-
-			return user, nil
+			return
 		}
 
-		return nil, ginjwt.ErrFailedAuthentication
+		role := "user"
+		if slices.Contains(cfg.Auth.ProxyAdmins, username) {
+			role = "admin"
+		}
+
+		authUser := models.AuthUser{
+			Username: username,
+			Role:     role,
+		}
+
+		c.Set(IdentityKey, username)
+		c.Set(AuthUserKey, authUser)
+
+		ctx := gormaudit.WithUserID(c.Request.Context(), username)
+		c.Request = c.Request.WithContext(ctx)
+
+		slog.Debug("Proxy authentication successful", "username", username, "role", role)
+
+		c.Next()
 	}
 }
 
-func identityHandler() func(c *gin.Context) any {
-	return func(c *gin.Context) any {
-		claims := ginjwt.ExtractClaims(c)
+func OIDCAuthMiddleware(cfg config.Config) gin.HandlerFunc {
+	sessionMgr := session.NewManager(cfg.Auth.SessionSecret, cfg.Auth.SessionDuration)
 
-		return &models.User{
-			ID: int(claims[IdentityKey].(float64)),
+	return func(c *gin.Context) {
+		if cfg.Auth.Mode != "oidc" {
+			c.Next()
+
+			return
 		}
+
+		sessionCookie, err := c.Cookie(session.SessionCookieName)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    http.StatusUnauthorized,
+				"message": "authentication required: missing session cookie",
+			})
+			c.Abort()
+
+			return
+		}
+
+		sessionData, err := sessionMgr.DecodeSession(sessionCookie)
+		if err != nil {
+			slog.Debug("Invalid session", "error", err)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    http.StatusUnauthorized,
+				"message": "authentication required: invalid session",
+			})
+			c.Abort()
+
+			return
+		}
+
+		authUser := models.AuthUser{
+			Username: sessionData.Username,
+			Role:     sessionData.Role,
+		}
+
+		c.Set(IdentityKey, sessionData.Username)
+		c.Set(AuthUserKey, authUser)
+
+		ctx := gormaudit.WithUserID(c.Request.Context(), sessionData.Username)
+		c.Request = c.Request.WithContext(ctx)
+
+		slog.Debug("OIDC authentication successful", "username", sessionData.Username, "role", sessionData.Role)
+
+		c.Next()
 	}
 }
 
-func authorizer() func(c *gin.Context, data any) bool {
-	return func(c *gin.Context, data any) bool {
-		if _, ok := data.(*models.User); ok {
-			return true
-		}
-
-		return false
+func GetAuthUser(c *gin.Context) (*models.AuthUser, bool) {
+	authUser, exists := c.Get(AuthUserKey)
+	if !exists {
+		return nil, false
 	}
+
+	user, ok := authUser.(models.AuthUser)
+	if !ok {
+		return nil, false
+	}
+
+	return &user, true
 }
 
-func unauthorized() func(c *gin.Context, code int, message string) {
-	return func(c *gin.Context, code int, message string) {
-		eventType := "request"
-
-		if strings.Contains(c.Request.URL.Path, loginEndpoint) {
-			eventType = "login"
-		} else if strings.Contains(c.Request.URL.Path, refreshEndpoint) {
-			eventType = "refresh"
-		}
-
-		authEventsCounter.Add(c.Request.Context(), 1,
-			metric.WithAttributes(
-				attribute.String("event_type", eventType),
-				attribute.String("status", "failure"),
-				attribute.Int("code", code),
-			),
-		)
-
-		c.JSON(code, gin.H{
-			"code":    code,
-			"message": message,
-		})
-	}
-}
-
-func loginResponse(c *gin.Context, token *ginjwtCore.Token) {
-	authEventsCounter.Add(context.Background(), 1,
-		metric.WithAttributes(
-			attribute.String("event_type", "login"),
-			attribute.String("status", "success"),
-		),
-	)
-
-	user, exists := c.Get(IdentityKey)
-
-	var userObj *models.User = nil
-	if exists {
-		userObj = user.(*models.User)
+func GetUsername(c *gin.Context) string {
+	username, exists := c.Get(IdentityKey)
+	if !exists {
+		return DefaultUsername
 	}
 
-	loginResponse := loginResponseDTO{
-		AccessToken: token.AccessToken,
-		TokenType:   token.TokenType,
-		ExpiresIn:   token.ExpiresIn(),
+	usernameStr, ok := username.(string)
+	if !ok {
+		return DefaultUsername
 	}
 
-	if userObj != nil {
-		role := userObj.Role()
-		loginResponse.Role = &role
-
-		username := userObj.Username
-		loginResponse.Username = &username
-
-		gravatarURL := userObj.GravatarURL()
-		loginResponse.GravatarURL = &gravatarURL
-
-		id := userObj.ID
-		loginResponse.ID = &id
-	}
-
-	c.JSON(http.StatusOK, loginResponse)
+	return usernameStr
 }

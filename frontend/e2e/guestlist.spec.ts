@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { LoginPage } from "./pages/LoginPage";
 import { PosPage } from "./pages/PosPage";
 import { resetDatabase } from "./helpers/db";
 import { TEST_PRODUCTS } from "./fixtures/products";
@@ -13,8 +12,7 @@ test.describe("guestlist", () => {
     test.beforeEach(async ({ page }) => {
       await resetDatabase();
 
-      const loginPage = new LoginPage(page);
-      await loginPage.loginSuccessfully("demo", "demo");
+      await page.goto("/");
 
       const pos = new PosPage(page);
       await pos.openGuestlistModal(freeTicketProduct);
@@ -54,8 +52,7 @@ test.describe("guestlist", () => {
     test.beforeEach(async ({ page }) => {
       await resetDatabase();
 
-      const loginPage = new LoginPage(page);
-      await loginPage.loginSuccessfully("demo", "demo");
+      await page.goto("/");
 
       const pos = new PosPage(page);
       await pos.openGuestlistModal(prepaidTicketProduct);
@@ -95,8 +92,7 @@ test.describe("guestlist", () => {
     test.beforeEach(async ({ page }) => {
       resetDatabase();
 
-      const loginPage = new LoginPage(page);
-      await loginPage.loginSuccessfully("demo", "demo");
+      await page.goto("/");
 
       const pos = new PosPage(page);
       await pos.openGuestlistModal(freeTicketProduct);

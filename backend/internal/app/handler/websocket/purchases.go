@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	jwt "github.com/appleboy/gin-jwt/v3"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -15,26 +14,6 @@ import (
 )
 
 func (h *Handler) HandleTransactionWebSocket(c *gin.Context) {
-	protocols := websocket.Subprotocols(c.Request)
-	if len(protocols) == 0 {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
-
-		return
-	}
-
-	tokenStr := protocols[0]
-
-	token, err := h.jwtMiddleware.ParseTokenString(tokenStr)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
-
-		return
-	}
-
-	claims := jwt.ExtractClaimsFromToken(token)
-	identity := claims[h.jwtMiddleware.IdentityKey]
-	c.Set("identity", identity)
-
 	transactionID, conn, ok := h.upgradeAndRegister(c)
 	if !ok {
 		return
@@ -70,14 +49,7 @@ func (h *Handler) upgradeAndRegister(c *gin.Context) (uuid.UUID, *websocket.Conn
 		return uuid.Nil, nil, false
 	}
 
-	protocols := websocket.Subprotocols(c.Request)
-
-	var responseHeader http.Header
-	if len(protocols) > 0 {
-		responseHeader = http.Header{"Sec-WebSocket-Protocol": {protocols[0]}}
-	}
-
-	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, responseHeader)
+	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		slog.Warn("WebSocket upgrade failed", "transaction_id", transactionID.String(), "error", err)
 

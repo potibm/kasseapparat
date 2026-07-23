@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
 
@@ -11,12 +13,6 @@ type SentryConfig struct {
 	ReplayErrorSampleRate   float64 `mapstructure:"replay_error_sample_rate"   validate:"omitempty,gte=0,lte=1"`
 	Environment             string  `mapstructure:"environment"`
 	Version                 string  `mapstructure:"version"`
-}
-
-type JwtConfig struct {
-	Secret       string `mapstructure:"secret"        validate:"required,min=8"`
-	Realm        string `mapstructure:"realm"         validate:"required"`
-	SecureCookie bool   `mapstructure:"secure_cookie"`
 }
 
 type MailerConfig struct {
@@ -35,8 +31,8 @@ type AppConfig struct {
 	LogLevel  string `mapstructure:"log_level"  validate:"required,oneof=debug info warn error"`
 	LogFormat string `mapstructure:"log_format" validate:"required,oneof=json text"`
 
-	DbFilename         string                 `mapstructure:"db_filename"         validate:"required"`
-	RedisURL           RedisURL               `mapstructure:"redis_url"           validate:"omitempty,url"`
+	DbFilename string `mapstructure:"db_filename" validate:"required"`
+
 	FrontendURL        string                 `mapstructure:"frontend_url"        validate:"required,http_url"`
 	CorsAllowOrigins   CorsAllowOriginsConfig `mapstructure:"cors_allow_origins"  validate:"dive,required"`
 	EnvironmentMessage string                 `mapstructure:"environment_message"`
@@ -90,13 +86,31 @@ type SumupConfig struct {
 	PublicURL         string `mapstructure:"public_url"          validate:"omitempty,https_url"`
 }
 
+type AuthConfig struct {
+	Mode string `mapstructure:"mode" validate:"required,oneof=proxy oidc"`
+
+	ProxyHeader string   `mapstructure:"proxy_header"`
+	ProxyAdmins []string `mapstructure:"proxy_admins"`
+
+	OidcIssuer       string `mapstructure:"oidc_issuer"`
+	OidcClientID     string `mapstructure:"oidc_client_id"`
+	OidcClientSecret string `mapstructure:"oidc_client_secret"`
+	OidcCallbackURL  string `mapstructure:"oidc_callback_url"`
+	OidcAdminGroup   string `mapstructure:"oidc_admin_group"`
+
+	SessionSecret   string        `mapstructure:"session_secret"`
+	SessionDuration time.Duration `mapstructure:"session_duration"`
+}
+
+const MinSessionSecretLength = 32
+
 type Config struct {
 	App    AppConfig    `mapstructure:"app"`
 	Format FormatConfig `mapstructure:"format"`
 	Sentry SentryConfig `mapstructure:"sentry"`
-	Jwt    JwtConfig    `mapstructure:"jwt"`
 	Mailer MailerConfig `mapstructure:"mailer"`
 	Sumup  SumupConfig  `mapstructure:"sumup"`
+	Auth   AuthConfig   `mapstructure:"auth"`
 
 	VATRates       VatRatesConfig `mapstructure:"vat_rates"`
 	PaymentMethods PaymentMethods `mapstructure:"payment_methods"`

@@ -1,12 +1,11 @@
 import { useState, useCallback } from "react";
 import { Cart } from "../services/Cart";
-import { storePurchase } from "../../../utils/api";
 import { PaymentMethodData } from "../types/cart.types";
 import {
   Purchase as PurchaseType,
   Product as ProductType,
   Guest as GuestType,
-} from "../../../utils/api.schemas";
+} from "../../../api/schemas";
 import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 import { useConfig } from "@core/config/hooks/useConfig";
@@ -14,11 +13,12 @@ import {
   getErrorMessage,
   getPurchaseErrorType,
 } from "../services/PurchaseErrorHandler";
+import { usePosApi } from "@pos/api/usePosApi";
 
 const cartLog = createLogger("Cart");
 const purchaseLog = createLogger("Purchase");
 
-export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
+export const useCart = () => {
   const [cart, setCart] = useState(() => new Cart());
   const [isPolling, setIsPolling] = useState(false);
   const [pendingPurchase, setPendingPurchase] = useState<PurchaseType | null>(
@@ -29,6 +29,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
   );
   const { showToast } = useToast();
   const { currency } = useConfig();
+  const { storePurchase } = usePosApi();
 
   const add = useCallback(
     (product: ProductType, count: number, listItem: GuestType | null) => {
@@ -70,9 +71,8 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
       purchaseLog.debug("Initiating purchase", { paymentMethodCode });
 
       try {
-        const token = await getToken();
         const payload = cart.toApiPayload(paymentMethodCode, paymentMethodData);
-        const createdPurchase = await storePurchase(apiHost, token, payload);
+        const createdPurchase = await storePurchase(payload);
 
         if (createdPurchase.status === "pending") {
           setPendingPurchase(createdPurchase);
@@ -113,7 +113,7 @@ export const useCart = (apiHost: string, getToken: () => Promise<string>) => {
         throw error;
       }
     },
-    [apiHost, getToken, cart, currency, showToast, clear],
+    [cart, currency, showToast, clear, storePurchase],
   );
 
   const resumePolling = useCallback(

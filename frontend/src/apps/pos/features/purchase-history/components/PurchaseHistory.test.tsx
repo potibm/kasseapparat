@@ -3,7 +3,7 @@ import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PurchaseHistory from "./PurchaseHistory";
 import Decimal from "decimal.js";
-import { Purchase } from "../../../utils/api.schemas";
+import { Purchase } from "../../../api/schemas";
 
 // --- 1. MOCKS ---
 
@@ -34,7 +34,7 @@ vi.mock("@pos/features/ui/toast/hooks/useToast", () => ({
 }));
 
 vi.mock("./_internal/RefundModal", () => {
-  type Purchase = import("../../../utils/api.schemas").Purchase;
+  type Purchase = import("../../../api/schemas").Purchase;
 
   interface MockRefundModalProps {
     show: boolean;
@@ -199,9 +199,7 @@ describe("PurchaseHistory Component", () => {
       await user.click(screen.getByTestId("refund-purchase-conf-1"));
 
       // click confirm in the modal
-      await act(async () => {
-        await user.click(screen.getByTestId("modal-confirm"));
-      });
+      await user.click(screen.getByTestId("modal-confirm"));
 
       expect(mockRemoveFromHistory).toHaveBeenCalledWith(confirmedPurchase);
 

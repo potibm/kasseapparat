@@ -1,19 +1,24 @@
-import ConfigProvider from "./core/config/providers/ConfigProvider";
-import AuthProvider from "./apps/pos/features/auth/providers/AuthProvider";
-import SentryInitializer from "./core/monitoring/SentryInitializer";
-import SentryUserWatcher from "./core/monitoring/SentryUserWatcher";
+//import SentryUserWatcher from "./core/monitoring/SentryUserWatcher";
+import * as Sentry from "@sentry/react";
 import Routes from "./routes";
+import { AuthProvider } from "@pos/features/auth/provider/AuthProvider";
+import { CriticalError } from "@core/components/CriticalError";
 
 function App() {
   return (
-    <ConfigProvider>
-      <SentryInitializer>
-        <AuthProvider>
-          <SentryUserWatcher />
-          <Routes />
-        </AuthProvider>
-      </SentryInitializer>
-    </ConfigProvider>
+    <Sentry.ErrorBoundary
+      fallback={
+        <CriticalError
+          title="Application Error"
+          message="A serious error has occurred. Please restart the Kasseapparat."
+        />
+      }
+    >
+      {/* <SentryUserWatcher /> */}
+      <AuthProvider>
+        <Routes />
+      </AuthProvider>
+    </Sentry.ErrorBoundary>
   );
 }
 

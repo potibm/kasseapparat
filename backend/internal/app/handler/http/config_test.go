@@ -18,13 +18,17 @@ func TestGetConfig(t *testing.T) {
 			EnvironmentMessage: "Test-Env",
 		},
 		Sentry: cfgTypes.SentryConfig{
-			DSN: "https://example-dsn.com",
+			DSN:         "https://example-dsn.com",
+			Environment: "test",
 		},
 		VATRates: []cfgTypes.VatRateConfig{
 			{Rate: 19.0, Name: "Normal"},
 		},
 		PaymentMethods: []cfgTypes.PaymentMethodConfig{
 			{Code: "card", Name: "Kartenzahlung"},
+		},
+		Auth: cfgTypes.AuthConfig{
+			Mode: "proxy",
 		},
 	}
 
@@ -46,6 +50,8 @@ func TestGetConfig(t *testing.T) {
 
 	assert.Equal(t, "1.2.3", response.Version)
 	assert.Equal(t, "https://example-dsn.com", response.SentryDSN)
+	assert.Equal(t, "test", response.SentryEnvironment)
+	assert.Equal(t, "proxy", response.AuthMode)
 
 	assert.Len(t, response.VATRates, 1)
 	assert.Equal(t, 19.0, response.VATRates[0].Rate)
