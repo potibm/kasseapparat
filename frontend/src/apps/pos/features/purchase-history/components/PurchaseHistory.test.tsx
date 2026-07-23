@@ -199,9 +199,7 @@ describe("PurchaseHistory Component", () => {
       await user.click(screen.getByTestId("refund-purchase-conf-1"));
 
       // click confirm in the modal
-      await act(async () => {
-        await user.click(screen.getByTestId("modal-confirm"));
-      });
+      await user.click(screen.getByTestId("modal-confirm"));
 
       expect(mockRemoveFromHistory).toHaveBeenCalledWith(confirmedPurchase);
 
