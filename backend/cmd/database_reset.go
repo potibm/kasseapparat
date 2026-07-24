@@ -60,7 +60,7 @@ func performDatabaseReset(dbName string, shouldSeed, withTestData bool) error {
 		fn  func() error
 	}{
 		{"Deleting old tables...", func() error { return utils.PurgeDatabase(db) }},
-		{"Rebuilding table structure...", func() error { return utils.MigrateDatabase(db) }},
+		{"Running migrations...", func() error { return utils.MigrateDatabase(db) }},
 	}
 
 	for _, step := range steps {

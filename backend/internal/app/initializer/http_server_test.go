@@ -98,7 +98,6 @@ func TestInitializeOIDCHandler_OIDCMode_MissingConfig(t *testing.T) {
 			OidcIssuer:       "",
 			OidcClientID:     "",
 			OidcClientSecret: "",
-			OidcCallbackURL:  "",
 			SessionSecret:    "test-secret-that-is-long-enough-for-testing",
 		},
 		App: config.AppConfig{

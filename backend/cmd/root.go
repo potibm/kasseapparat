@@ -115,7 +115,6 @@ func Execute() error {
 
 	dbCmd := NewDatabaseCmd()
 	dbCmd.AddCommand(
-		NewDbMigrateCmd(),
 		NewDbSeedCmd(),
 		NewDbResetCmd(),
 	)

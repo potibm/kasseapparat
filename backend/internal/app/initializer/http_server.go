@@ -91,7 +91,7 @@ func InitializeOIDCHandler(ctx context.Context, cfg config.Config) (*httpHandler
 		Issuer:          cfg.Auth.OidcIssuer,
 		ClientID:        cfg.Auth.OidcClientID,
 		ClientSecret:    cfg.Auth.OidcClientSecret,
-		CallbackURL:     cfg.Auth.OidcCallbackURL,
+		CallbackURL:     strings.TrimSuffix(cfg.App.FrontendURL, "/") + "/api/" + APIVersion + "/auth/callback",
 		AdminGroup:      cfg.Auth.OidcAdminGroup,
 		FrontendURL:     cfg.App.FrontendURL,
 		SessionSecret:   cfg.Auth.SessionSecret,

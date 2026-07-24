@@ -15,6 +15,15 @@ import (
 
 const defaultDirMode os.FileMode = 0o700
 
+var allModels = []interface{}{
+	&models.Product{},
+	&models.Purchase{},
+	&models.PurchaseItem{},
+	&models.Guestlist{},
+	&models.Guest{},
+	&models.ProductInterest{},
+}
+
 func IsValidDatabaseFilename(filename string) bool {
 	validName := regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
 
@@ -61,6 +70,11 @@ func connectToSQLite(dsn string) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	err = MigrateDatabase(db)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := db.Use(otelgorm.NewPlugin()); err != nil {
 		return nil, err
 	}
@@ -90,14 +104,7 @@ func PurgeDatabase(db *gorm.DB) error {
 }
 
 func MigrateDatabase(db *gorm.DB) error {
-	err := db.AutoMigrate(
-		&models.Product{},
-		&models.Purchase{},
-		&models.PurchaseItem{},
-		&models.Guestlist{},
-		&models.Guest{},
-		&models.ProductInterest{},
-	)
+	err := db.AutoMigrate(allModels...)
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}

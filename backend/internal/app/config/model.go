@@ -95,7 +95,6 @@ type AuthConfig struct {
 	OidcIssuer       string `mapstructure:"oidc_issuer"`
 	OidcClientID     string `mapstructure:"oidc_client_id"`
 	OidcClientSecret string `mapstructure:"oidc_client_secret"`
-	OidcCallbackURL  string `mapstructure:"oidc_callback_url"`
 	OidcAdminGroup   string `mapstructure:"oidc_admin_group"`
 
 	SessionSecret   string        `mapstructure:"session_secret"`
