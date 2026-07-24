@@ -25,9 +25,10 @@ type SessionData struct {
 }
 
 type StateData struct {
-	State     string    `json:"state"`
-	Nonce     string    `json:"nonce"`
-	ExpiresAt time.Time `json:"expires_at"`
+	State        string    `json:"state"`
+	Nonce        string    `json:"nonce"`
+	CodeVerifier string    `json:"code_verifier"`
+	ExpiresAt    time.Time `json:"expires_at"`
 }
 
 type Manager struct {

@@ -153,7 +153,14 @@ services:
     labels:
       - "traefik.docker.network=traefik-global"
 
-  redisinsight:
+  dex:
+    networks:
+      - default
+      - traefik-global
+    labels:
+      - "traefik.docker.network=traefik-global"
+
+  minio:
     networks:
       - default
       - traefik-global

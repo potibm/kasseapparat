@@ -89,9 +89,6 @@ func TestMigrateAndPurgeDatabase(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, db)
 
-	err = MigrateDatabase(db)
-	assert.NoError(t, err)
-
 	assert.True(t, db.Migrator().HasTable(&models.Product{}), "Product table should exist after migration")
 
 	// 2. Purge
@@ -106,9 +103,6 @@ func TestSeedDatabase(t *testing.T) {
 	db, err := ConnectToLocalDatabase()
 	require.NoError(t, err)
 	require.NotNil(t, db)
-
-	err = MigrateDatabase(db)
-	assert.NoError(t, err)
 
 	assert.NotPanics(t, func() {
 		SeedDatabase(db, true) // Test with includeTestData = true

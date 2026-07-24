@@ -103,10 +103,6 @@ func (a *AuthConfig) validateOIDC() error {
 		return fmt.Errorf("auth.oidc_client_secret is required when mode is 'oidc'")
 	}
 
-	if a.OidcCallbackURL == "" {
-		return fmt.Errorf("auth.oidc_callback_url is required when mode is 'oidc'")
-	}
-
 	if len(a.SessionSecret) < MinSessionSecretLength {
 		return fmt.Errorf(
 			"auth.session_secret must be at least %d characters when mode is 'oidc'",

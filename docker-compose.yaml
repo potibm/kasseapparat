@@ -115,5 +115,4 @@ services:
 
 volumes:
   o2_data:
-
   minio_data:

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -254,6 +255,17 @@ func TestOIDCAuthHandler_Login(t *testing.T) {
 			}
 
 			require.NotNil(t, returnToCookie, "returnTo cookie should be set")
+
+			location := w.Header().Get("Location")
+			require.NotEmpty(t, location)
+
+			redirectURL, err := url.Parse(location)
+			require.NoError(t, err)
+
+			assert.NotEmpty(t, redirectURL.Query().Get("code_challenge"),
+				"redirect URL should contain code_challenge parameter")
+			assert.Equal(t, "S256", redirectURL.Query().Get("code_challenge_method"),
+				"redirect URL should contain code_challenge_method=S256")
 		})
 	}
 }
@@ -387,9 +399,10 @@ func TestOIDCAuthHandler_ValidateState_Mismatch(t *testing.T) {
 	}
 
 	stateData := session.StateData{
-		State:     "correct-state",
-		Nonce:     "test-nonce",
-		ExpiresAt: time.Now().Add(10 * time.Minute),
+		State:        "correct-state",
+		Nonce:        "test-nonce",
+		CodeVerifier: "test-code-verifier",
+		ExpiresAt:    time.Now().Add(10 * time.Minute),
 	}
 
 	encodedState, err := sessionMgr.EncodeState(stateData)
@@ -442,9 +455,10 @@ func TestOIDCAuthHandler_ValidateState_ExpiredState(t *testing.T) {
 	}
 
 	stateData := session.StateData{
-		State:     "test-state",
-		Nonce:     "test-nonce",
-		ExpiresAt: time.Now().Add(-1 * time.Hour),
+		State:        "test-state",
+		Nonce:        "test-nonce",
+		CodeVerifier: "test-code-verifier",
+		ExpiresAt:    time.Now().Add(-1 * time.Hour),
 	}
 
 	encodedState, err := sessionMgr.EncodeState(stateData)
@@ -477,9 +491,10 @@ func TestOIDCAuthHandler_Callback_StateMismatch(t *testing.T) {
 	}
 
 	stateData := session.StateData{
-		State:     "correct-state",
-		Nonce:     "test-nonce",
-		ExpiresAt: time.Now().Add(10 * time.Minute),
+		State:        "correct-state",
+		Nonce:        "test-nonce",
+		CodeVerifier: "test-code-verifier",
+		ExpiresAt:    time.Now().Add(10 * time.Minute),
 	}
 
 	encodedState, err := sessionMgr.EncodeState(stateData)
@@ -617,7 +632,7 @@ func TestOIDCAuthHandler_ExchangeCode(t *testing.T) {
 
 			c.Request = httptest.NewRequest(http.MethodGet, "/callback", http.NoBody)
 
-			token, err := tt.handler.exchangeCode(c, tt.code)
+			token, err := tt.handler.exchangeCode(c, tt.code, "test-code-verifier")
 			if tt.expectError {
 				assert.Error(t, err)
 				assert.Nil(t, token)
@@ -823,9 +838,10 @@ func TestOIDCAuthHandler_Callback_ValidFlow(t *testing.T) {
 
 	// Create a valid state
 	stateData := session.StateData{
-		State:     "valid-state",
-		Nonce:     "valid-nonce",
-		ExpiresAt: time.Now().Add(10 * time.Minute),
+		State:        "valid-state",
+		Nonce:        "valid-nonce",
+		CodeVerifier: "test-code-verifier",
+		ExpiresAt:    time.Now().Add(10 * time.Minute),
 	}
 
 	encodedState, err := sessionMgr.EncodeState(stateData)
@@ -878,9 +894,10 @@ func TestOIDCAuthHandler_Callback_WithReturnToCookie(t *testing.T) {
 	sessionMgr := session.NewManager("test-secret-that-is-long-enough-for-testing", 24*time.Hour)
 
 	stateData := session.StateData{
-		State:     "test-state",
-		Nonce:     "test-nonce",
-		ExpiresAt: time.Now().Add(10 * time.Minute),
+		State:        "test-state",
+		Nonce:        "test-nonce",
+		CodeVerifier: "test-code-verifier",
+		ExpiresAt:    time.Now().Add(10 * time.Minute),
 	}
 
 	encodedState, err := sessionMgr.EncodeState(stateData)
@@ -1097,4 +1114,15 @@ func testLoginFlow(t *testing.T, handler *OIDCAuthHandler, query string, expectC
 	}
 
 	require.NotNil(t, returnToCookie, "returnTo cookie should be set")
+
+	location := w.Header().Get("Location")
+	require.NotEmpty(t, location)
+
+	redirectURL, err := url.Parse(location)
+	require.NoError(t, err)
+
+	assert.NotEmpty(t, redirectURL.Query().Get("code_challenge"),
+		"redirect URL should contain code_challenge parameter")
+	assert.Equal(t, "S256", redirectURL.Query().Get("code_challenge_method"),
+		"redirect URL should contain code_challenge_method=S256")
 }

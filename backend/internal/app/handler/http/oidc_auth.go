@@ -5,12 +5,12 @@
 //
 // The OIDC handler implements a secure authentication flow using the Authorization Code Grant:
 //
-//  1. Login: Generates cryptographically secure state and nonce values, stores them in an
-//     encrypted HttpOnly cookie, and redirects to the Identity Provider (IdP).
+//  1. Login: Generates cryptographically secure state, nonce, and PKCE challenge,
+//     stores them in an encrypted HttpOnly cookie, and redirects to the Identity Provider (IdP).
 //
 //  2. Callback: Validates the state parameter (CSRF protection), exchanges the authorization
-//     code for tokens, verifies the ID token and nonce (replay attack protection), extracts
-//     user information from claims, creates an encrypted session cookie, and redirects to frontend.
+//     code for tokens (using the PKCE verifier), verifies the ID token and nonce (replay attack protection),
+//     extracts user information from claims, creates an encrypted session cookie, and redirects to frontend.
 //
 //  3. Logout: Clears the session cookie to terminate the user's session.
 //
@@ -18,6 +18,7 @@
 //
 //   - CSRF Protection: The state parameter is generated using crypto/rand and validated on callback
 //   - Replay Attack Prevention: The nonce is included in the ID token and verified
+//   - PKCE (Proof Key for Code Exchange): Prevents authorization code interception attacks
 //   - Secure Cookies: Session and state cookies are HttpOnly (XSS protection), use SameSite=Lax,
 //     and Secure flag in production (HTTPS only)
 //   - Encrypted Sessions: Session data is encrypted using gorilla/securecookie with derived keys
@@ -27,6 +28,9 @@ package http
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -44,6 +48,8 @@ const (
 	stateCookieName    = "oidc_state"
 	returnToCookieName = "oidc_return_to"
 	sessionCookieName  = "auth_session"
+
+	pkceVerifierBytes = 32
 )
 
 type OIDCOptions struct {
@@ -71,16 +77,6 @@ type OIDCAuthHandler struct {
 }
 
 // NewOIDCAuthHandler initializes the OIDC authentication handler with the provided options.
-//
-// It discovers the OIDC provider configuration from the issuer URL, sets up OAuth2 config,
-// creates a session manager with encrypted cookies, and configures secure cookie settings
-// based on the environment (production vs development).
-//
-// Security considerations:
-//   - In production, cookies use the Secure flag (HTTPS only)
-//   - In non-production environments, a warning is logged about insecure cookies
-//   - Session secret must be at least 32 characters (validated in config)
-//   - Session duration is configurable via opts.SessionDuration
 func NewOIDCAuthHandler(
 	ctx context.Context,
 	opts OIDCOptions,
@@ -119,17 +115,8 @@ func NewOIDCAuthHandler(
 	}, nil
 }
 
-// Login initiates the OIDC authentication flow by generating a secure state
-// and nonce, storing them in an encrypted cookie, and redirecting to the IdP.
-//
-// Security measures:
-//   - State: Cryptographically random 32-byte value prevents CSRF attacks
-//   - Nonce: Cryptographically random 32-byte value prevents replay attacks
-//   - Cookie: HttpOnly, Secure (in production), SameSite=Lax, encrypted with securecookie
-//   - Expiration: State expires after 10 minutes (configurable via session.StateDuration)
-//
-// The state and nonce are stored together in an encrypted cookie to maintain
-// server-side state without requiring server-side storage.
+// Login initiates the OIDC authentication flow by generating a secure state,
+// nonce, and PKCE challenge, storing them in an encrypted cookie, and redirecting to the IdP.
 func (h *OIDCAuthHandler) Login(c *gin.Context) {
 	state, err := session.GenerateRandomString(session.RandomStringLength)
 	if err != nil {
@@ -147,10 +134,25 @@ func (h *OIDCAuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	// PKCE Code Verifier & Challenge
+	verifierBytes := make([]byte, pkceVerifierBytes)
+	if _, err := rand.Read(verifierBytes); err != nil {
+		slog.Error("Failed to generate code_verifier", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate PKCE verifier"})
+
+		return
+	}
+
+	codeVerifier := base64.RawURLEncoding.EncodeToString(verifierBytes)
+
+	hash := sha256.Sum256([]byte(codeVerifier))
+	codeChallenge := base64.RawURLEncoding.EncodeToString(hash[:])
+
 	stateData := session.StateData{
-		State:     state,
-		Nonce:     nonce,
-		ExpiresAt: time.Now().Add(session.StateDuration),
+		State:        state,
+		Nonce:        nonce,
+		CodeVerifier: codeVerifier,
+		ExpiresAt:    time.Now().Add(session.StateDuration),
 	}
 
 	encodedState, err := h.sessionMgr.EncodeState(stateData)
@@ -161,7 +163,7 @@ func (h *OIDCAuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	http.SetCookie(c.Writer, &http.Cookie{ //nolint:gosec // Secure is set dynamically via h.secureCookie
+	http.SetCookie(c.Writer, &http.Cookie{ //nolint:gosec // HttpOnly cookie for CSRF protection
 		Name:     stateCookieName,
 		Value:    encodedState,
 		MaxAge:   int(session.StateDuration.Seconds()),
@@ -178,7 +180,7 @@ func (h *OIDCAuthHandler) Login(c *gin.Context) {
 		returnTo = "/" // default fallback
 	}
 
-	http.SetCookie(c.Writer, &http.Cookie{ //nolint:gosec // Secure is set dynamically via h.secureCookie
+	http.SetCookie(c.Writer, &http.Cookie{ //nolint:gosec // HttpOnly cookie for return URL
 		Name:     returnToCookieName,
 		Value:    returnTo,
 		MaxAge:   int(session.StateDuration.Seconds()),
@@ -188,7 +190,13 @@ func (h *OIDCAuthHandler) Login(c *gin.Context) {
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	authURL := h.oauth2Config.AuthCodeURL(state, oauth2.SetAuthURLParam("nonce", nonce))
+	// PKCE parameters for the redirect
+	authURL := h.oauth2Config.AuthCodeURL(
+		state,
+		oauth2.SetAuthURLParam("nonce", nonce),
+		oauth2.SetAuthURLParam("code_challenge", codeChallenge),
+		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
+	)
 
 	slog.Debug("Redirecting to OIDC provider", "url", authURL)
 
@@ -196,23 +204,6 @@ func (h *OIDCAuthHandler) Login(c *gin.Context) {
 }
 
 // Callback handles the OIDC callback from the identity provider.
-//
-// Flow:
-//  1. Extract authorization code and state from query parameters
-//  2. Validate state parameter against encrypted cookie (CSRF protection)
-//  3. Exchange authorization code for tokens with the IdP
-//  4. Verify ID token signature, issuer, audience, and nonce (replay protection)
-//  5. Extract username from preferred_username, name, or email claims
-//  6. Determine user role (admin if in configured admin group, otherwise user)
-//  7. Create encrypted session cookie with username and role
-//  8. Clear state cookie and redirect to frontend
-//
-// Security measures:
-//   - State cookie is always cleared (via defer) to prevent reuse
-//   - ID token is cryptographically verified against the IdP's public keys
-//   - Nonce in ID token must match the nonce from login to prevent replay attacks
-//   - Session cookie is HttpOnly, Secure (in production), SameSite=Lax, encrypted
-//   - Session expiration is configurable via auth.session_duration
 func (h *OIDCAuthHandler) Callback(c *gin.Context) {
 	defer h.clearCookie(c, stateCookieName)
 	defer h.clearCookie(c, returnToCookieName)
@@ -231,7 +222,8 @@ func (h *OIDCAuthHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	oauth2Token, err := h.exchangeCode(c, code)
+	// Exchange code with PKCE verifier
+	oauth2Token, err := h.exchangeCode(c, code, stateData.CodeVerifier)
 	if err != nil {
 		return
 	}
@@ -268,8 +260,6 @@ func (h *OIDCAuthHandler) Callback(c *gin.Context) {
 }
 
 // Logout terminates the user's session by clearing the session cookie.
-// The cookie is invalidated by setting MaxAge to -1, which instructs the browser
-// to delete it immediately. This is a local logout only; the IdP session is not affected.
 func (h *OIDCAuthHandler) Logout(c *gin.Context) {
 	h.clearCookie(c, sessionCookieName)
 
@@ -284,12 +274,6 @@ func (h *OIDCAuthHandler) GetAdminGroup() string {
 	return h.adminGroup
 }
 
-// validateState verifies the state parameter from the OIDC callback matches
-// the state stored in the encrypted cookie. This prevents CSRF attacks by ensuring
-// the callback request originated from a login flow initiated by this server.
-//
-// The state cookie is decrypted and validated, then the state value is compared
-// to the query parameter. Returns the decoded state data (including nonce) on success.
 func (h *OIDCAuthHandler) validateState(c *gin.Context, stateParam string) (*session.StateData, error) {
 	stateCookie, err := c.Cookie(stateCookieName)
 	if err != nil {
@@ -316,10 +300,13 @@ func (h *OIDCAuthHandler) validateState(c *gin.Context, stateParam string) (*ses
 	return stateData, nil
 }
 
-// exchangeCode exchanges the authorization code for an OAuth2 token.
-// This is a server-to-server call to the IdP's token endpoint.
-func (h *OIDCAuthHandler) exchangeCode(c *gin.Context, code string) (*oauth2.Token, error) {
-	oauth2Token, err := h.oauth2Config.Exchange(c.Request.Context(), code)
+// exchangeCode exchanges the authorization code for an OAuth2 token using PKCE.
+func (h *OIDCAuthHandler) exchangeCode(c *gin.Context, code, codeVerifier string) (*oauth2.Token, error) {
+	oauth2Token, err := h.oauth2Config.Exchange(
+		c.Request.Context(),
+		code,
+		oauth2.SetAuthURLParam("code_verifier", codeVerifier),
+	)
 	if err != nil {
 		slog.Error("Failed to exchange code for token", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to exchange code"})
@@ -330,16 +317,6 @@ func (h *OIDCAuthHandler) exchangeCode(c *gin.Context, code string) (*oauth2.Tok
 	return oauth2Token, nil
 }
 
-// verifyIDToken extracts and validates the ID token from the OAuth2 token response.
-//
-// Validation includes:
-//   - Token signature verification using the IdP's public keys (JWKS)
-//   - Issuer verification (must match configured issuer)
-//   - Audience verification (must match configured client ID)
-//   - Expiration check (token must not be expired)
-//   - Nonce verification (must match the nonce from login to prevent replay attacks)
-//
-// Returns the verified ID token containing user claims on success.
 func (h *OIDCAuthHandler) verifyIDToken(
 	c *gin.Context,
 	oauth2Token *oauth2.Token,
@@ -369,9 +346,6 @@ func (h *OIDCAuthHandler) verifyIDToken(
 	return idToken, nil
 }
 
-// extractUserClaims retrieves the username and groups from the ID token claims.
-// It tries claims in order: preferred_username, name, then email (local part).
-// Returns an error if no suitable username claim is found.
 func (h *OIDCAuthHandler) extractUserClaims(
 	c *gin.Context,
 	idToken *oidc.IDToken,
@@ -407,8 +381,6 @@ func (h *OIDCAuthHandler) extractUserClaims(
 	return username, claims.Groups, nil
 }
 
-// determineRole assigns a role to the user based on their OIDC groups.
-// Returns "admin" if the user belongs to the configured admin group, otherwise "user".
 func (h *OIDCAuthHandler) determineRole(groups []string) string {
 	if h.adminGroup != "" && slices.Contains(groups, h.adminGroup) {
 		return "admin"
@@ -417,16 +389,6 @@ func (h *OIDCAuthHandler) determineRole(groups []string) string {
 	return "user"
 }
 
-// createSession generates an encrypted session cookie containing the user's
-// username and role. The session data is encrypted using gorilla/securecookie
-// with keys derived from the configured session secret.
-//
-// Security measures:
-//   - Cookie is HttpOnly to prevent XSS attacks from accessing the session
-//   - Cookie uses Secure flag in production (HTTPS only)
-//   - Cookie uses SameSite=Lax to provide CSRF protection
-//   - Session expiration is configurable via auth.session_duration
-//   - Session data includes expiration timestamp for server-side validation
 func (h *OIDCAuthHandler) createSession(c *gin.Context, username, role string) error {
 	sessionDuration := h.sessionMgr.GetSessionDuration()
 
@@ -444,7 +406,7 @@ func (h *OIDCAuthHandler) createSession(c *gin.Context, username, role string) e
 		return err
 	}
 
-	http.SetCookie(c.Writer, &http.Cookie{ //nolint:gosec // Secure is set dynamically via h.secureCookie
+	http.SetCookie(c.Writer, &http.Cookie{ //nolint:gosec // HttpOnly session cookie
 		Name:     sessionCookieName,
 		Value:    encodedSession,
 		MaxAge:   int(sessionDuration.Seconds()),
@@ -457,10 +419,8 @@ func (h *OIDCAuthHandler) createSession(c *gin.Context, username, role string) e
 	return nil
 }
 
-// clearCookie removes a cookie by setting its MaxAge to -1, which instructs
-// the browser to delete it immediately. Used to clean up state and session cookies.
 func (h *OIDCAuthHandler) clearCookie(c *gin.Context, name string) {
-	http.SetCookie(c.Writer, &http.Cookie{ //nolint:gosec // Secure is set dynamically via h.secureCookie
+	http.SetCookie(c.Writer, &http.Cookie{ //nolint:gosec // Cookie clearing is safe
 		Name:     name,
 		Value:    "",
 		MaxAge:   -1,
