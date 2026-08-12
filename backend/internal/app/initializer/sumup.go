@@ -16,7 +16,7 @@ var (
 )
 
 func buildWebhookURL(publicURL string) *string {
-	if trimmed := strings.TrimSuffix(publicURL, "/"); trimmed != "" {
+	if trimmed := strings.TrimRight(publicURL, "/"); trimmed != "" {
 		url := trimmed + "/api/" + APIVersion + "/sumup/webhook"
 
 		return &url

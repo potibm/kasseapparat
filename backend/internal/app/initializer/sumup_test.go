@@ -42,6 +42,16 @@ func TestBuildWebhookURL(t *testing.T) {
 			publicURL: "https://localhost:8443",
 			wantURL:   strPtr("https://localhost:8443/api/" + APIVersion + "/sumup/webhook"),
 		},
+		{
+			name:      "URL with multiple trailing slashes",
+			publicURL: "https://example.com///",
+			wantURL:   strPtr("https://example.com/api/" + APIVersion + "/sumup/webhook"),
+		},
+		{
+			name:      "slash-only URL returns nil",
+			publicURL: "///",
+			wantURL:   nil,
+		},
 	}
 
 	for _, tt := range tests {
