@@ -137,3 +137,5 @@ require (
 	modernc.org/sqlite v1.54.0 // indirect
 	moul.io/http2curl/v2 v2.3.0 // indirect
 )
+
+replace github.com/sumup/sumup-go => github.com/potibm/sumup-go v0.0.0-20260812193103-c1f15913d5be
