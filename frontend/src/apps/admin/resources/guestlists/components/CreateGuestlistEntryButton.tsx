@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  useRecordContext,
-  Button,
-  ButtonProps,
-  RaRecord,
-  Identifier,
-} from "react-admin";
+import { useRecordContext, Button, RaRecord, Identifier } from "react-admin";
 import { useNavigate } from "react-router";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 
@@ -13,8 +7,8 @@ interface GuestlistRecord extends RaRecord {
   id: Identifier;
 }
 
-const CreateGuestlistEntryButton: React.FC<ButtonProps> = (props) => {
-  const record = useRecordContext<GuestlistRecord>(props);
+const CreateGuestlistEntryButton: React.FC = () => {
+  const record = useRecordContext<GuestlistRecord>();
   const navigate = useNavigate();
 
   const handleCreateEntry = (guestlistId: Identifier) => {
@@ -25,15 +19,20 @@ const CreateGuestlistEntryButton: React.FC<ButtonProps> = (props) => {
 
   return (
     <Button
-      {...props}
       label="Add Guest"
       onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
         handleCreateEntry(record?.id);
       }}
-      startIcon={<PersonAddIcon />}
-    />
+      sx={{
+        "& .RaButton-label": {
+          display: { xs: "none", sm: "inline" },
+        },
+      }}
+    >
+      <PersonAddIcon />
+    </Button>
   );
 };
 

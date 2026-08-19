@@ -18,8 +18,8 @@ export const GuestlistList: React.FC<ListProps> = (props) => {
         <TextField source="name" />
         <BooleanField source="typeCode" sortable={false} label="Code" />
         <TextField source="product.name" sortable={false} label="Product" />
-        <ConditionalDeleteOnOwnershipButton mutationMode="pessimistic" />
         <CreateGuestlistEntryButton />
+        <ConditionalDeleteOnOwnershipButton mutationMode="pessimistic" />
       </Datagrid>
     </List>
   );
