@@ -9,10 +9,15 @@ import {
 } from "react-admin";
 import ConditionalDeleteOnOwnershipButton from "@admin/ui/buttons/ConditionalDeleteOnOwnershipButton";
 import CreateGuestlistEntryButton from "./components/CreateGuestlistEntryButton";
+import { GuestlistFilters } from "./GuestlistFilters";
 
 export const GuestlistList: React.FC<ListProps> = (props) => {
   return (
-    <List {...props} sort={{ field: "id", order: "ASC" }}>
+    <List
+      {...props}
+      filters={GuestlistFilters}
+      sort={{ field: "id", order: "ASC" }}
+    >
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
