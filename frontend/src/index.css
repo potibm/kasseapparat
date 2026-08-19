@@ -16,3 +16,11 @@ code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
+
+/* Workaround: RaList-main container expands beyond viewport on mobile when Datagrid is wider than screen
+   This causes the RaList-actions toolbar to exceed viewport width, hiding right-aligned buttons
+   TODO: Recheck if this is fixed in newer React Admin versions */
+.RaList-main {
+  max-width: 100vw;
+  overflow-x: auto;
+}
