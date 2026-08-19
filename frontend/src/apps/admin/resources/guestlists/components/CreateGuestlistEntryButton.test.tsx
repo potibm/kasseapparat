@@ -60,6 +60,8 @@ describe("CreateGuestlistEntryButton", () => {
       fireEvent.click(button);
     }
 
-    expect(mockNavigate).toHaveBeenCalledWith("/admin/guests/create?guestlist_id=1");
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/admin/guests/create?guestlist_id=1",
+    );
   });
 });
