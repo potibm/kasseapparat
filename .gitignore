@@ -19,3 +19,4 @@ docs/plans/*
 docs/reviews/*
 docker-compose.override.yaml
 infra/.certs
+.opencode
