@@ -32,6 +32,17 @@ export const MyTheme: ThemeOptions = {
         },
       },
     },
+    // Workaround: RaList-actions bar exceeds viewport width on mobile when Datagrid is wider than screen
+    // This causes right-aligned action buttons to be hidden/off-screen
+    // TODO: Recheck if this is fixed in newer React Admin versions
+    RaList: {
+      styleOverrides: {
+        actions: {
+          maxWidth: "100%",
+          overflowX: "auto",
+        },
+      },
+    },
   },
 };
 
@@ -63,6 +74,17 @@ export const MyDarkTheme: ThemeOptions = {
           borderRadius: "8px",
           fontWeight: 600,
           textTransform: "none",
+        },
+      },
+    },
+    // Workaround: RaList-actions bar exceeds viewport width on mobile when Datagrid is wider than screen
+    // This causes right-aligned action buttons to be hidden/off-screen
+    // TODO: Recheck if this is fixed in newer React Admin versions
+    RaList: {
+      styleOverrides: {
+        actions: {
+          maxWidth: "100%",
+          overflowX: "auto",
         },
       },
     },
