@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/csv"
 	"io"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -10,8 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
-	"golang.org/x/text/encoding/charmap"
-	"golang.org/x/text/transform"
 )
 
 type deineTicketsRecord struct {
@@ -71,11 +70,25 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	}
 	defer fileContent.Close()
 
-	// Create a transform.Reader to decode ISO-8859-1 to UTF-8
-	utf8Reader := transform.NewReader(fileContent, charmap.ISO8859_1.NewDecoder())
+	bom := make([]byte, 3)
+	n, err := io.ReadFull(fileContent, bom)
+
+	if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
+		_ = c.Error(InternalServerError.WithMsg("Error reading file").WithCause(err))
+		return
+	}
+
+	if n == 3 && bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf {
+		slog.Debug("UTF-8 BOM detected in CSV file")
+	} else {
+		if _, seekErr := fileContent.Seek(0, io.SeekStart); seekErr != nil {
+			_ = c.Error(InternalServerError.WithMsg("Error seeking file").WithCause(seekErr))
+			return
+		}
+	}
 
 	// read file line by line using csv.NewReader
-	reader := csv.NewReader(utf8Reader)
+	reader := csv.NewReader(fileContent)
 	reader.Comma = ';'
 
 	// Skip the header line
