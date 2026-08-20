@@ -22,7 +22,10 @@ type deineTicketsRecord struct {
 	Note      string `json:"note"`
 }
 
-const expectedCsvColumns = 6
+const (
+	expectedCsvColumns = 6
+	utf8BOMSize        = 3
+)
 
 func (r *deineTicketsRecord) Validate(repo sqliteRepo.GuestRepository) (valid bool, message string) {
 	if !r.validateCode() {
@@ -53,7 +56,6 @@ func (r *deineTicketsRecord) GetGuest(listID int) models.Guest {
 }
 
 func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
-	// get the file from the request
 	file, err := c.FormFile("file")
 	if err != nil {
 		_ = c.Error(BadRequest.WithCause(err))
@@ -61,7 +63,6 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 		return
 	}
 
-	// open the file
 	fileContent, err := file.Open()
 	if err != nil {
 		_ = c.Error(InternalServerError.WithMsg("Error opening file").WithCause(err))
@@ -70,35 +71,19 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 	}
 	defer fileContent.Close()
 
-	bom := make([]byte, 3)
-	n, err := io.ReadFull(fileContent, bom)
-
-	if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
-		_ = c.Error(InternalServerError.WithMsg("Error reading file").WithCause(err))
+	if err := handler.skipBOM(fileContent, c); err != nil {
 		return
 	}
 
-	if n == 3 && bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf {
-		slog.Debug("UTF-8 BOM detected in CSV file")
-	} else {
-		if _, seekErr := fileContent.Seek(0, io.SeekStart); seekErr != nil {
-			_ = c.Error(InternalServerError.WithMsg("Error seeking file").WithCause(seekErr))
-			return
-		}
-	}
-
-	// read file line by line using csv.NewReader
 	reader := csv.NewReader(fileContent)
 	reader.Comma = ';'
 
-	// Skip the header line
 	if _, err := reader.Read(); err != nil {
 		_ = c.Error(BadRequest.WithMsg("Failed to read header").WithCause(err))
 
 		return
 	}
 
-	// find a list with Type Code
 	list, err := handler.repo.GetGuestlistWithTypeCode()
 	if err != nil {
 		_ = c.Error(InternalServerError.WithMsg("Guestlist not found").WithCause(err))
@@ -106,9 +91,49 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 		return
 	}
 
-	warnings := []string{}
+	createdGuests, warnings, err := handler.processCSVLines(reader, list.ID, c)
+	if err != nil {
+		_ = c.Error(err)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"createdGuests": createdGuests, "warnings": warnings})
+}
+
+func (handler *Handler) skipBOM(fileContent io.ReadSeeker, c *gin.Context) error {
+	bom := make([]byte, utf8BOMSize)
+	n, err := io.ReadFull(fileContent, bom)
+
+	if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
+		_ = c.Error(InternalServerError.WithMsg("Error reading file").WithCause(err))
+
+		return err
+	}
+
+	if n == utf8BOMSize && bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf {
+		slog.Debug("UTF-8 BOM detected in CSV file")
+
+		return nil
+	}
+
+	if _, seekErr := fileContent.Seek(0, io.SeekStart); seekErr != nil {
+		_ = c.Error(InternalServerError.WithMsg("Error seeking file").WithCause(seekErr))
+
+		return seekErr
+	}
+
+	return nil
+}
+
+func (handler *Handler) processCSVLines(
+	reader *csv.Reader,
+	listID int,
+	c *gin.Context,
+) (createdGuests int, warnings []string, err error) {
+	warnings = []string{}
 	lineNumber := 0
-	createdGuests := 0
+	createdGuests = 0
 
 	for {
 		lineNumber++
@@ -119,9 +144,7 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 		}
 
 		if err != nil {
-			_ = c.Error(InternalServerError.WithMsg("Error reading CSV file").WithCause(err))
-
-			return
+			return 0, nil, InternalServerError.WithMsg("Error reading CSV file").WithCause(err)
 		}
 
 		if len(line) < expectedCsvColumns {
@@ -155,17 +178,14 @@ func (handler *Handler) ImportGuestsFromDeineTicketsCsv(c *gin.Context) {
 			continue
 		}
 
-		_, err = handler.repo.CreateGuest(record.GetGuest(list.ID))
-		if err != nil {
-			_ = c.Error(InternalServerError.WithMsg("Failed to create guest").WithCause(err))
-
-			return
+		if _, err = handler.repo.CreateGuest(record.GetGuest(listID)); err != nil {
+			return 0, nil, InternalServerError.WithMsg("Failed to create guest").WithCause(err)
 		}
 
 		createdGuests++
 	}
 
-	c.JSON(http.StatusOK, gin.H{"createdGuests": createdGuests, "warnings": warnings})
+	return createdGuests, warnings, nil
 }
 
 func (r *deineTicketsRecord) validateCode() bool {
