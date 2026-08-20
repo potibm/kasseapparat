@@ -119,6 +119,39 @@ func uploadGuestImport(fileContent string) *httpexpect.Response {
 		Expect()
 }
 
+func TestGuestImportWithUTF8BOM(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	fileContent := "\xef\xbb\xbf" + guestsImportCsvHeader +
+		"BOM123456;XYZTEST BOMLast;BOMFirst;EV123;;T-shirt size XL;\n"
+
+	guestImportResponse := uploadGuestImport(fileContent).
+		Status(http.StatusOK).
+		JSON().
+		Object()
+
+	guestImportResponse.Value("createdGuests").Number().IsEqual(1)
+	guestImportResponse.Value("warnings").Array().IsEmpty()
+
+	deleteGuestsByNameQuery("XYZTEST BOMLast")
+}
+
+func TestGuestImportWithSmallFile(t *testing.T) {
+	_, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	fileContent := "ab"
+
+	guestImportResponse := uploadGuestImport(fileContent).
+		Status(http.StatusOK).
+		JSON().
+		Object()
+
+	guestImportResponse.Value("createdGuests").Number().IsEqual(0)
+	guestImportResponse.Value("warnings").Array().IsEmpty()
+}
+
 func TestGuestsImportAuthentication(t *testing.T) {
 	// Note: Authentication tests removed for Phase 1 - auth is now handled by reverse proxy in Phase 2
 }
