@@ -1,8 +1,7 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import { useDataProvider, RaRecord } from "react-admin";
+import { RaRecord } from "react-admin";
 import {
   Table,
   TableBody,
@@ -15,11 +14,10 @@ import {
 } from "@mui/material";
 import { useConfig } from "@core/config/hooks/useConfig";
 import Decimal from "decimal.js";
-import { createLogger } from "@core/logger/logger";
-
-const log = createLogger("Admin");
+import { useStatsData } from "../hooks/useStatsData";
 
 interface ProductStat extends RaRecord {
+  id: number;
   name: string;
   soldItems: number;
   totalNetPrice: string | number;
@@ -27,29 +25,16 @@ interface ProductStat extends RaRecord {
 }
 
 const ProductStatsCard: React.FC = () => {
-  const [stats, setStats] = useState<ProductStat[] | null>(null);
-  const dataProvider = useDataProvider();
-  const { currency } = useConfig(); // Destructuring ist cleaner
+  const { data: stats } = useStatsData<ProductStat>("productStats");
+  const { currency } = useConfig();
 
-  useEffect(() => {
-    dataProvider
-      .getList<ProductStat>("productStats", {
-        pagination: { page: 1, perPage: 100 },
-        sort: { field: "name", order: "ASC" },
-        filter: {},
-      })
-      .then(({ data }) => {
-        setStats(data);
-      })
-      .catch((error) => {
-        log.error("Dashboard fetch failed", error);
-        setStats([]);
-      });
-  }, [dataProvider]);
+  if (stats === null) {
+    return <Typography sx={{ p: 2 }}>Loading...</Typography>;
+  }
 
-  if (stats === null) return <Typography sx={{ p: 2 }}>Loading...</Typography>;
-  if (stats.length === 0)
+  if (stats.length === 0) {
     return <Typography sx={{ p: 2 }}>No products yet.</Typography>;
+  }
 
   const totalNet = stats.reduce(
     (acc, stat) => acc.add(new Decimal(stat.totalNetPrice)),
@@ -111,7 +96,6 @@ const ProductStatsCard: React.FC = () => {
                 </TableRow>
               ))}
 
-              {/* Summary Row */}
               <TableRow sx={{ backgroundColor: "action.selected" }}>
                 <TableCell sx={{ fontWeight: "bold" }}>Total</TableCell>
                 <TableCell align="right">-</TableCell>

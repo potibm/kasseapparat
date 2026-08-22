@@ -1,8 +1,7 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import { useDataProvider, RaRecord } from "react-admin";
+import { RaRecord } from "react-admin";
 import {
   Table,
   TableBody,
@@ -15,9 +14,7 @@ import {
 } from "@mui/material";
 import { useConfig } from "@core/config/hooks/useConfig";
 import Decimal from "decimal.js";
-import { createLogger } from "@core/logger/logger";
-
-const log = createLogger("Admin");
+import { useStatsData } from "../hooks/useStatsData";
 
 interface PaymentMethodStat extends RaRecord {
   id: string;
@@ -29,29 +26,16 @@ interface PaymentMethodStat extends RaRecord {
 }
 
 const PaymentMethodStatsCard: React.FC = () => {
-  const [stats, setStats] = useState<PaymentMethodStat[] | null>(null);
-  const dataProvider = useDataProvider();
+  const { data: stats } = useStatsData<PaymentMethodStat>("paymentMethodStats");
   const { currency } = useConfig();
 
-  useEffect(() => {
-    dataProvider
-      .getList<PaymentMethodStat>("paymentMethodStats", {
-        pagination: { page: 1, perPage: 100 },
-        sort: { field: "name", order: "ASC" },
-        filter: {},
-      })
-      .then(({ data }) => {
-        setStats(data);
-      })
-      .catch((error) => {
-        log.error("Payment method stats fetch failed", error);
-        setStats([]);
-      });
-  }, [dataProvider]);
+  if (stats === null) {
+    return <Typography sx={{ p: 2 }}>Loading...</Typography>;
+  }
 
-  if (stats === null) return <Typography sx={{ p: 2 }}>Loading...</Typography>;
-  if (stats.length === 0)
+  if (stats.length === 0) {
     return <Typography sx={{ p: 2 }}>No purchases yet.</Typography>;
+  }
 
   const totalNet = stats.reduce(
     (acc, stat) => acc.add(new Decimal(stat.totalNetPrice)),
