@@ -88,6 +88,7 @@ type PurchaseRepository interface {
 	GetFilteredPurchases(filters PurchaseFilters) ([]models.PurchaseItem, error)
 	GetPurchaseStats() ([]ProductPurchaseStats, error)
 	GetPurchasedQuantitiesByProductID(productID int) (int, error)
+	GetPaymentMethodStats() ([]response.PaymentMethodStats, error)
 }
 
 type PurchaseCRUDRepository interface {
