@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useDataProvider } from "react-admin";
+import { useDataProvider, RaRecord } from "react-admin";
 import { createLogger } from "@core/logger/logger";
 import {
   parseTimeBucket,
@@ -18,7 +18,7 @@ interface ChartDataPoint {
 
 interface UseHourlyChartDataOptions<T> {
   resource: string;
-  dataKey: string;
+  dataKey: keyof T & string;
   aggregateFn: (acc: number, item: T) => number;
   initialValue?: number;
 }
@@ -31,7 +31,9 @@ interface UseHourlyChartDataResult<T> {
   seriesNames: Record<string, string>;
 }
 
-export const useHourlyChartData = <T extends { timeBucket: string }>({
+export const useHourlyChartData = <
+  T extends RaRecord & { timeBucket: string },
+>({
   resource,
   dataKey,
   aggregateFn,
@@ -73,10 +75,12 @@ export const useHourlyChartData = <T extends { timeBucket: string }>({
   const granularityMinutes = calculateGranularity(minTime, maxTime);
   const allBuckets = generateTimeBuckets(minTime, maxTime, granularityMinutes);
 
-  const seriesKeys = Array.from(new Set(data.map((item) => item[dataKey])));
+  const seriesKeys = Array.from(
+    new Set(data.map((item) => String(item[dataKey]))),
+  );
   const seriesNames: Record<string, string> = {};
   data.forEach((item) => {
-    const key = item[dataKey];
+    const key = String(item[dataKey]);
     if (!seriesNames[key]) {
       seriesNames[key] = key;
     }
@@ -99,7 +103,7 @@ export const useHourlyChartData = <T extends { timeBucket: string }>({
     );
 
     if (dataByBucket[bucketStr]) {
-      const key = item[dataKey];
+      const key = String(item[dataKey]);
       dataByBucket[bucketStr][key] = aggregateFn(
         dataByBucket[bucketStr][key],
         item,

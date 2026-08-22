@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useDataProvider } from "react-admin";
+import { useDataProvider, RaRecord } from "react-admin";
 import { createLogger } from "@core/logger/logger";
 
 const log = createLogger("Admin");
@@ -10,7 +10,7 @@ interface UseStatsDataResult<T> {
   error: boolean;
 }
 
-export const useStatsData = <T>(
+export const useStatsData = <T extends RaRecord>(
   resource: string,
   sortField: string = "name",
   sortOrder: "ASC" | "DESC" = "ASC",
