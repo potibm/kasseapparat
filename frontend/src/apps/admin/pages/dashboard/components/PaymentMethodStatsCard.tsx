@@ -16,16 +16,17 @@ import { useConfig } from "@core/config/hooks/useConfig";
 import Decimal from "decimal.js";
 import { useStatsData } from "../hooks/useStatsData";
 
-interface ProductStat extends RaRecord {
-  id: number;
+interface PaymentMethodStat extends RaRecord {
+  id: string;
+  paymentMethod: string;
   name: string;
-  soldItems: number;
+  purchaseCount: number;
   totalNetPrice: string | number;
   totalGrossPrice: string | number;
 }
 
-const ProductStatsCard: React.FC = () => {
-  const { data: stats } = useStatsData<ProductStat>("productStats");
+const PaymentMethodStatsCard: React.FC = () => {
+  const { data: stats } = useStatsData<PaymentMethodStat>("paymentMethodStats");
   const { currency } = useConfig();
 
   if (stats === null) {
@@ -33,7 +34,7 @@ const ProductStatsCard: React.FC = () => {
   }
 
   if (stats.length === 0) {
-    return <Typography sx={{ p: 2 }}>No products yet.</Typography>;
+    return <Typography sx={{ p: 2 }}>No purchases yet.</Typography>;
   }
 
   const totalNet = stats.reduce(
@@ -46,11 +47,16 @@ const ProductStatsCard: React.FC = () => {
     new Decimal(0),
   );
 
+  const totalPurchases = stats.reduce(
+    (acc, stat) => acc + stat.purchaseCount,
+    0,
+  );
+
   return (
     <Card sx={{ mt: 2, boxShadow: 3 }}>
       <CardContent>
         <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-          Product Sales Stats
+          Payment Method Stats
         </Typography>
 
         <TableContainer
@@ -58,12 +64,14 @@ const ProductStatsCard: React.FC = () => {
           elevation={0}
           sx={{ border: "1px solid", borderColor: "divider" }}
         >
-          <Table size="small" aria-label="product stats table">
+          <Table size="small" aria-label="payment method stats table">
             <TableHead sx={{ backgroundColor: "action.hover" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: "bold" }}>Product</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>
+                  Payment Method
+                </TableCell>
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                  Units sold
+                  Purchases
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
                   Revenue Net
@@ -82,7 +90,7 @@ const ProductStatsCard: React.FC = () => {
                   <TableCell component="th" scope="row">
                     {stat.name}
                   </TableCell>
-                  <TableCell align="right">{stat.soldItems}</TableCell>
+                  <TableCell align="right">{stat.purchaseCount}</TableCell>
                   <TableCell align="right">
                     {currency.format(
                       new Decimal(stat.totalNetPrice).toNumber(),
@@ -98,7 +106,9 @@ const ProductStatsCard: React.FC = () => {
 
               <TableRow sx={{ backgroundColor: "action.selected" }}>
                 <TableCell sx={{ fontWeight: "bold" }}>Total</TableCell>
-                <TableCell align="right">-</TableCell>
+                <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                  {totalPurchases}
+                </TableCell>
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
                   {currency.format(totalNet.toNumber())}
                 </TableCell>
@@ -114,4 +124,4 @@ const ProductStatsCard: React.FC = () => {
   );
 };
 
-export default ProductStatsCard;
+export default PaymentMethodStatsCard;
