@@ -219,6 +219,14 @@ func (m *MockRepository) GetPaymentMethodStats() ([]response.PaymentMethodStats,
 	panic(errNotImplemented)
 }
 
+func (m *MockRepository) GetHourlyRevenueStats() ([]response.HourlyRevenueStats, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) GetHourlyQuantityStats() ([]response.HourlyQuantityStats, error) {
+	panic(errNotImplemented)
+}
+
 func (m *MockRepository) GetProducts(
 	limit int,
 	offset int,

@@ -162,6 +162,8 @@ func registerAPIRoutes(
 		registerProductInterestRoutes(protectedAPIRouter, httpHdlr)
 		protectedAPIRouter.GET("/productStats", httpHdlr.GetProductStats)
 		protectedAPIRouter.GET("/paymentMethodStats", httpHdlr.GetPaymentMethodStats)
+		protectedAPIRouter.GET("/hourlyRevenueStats", httpHdlr.GetHourlyRevenueStats)
+		protectedAPIRouter.GET("/hourlyQuantityStats", httpHdlr.GetHourlyQuantityStats)
 
 		registerGuestlistRoutes(protectedAPIRouter, httpHdlr)
 		registerGuestRoutes(protectedAPIRouter, httpHdlr)

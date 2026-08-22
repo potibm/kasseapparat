@@ -37,6 +37,7 @@ func TestPaymentMethodStats(t *testing.T) {
 		paymentMethod := item.Object().Value("paymentMethod").String().Raw()
 		if paymentMethod == "CASH" {
 			found = true
+
 			item.Object().Value("purchaseCount").Number().Ge(1)
 			item.Object().Value("totalGrossPrice").String().NotEmpty()
 			item.Object().Value("totalNetPrice").String().NotEmpty()

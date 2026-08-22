@@ -12,7 +12,11 @@ func (repo *Repository) GetPaymentMethodStats() ([]response.PaymentMethodStats, 
 	stats := []response.PaymentMethodStats{}
 
 	query := repo.db.Table("purchases").
-		Select("payment_method as id, payment_method, COUNT(*) as purchase_count, COALESCE(SUM(total_net_price), 0) as total_net_price, COALESCE(SUM(total_gross_price), 0) as total_gross_price").
+		Select(`payment_method as id,
+			payment_method,
+			COUNT(*) as purchase_count,
+			COALESCE(SUM(total_net_price), 0) as total_net_price,
+			COALESCE(SUM(total_gross_price), 0) as total_gross_price`).
 		Where("deleted_at IS NULL").
 		Where("status = ?", string(models.PurchaseStatusConfirmed)).
 		Group("payment_method")

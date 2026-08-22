@@ -75,6 +75,7 @@ type ProductRepository interface {
 	GetAttendedGuestSumByProductID(productID int) (int, error)
 }
 
+//nolint:interfacebloat // Repository interface aggregates all domain-specific interfaces
 type PurchaseRepository interface {
 	PurchaseCRUDRepository
 
@@ -89,6 +90,8 @@ type PurchaseRepository interface {
 	GetPurchaseStats() ([]ProductPurchaseStats, error)
 	GetPurchasedQuantitiesByProductID(productID int) (int, error)
 	GetPaymentMethodStats() ([]response.PaymentMethodStats, error)
+	GetHourlyRevenueStats() ([]response.HourlyRevenueStats, error)
+	GetHourlyQuantityStats() ([]response.HourlyQuantityStats, error)
 }
 
 type PurchaseCRUDRepository interface {
