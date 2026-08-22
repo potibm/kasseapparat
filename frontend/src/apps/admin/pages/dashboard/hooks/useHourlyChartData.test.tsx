@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AdminContext } from "react-admin";
+import { AdminContext, DataProvider } from "react-admin";
 import { useHourlyChartData } from "./useHourlyChartData";
 
 const mockDataProvider = {
@@ -16,7 +16,9 @@ const mockDataProvider = {
 };
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <AdminContext dataProvider={mockDataProvider as any}>{children}</AdminContext>
+  <AdminContext dataProvider={mockDataProvider as unknown as DataProvider}>
+    {children}
+  </AdminContext>
 );
 
 describe("useHourlyChartData", () => {
@@ -32,7 +34,8 @@ describe("useHourlyChartData", () => {
         useHourlyChartData({
           resource: "testResource",
           dataKey: "category",
-          aggregateFn: (acc, item: any) => acc + item.value,
+          aggregateFn: (acc, item: unknown) =>
+            acc + (item as { value: number }).value,
         }),
       { wrapper },
     );
@@ -74,7 +77,8 @@ describe("useHourlyChartData", () => {
         useHourlyChartData({
           resource: "testResource",
           dataKey: "category",
-          aggregateFn: (acc, item: any) => acc + item.value,
+          aggregateFn: (acc, item: unknown) =>
+            acc + (item as { value: number }).value,
         }),
       { wrapper },
     );
@@ -97,7 +101,8 @@ describe("useHourlyChartData", () => {
         useHourlyChartData({
           resource: "testResource",
           dataKey: "category",
-          aggregateFn: (acc, item: any) => acc + item.value,
+          aggregateFn: (acc, item: unknown) =>
+            acc + (item as { value: number }).value,
         }),
       { wrapper },
     );

@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AdminContext } from "react-admin";
+import { AdminContext, DataProvider } from "react-admin";
 import { ConfigContext } from "@core/config/context/ConfigContext";
 import { AppConfig } from "@core/config/types/config.types";
 import ProductStatsCard from "./ProductStatsCard";
@@ -51,7 +51,9 @@ describe("ProductStatsCard", () => {
 
     render(
       <ConfigContext value={mockConfig}>
-        <AdminContext dataProvider={mockDataProvider as any}>
+        <AdminContext
+          dataProvider={mockDataProvider as unknown as DataProvider}
+        >
           <ProductStatsCard />
         </AdminContext>
       </ConfigContext>,
@@ -65,7 +67,9 @@ describe("ProductStatsCard", () => {
 
     render(
       <ConfigContext value={mockConfig}>
-        <AdminContext dataProvider={mockDataProvider as any}>
+        <AdminContext
+          dataProvider={mockDataProvider as unknown as DataProvider}
+        >
           <ProductStatsCard />
         </AdminContext>
       </ConfigContext>,
@@ -98,7 +102,9 @@ describe("ProductStatsCard", () => {
 
     render(
       <ConfigContext value={mockConfig}>
-        <AdminContext dataProvider={mockDataProvider as any}>
+        <AdminContext
+          dataProvider={mockDataProvider as unknown as DataProvider}
+        >
           <ProductStatsCard />
         </AdminContext>
       </ConfigContext>,

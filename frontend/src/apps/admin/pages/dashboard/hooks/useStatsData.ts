@@ -21,25 +21,40 @@ export const useStatsData = <T>(
   const dataProvider = useDataProvider();
 
   useEffect(() => {
-    setLoading(true);
-    setError(false);
+    let cancelled = false;
 
-    dataProvider
-      .getList<T>(resource, {
-        pagination: { page: 1, perPage: 100 },
-        sort: { field: sortField, order: sortOrder },
-        filter: {},
-      })
-      .then(({ data }) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        log.error(`${resource} fetch failed`, err);
-        setData([]);
-        setLoading(false);
-        setError(true);
-      });
+    const fetchData = async () => {
+      if (!cancelled) {
+        setLoading(true);
+        setError(false);
+      }
+
+      try {
+        const { data } = await dataProvider.getList<T>(resource, {
+          pagination: { page: 1, perPage: 100 },
+          sort: { field: sortField, order: sortOrder },
+          filter: {},
+        });
+
+        if (!cancelled) {
+          setData(data);
+          setLoading(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          log.error(`${resource} fetch failed`, err);
+          setData([]);
+          setLoading(false);
+          setError(true);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      cancelled = true;
+    };
   }, [dataProvider, resource, sortField, sortOrder]);
 
   return { data, loading, error };
