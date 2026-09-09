@@ -4,6 +4,10 @@
 
 > _Kasseapparat_ is the Danish term for cash register.
 
+> **Part of the Apparat Suite** ⚙️
+> This tool is part of a decoupled set of single-purpose event management tools built for demoparties. 
+> [➔ Read more about the full Apparat suite here](https://github.com/potibm/apparat)
+
 It is a simple point of sale (POS) system aimed at [demoparties](https://en.wikipedia.org/wiki/Demoscene#Parties). Based on [Partymeister](https://github.com/partymeister), rewritten after moving to [Granola](https://gitlab.com/granola-compo/granola) for [Evoke](https://www.evoke.eu/).
 
 ## Tooling
