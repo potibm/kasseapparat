@@ -13,7 +13,7 @@ RUN npm run build -- --outDir ./build
 # ==========================================
 # Build the backend
 # ==========================================
-FROM --platform=$BUILDPLATFORM golang:1.26-bookworm AS backend-build
+FROM --platform=$BUILDPLATFORM golang:1.27-bookworm AS backend-build
 WORKDIR /app/backend
 
 ARG TARGETOS
