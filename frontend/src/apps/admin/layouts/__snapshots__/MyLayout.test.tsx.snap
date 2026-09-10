@@ -7,7 +7,7 @@ exports[`Layout & AppBar > Snapshot Match 1`] = `
   >
     <button
       aria-label="ra.navigation.skip_nav"
-      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary skip-nav-button css-ucnk6k-MuiButtonBase-root-MuiButton-root-RaButton-root-RaSkipNavigationButton-root"
+      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary skip-nav-button css-bc50ft-MuiButtonBase-root-MuiButton-root-RaButton-root-RaSkipNavigationButton-root"
       tabindex="0"
       type="button"
     >
@@ -25,7 +25,7 @@ exports[`Layout & AppBar > Snapshot Match 1`] = `
         >
           <button
             aria-label="ra.action.close_menu"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium RaAppBar-menuButton css-160m840-MuiButtonBase-root-MuiIconButton-root-RaSidebarToggleButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium RaAppBar-menuButton css-ntm4re-MuiButtonBase-root-MuiIconButton-root-RaSidebarToggleButton-root"
             data-mui-internal-clone-element="true"
             tabindex="0"
             type="button"
@@ -67,7 +67,7 @@ exports[`Layout & AppBar > Snapshot Match 1`] = `
           </div>
           <button
             aria-label="ra.action.toggle_theme"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium css-101la6k-MuiButtonBase-root-MuiIconButton-root-RaToggleThemeButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium css-1n2yudo-MuiButtonBase-root-MuiIconButton-root-RaToggleThemeButton-root"
             data-mui-internal-clone-element="true"
             tabindex="0"
             type="button"
@@ -89,7 +89,7 @@ exports[`Layout & AppBar > Snapshot Match 1`] = `
           >
             <button
               aria-label="ra.action.refresh"
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium RaLoadingIndicator-loadedIcon false css-h7cjts-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium RaLoadingIndicator-loadedIcon false css-e9aoga-MuiButtonBase-root-MuiIconButton-root"
               data-mui-internal-clone-element="true"
               tabindex="0"
               type="button"
@@ -113,7 +113,7 @@ exports[`Layout & AppBar > Snapshot Match 1`] = `
             <button
               aria-haspopup="true"
               aria-label="ra.auth.user_menu"
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium css-h7cjts-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium css-e9aoga-MuiButtonBase-root-MuiIconButton-root"
               data-mui-internal-clone-element="true"
               tabindex="0"
               type="button"
