@@ -309,6 +309,10 @@ func (m *MockRepository) GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.G
 	panic(errNotImplemented)
 }
 
+func (m *MockRepository) Ping() error {
+	panic(errNotImplemented)
+}
+
 type MockMailer struct {
 	Sent []string
 }

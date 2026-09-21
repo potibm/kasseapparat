@@ -50,7 +50,11 @@ USER appuser
 
 VOLUME [ "/app/data" ]
 
-EXPOSE 8080
+ENV APP_PORT=8080
+EXPOSE ${APP_PORT}
 
 ENTRYPOINT ["/app/kasseapparat"]
 CMD ["serve"]
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=5s \
+  CMD wget -q -O /dev/null http://localhost:${APP_PORT}/health || exit 1
