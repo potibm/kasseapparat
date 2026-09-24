@@ -58,6 +58,8 @@ func InitializeHTTPServer(
 	}
 
 	r.Use(static.Serve("/", folder))
+	r.GET("/health", httpHdlr.GetHealth)
+	r.GET("/ready", httpHdlr.GetReady)
 
 	registerAPIRoutes(httpHdlr, websocketHdlr, cfg)
 

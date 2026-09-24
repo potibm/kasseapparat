@@ -102,6 +102,10 @@ type PurchaseCRUDRepository interface {
 	GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error)
 }
 
+type Pinger interface {
+	Ping() error
+}
+
 type RepositoryInterface interface {
 	TransactionalRepository
 	GuestRepository
@@ -109,6 +113,7 @@ type RepositoryInterface interface {
 	ProductInterestRepository
 	ProductRepository
 	PurchaseRepository
+	Pinger
 }
 
 var _ RepositoryInterface = (*Repository)(nil)
@@ -127,6 +132,15 @@ func (r *Repository) WithTransaction(ctx context.Context, fn func(repo Repositor
 
 		return fn(txRepo)
 	})
+}
+
+func (r *Repository) Ping() error {
+	sqlDB, err := r.db.DB()
+	if err == nil {
+		return sqlDB.Ping()
+	}
+
+	return err
 }
 
 func (r *Repository) cloneWithDB(tx *gorm.DB) *Repository {
