@@ -102,7 +102,7 @@ type PurchaseCRUDRepository interface {
 	GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error)
 }
 
-type StatusPingRepository interface {
+type Pinger interface {
 	Ping() error
 }
 
@@ -113,7 +113,7 @@ type RepositoryInterface interface {
 	ProductInterestRepository
 	ProductRepository
 	PurchaseRepository
-	StatusPingRepository
+	Pinger
 }
 
 var _ RepositoryInterface = (*Repository)(nil)
