@@ -35,7 +35,7 @@ FROM alpine:3.24 AS runtime
 WORKDIR /app
 
 RUN apk update --no-cache && \
-    apk add --no-cache ca-certificates bash tzdata && \
+    apk add --no-cache ca-certificates bash tzdata curl && \
     adduser -D -h /app -s /bin/bash appuser
 
 RUN mkdir -p /app/data && chown -R appuser:appuser /app
@@ -57,4 +57,4 @@ ENTRYPOINT ["/app/kasseapparat"]
 CMD ["serve"]
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=5s \
-  CMD wget -q -O /dev/null http://localhost:${APP_PORT}/health || exit 1
+  CMD curl -fsS http://localhost:${APP_PORT}/health > /dev/null || exit 1
