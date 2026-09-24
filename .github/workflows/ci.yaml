@@ -13,7 +13,7 @@ jobs:
   # ==========================================
   lint:
     name: Lint & Type Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       checks: write
@@ -35,7 +35,7 @@ jobs:
   # ==========================================
   test:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: lint
     permissions:
       contents: read
@@ -72,7 +72,7 @@ jobs:
   # ==========================================
   e2e-test:
     name: Playwright E2E
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     needs: test
     permissions:
@@ -111,7 +111,7 @@ jobs:
   # ==========================================
   docker-build-check:
     name: Docker Build Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: test
     permissions:
       contents: read
@@ -131,7 +131,7 @@ jobs:
   # ==========================================
   sonarqube:
     name: SonarQube Analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: test
     permissions:
       contents: read
@@ -154,7 +154,7 @@ jobs:
           path: frontend/coverage/
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        uses: SonarSource/sonarqube-scan-action@ba9859eae8dd6bd29e412f25ddbbef3d032000f4 # v8.2.2
         with:
           args: >
             -Dsonar.qualitygate.wait=${{ github.ref != 'refs/heads/main' }}
