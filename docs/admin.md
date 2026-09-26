@@ -241,6 +241,33 @@ docker compose up -d
 
 To update the docker image call the update.sh. A backup is performed and stored in the backup directory.
 
+## Health & Readiness Endpoints
+
+Both endpoints are unauthenticated and served on the root of the application, not under `/api/v3`.
+
+### `GET /health` — liveness
+
+Always answers `200` as long as the process is running. It performs no dependency checks. This is what the container `HEALTHCHECK` probes.
+
+### `GET /ready` — readiness
+
+Answers `200` once the SQLite database is reachable, and `503` when it is not.
+
+| Situation     | HTTP | `status`      |
+| ------------- | ---- | ------------- |
+| Database up   | 200  | `ready`       |
+| Database down | 503  | `unavailable` |
+
+```json
+{ "status": "ready" }
+```
+
+```json
+{ "status": "unavailable", "error": "database down" }
+```
+
+`/ready` deliberately checks the database and nothing else. In particular it does **not** contact the OIDC identity provider — see [ADR 002](decisions/002-readiness-endpoint-scope.md) for the reasoning. An IdP outage therefore does not affect the readiness response; monitor the identity provider separately, or alert on login failures.
+
 ## OpenTelemetry & Monitoring
 
 Kasseapparat natively supports **OpenTelemetry (OTel)**. You can enable the export of Traces, Logs, and Metrics by providing the OTLP endpoint:

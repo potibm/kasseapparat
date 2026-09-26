@@ -27,6 +27,27 @@ func TestRedactConfigForDisplay(t *testing.T) {
 	assert.NotContains(t, redactedCfg.Mailer.DSN, "secret-mail-pass")
 }
 
+func TestRedactConfigForDisplay_RedactsAuthSecrets(t *testing.T) {
+	cfg := Config{}
+	cfg.Auth.Mode = "oidc"
+	cfg.Auth.OidcIssuer = "https://dex.example.com/dex"
+	cfg.Auth.OidcClientID = "kasseapparat-backend"
+	cfg.Auth.OidcClientSecret = "super-secret-client-string"
+	cfg.Auth.OidcAdminGroup = "kasseapparat-admins"
+	cfg.Auth.SessionSecret = "a-very-long-and-very-secure-session-string"
+
+	redactedCfg := cfg.RedactConfigForDisplay()
+
+	assert.Equal(t, redacted, redactedCfg.Auth.OidcClientSecret)
+	assert.Equal(t, redacted, redactedCfg.Auth.SessionSecret)
+
+	// Non-secret auth settings must stay visible so the export stays useful.
+	assert.Equal(t, "oidc", redactedCfg.Auth.Mode)
+	assert.Equal(t, "https://dex.example.com/dex", redactedCfg.Auth.OidcIssuer)
+	assert.Equal(t, "kasseapparat-backend", redactedCfg.Auth.OidcClientID)
+	assert.Equal(t, "kasseapparat-admins", redactedCfg.Auth.OidcAdminGroup)
+}
+
 func TestRedactUrlPassword(t *testing.T) {
 	tests := []struct {
 		name     string

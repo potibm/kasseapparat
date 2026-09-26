@@ -50,6 +50,11 @@ const (
 	sessionCookieName  = "auth_session"
 
 	pkceVerifierBytes = 32
+
+	// oidcDiscoveryTimeout bounds the startup OIDC discovery request. Without it
+	// discovery runs on http.DefaultClient, which has no timeout, so an
+	// unreachable issuer blocks startup indefinitely.
+	oidcDiscoveryTimeout = 10 * time.Second
 )
 
 type OIDCOptions struct {
@@ -81,7 +86,12 @@ func NewOIDCAuthHandler(
 	ctx context.Context,
 	opts OIDCOptions,
 ) (*OIDCAuthHandler, error) {
-	provider, err := oidc.NewProvider(ctx, opts.Issuer)
+	discoveryClient := &http.Client{Timeout: oidcDiscoveryTimeout}
+
+	provider, err := oidc.NewProvider(
+		oidc.ClientContext(ctx, discoveryClient),
+		opts.Issuer,
+	)
 	if err != nil {
 		return nil, err
 	}
