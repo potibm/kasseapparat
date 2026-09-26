@@ -1,12 +1,16 @@
 package utils
 
 import (
+	"context"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 func TestConnectToDatabaseInvalidFilename(t *testing.T) {
@@ -75,6 +79,44 @@ func TestConnectToDatabaseValidFilename(t *testing.T) {
 	db, err = ConnectToDatabase("")
 	assert.NotNil(t, db)
 	assert.NoError(t, err)
+}
+
+func TestConnectToDatabaseBoundsConnectionPool(t *testing.T) {
+	err := os.MkdirAll("data", 0o755)
+	require.NoError(t, err)
+
+	defer os.RemoveAll("data")
+
+	db, err := ConnectToDatabase("testdb_pool")
+	require.NoError(t, err)
+
+	sqlDB, err := db.DB()
+	require.NoError(t, err)
+
+	assert.Equal(t, 1, sqlDB.Stats().MaxOpenConnections)
+}
+
+// The single-connection bound deadlocks if a transaction callback reaches for the
+// outer repository instead of the transaction-scoped one, so pin that behaviour.
+func TestConnectToDatabaseTransactionDoesNotDeadlock(t *testing.T) {
+	err := os.MkdirAll("data", 0o755)
+	require.NoError(t, err)
+
+	defer os.RemoveAll("data")
+
+	db, err := ConnectToDatabase("testdb_tx")
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		product := &models.Product{Name: "Pool Test", NetPrice: decimal.NewFromInt(10)}
+
+		return tx.Create(product).Error
+	})
+
+	require.NoError(t, err)
 }
 
 func TestConnectToLocalDatabase(t *testing.T) {

@@ -112,7 +112,7 @@ This project is licensed under MIT. Below are the licenses of the dependencies u
 | Package                                                   | License                                                                   |
 | --------------------------------------------------------- | ------------------------------------------------------------------------- |
 | @adobe/css-tools@4.5.0                                    | [MIT](https://github.com/adobe/css-tools)                                 |
-| @asamuzakjp/css-color@7.0.1                               | [MIT](https://github.com/asamuzaK/cssColor)                               |
+| @asamuzakjp/css-color@7.1.0                               | [MIT](https://github.com/asamuzaK/cssColor)                               |
 | @asamuzakjp/dom-selector@9.2.1                            | [MIT](https://github.com/asamuzaK/domSelector)                            |
 | @babel/code-frame@7.29.7                                  | [MIT](https://github.com/babel/babel)                                     |
 | @babel/compat-data@7.29.7                                 | [MIT](https://github.com/babel/babel)                                     |

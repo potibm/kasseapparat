@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -103,7 +104,7 @@ type PurchaseCRUDRepository interface {
 }
 
 type Pinger interface {
-	Ping() error
+	Ping(ctx context.Context) error
 }
 
 type RepositoryInterface interface {
@@ -134,13 +135,19 @@ func (r *Repository) WithTransaction(ctx context.Context, fn func(repo Repositor
 	})
 }
 
-func (r *Repository) Ping() error {
+// Ping checks the database connection for the readiness probe. The check is
+// deliberately connection-level; see ADR 002 for why a stronger check is unreliable.
+func (r *Repository) Ping(ctx context.Context) error {
 	sqlDB, err := r.db.DB()
-	if err == nil {
-		return sqlDB.Ping()
+	if err != nil {
+		return fmt.Errorf("failed to get underlying database connection: %w", err)
 	}
 
-	return err
+	if err := sqlDB.PingContext(ctx); err != nil {
+		return fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	return nil
 }
 
 func (r *Repository) cloneWithDB(tx *gorm.DB) *Repository {

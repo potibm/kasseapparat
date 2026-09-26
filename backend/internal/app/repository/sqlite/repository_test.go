@@ -42,7 +42,7 @@ func TestGetDB(t *testing.T) {
 func TestPing_Success(t *testing.T) {
 	repo := setupTestRepository(t)
 
-	err := repo.Ping()
+	err := repo.Ping(context.Background())
 
 	assert.NoError(t, err)
 }
@@ -56,8 +56,20 @@ func TestPing_DatabaseClosed(t *testing.T) {
 	err = sqlDB.Close()
 	require.NoError(t, err)
 
-	err = repo.Ping()
+	err = repo.Ping(context.Background())
 	assert.Error(t, err)
+}
+
+func TestPing_ContextCancelled(t *testing.T) {
+	repo := setupTestRepository(t)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err := repo.Ping(ctx)
+
+	require.Error(t, err)
+	assert.ErrorIs(t, err, context.Canceled)
 }
 
 func TestWithTransaction_Commit(t *testing.T) {
