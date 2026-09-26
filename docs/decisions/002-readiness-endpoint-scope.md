@@ -34,10 +34,24 @@ An earlier proposal was to add a cached, timeout-bounded probe of the provider's
 
 3. **Operational complexity outweighs the benefit.** A correct implementation needs a cached probe with a TTL, a short timeout, a decision on how to surface the result in the response contract, and monitoring guidance. That surface area was judged not worth paying for the signal it yields — the signal is available more cheaply elsewhere.
 
+### Considered and rejected: a stronger database check
+
+The rule above asks what may gate readiness, and assumes the database check that already exists is good enough. It is worth recording why that check is a bare connection ping and nothing more, because a schema lookup looks like an obvious improvement and is not one.
+
+`Repository.Ping` (`internal/app/repository/sqlite/repository.go`) is a connection-level check and is deliberately the whole check:
+
+1. **A ping cannot see the schema or the file.** The driver's `driver.Pinger` runs `select 1` — a pure expression that reads no table and no file. Connections are opened with `SQLITE_OPEN_CREATE` (`glebarez/go-sqlite/sqlite.go`), so opening a missing database succeeds and creates an empty one. A ping therefore cannot distinguish a healthy database from an empty one, and it still succeeds after the database file has been deleted.
+
+2. **A schema lookup would be nondeterministic, not merely redundant.** The obvious stronger check is to confirm a table we migrated exists in `sqlite_master`. That fails twice over. Pooled connections keep reading through a file handle that stays valid after the file is unlinked, so whether the query succeeds depends on pool state rather than on health — the same database can pass or fail depending on which connection the pool hands out. And `AutoMigrate` recreates the schema at startup (`internal/app/utils/database.go`), so a lost volume becomes a valid but empty database that passes the check anyway.
+
+3. **The motivating failures are already caught at boot.** A corrupt file fails `gorm.Open` — the driver issues a query during initialization — and again during the `AutoMigrate` DDL. Both abort startup, so the process never serves and `/ready` is never reached.
+
 ## Consequences
 
 - **Positive:** Readiness is cheap and deterministic. The endpoint performs exactly one local operation, with no external network dependency that could make it slow or flaky.
 - **Positive:** An IdP outage cannot make Kasseapparat instances appear unhealthy, so no restart storm is possible and logged-in staff keep taking payments.
 - **Positive:** The rule is general. New dependencies can be evaluated against a single question rather than re-litigating the trade-off each time.
+- **Positive:** The check is bounded. `GetReady` wraps the ping in a 2-second context (`readinessCheckTimeout`), so an exhausted `database/sql` pool fails the probe instead of holding the request open indefinitely. The connection check is a single `select 1`, so the budget is generous.
 - **Negative:** **An identity provider outage is not observable through `/ready`.** This is the accepted cost. Operators must monitor the provider directly, or alert on login-failure rates and on failed `/api/v3/auth/login` attempts, to detect an IdP outage. This trade-off is the explicit reason for writing this ADR down.
+- **Negative:** **A lost volume reports `ready` against an empty database.** This is the accepted cost of the decision above, and no schema check can fix it: a fresh first install and a volume that vanished are indistinguishable by schema contents, so treating an empty schema as not-ready would make every first install fail. Detect lost or unreadable storage by alerting on data freshness and on backup age, not on `/ready`. This is the single most important thing an operator should know about this endpoint.
 - **Neutral:** Startup is the one point where the provider _is_ contacted. `NewOIDCAuthHandler` performs a live OIDC discovery request, so an unreachable issuer prevents the process from booting. That request is bounded by a 10-second timeout (`oidcDiscoveryTimeout` in `internal/app/handler/http/oidc_auth.go`) rather than `http.DefaultClient`, which has no timeout and would block startup indefinitely. The timeout is generous because failing to start is a harder outcome than a slow boot, and a slow-but-healthy provider — a cold Keycloak start, for example — must not be mistaken for an unreachable one.

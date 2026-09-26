@@ -52,6 +52,10 @@ func ConnectToDatabase(filename string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
+	if err := configureConnectionPool(db); err != nil {
+		return nil, err
+	}
+
 	return db, nil
 }
 
@@ -99,6 +103,19 @@ func PurgeDatabase(db *gorm.DB) error {
 	if err != nil {
 		return fmt.Errorf("failed to purge database: %w", err)
 	}
+
+	return nil
+}
+
+func configureConnectionPool(db *gorm.DB) error {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get database connection: %w", err)
+	}
+
+	// SQLite serializes writers, so extra connections only add lock contention
+	// without adding throughput. See ADR 003.
+	sqlDB.SetMaxOpenConns(1)
 
 	return nil
 }

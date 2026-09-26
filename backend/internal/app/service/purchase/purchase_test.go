@@ -309,7 +309,7 @@ func (m *MockRepository) GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.G
 	panic(errNotImplemented)
 }
 
-func (m *MockRepository) Ping() error {
+func (m *MockRepository) Ping(context.Context) error {
 	panic(errNotImplemented)
 }
 

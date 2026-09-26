@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -19,7 +20,7 @@ type pingMock struct {
 	err error
 }
 
-func (m pingMock) Ping() error {
+func (m pingMock) Ping(context.Context) error {
 	return m.err
 }
 
@@ -76,4 +77,23 @@ func TestGetReady_DatabaseDown(t *testing.T) {
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
 	assert.Equal(t, "unavailable", body["status"])
 	assert.Equal(t, "database down", body["error"])
+}
+
+// The route is unauthenticated, so the response must stay generic no matter how
+// specific the underlying failure is, and must not be written twice.
+func TestGetReady_DoesNotLeakInternalError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	handler := &Handler{repo: pingMock{err: errors.New(
+		"failed to ping database: failed to open data/kasseapparat.db: disk I/O error",
+	)}}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/ready", http.NoBody)
+
+	handler.GetReady(c)
+
+	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
+	assert.Equal(t, `{"error":"database down","status":"unavailable"}`, w.Body.String())
 }
