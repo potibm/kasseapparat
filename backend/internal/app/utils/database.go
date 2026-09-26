@@ -129,9 +129,14 @@ func MigrateDatabase(db *gorm.DB) error {
 	return nil
 }
 
-func SeedDatabase(db *gorm.DB, includeTestData bool) {
+func SeedDatabase(db *gorm.DB, includeTestData bool) error {
 	seed := NewDatabaseSeed(db)
-	seed.Seed(includeTestData)
+
+	if err := seed.Seed(includeTestData); err != nil {
+		return fmt.Errorf("failed to seed database: %w", err)
+	}
+
+	return nil
 }
 
 func CloseDatabase(db *gorm.DB) error {

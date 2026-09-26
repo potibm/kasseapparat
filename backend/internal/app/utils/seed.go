@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -28,7 +29,7 @@ func NewDatabaseSeed(db *gorm.DB) *DatabaseSeed {
 	}
 }
 
-func (ds *DatabaseSeed) Seed(includeTestData bool) {
+func (ds *DatabaseSeed) Seed(includeTestData bool) error {
 	const (
 		DefaultGuestlistCount            = 38
 		DefaultPurchaseCount             = 30
@@ -38,17 +39,38 @@ func (ds *DatabaseSeed) Seed(includeTestData bool) {
 
 	_ = gofakeit.Seed(1)
 
-	ds.seedProducts()
-	ds.seedGuestlists()
-
-	if includeTestData {
-		ds.seedGuests()
-		ds.seedUserGuests(DefaultGuestlistCount, MaxNotPresentEntriesPerGuestlist, MaxPresentEntriesPerGuestlist)
-		ds.seedPurchases(DefaultPurchaseCount)
+	// Each step depends on the IDs the previous one populated, so a failure has to
+	// stop the seed rather than leave half-written data behind: a product whose
+	// Create failed has ID 0, and every guestlist seeded after it would point at
+	// ProductID 0.
+	if err := ds.seedProducts(); err != nil {
+		return err
 	}
+
+	if err := ds.seedGuestlists(); err != nil {
+		return err
+	}
+
+	if !includeTestData {
+		return nil
+	}
+
+	if err := ds.seedGuests(); err != nil {
+		return err
+	}
+
+	if err := ds.seedUserGuests(
+		DefaultGuestlistCount,
+		MaxNotPresentEntriesPerGuestlist,
+		MaxPresentEntriesPerGuestlist,
+	); err != nil {
+		return err
+	}
+
+	return ds.seedPurchases(DefaultPurchaseCount)
 }
 
-func (ds *DatabaseSeed) seedProducts() {
+func (ds *DatabaseSeed) seedProducts() error {
 	vat0 := decimal.NewFromInt(0)
 	vat7 := decimal.NewFromInt(7)
 	vat19 := decimal.NewFromInt(19)
@@ -66,7 +88,9 @@ func (ds *DatabaseSeed) seedProducts() {
 		Pos:       1,
 		APIExport: true,
 	}
-	ds.db.Create(ds.regularProduct)
+	if err := ds.db.Create(ds.regularProduct).Error; err != nil {
+		return fmt.Errorf("failed to create product %q: %w", ds.regularProduct.Name, err)
+	}
 
 	ds.reducedProduct = &models.Product{
 		Name:      "🎟️ Reduced",
@@ -75,10 +99,14 @@ func (ds *DatabaseSeed) seedProducts() {
 		Pos:       2,
 		APIExport: true,
 	}
-	ds.db.Create(ds.reducedProduct)
+	if err := ds.db.Create(ds.reducedProduct).Error; err != nil {
+		return fmt.Errorf("failed to create product %q: %w", ds.reducedProduct.Name, err)
+	}
 
 	ds.freeProduct = &models.Product{Name: "🎟️ Free", NetPrice: price0, VATRate: vat0, Pos: 3, APIExport: true}
-	ds.db.Create(ds.freeProduct)
+	if err := ds.db.Create(ds.freeProduct).Error; err != nil {
+		return fmt.Errorf("failed to create product %q: %w", ds.freeProduct.Name, err)
+	}
 
 	ds.prepaidProduct = &models.Product{
 		Name:      "🎟️ Prepaid",
@@ -88,7 +116,9 @@ func (ds *DatabaseSeed) seedProducts() {
 		WrapAfter: true,
 		APIExport: true,
 	}
-	ds.db.Create(ds.prepaidProduct)
+	if err := ds.db.Create(ds.prepaidProduct).Error; err != nil {
+		return fmt.Errorf("failed to create product %q: %w", ds.prepaidProduct.Name, err)
+	}
 
 	ds.products = append(ds.products, *ds.prepaidProduct)
 
@@ -209,53 +239,77 @@ func (ds *DatabaseSeed) seedProducts() {
 
 	for i := range ds.products {
 		if ds.products[i].ID == 0 {
-			ds.db.Create(&ds.products[i])
+			if err := ds.db.Create(&ds.products[i]).Error; err != nil {
+				return fmt.Errorf("failed to create product %q: %w", ds.products[i].Name, err)
+			}
 		}
 	}
+
+	return nil
 }
 
-func (ds *DatabaseSeed) seedGuestlists() {
+func (ds *DatabaseSeed) seedGuestlists() error {
 	ds.reducedDkevGuestlist = &models.Guestlist{Name: "Reduces Digitale Kultur", ProductID: ds.reducedProduct.ID}
-	ds.db.Create(ds.reducedDkevGuestlist)
+	if err := ds.db.Create(ds.reducedDkevGuestlist).Error; err != nil {
+		return fmt.Errorf("failed to create guestlist %q: %w", ds.reducedDkevGuestlist.Name, err)
+	}
 
 	ds.reducedLdGuestlist = &models.Guestlist{Name: "Long Distance", ProductID: ds.reducedProduct.ID}
-	ds.db.Create(ds.reducedLdGuestlist)
+	if err := ds.db.Create(ds.reducedLdGuestlist).Error; err != nil {
+		return fmt.Errorf("failed to create guestlist %q: %w", ds.reducedLdGuestlist.Name, err)
+	}
 
 	ds.deineTicketsGuestlist = &models.Guestlist{Name: "Deine Tickets", TypeCode: true, ProductID: ds.prepaidProduct.ID}
-	ds.db.Create(ds.deineTicketsGuestlist)
+	if err := ds.db.Create(ds.deineTicketsGuestlist).Error; err != nil {
+		return fmt.Errorf("failed to create guestlist %q: %w", ds.deineTicketsGuestlist.Name, err)
+	}
+
+	return nil
 }
 
-func (ds *DatabaseSeed) seedGuests() {
+func (ds *DatabaseSeed) seedGuests() error {
 	for i := 1; i < 5; i++ {
-		ds.db.Create(&models.Guest{Name: gofakeit.Name(), GuestlistID: ds.reducedDkevGuestlist.ID, AdditionalGuests: 0})
+		guest := &models.Guest{Name: gofakeit.Name(), GuestlistID: ds.reducedDkevGuestlist.ID, AdditionalGuests: 0}
+		if err := ds.db.Create(guest).Error; err != nil {
+			return fmt.Errorf("failed to create guest %q: %w", guest.Name, err)
+		}
 	}
 
 	for i := 1; i < 15; i++ {
-		ds.db.Create(&models.Guest{Name: gofakeit.Name(), GuestlistID: ds.reducedLdGuestlist.ID, AdditionalGuests: 0})
+		guest := &models.Guest{Name: gofakeit.Name(), GuestlistID: ds.reducedLdGuestlist.ID, AdditionalGuests: 0}
+		if err := ds.db.Create(guest).Error; err != nil {
+			return fmt.Errorf("failed to create guest %q: %w", guest.Name, err)
+		}
 	}
 
 	for i := 1; i < 20; i++ {
 		code := gofakeit.Password(false, true, true, false, false, 9)
-		ds.db.Create(
-			&models.Guest{
-				Name:             gofakeit.Name(),
-				Code:             &code,
-				GuestlistID:      ds.deineTicketsGuestlist.ID,
-				AdditionalGuests: 0,
-			},
-		)
+		guest := &models.Guest{
+			Name:             gofakeit.Name(),
+			Code:             &code,
+			GuestlistID:      ds.deineTicketsGuestlist.ID,
+			AdditionalGuests: 0,
+		}
+
+		if err := ds.db.Create(guest).Error; err != nil {
+			return fmt.Errorf("failed to create guest %q: %w", guest.Name, err)
+		}
 	}
 
 	// for e2e test: create a guest with a known code in the deineTicketsGuestlist
 	code := "ABCDEFGHI"
-	ds.db.Create(
-		&models.Guest{
-			Name:             "Jan Jansen",
-			Code:             &code,
-			GuestlistID:      ds.deineTicketsGuestlist.ID,
-			AdditionalGuests: 0,
-		},
-	)
+	knownCodeGuest := &models.Guest{
+		Name:             "Jan Jansen",
+		Code:             &code,
+		GuestlistID:      ds.deineTicketsGuestlist.ID,
+		AdditionalGuests: 0,
+	}
+
+	if err := ds.db.Create(knownCodeGuest).Error; err != nil {
+		return fmt.Errorf("failed to create guest %q: %w", knownCodeGuest.Name, err)
+	}
+
+	return nil
 }
 
 func getOptionalArrivalNote() *string {
@@ -268,71 +322,97 @@ func getOptionalArrivalNote() *string {
 	return nil
 }
 
-func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, maxPresentEntries int) {
+func (ds *DatabaseSeed) seedUserGuests(guestlistCount, maxNotPresentEntries, maxPresentEntries int) error {
 	if guestlistCount <= 0 {
-		return
+		return nil
 	}
 
 	for i := 1; i < guestlistCount; i++ {
-		userGuestlist := &models.Guestlist{Name: "Guestlist " + gofakeit.FirstName(), ProductID: ds.freeProduct.ID}
-		ds.db.Create(userGuestlist)
-
-		for range gofakeit.Number(1, maxNotPresentEntries) {
-			ds.db.Create(
-				&models.Guest{
-					Name:             gofakeit.Name(),
-					GuestlistID:      userGuestlist.ID,
-					AdditionalGuests: gofakeit.UintRange(0, 2),
-					ArrivalNote:      getOptionalArrivalNote(),
-				},
-			)
-		}
-
-		for range gofakeit.Number(1, maxPresentEntries) {
-			arrivedAt := gofakeit.Date()
-			ds.db.Create(
-				&models.Guest{
-					Name:             gofakeit.Name(),
-					GuestlistID:      userGuestlist.ID,
-					AdditionalGuests: gofakeit.UintRange(0, 2),
-					AttendedGuests:   1,
-					ArrivedAt:        &arrivedAt,
-				},
-			)
+		if err := ds.seedUserGuestlist(maxNotPresentEntries, maxPresentEntries); err != nil {
+			return err
 		}
 	}
 
-	// for e2e test: create two guests with known names in a special guestlist
-	userGuestlist := &models.Guestlist{Name: "E2E Guestlist " + gofakeit.FirstName(), ProductID: ds.freeProduct.ID}
-	ds.db.Create(userGuestlist)
-
-	ds.db.Create(
-		&models.Guest{
-			Name:             "Jean Dupont",
-			GuestlistID:      userGuestlist.ID,
-			AdditionalGuests: uint(gofakeit.UintRange(0, 2)),
-		},
-	)
-
-	note := "Ciao Mario!"
-	ds.db.Create(
-		&models.Guest{
-			Name:             "Mario Rossi",
-			GuestlistID:      userGuestlist.ID,
-			AdditionalGuests: uint(gofakeit.UintRange(0, 2)),
-			ArrivalNote:      &note,
-		},
-	)
+	return ds.seedKnownE2EGuests()
 }
 
-func (ds *DatabaseSeed) seedPurchases(purchaseCount int) {
+func (ds *DatabaseSeed) seedUserGuestlist(maxNotPresentEntries, maxPresentEntries int) error {
+	userGuestlist := &models.Guestlist{Name: "Guestlist " + gofakeit.FirstName(), ProductID: ds.freeProduct.ID}
+	if err := ds.db.Create(userGuestlist).Error; err != nil {
+		return fmt.Errorf("failed to create guestlist %q: %w", userGuestlist.Name, err)
+	}
+
+	for range gofakeit.Number(1, maxNotPresentEntries) {
+		guest := &models.Guest{
+			Name:             gofakeit.Name(),
+			GuestlistID:      userGuestlist.ID,
+			AdditionalGuests: gofakeit.UintRange(0, 2),
+			ArrivalNote:      getOptionalArrivalNote(),
+		}
+
+		if err := ds.db.Create(guest).Error; err != nil {
+			return fmt.Errorf("failed to create guest %q: %w", guest.Name, err)
+		}
+	}
+
+	for range gofakeit.Number(1, maxPresentEntries) {
+		arrivedAt := gofakeit.Date()
+		guest := &models.Guest{
+			Name:             gofakeit.Name(),
+			GuestlistID:      userGuestlist.ID,
+			AdditionalGuests: gofakeit.UintRange(0, 2),
+			AttendedGuests:   1,
+			ArrivedAt:        &arrivedAt,
+		}
+
+		if err := ds.db.Create(guest).Error; err != nil {
+			return fmt.Errorf("failed to create guest %q: %w", guest.Name, err)
+		}
+	}
+
+	return nil
+}
+
+// seedKnownE2EGuests creates the two guests the e2e suite searches for by name.
+func (ds *DatabaseSeed) seedKnownE2EGuests() error {
+	// for e2e test: create two guests with known names in a special guestlist
+	userGuestlist := &models.Guestlist{Name: "E2E Guestlist " + gofakeit.FirstName(), ProductID: ds.freeProduct.ID}
+	if err := ds.db.Create(userGuestlist).Error; err != nil {
+		return fmt.Errorf("failed to create guestlist %q: %w", userGuestlist.Name, err)
+	}
+
+	jean := &models.Guest{
+		Name:             "Jean Dupont",
+		GuestlistID:      userGuestlist.ID,
+		AdditionalGuests: uint(gofakeit.UintRange(0, 2)),
+	}
+	if err := ds.db.Create(jean).Error; err != nil {
+		return fmt.Errorf("failed to create guest %q: %w", jean.Name, err)
+	}
+
+	note := "Ciao Mario!"
+
+	mario := &models.Guest{
+		Name:             "Mario Rossi",
+		GuestlistID:      userGuestlist.ID,
+		AdditionalGuests: uint(gofakeit.UintRange(0, 2)),
+		ArrivalNote:      &note,
+	}
+	if err := ds.db.Create(mario).Error; err != nil {
+		return fmt.Errorf("failed to create guest %q: %w", mario.Name, err)
+	}
+
+	return nil
+}
+
+func (ds *DatabaseSeed) seedPurchases(purchaseCount int) error {
 	if purchaseCount <= 0 {
-		return
+		return nil
 	}
 
 	ctx := gormaudit.WithUserID(context.Background(), "seed")
 
-	_ = ds.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	if err := ds.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		for i := 1; i < purchaseCount; i++ {
 			purchase := models.Purchase{
 				// generate a random PaymentMethod from models.PaymentMethodCash and models.PaymentMethodCC
@@ -360,9 +440,18 @@ func (ds *DatabaseSeed) seedPurchases(purchaseCount int) {
 				purchase.PurchaseItems = append(purchase.PurchaseItems, purchaseItem)
 			}
 
-			ds.db.WithContext(ctx).Create(&purchase)
+			// Write through tx, never the outer ds.db: this transaction already
+			// holds the only pool connection, so an outer-handle write would wait
+			// for a connection that is never released. See ADR 003.
+			if err := tx.WithContext(ctx).Create(&purchase).Error; err != nil {
+				return fmt.Errorf("failed to seed purchase %d: %w", i, err)
+			}
 		}
 
 		return nil
-	})
+	}); err != nil {
+		return fmt.Errorf("failed to seed purchases: %w", err)
+	}
+
+	return nil
 }

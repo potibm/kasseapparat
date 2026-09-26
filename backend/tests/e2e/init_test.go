@@ -55,7 +55,9 @@ func setup() {
 		log.Fatal("Failed to migrate database: ", err)
 	}
 
-	utils.SeedDatabase(db, true)
+	if err = utils.SeedDatabase(db, true); err != nil {
+		log.Fatal("Failed to seed database: ", err)
+	}
 }
 
 func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFunc func()) {

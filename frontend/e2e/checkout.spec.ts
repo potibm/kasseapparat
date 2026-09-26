@@ -11,6 +11,9 @@ test.describe("checkout", () => {
     await resetDatabase();
 
     await page.goto("/");
+
+    const pos = new PosPage(page);
+    await pos.expectProductVisible(regularTicketProduct);
   });
 
   test("should have an empty cart on start", async ({ page }) => {

@@ -73,7 +73,10 @@ func performDatabaseReset(dbName string, shouldSeed, withTestData bool) error {
 
 	if shouldSeed {
 		slog.Info("Running seeding...", "with_test_data", withTestData)
-		utils.SeedDatabase(db, withTestData)
+
+		if err := utils.SeedDatabase(db, withTestData); err != nil {
+			return fmt.Errorf("reset failed while seeding the database: %w", err)
+		}
 	}
 
 	slog.Info("Database reset completed successfully!")

@@ -99,13 +99,12 @@ func TestConnectToDatabaseBoundsConnectionPool(t *testing.T) {
 // The single-connection bound deadlocks if a transaction callback reaches for the
 // outer repository instead of the transaction-scoped one, so pin that behaviour.
 func TestConnectToDatabaseTransactionDoesNotDeadlock(t *testing.T) {
-	err := os.MkdirAll("data", 0o755)
-	require.NoError(t, err)
-
-	defer os.RemoveAll("data")
+	t.Chdir(t.TempDir())
 
 	db, err := ConnectToDatabase("testdb_tx")
 	require.NoError(t, err)
+
+	t.Cleanup(func() { _ = CloseDatabase(db) })
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -117,6 +116,67 @@ func TestConnectToDatabaseTransactionDoesNotDeadlock(t *testing.T) {
 	})
 
 	require.NoError(t, err)
+}
+
+// The seed is the one transaction that does not go through WithTransaction, and it
+// runs on the bounded pool in CI (`mise run e2e:setup` -> `database reset
+// --test-data`). A reach-back there deadlocks, so run it on the real pool under a
+// watchdog: a regression fails the test instead of hanging the job until the
+// workflow timeout.
+func TestSeedDatabaseOnBoundedPoolDoesNotDeadlock(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	db, err := ConnectToDatabase("testdb_seed")
+	require.NoError(t, err)
+
+	t.Cleanup(func() { _ = CloseDatabase(db) })
+
+	sqlDB, err := db.DB()
+	require.NoError(t, err)
+	require.Equal(t, 1, sqlDB.Stats().MaxOpenConnections, "seed must run on the bounded pool")
+
+	done := make(chan error, 1)
+
+	go func() {
+		done <- SeedDatabase(db, true)
+	}()
+
+	select {
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(30 * time.Second):
+		t.Fatal("SeedDatabase did not finish: a transaction callback waits for a connection the pool cannot give it")
+	}
+
+	// A silent rollback would leave the fixture database empty, so assert the
+	// transaction actually committed its purchases.
+	var purchaseCount int64
+
+	require.NoError(t, db.Model(&models.Purchase{}).Count(&purchaseCount).Error)
+	assert.Positive(t, purchaseCount, "seeded purchases should have been committed")
+}
+
+// Reaching for the outer handle from inside a transaction can only ever end in a
+// context error, never in a connection. Bound it so the failure is an assertion
+// rather than a hang.
+func TestBoundedPoolTransactionCallbackUsingOuterHandleErrors(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	db, err := ConnectToDatabase("testdb_outer")
+	require.NoError(t, err)
+
+	t.Cleanup(func() { _ = CloseDatabase(db) })
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	err = db.WithContext(ctx).Transaction(func(_ *gorm.DB) error {
+		product := &models.Product{Name: "Outer Handle", NetPrice: decimal.NewFromInt(10)}
+
+		return db.WithContext(ctx).Create(product).Error
+	})
+
+	require.ErrorIs(t, err, context.DeadlineExceeded)
 }
 
 func TestConnectToLocalDatabase(t *testing.T) {
@@ -146,13 +206,32 @@ func TestSeedDatabase(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, db)
 
-	assert.NotPanics(t, func() {
-		SeedDatabase(db, true) // Test with includeTestData = true
-	})
+	require.NoError(t, SeedDatabase(db, true), "seeding with test data should succeed")
 
-	assert.NotPanics(t, func() {
-		SeedDatabase(db, false) // Test with includeTestData = false
-	})
+	var purchaseCount int64
+
+	require.NoError(t, db.Model(&models.Purchase{}).Count(&purchaseCount).Error)
+	assert.Positive(t, purchaseCount, "test data should seed purchases")
+
+	require.NoError(t, SeedDatabase(db, false), "seeding without test data should succeed")
+}
+
+// A failed seed used to be swallowed, so `database reset` reported success over a
+// half-written fixture database. Drop the table the first seeding step writes to
+// and pin that the failure reaches the caller.
+func TestSeedDatabaseReportsFailure(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	db, err := ConnectToDatabase("testdb_seedfail")
+	require.NoError(t, err)
+
+	t.Cleanup(func() { _ = CloseDatabase(db) })
+
+	require.NoError(t, db.Migrator().DropTable(&models.Product{}))
+
+	err = SeedDatabase(db, true)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to seed database")
 }
 
 func TestCloseDatabase(t *testing.T) {

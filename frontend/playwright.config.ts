@@ -8,6 +8,13 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: "html",
+  // Explicit budgets so a slow step is attributed to that step. Without these a
+  // cold Vite dev server can spend the whole per-test budget inside beforeEach,
+  // and a click that never completes reports only as "Test timeout exceeded".
+  timeout: 60_000,
+  actionTimeout: 15_000,
+  navigationTimeout: 30_000,
+  expect: { timeout: 10_000 },
   use: {
     baseURL: "http://localhost:4000",
     trace: "retain-on-failure",
