@@ -93,7 +93,6 @@ func InitViper() {
 	viper.SetDefault("auth.oidc_issuer", "")
 	viper.SetDefault("auth.oidc_client_id", "")
 	viper.SetDefault("auth.oidc_client_secret", "")
-	viper.SetDefault("auth.oidc_callback_url", "")
 	viper.SetDefault("auth.oidc_admin_group", "")
 	viper.SetDefault("auth.session_secret", "")
 	viper.SetDefault("auth.session_duration", DefaultSessionDuration)

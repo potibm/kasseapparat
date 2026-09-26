@@ -153,6 +153,7 @@ run = """
   go get -u -t ./...
   go mod tidy
   gomajor list
+  mise run licenses
 """
 
 [tasks."fe:deps:update"]
@@ -164,6 +165,7 @@ run = """
   npm install
   npm update
   npm audit fix
+  mise run licenses
 """
 
 [tasks."actions:deps:update"]

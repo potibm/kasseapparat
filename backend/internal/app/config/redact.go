@@ -12,6 +12,9 @@ func (c Config) RedactConfigForDisplay() Config {
 
 	result.Mailer.DSN = redactURLPassword(c.Mailer.DSN)
 
+	result.Auth.OidcClientSecret = redacted
+	result.Auth.SessionSecret = redacted
+
 	return result
 }
 
