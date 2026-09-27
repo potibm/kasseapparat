@@ -24,7 +24,6 @@ go build -ldflags "-X github.com/potibm/kasseapparat/cmd.Version=$VERSION" -o ..
 cd ..
 
 # 4. Prepare artefacts
-[ -f $DIST_DIR/.env ] || cp backend/.env.example $DIST_DIR/.env
 mkdir -p $DIST_DIR/data
 cd $DIST_DIR 
 ./kasseapparat database migrate

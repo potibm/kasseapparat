@@ -46,7 +46,7 @@ Docker image check: `mise run docker:build` (uses a custom `kasseapparat-builder
 
 `backend/cmd/serve.go` embeds `//go:embed assets`. If the directory is missing, **compilation fails**.
 
-- `mise run be:setup` creates it (plus a dummy `index.html`) and copies `.env.example` → `.env`.
+- `mise run be:setup` creates it (plus a dummy `index.html`) and the `data/` directory.
 - `mise run be:lint` also creates a dummy file for this reason.
 - `mise run be:test` depends on `be:setup`, so tests via `mise` are safe; running `go test ./...` directly without `be:setup` first will fail.
 - Dockerfile copies the real frontend build into `backend/cmd/assets`.
@@ -55,9 +55,10 @@ Docker image check: `mise run docker:build` (uses a custom `kasseapparat-builder
 
 1. `backend/config/config.yaml` (committed defaults)
 2. `backend/config/config.local.yaml` (gitignored overrides, merged if present)
-3. `.env` (loaded by `godotenv`)
-4. Environment variables (`APP_LOG_LEVEL` maps to `app.log_level`)
-5. CLI flags (`--log-level`, `--port`, etc.)
+3. Environment variables (`APP_LOG_LEVEL` maps to `app.log_level`)
+4. CLI flags (`--log-level`, `--port`, etc.)
+
+`.env` is still read by `godotenv` for backwards compatibility but is **deprecated** — do not add it, document it, or generate it. Secrets go in `config.local.yaml`; real environment variables are for what an orchestrator injects. Because environment variables outrank both config files, a leftover `.env` silently overrides `config.local.yaml` — see the note in `docs/admin.md`.
 
 Use `config/config.local.yaml` for local secrets; do not edit `config.yaml`.
 Generate a fresh config with: `go run . config create`

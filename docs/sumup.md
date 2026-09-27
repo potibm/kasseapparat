@@ -2,18 +2,26 @@
 
 You need a SumUp account and a **SumUp Solo** card reader. Other devices – especially the **Solo Light** – are not supported.
 
-## Configure .env file
+## Configuration
 
-To configure SumUp you will need the following information in your `.env` file:
+Put the SumUp credentials in `config/config.local.yaml`, which is git-ignored:
 
+```yaml
+sumup:
+  api_key: sup_sk_01234567890abcdef0123456789abcdef
+  merchant_code: M0123456
+  application_id: com.example.kasseapparat
+  affiliate_key: sup_afk_01234567890abcdef0123456789abcdef
+  public_url: https://kasseapparat.example.com
+
+payment_methods:
+  - code: CASH
+    name: Cash
+  - code: SUMUP
+    name: SumUp
 ```
-PAYMENT_METHODS="CASH,SUMUP"
-SUMUP_API_KEY="sup_sk_01234567890abcdef0123456789abcdef"
-SUMUP_MERCHANT_CODE="M0123456"
-SUMUP_APPLICATION_ID="com.example.kasseapparat"
-SUMUP_AFFILIATE_KEY="sup_afk_01234567890abcdef0123456789abcdef"
-SUMUP_PUBLIC_URL="https://kasseapparat.example.com"
-```
+
+The `payment_methods` list decides which buttons the POS offers. It is a YAML list, not a comma-separated string.
 
 ### Merchant Code (Merchant ID)
 
@@ -23,7 +31,7 @@ You can find your Merchant Code on [SumUp Settings](https://me.sumup.com/en-en/s
 
 Log in to [SumUp Developer API Keys](https://me.sumup.com/en-en/settings/api-keys) and generate a new key.
 
-Give it a descriptive name and store the key starting with `sup_sk` as `SUMUP_API_KEY` in your .env file.
+Give it a descriptive name and store the key starting with `sup_sk` as `sumup.api_key`.
 
 ### Application ID
 
@@ -31,13 +39,13 @@ Log in to [Affiliate Keys](https://me.sumup.com/en-en/settings/affiliate-keys) a
 
 You can find more details in the [Getting Started guide](https://developer.sumup.com/terminal-payments/introduction/getting-started) of the SumUp SDK/API.
 
-Store this ID as `SUMUP_APPLICATION_ID`.
+Store this ID as `sumup.application_id`.
 
 ### Affiliate Key
 
 When creating the Application ID, you should copy the corresponding Affiliate Key from [Affiliate Keys](https://me.sumup.com/en-en/settings/affiliate-keys).
 
-Store it as `SUMUP_AFFILIATE_KEY`. The key starts with `sup_afk`.
+Store it as `sumup.affiliate_key`. The key starts with `sup_afk`.
 
 ### Public URL
 

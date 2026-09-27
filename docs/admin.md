@@ -29,7 +29,7 @@ Find a list below with hardware that was tried and tested at demoparties (feel f
 
 ## Configuration
 
-Kasseapparat uses a layered configuration approach. The primary source of truth is the `config.yaml` file, while the `.env` file is strictly reserved for sensitive secrets (like passwords).
+Kasseapparat uses a layered configuration approach. `config/config.yaml` is the source of truth for the application structure, and a deployment overrides it with `config/config.local.yaml`. Real environment variables work too, and are the better choice for anything injected by your orchestrator. Secrets belong in `config.local.yaml`.
 
 ### 1. Main Configuration (`config.yaml`)
 
@@ -47,18 +47,34 @@ This generates `config/config.yaml` with sensible defaults. You should edit this
 - **Mail Settings:** Configure your sender address and subject prefixes for automated visitor arrival notifications.
 - **Business Rules:** Define VAT rates and accepted payment methods.
 
-_Optional:_ You can create a `config/config.local.yaml` for environment-specific settings that shouldn't be committed to version control.
+Create `config/config.local.yaml` for anything environment-specific that shouldn't be committed to version control: credentials, API keys, and per-deployment overrides.
 
-### 2. Secrets & Credentials (`.env`)
+### 2. Secrets & Credentials (`config.local.yaml`)
 
-While the YAML file handles the application structure, sensitive credentials must be kept in the `.env` file.
+`config.local.yaml` is merged over `config.yaml` and is git-ignored, so it is the right place for secrets. The `./config` directory is already mounted read-only into the container, so no extra configuration is needed. Typical content:
 
-Copy the `.env.example` from the repository to your server and rename it to `.env`. Here you only need to fill in:
+```yaml
+mailer:
+  dsn: smtp://user:password@mail.example.com:587
 
-- Your SMTP login credentials (e.g., `MAIL_DSN`)
-- Any required API keys
+sumup:
+  api_key: sup_sk_01234567890abcdef0123456789abcdef
 
-_(Note: While it is technically possible to override YAML settings via environment variables like `APP_AUTH_MODE`, sticking to the `config.yaml` is highly recommended for a clean setup)._
+sentry:
+  dsn: https://examplePublicKey@o0.ingest.sentry.io/0
+```
+
+In OIDC mode also set `auth.oidc_client_secret` and `auth.session_secret` (at least 32 characters). To read the purchase statistics endpoint from a display, set `auth.public_endpoint_token` — see [Token-guarded public endpoint](#token-guarded-public-endpoint).
+
+Run `kasseapparat config export` at any time to see the fully merged configuration; secrets are redacted in that output.
+
+_(Note: environment variables override both config files, so prefer `config.local.yaml` over `APP_*` variables for values you own, and use real environment variables only for what your orchestrator injects.)_
+
+### 3. The deprecated `.env` file
+
+Kasseapparat still reads a `.env` file from its working directory for backwards compatibility, but it is deprecated and we no longer ship a template for it. Move any values you have there into `config.local.yaml`.
+
+> **A leftover `.env` silently wins.** Environment variables take precedence over both config files, so an old `.env` will override the `config.local.yaml` you just wrote, without any warning. If a setting seems to be ignored, delete any `.env` and check `kasseapparat config export` again.
 
 ## Command Line Interface (CLI)
 
@@ -76,7 +92,7 @@ These flags can be appended to almost any command:
 
 - `kasseapparat serve`: Starts the main web server and API.
 - `kasseapparat config create`: Generates `config/config.yaml` with default values (use `--force` to overwrite).
-- `kasseapparat config export`: Prints the final, merged configuration (config.yaml + config.local.yaml + .env + CLI flags) as a JSON tree. Sensitive data like secrets and API keys are automatically redacted for safety.
+- `kasseapparat config export`: Prints the final, merged configuration (config.yaml + config.local.yaml + environment variables + CLI flags) as a JSON tree. Sensitive data like secrets and API keys are automatically redacted for safety.
 - `kasseapparat database migrate`: Creates or updates the database tables to the latest schema.
 - `kasseapparat database seed`: Fills the database with dummy data (useful for development).
 - `kasseapparat database reset`: Drops all tables and recreates them from scratch (WARNING: Deletes all data!).
@@ -127,7 +143,6 @@ services:
     volumes:
       - ./data:/app/data
       - ./config:/app/config:ro
-    env_file: ".env"
     environment:
       - "APP_GIN_MODE=release"
       - "APP_CORS_ALLOW_ORIGINS=https://kasseapparat.example.com"

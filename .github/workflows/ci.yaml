@@ -87,10 +87,6 @@ jobs:
       - name: Install dependencies
         run: mise run deps:install
 
-      - name: Create .env file
-        run: cp .env.example .env
-        working-directory: backend
-
       - name: Install Playwright OS Dependencies
         working-directory: frontend
         run: npx playwright install-deps
