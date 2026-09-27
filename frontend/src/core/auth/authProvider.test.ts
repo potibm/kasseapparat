@@ -179,11 +179,56 @@ describe("authProvider", () => {
   });
 
   describe("getPermissions", () => {
-    it("should throw if checkAuth not called", async () => {
+    it("should await a pending checkAuth instead of throwing", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ username: "testuser", role: "user" }),
+      });
+
       const provider = createAuthProvider(apiBaseUrl);
-      await expect(provider.getPermissions!({})).rejects.toThrow(
-        "checkAuth must be called first",
+
+      // getPermissions runs during the first render, before the in-flight
+      // /auth/me request can resolve. It must wait for it rather than throw.
+      const permissions = await provider.getPermissions!({});
+
+      expect(permissions).toBe("user");
+    });
+
+    it("should redirect to login when auth/me is unauthorized", async () => {
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 401 });
+
+      const provider = createAuthProvider(apiBaseUrl);
+      const promise = provider.getPermissions!({});
+
+      await vi.waitFor(() =>
+        expect(window.location.href).toBe(
+          `${apiBaseUrl}/auth/login?returnTo=%2Ftest%3Fparam%3Dvalue`,
+        ),
       );
+
+      // The promise deliberately never settles while the page navigates away.
+      expect(promise).toBeInstanceOf(Promise);
+    });
+
+    it("should share one /auth/me request across concurrent callers", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ username: "testuser", role: "admin" }),
+      });
+
+      const provider = createAuthProvider(apiBaseUrl);
+
+      const [permissions, identity] = await Promise.all([
+        provider.getPermissions!({}),
+        provider.getIdentity!(),
+        provider.checkAuth!({}),
+      ]);
+
+      expect(permissions).toBe("admin");
+      expect(identity).toEqual({ id: "testuser", fullName: "testuser" });
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
 
     it("should return user role after authentication", async () => {
@@ -202,11 +247,18 @@ describe("authProvider", () => {
   });
 
   describe("getIdentity", () => {
-    it("should throw if not authenticated", async () => {
+    it("should await a pending checkAuth instead of throwing", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ username: "testuser", role: "user" }),
+      });
+
       const provider = createAuthProvider(apiBaseUrl);
-      await expect(provider.getIdentity!()).rejects.toThrow(
-        "Not authenticated",
-      );
+
+      const identity = await provider.getIdentity!();
+
+      expect(identity).toEqual({ id: "testuser", fullName: "testuser" });
     });
 
     it("should return user identity after authentication", async () => {

@@ -12,6 +12,7 @@ type AuthUser = z.infer<typeof AuthUserSchema>;
 
 export const createAuthProvider = (apiBaseUrl: string): AuthProvider => {
   let cachedUser: AuthUser | null = null;
+  let pendingUser: Promise<AuthUser | null> | null = null;
 
   const redirectToLogin = () => {
     cachedUser = null;
@@ -24,48 +25,79 @@ export const createAuthProvider = (apiBaseUrl: string): AuthProvider => {
     return new Promise<void>(() => {});
   };
 
+  const requestUser = async (): Promise<AuthUser | null> => {
+    const response = await fetch(`${apiBaseUrl}/auth/me`, {
+      credentials: "include",
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.statusText}`);
+    }
+
+    return AuthUserSchema.parse(await response.json());
+  };
+
+  /**
+   * Resolves the current user, fetching `/auth/me` at most once.
+   *
+   * react-admin drives `checkAuth`, `getPermissions` and `getIdentity` from
+   * three independent queries, so on a cold load all three start before any
+   * fetch has resolved. They must therefore not depend on being called in a
+   * particular order: awaiting one shared request keeps them consistent and
+   * avoids fanning out into one request per caller. Callers that arrive while
+   * the cache is cold join the in-flight request instead of starting another.
+   */
+  const ensureUser = (): Promise<AuthUser | null> => {
+    if (cachedUser) {
+      return Promise.resolve(cachedUser);
+    }
+
+    pendingUser ??= requestUser()
+      .then((user) => {
+        cachedUser = user;
+        return user;
+      })
+      .finally(() => {
+        pendingUser = null;
+      });
+
+    return pendingUser;
+  };
+
   return {
     checkAuth: async (_params: unknown = {}) => {
-      if (cachedUser) {
-        return;
-      }
+      const user = await ensureUser();
 
-      try {
-        const response = await fetch(`${apiBaseUrl}/auth/me`, {
-          credentials: "include",
-        });
-
-        if (response.status === 401 || response.status === 403) {
-          return redirectToLogin();
-        }
-
-        if (!response.ok) {
-          throw new Error(`API Error: ${response.statusText}`);
-        }
-
-        const rawData = await response.json();
-
-        cachedUser = AuthUserSchema.parse(rawData);
-
-        return;
-      } catch (error) {
-        cachedUser = null;
-        throw error;
+      if (!user) {
+        // Never settles: the browser is navigating to the login page.
+        await redirectToLogin();
       }
     },
 
     getPermissions: async (_params: unknown = {}) => {
-      if (!cachedUser) {
-        throw new Error("checkAuth must be called first");
+      const user = await ensureUser();
+
+      if (!user) {
+        await redirectToLogin();
       }
-      return cachedUser?.role;
+
+      return user?.role;
     },
 
     getIdentity: async () => {
-      if (!cachedUser) throw new Error("Not authenticated");
+      const user = await ensureUser();
+
+      if (!user) {
+        await redirectToLogin();
+      }
+
       return {
-        id: cachedUser?.username || "unknown",
-        fullName: cachedUser?.username || "Unknown User",
+        id: user?.username || "unknown",
+        fullName: user?.username || "Unknown User",
       };
     },
 
@@ -80,6 +112,7 @@ export const createAuthProvider = (apiBaseUrl: string): AuthProvider => {
 
     logout: async () => {
       cachedUser = null;
+      pendingUser = null;
 
       try {
         await fetch(`${apiBaseUrl}/auth/logout`, {

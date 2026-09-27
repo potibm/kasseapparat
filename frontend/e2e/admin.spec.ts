@@ -27,4 +27,14 @@ test.describe("Admin", () => {
     await dashboard.sortPurchasesById();
     await dashboard.expectPurchasesListIsVisible();
   });
+
+  test("should load the products list without an auth race", async ({
+    page,
+  }) => {
+    const admin = new AdminPage(page);
+
+    await admin.gotoProducts();
+    await admin.expectProductsListIsVisible();
+    await admin.expectNoAuthRaceErrors();
+  });
 });
