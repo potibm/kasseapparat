@@ -60,7 +60,6 @@
     "fsevents@2.3.3": true
   },
   "overrides": {
-    "decode-uri-component": "^0.5.0",
     "deepmerge-ts": "^8.0.0"
   }
 }
