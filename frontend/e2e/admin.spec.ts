@@ -8,4 +8,23 @@ test.describe("Admin", () => {
     await dashboard.goto();
     await dashboard.expectDashboardIsVisible();
   });
+
+  test("should see the purchases list", async ({ page }) => {
+    const dashboard = new AdminPage(page);
+
+    await dashboard.gotoPurchases();
+    await dashboard.expectPurchasesListIsVisible();
+  });
+
+  test("should keep the purchases list working after sorting", async ({
+    page,
+  }) => {
+    const dashboard = new AdminPage(page);
+
+    await dashboard.gotoPurchases();
+    await dashboard.expectPurchasesListIsVisible();
+
+    await dashboard.sortPurchasesById();
+    await dashboard.expectPurchasesListIsVisible();
+  });
 });
