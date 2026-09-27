@@ -60,6 +60,48 @@ func getProductsValidSortFieldName(input string) (string, error) {
 	return "", errors.New("invalid sort field name")
 }
 
+// GetProductsForStockReconciliation loads the products the stock reconciliation walks,
+// without the guestlist preload the rest of the application wants. Only the columns the
+// reconciliation reads are selected, so it never touches a product it does not write.
+func (repo *Repository) GetProductsForStockReconciliation() ([]models.Product, error) {
+	var products []models.Product
+
+	err := repo.db.Model(&models.Product{}).
+		Select("id", "name", "total_stock", "sold_out", "hidden", "stock_flags_managed").
+		Order("id ASC").
+		Find(&products).Error
+	if err != nil {
+		return nil, errors.New("failed to load products for stock reconciliation")
+	}
+
+	return products, nil
+}
+
+// UpdateProductStockFlags writes the two product flags and their ownership, and nothing
+// else. Going through UpdateProductByID would read the product first and copy every
+// field over it, which would blank out anything the caller did not load.
+func (repo *Repository) UpdateProductStockFlags(
+	id int,
+	soldOut, hidden, managed bool,
+) error {
+	result := repo.db.Model(&models.Product{}).
+		Where("id = ?", id).
+		Updates(map[string]any{
+			"sold_out":            soldOut,
+			"hidden":              hidden,
+			"stock_flags_managed": managed,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrProductNotFound
+	}
+
+	return nil
+}
+
 func (repo *Repository) GetTotalProducts() (int64, error) {
 	var totalRows int64
 
@@ -93,6 +135,7 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	product.Hidden = updatedProduct.Hidden
 	product.SoldOut = updatedProduct.SoldOut
 	product.TotalStock = updatedProduct.TotalStock
+	product.StockFlagsManaged = updatedProduct.StockFlagsManaged
 
 	// Save the updated product to the database
 	if err := repo.db.Save(&product).Error; err != nil {
