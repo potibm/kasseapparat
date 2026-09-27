@@ -99,6 +99,10 @@ type AuthConfig struct {
 
 	SessionSecret   string        `mapstructure:"session_secret"`
 	SessionDuration time.Duration `mapstructure:"session_duration"`
+
+	// PublicEndpointToken guards the endpoints that must stay reachable without a
+	// login. Empty means "generate one for this run and warn", see cmd/root.go.
+	PublicEndpointToken string `mapstructure:"public_endpoint_token"`
 }
 
 const MinSessionSecretLength = 32

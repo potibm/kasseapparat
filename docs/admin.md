@@ -272,6 +272,44 @@ The check is a connection-level ping bounded by a 2-second timeout, so an exhaus
 
 > **A lost volume still reports `ready`.** SQLite re-creates the database and Kasseapparat re-runs its migrations on startup, so an empty but healthy database looks ready. Alert on data freshness and backup age, not on `/ready`. See [ADR 002](decisions/002-readiness-endpoint-scope.md).
 
+## Token-guarded public endpoint
+
+### `GET /api/v3/purchases/stats` — purchase statistics
+
+Returns the sold quantity per product and a `totalQuantity` total, for a statistics display that can sit anywhere — a shop window screen, a dashboard on another host.
+
+It is reachable **without a login**, so it is protected by a shared bearer token instead:
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v3/purchases/stats
+```
+
+Anything else gets `401`. The token is a shared secret: it grants access to this one endpoint and nothing else, and anyone holding it can read your sales quantities.
+
+Configure it in `config/config.yaml`:
+
+```yaml
+auth:
+  public_endpoint_token: "choose-something-long-and-random"
+```
+
+or via the environment:
+
+```bash
+AUTH_PUBLIC_ENDPOINT_TOKEN=choose-something-long-and-random
+```
+
+**Set it explicitly.** If it is empty, Kasseapparat generates a random token at each start and logs it as a warning:
+
+```
+WARN No auth.public_endpoint_token configured: generated a random one for this run. ...
+    token="..."
+```
+
+That keeps the endpoint reachable on a fresh install, but the value **changes on every restart**, so any display or script using it breaks until you set one. Treat that log line as a secret: it ends up in your logs and, if you ship logs to OpenObserve, in that system too. This stopgap is meant to be removed in the next major version — see [ADR 004](decisions/004-public-endpoint-token.md).
+
+CORS is open (`Access-Control-Allow-Origin: *`) because the display may be served from any origin, and the preflight for the `Authorization` header is answered explicitly. The token is therefore the only thing protecting this data.
+
 ## OpenTelemetry & Monitoring
 
 Kasseapparat natively supports **OpenTelemetry (OTel)**. You can enable the export of Traces, Logs, and Metrics by providing the OTLP endpoint:

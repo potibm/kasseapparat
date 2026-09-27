@@ -86,6 +86,9 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		Auth: config.AuthConfig{
 			Mode:        "proxy",
 			ProxyHeader: "X-Remote-User",
+			// The statistics endpoint is reachable without a login, so the suite
+			// needs the token to read it. See publicEndpointToken below.
+			PublicEndpointToken: publicEndpointToken,
 		},
 		VATRates: config.DefaultVatRates,
 		PaymentMethods: config.PaymentMethods{

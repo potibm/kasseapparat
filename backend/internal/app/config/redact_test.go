@@ -35,11 +35,13 @@ func TestRedactConfigForDisplay_RedactsAuthSecrets(t *testing.T) {
 	cfg.Auth.OidcClientSecret = "super-secret-client-string"
 	cfg.Auth.OidcAdminGroup = "kasseapparat-admins"
 	cfg.Auth.SessionSecret = "a-very-long-and-very-secure-session-string"
+	cfg.Auth.PublicEndpointToken = "the-public-endpoint-token"
 
 	redactedCfg := cfg.RedactConfigForDisplay()
 
 	assert.Equal(t, redacted, redactedCfg.Auth.OidcClientSecret)
 	assert.Equal(t, redacted, redactedCfg.Auth.SessionSecret)
+	assert.Equal(t, redacted, redactedCfg.Auth.PublicEndpointToken)
 
 	// Non-secret auth settings must stay visible so the export stays useful.
 	assert.Equal(t, "oidc", redactedCfg.Auth.Mode)

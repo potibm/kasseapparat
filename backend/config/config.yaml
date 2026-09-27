@@ -14,6 +14,10 @@ auth:
   mode: proxy
   proxy_admins: []
   proxy_header: X-Remote-User
+  # Bearer token for the endpoints that stay reachable without a login
+  # (GET /api/v3/purchases/stats). Leave empty and a random token is generated
+  # for each start and logged as a warning, so set it to keep it stable.
+  public_endpoint_token: ""
 format:
   currency:
     code: EUR

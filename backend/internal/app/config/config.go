@@ -96,6 +96,7 @@ func InitViper() {
 	viper.SetDefault("auth.oidc_admin_group", "")
 	viper.SetDefault("auth.session_secret", "")
 	viper.SetDefault("auth.session_duration", DefaultSessionDuration)
+	viper.SetDefault("auth.public_endpoint_token", "")
 
 	viper.SetDefault("vatrates", DefaultVatRates)
 	viper.SetDefault("payment_methods", DefaultPaymentMethods)
