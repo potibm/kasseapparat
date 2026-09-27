@@ -10,11 +10,6 @@ echo "🔧 Preparing backend environment..."
 mkdir -p ./data
 mkdir -p ./config
 
-if [ ! -f .env ]; then
-    echo "📝 Creating .env from .env.example..."
-    cp .env.example .env
-fi
-
 echo "📁 Creating dummy assets for go:embed..."
 mkdir -p cmd/assets
 touch cmd/assets/index.html
