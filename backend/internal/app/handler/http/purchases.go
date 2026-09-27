@@ -209,7 +209,9 @@ func (handler *Handler) GetPurchaseStats(c *gin.Context) {
 		totalQuantity += stat.Quantity
 	}
 
-	c.Header("Access-Control-Allow-Origin", "*")
+	// The CORS header comes from CreatePublicCorsMiddleware, which is wired to this
+	// route together with the bearer token check. Setting it here as well would be a
+	// second source of truth for who may read this data.
 	c.JSON(http.StatusOK, gin.H{"stats": stats, "totalQuantity": totalQuantity})
 }
 

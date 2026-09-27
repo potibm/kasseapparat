@@ -14,6 +14,7 @@ func (c Config) RedactConfigForDisplay() Config {
 
 	result.Auth.OidcClientSecret = redacted
 	result.Auth.SessionSecret = redacted
+	result.Auth.PublicEndpointToken = redacted
 
 	return result
 }

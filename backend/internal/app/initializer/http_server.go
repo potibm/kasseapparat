@@ -48,7 +48,28 @@ func InitializeHTTPServer(
 		otelgin.Middleware(config.OtelBackendServiceName),
 	)
 
-	r.GET("/api/"+APIVersion+"/purchases/stats", httpHdlr.GetPurchaseStats)
+	// The statistics display is called from arbitrary origins, so it gets its own
+	// permissive CORS instance. This group is created before the global CORS
+	// middleware below on purpose: gin snapshots a group's handlers when the group is
+	// created, so this route never sees the restrictive app-wide allow list, and the
+	// cors middleware answers the browser's preflight for it.
+	publicStats := r.Group("/api/" + APIVersion)
+	publicStats.Use(CreatePublicCorsMiddleware())
+	publicStats.GET(
+		"/purchases/stats",
+		middleware.PublicEndpointAuth(cfg),
+		httpHdlr.GetPurchaseStats,
+	)
+
+	// The display call carries an Authorization header, so the browser preflights it.
+	// An OPTIONS request does not match the GET route above, and group middleware only
+	// runs on a matched route, so without this the request would fall through to gin's
+	// fallback chain and be answered by the app-wide CORS middleware, which rejects any
+	// origin outside app.cors_allow_origins. The cors middleware aborts with 204
+	// before the handler below is reached.
+	publicStats.OPTIONS("/purchases/stats", func(c *gin.Context) {
+		c.Status(http.StatusNoContent)
+	})
 
 	r.Use(CreateCorsMiddleware(cfg.App.CorsAllowOrigins))
 
@@ -114,6 +135,19 @@ func CreateCorsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	corsConfig.AllowCredentials = true
 	corsConfig.AddAllowHeaders("Authorization", "Credentials")
 	corsConfig.AddExposeHeaders("X-Total-Count", "Content-Disposition")
+
+	return cors.New(corsConfig)
+}
+
+// CreatePublicCorsMiddleware allows any origin, for the token-guarded public
+// endpoints only. Credentials stay off: the caller authenticates with a bearer token
+// rather than a cookie, and `Access-Control-Allow-Origin: *` is not legal alongside
+// `Access-Control-Allow-Credentials`.
+func CreatePublicCorsMiddleware() gin.HandlerFunc {
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowCredentials = false
+	corsConfig.AddAllowHeaders("Authorization")
 
 	return cors.New(corsConfig)
 }

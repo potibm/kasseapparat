@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/initializer"
+	"github.com/potibm/kasseapparat/internal/app/session"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -85,10 +87,43 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
+		if cmd.Name() == "serve" {
+			if err := ensurePublicEndpointToken(); err != nil {
+				return err
+			}
+		}
+
 		setupLogger(Cfg.App.LogFormat, Cfg.App.LogLevel)
 
 		return nil
 	},
+}
+
+// ensurePublicEndpointToken keeps the token-guarded public endpoints usable when the
+// operator never set one. An empty value would leave those endpoints closed, so a
+// random token is generated for this run instead and logged, since the alternative is
+// an operator staring at 401s with no way to recover the value. The token changes on
+// every restart, so it only serves as a stopgap; see ADR 004.
+func ensurePublicEndpointToken() error {
+	if Cfg.Auth.PublicEndpointToken != "" {
+		return nil
+	}
+
+	token, err := session.GenerateRandomString(session.RandomStringLength)
+	if err != nil {
+		return fmt.Errorf("failed to generate a public endpoint token: %w", err)
+	}
+
+	Cfg.Auth.PublicEndpointToken = token
+
+	slog.Warn(
+		"No auth.public_endpoint_token configured: generated a random one for this run. "+
+			"Set auth.public_endpoint_token (env AUTH_PUBLIC_ENDPOINT_TOKEN) to keep it stable across restarts. "+
+			"Treat this log line as a secret.",
+		"token", token,
+	)
+
+	return nil
 }
 
 func Execute() error {

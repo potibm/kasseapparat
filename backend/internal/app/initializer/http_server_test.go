@@ -16,6 +16,7 @@ import (
 	"github.com/potibm/kasseapparat/internal/app/middleware"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Important: create a folder named "assets" in the same directory as this test file and add
@@ -74,6 +75,83 @@ func TestInitializeHttpServer(t *testing.T) {
 		assert.True(t, registered[http.MethodGet+" /api/v3/config"], "The route /api/v3/config should be registered")
 		assert.True(t, registered[http.MethodGet+" /health"], "The route /health should be registered")
 		assert.True(t, registered[http.MethodGet+" /ready"], "The route /ready should be registered")
+	})
+}
+
+// The statistics display is reached from arbitrary origins, so it needs both a bearer
+// token and a preflight answer. The preflight part depends on the route being
+// registered before the app-wide CORS middleware, which is easy to break by moving
+// the registration, so pin the whole behaviour here rather than per middleware.
+func TestPublicPurchaseStats_RequiresTokenAndAnswersPreflight(t *testing.T) {
+	const token = "s3cr3t-public-token"
+
+	gin.SetMode(gin.TestMode)
+
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	engine, err := InitializeHTTPServer(
+		httpHandler.Handler{},
+		&stubWSHandler{},
+		sqliteRepo.Repository{},
+		testFS,
+		config.Config{
+			App: config.AppConfig{
+				GinMode:          gin.TestMode,
+				CorsAllowOrigins: []string{"http://localhost:8080"},
+			},
+			Auth: config.AuthConfig{PublicEndpointToken: token},
+		},
+		logger,
+	)
+	require.NoError(t, err)
+
+	const statsPath = "/api/v3/purchases/stats"
+
+	t.Run("rejects a request without a token", func(t *testing.T) {
+		recorder := httptest.NewRecorder()
+		engine.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, statsPath, http.NoBody))
+
+		assert.Equal(t, http.StatusUnauthorized, recorder.Code)
+	})
+
+	t.Run("rejects a request with a wrong token", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodGet, statsPath, http.NoBody)
+		request.Header.Set("Authorization", "Bearer nope")
+
+		recorder := httptest.NewRecorder()
+		engine.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusUnauthorized, recorder.Code)
+	})
+
+	t.Run("accepts a request with the configured token", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodGet, statsPath, http.NoBody)
+		request.Header.Set("Authorization", "Bearer "+token)
+		request.Header.Set("Origin", "https://some-other-site.example")
+
+		recorder := httptest.NewRecorder()
+		engine.ServeHTTP(recorder, request)
+
+		// The handler is a zero-value Handler here, so a panic-free 500 is proof the
+		// token check let the request through to it.
+		assert.NotEqual(t, http.StatusUnauthorized, recorder.Code)
+		assert.NotEqual(t, http.StatusForbidden, recorder.Code)
+		assert.Equal(t, "*", recorder.Header().Get("Access-Control-Allow-Origin"))
+	})
+
+	t.Run("answers a cross-origin preflight from an origin outside the app allow list", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodOptions, statsPath, http.NoBody)
+		request.Header.Set("Origin", "https://some-other-site.example")
+		request.Header.Set("Access-Control-Request-Method", "GET")
+		request.Header.Set("Access-Control-Request-Headers", "Authorization")
+
+		recorder := httptest.NewRecorder()
+		engine.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusNoContent, recorder.Code)
+		assert.Equal(t, "*", recorder.Header().Get("Access-Control-Allow-Origin"))
+		assert.Contains(t, recorder.Header().Get("Access-Control-Allow-Headers"), "Authorization")
+		assert.Contains(t, recorder.Header().Get("Access-Control-Allow-Methods"), "GET")
 	})
 }
 
