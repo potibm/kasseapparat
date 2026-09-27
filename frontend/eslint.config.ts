@@ -7,6 +7,18 @@ import eslintReact from "@eslint-react/eslint-plugin";
 
 export default defineConfig([
   { ignores: ["dist", "coverage", "**/.*"] },
+  {
+    // Playwright writes its report and test artifacts into the project. The
+    // report bundles third-party JS, which trips the no-restricted-syntax rule
+    // for .js files and buries real findings under thousands of errors.
+    ignores: [
+      "playwright-report",
+      "blob-report",
+      "test-results",
+      "playwright/.cache",
+      "playwright/.auth",
+    ],
+  },
   eslint.configs.recommended,
   tseslint.configs.recommended,
   reactRefresh.configs.vite,

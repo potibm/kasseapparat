@@ -28,7 +28,9 @@ func NewDbSeedCmd() *cobra.Command {
 				}
 			}()
 
-			utils.SeedDatabase(db, includeTestData)
+			if err := utils.SeedDatabase(db, includeTestData); err != nil {
+				return err
+			}
 
 			slog.Info("Seed completed successfully!")
 

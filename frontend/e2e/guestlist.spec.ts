@@ -15,6 +15,7 @@ test.describe("guestlist", () => {
       await page.goto("/");
 
       const pos = new PosPage(page);
+      await pos.expectProductVisible(freeTicketProduct);
       await pos.openGuestlistModal(freeTicketProduct);
       await expect(page.getByText("List for 🎟️ Free")).toBeVisible();
     });
@@ -55,6 +56,7 @@ test.describe("guestlist", () => {
       await page.goto("/");
 
       const pos = new PosPage(page);
+      await pos.expectProductVisible(prepaidTicketProduct);
       await pos.openGuestlistModal(prepaidTicketProduct);
       await expect(page.getByText("List for 🎟️ Prepaid")).toBeVisible();
     });
@@ -90,11 +92,12 @@ test.describe("guestlist", () => {
 
   test.describe("using the onscreen keyboard", () => {
     test.beforeEach(async ({ page }) => {
-      resetDatabase();
+      await resetDatabase();
 
       await page.goto("/");
 
       const pos = new PosPage(page);
+      await pos.expectProductVisible(freeTicketProduct);
       await pos.openGuestlistModal(freeTicketProduct);
     });
 

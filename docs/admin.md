@@ -268,6 +268,10 @@ Answers `200` once the SQLite database is reachable, and `503` when it is not.
 
 `/ready` deliberately checks the database and nothing else. In particular it does **not** contact the OIDC identity provider — see [ADR 002](decisions/002-readiness-endpoint-scope.md) for the reasoning. An IdP outage therefore does not affect the readiness response; monitor the identity provider separately, or alert on login failures.
 
+The check is a connection-level ping bounded by a 2-second timeout, so an exhausted connection pool fails the probe instead of hanging it.
+
+> **A lost volume still reports `ready`.** SQLite re-creates the database and Kasseapparat re-runs its migrations on startup, so an empty but healthy database looks ready. Alert on data freshness and backup age, not on `/ready`. See [ADR 002](decisions/002-readiness-endpoint-scope.md).
+
 ## OpenTelemetry & Monitoring
 
 Kasseapparat natively supports **OpenTelemetry (OTel)**. You can enable the export of Traces, Logs, and Metrics by providing the OTLP endpoint:

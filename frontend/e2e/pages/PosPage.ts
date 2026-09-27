@@ -15,6 +15,17 @@ export class PosPage {
     this.checkoutCashButton = page.getByTestId("checkout-button-CASH");
   }
 
+  /**
+   * The product grid is rendered from a client-side fetch, so `page.goto`
+   * resolving does not mean the POS is interactive yet. Gate on a rendered card
+   * so a click is never issued against a half-loaded page.
+   */
+  async expectProductVisible(product: Product) {
+    await expect(
+      this.page.getByTestId(`product-card-${product.id}`),
+    ).toBeVisible();
+  }
+
   async addProductByName(name: string) {
     await this.page.getByRole("button", { name }).click();
   }
@@ -26,9 +37,16 @@ export class PosPage {
   }
 
   async openGuestlistModalByName(productName: string) {
-    await this.page
-      .getByRole("button", { name: `Show guestlist for ${productName}` })
-      .click();
+    const button = this.page.getByRole("button", {
+      name: `Show guestlist for ${productName}`,
+    });
+
+    // Assert before clicking so a missing button fails here with a readable
+    // reason instead of timing out inside the actionability check.
+    await expect(button).toBeVisible();
+    await button.click();
+
+    await expect(this.page.getByTestId("guestlist-search-input")).toBeVisible();
   }
 
   async openGuestlistModal(product: Product) {

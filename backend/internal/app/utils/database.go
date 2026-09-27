@@ -52,6 +52,10 @@ func ConnectToDatabase(filename string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
+	if err := configureConnectionPool(db); err != nil {
+		return nil, err
+	}
+
 	return db, nil
 }
 
@@ -103,6 +107,19 @@ func PurgeDatabase(db *gorm.DB) error {
 	return nil
 }
 
+func configureConnectionPool(db *gorm.DB) error {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get database connection: %w", err)
+	}
+
+	// SQLite serializes writers, so extra connections only add lock contention
+	// without adding throughput. See ADR 003.
+	sqlDB.SetMaxOpenConns(1)
+
+	return nil
+}
+
 func MigrateDatabase(db *gorm.DB) error {
 	err := db.AutoMigrate(allModels...)
 	if err != nil {
@@ -112,9 +129,14 @@ func MigrateDatabase(db *gorm.DB) error {
 	return nil
 }
 
-func SeedDatabase(db *gorm.DB, includeTestData bool) {
+func SeedDatabase(db *gorm.DB, includeTestData bool) error {
 	seed := NewDatabaseSeed(db)
-	seed.Seed(includeTestData)
+
+	if err := seed.Seed(includeTestData); err != nil {
+		return fmt.Errorf("failed to seed database: %w", err)
+	}
+
+	return nil
 }
 
 func CloseDatabase(db *gorm.DB) error {
