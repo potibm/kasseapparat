@@ -110,6 +110,7 @@ const Cart: React.FC<CartProps> = ({
               cartElement={cartElement}
               currency={currency}
               removeFromCart={removeFromCart}
+              isOverStock={cart.isOverStock(cartElement)}
             />
           ))}
           <TableRow>

@@ -7,26 +7,33 @@ import {
   Guest as GuestType,
 } from "../../../../api/schemas";
 import { CartItem as CartItemType } from "../../types/cart.types";
+import { availableStock } from "@pos/features/stock/utils/stock";
 
 interface CartRowProps {
   cartElement: CartItemType;
   currency: { format: (val: number) => string };
   removeFromCart: (item: ProductType) => void;
+  isOverStock: boolean;
 }
 
 const CartRow: React.FC<CartRowProps> = ({
   cartElement,
   currency,
   removeFromCart,
+  isOverStock,
 }) => {
   const displayListItem = (listItem: GuestType) => {
     return listItem.code ?? listItem.name;
   };
 
+  const available = availableStock(cartElement, 0);
+  const overBy = cartElement.quantity - available;
+
   return (
     <TableRow
       key={cartElement.id}
       data-testid={"cart-product-" + cartElement.id}
+      className={isOverStock ? "bg-red-100 dark:bg-red-900/40" : undefined}
     >
       <TableCell className="whitespace-normal px-4 py-2">
         {cartElement.name}
@@ -35,6 +42,16 @@ const CartRow: React.FC<CartRowProps> = ({
             {displayListItem(listItem)}
           </div>
         ))}
+        {isOverStock && (
+          <div
+            className="text-xs font-medium text-red-700 dark:text-red-300"
+            data-testid={"cart-over-stock-" + cartElement.id}
+          >
+            {overBy > 0
+              ? `Only ${available} left, ${overBy} over stock`
+              : `Only ${available} left`}
+          </div>
+        )}
       </TableCell>
       <TableCell className="text-right">{cartElement.quantity}</TableCell>
       <TableCell className="text-right">

@@ -81,6 +81,7 @@ func NewServeCmd() *cobra.Command {
 				&mailer,
 				Cfg.Format.Currency.FractionDigitsMax,
 				Cfg.Format.Currency.Code,
+				Cfg.App.OutOfStockBehavior,
 			)
 
 			websocketHandler := websocket.NewHandler(

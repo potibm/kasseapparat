@@ -62,6 +62,7 @@ func InitViper() {
 
 	viper.SetDefault("app.frontend_url", "")
 	viper.SetDefault("app.cors_allow_origins", []string{})
+	viper.SetDefault("app.out_of_stock_behavior", OutOfStockIgnore)
 
 	viper.SetDefault("format.currency.locale", "da-DK")
 	viper.SetDefault("format.currency.code", "DKK")

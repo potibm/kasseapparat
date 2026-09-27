@@ -204,4 +204,92 @@ describe("Cart", () => {
       expect(payload).not.toHaveProperty("type");
     });
   });
+
+  describe("stock limits", () => {
+    const limited = (overrides = {}) =>
+      createMockProduct({
+        totalStock: 3,
+        unitsSold: 0,
+        soldOut: false,
+        ...overrides,
+      });
+
+    it("adds up to the available stock when the behaviour is fail", () => {
+      const product = limited();
+      const cart = new Cart().add(product, 2, null, "fail");
+
+      expect(cart.getQuantity(product.id)).toBe(2);
+    });
+
+    it("clamps to the available stock when more is requested", () => {
+      const product = limited();
+      const cart = new Cart().add(product, 10, null, "fail");
+
+      expect(cart.getQuantity(product.id)).toBe(3);
+    });
+
+    it("refuses to add when nothing is left", () => {
+      const product = limited({ unitsSold: 3 });
+      const cart = new Cart().add(product, 1, null, "fail");
+
+      expect(cart.getQuantity(product.id)).toBe(0);
+      expect(cart.isEmpty).toBe(true);
+    });
+
+    it("accounts for what is already in the cart", () => {
+      const product = limited();
+      const cart = new Cart()
+        .add(product, 2, null, "fail")
+        .add(product, 5, null, "fail");
+
+      expect(cart.getQuantity(product.id)).toBe(3);
+    });
+
+    it("allows going beyond the stock under ignore", () => {
+      const product = limited();
+      const cart = new Cart().add(product, 10, null, "ignore");
+
+      expect(cart.getQuantity(product.id)).toBe(10);
+    });
+
+    it("never limits an unlimited product", () => {
+      const product = limited({ totalStock: 0, unitsSold: 40 });
+
+      for (const behavior of ["fail", "auto_sold_out", "auto_hide"] as const) {
+        expect(
+          new Cart().add(product, 25, null, behavior).getQuantity(product.id),
+        ).toBe(25);
+      }
+    });
+
+    it("defaults to ignoring stock when no behaviour is given", () => {
+      const product = limited();
+      const cart = new Cart().add(product, 99);
+
+      expect(cart.getQuantity(product.id)).toBe(99);
+    });
+  });
+
+  describe("isOverStock()", () => {
+    it("reports a line that exceeds the available stock", () => {
+      const product = createMockProduct({ totalStock: 2, unitsSold: 0 });
+      const cart = new Cart().add(product, 5, null, "ignore");
+
+      expect(cart.isOverStock(cart.items[0])).toBe(true);
+    });
+
+    it("does not report a line within the stock", () => {
+      const product = createMockProduct({ totalStock: 5, unitsSold: 0 });
+      const cart = new Cart().add(product, 2, null, "fail");
+
+      expect(cart.isOverStock(cart.items[0])).toBe(false);
+    });
+
+    it("never reports an unlimited product as over stock", () => {
+      const product = createMockProduct({ totalStock: 0, unitsSold: 100 });
+      const cart = new Cart().add(product, 100, null, "ignore");
+
+      expect(cart.isOverStock(cart.items[0])).toBe(false);
+    });
+  });
 });

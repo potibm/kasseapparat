@@ -13,6 +13,18 @@ describe("PurchaseErrorHandler", () => {
       expect(type).toBe(PurchaseErrorType.ReaderBusy);
     });
 
+    it("should return OutOfStock when the remaining stock is reported", () => {
+      const error = new Error("Only 2 left in stock for T-Shirt");
+      const type = getPurchaseErrorType(error);
+      expect(type).toBe(PurchaseErrorType.OutOfStock);
+    });
+
+    it("should return OutOfStock when a product is sold out", () => {
+      const error = new Error("T-Shirt is sold out");
+      const type = getPurchaseErrorType(error);
+      expect(type).toBe(PurchaseErrorType.OutOfStock);
+    });
+
     it("should return Generic for errors without specific keywords", () => {
       const error = new Error("Network timeout");
       const type = getPurchaseErrorType(error);
@@ -30,6 +42,13 @@ describe("PurchaseErrorHandler", () => {
       const message = getErrorMessage(PurchaseErrorType.ReaderBusy);
       expect(message).toBe(
         "The SumUp reader is currently busy. Please complete or cancel the ongoing transaction.",
+      );
+    });
+
+    it("should return a stock message for OutOfStock", () => {
+      const message = getErrorMessage(PurchaseErrorType.OutOfStock);
+      expect(message).toBe(
+        "Not enough stock left for one of the products in the cart.",
       );
     });
 

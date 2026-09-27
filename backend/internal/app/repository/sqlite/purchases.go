@@ -241,6 +241,11 @@ func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
 	return purchases, nil
 }
 
+// GetPurchasedQuantitiesByProductID returns how many units of a product are spoken
+// for. Confirmed purchases count as sold, and pending ones count as reserved so a
+// second client cannot take the last units while a SumUp payment is still in flight.
+// Refunded, failed and cancelled purchases no longer count, which is what frees the
+// stock again.
 func (repo *Repository) GetPurchasedQuantitiesByProductID(productID int) (int, error) {
 	var sum sql.NullInt64
 
@@ -250,7 +255,7 @@ func (repo *Repository) GetPurchasedQuantitiesByProductID(productID int) (int, e
 			"(purchase_items.purchase_id = purchases.id AND purchase_items.deleted_at IS NULL)").
 		Where("purchase_items.product_id = ? AND "+
 			"purchases.deleted_at IS NULL AND "+
-			"purchases.status = ?", productID, models.PurchaseStatusConfirmed).
+			"purchases.status IN ?", productID, models.StockConsumingStatuses).
 		Scan(&sum).Error
 	if err != nil {
 		return 0, err

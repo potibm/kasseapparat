@@ -21,6 +21,11 @@ type MockRepository struct {
 	Guests         map[int]*models.Guest
 	StoredPurchase *models.Purchase
 	UpdatedGuests  map[int]*models.Guest
+
+	// storedPurchases keeps every stored purchase so the sold quantity can be derived
+	// from purchase statuses, the way the real query filters on them. A static counter
+	// would not fall back when a purchase is refunded, failed or cancelled.
+	storedPurchases []*models.Purchase
 }
 
 const errNotImplemented = "not implemented"
@@ -64,9 +69,55 @@ func (m *MockRepository) GetFullGuestByID(id int) (*models.Guest, error) {
 
 func (m *MockRepository) StorePurchases(purchase models.Purchase) (models.Purchase, error) {
 	purchase.ID = uuid.New()
+
+	// Mirror the repository, which preloads each item's product. The flag cleanup on
+	// refund walks those products.
+	for i := range purchase.PurchaseItems {
+		if product, ok := m.Products[purchase.PurchaseItems[i].ProductID]; ok {
+			purchase.PurchaseItems[i].Product = *product
+		}
+	}
+
 	m.StoredPurchase = &purchase
+	m.storedPurchases = append(m.storedPurchases, &purchase)
 
 	return purchase, nil
+}
+
+// GetPurchasedQuantitiesByProductID mirrors the real query: confirmed purchases count
+// as sold and pending ones as reserved, while refunded, failed and cancelled
+// purchases have released their units.
+func (m *MockRepository) GetPurchasedQuantitiesByProductID(productID int) (int, error) {
+	total := 0
+
+	for _, purchase := range m.storedPurchases {
+		if !purchase.Status.ConsumesStock() {
+			continue
+		}
+
+		for _, item := range purchase.PurchaseItems {
+			if item.ProductID == productID {
+				total += int(item.Quantity)
+			}
+		}
+	}
+
+	return total, nil
+}
+
+func (m *MockRepository) UpdateProductByID(
+	id int,
+	updatedProduct models.Product,
+) (*models.Product, error) {
+	existing, ok := m.Products[id]
+	if !ok {
+		return nil, fmt.Errorf("product %d not found in mock", id)
+	}
+
+	*existing = updatedProduct
+	m.Products[id] = existing
+
+	return existing, nil
 }
 
 func (m *MockRepository) UpdateGuestByID(id int, guest models.Guest) (*models.Guest, error) {
@@ -241,10 +292,6 @@ func (m *MockRepository) GetTotalProducts() (int64, error) {
 	panic(errNotImplemented)
 }
 
-func (m *MockRepository) UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error) {
-	panic(errNotImplemented)
-}
-
 func (m *MockRepository) CreateProduct(product models.Product) (models.Product, error) {
 	panic(errNotImplemented)
 }
@@ -297,20 +344,35 @@ func (m *MockRepository) GetPurchaseStats() ([]sqlite.ProductPurchaseStats, erro
 	panic(errNotImplemented)
 }
 
-func (m *MockRepository) GetPurchasedQuantitiesByProductID(productID int) (int, error) {
-	panic(errNotImplemented)
-}
-
 func (m *MockRepository) GetPurchaseBySumupClientTransactionID(sumupTransactionID uuid.UUID) (*models.Purchase, error) {
 	panic(errNotImplemented)
 }
 
+// GetGuestsByPurchaseID returns no guests rather than panicking: FinalizePurchase
+// tolerates an empty list and skips the notification.
 func (m *MockRepository) GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.Guest, error) {
-	panic(errNotImplemented)
+	return nil, nil
 }
 
 func (m *MockRepository) Ping(context.Context) error {
 	panic(errNotImplemented)
+}
+
+// seedUnitsSold records an already-confirmed purchase so a test can start from a
+// given sold quantity without going through the sales path.
+func (m *MockRepository) seedUnitsSold(product *models.Product, unitsSold int) {
+	if unitsSold <= 0 {
+		return
+	}
+
+	_, _ = m.StorePurchases(models.Purchase{
+		ID:     uuid.New(),
+		Status: models.PurchaseStatusConfirmed,
+		PurchaseItems: []models.PurchaseItem{{
+			ProductID: product.ID,
+			Quantity:  uint(unitsSold),
+		}},
+	})
 }
 
 type MockMailer struct {

@@ -6,6 +6,12 @@ import {
   Guest as GuestType,
 } from "../../../api/schemas";
 import { createLogger } from "@core/logger/logger";
+import { OutOfStockBehavior } from "@core/config/types/config.types";
+import {
+  availableStock,
+  canAddMore,
+  restrictsStock,
+} from "@pos/features/stock/utils/stock";
 
 const log = createLogger("Cart");
 
@@ -20,6 +26,7 @@ export class Cart {
     product: ProductType,
     count: number = 1,
     listItem: GuestType | null = null,
+    outOfStockBehavior: OutOfStockBehavior = "ignore",
   ): Cart {
     if (count <= 0 || !Number.isFinite(count) || !Number.isInteger(count)) {
       log.warn("Invalid quantity provided, skipping add to cart", {
@@ -34,6 +41,33 @@ export class Cart {
     );
     const newItems = [...this.items];
     const itemProductWasFoundInCart = existingIndex !== -1;
+    const existingQuantity = itemProductWasFoundInCart
+      ? this.items[existingIndex].quantity
+      : 0;
+
+    // Cap the quantity at the stock that is left when the behaviour enforces it. Under
+    // "ignore" the sale stays allowed, so the quantity passes through untouched and
+    // the cart only reports that it is over stock. The cap is the product's total
+    // availability, so it bounds the final quantity rather than the increment.
+    const enforcing = restrictsStock(outOfStockBehavior);
+    const capacity = enforcing
+      ? availableStock(product, 0)
+      : Number.POSITIVE_INFINITY;
+    const quantity = Math.min(existingQuantity + count, capacity);
+
+    // The same predicate the product card uses, so the add button and the cart can
+    // never disagree about whether another unit fits.
+    if (!canAddMore(product, existingQuantity, outOfStockBehavior)) {
+      log.warn("No stock left to add", {
+        productId: product.id,
+        existingQuantity,
+        available: availableStock(product, existingQuantity),
+      });
+
+      return this;
+    }
+
+    const addedQuantity = quantity - existingQuantity;
 
     if (itemProductWasFoundInCart) {
       const existingItem = this.items[existingIndex];
@@ -53,39 +87,44 @@ export class Cart {
       // Immutable update of the item
       const updatedItem: CartItem = {
         ...existingItem,
-        quantity: existingItem.quantity + count,
+        quantity,
         listItems: listItem
-          ? [...existingItem.listItems, { ...listItem, attendedGuests: count }]
+          ? [
+              ...existingItem.listItems,
+              { ...listItem, attendedGuests: addedQuantity },
+            ]
           : existingItem.listItems,
-        totalNetPrice: existingItem.netPrice.mul(existingItem.quantity + count),
-        totalGrossPrice: existingItem.grossPrice.mul(
-          existingItem.quantity + count,
-        ),
-        totalVatAmount: existingItem.vatAmount.mul(
-          existingItem.quantity + count,
-        ),
+        totalNetPrice: existingItem.netPrice.mul(quantity),
+        totalGrossPrice: existingItem.grossPrice.mul(quantity),
+        totalVatAmount: existingItem.vatAmount.mul(quantity),
       };
 
       log.debug("Product already in cart, updating quantity", {
         productId: product.id,
-        existingQuantity: existingItem.quantity,
-        addedQuantity: count,
+        existingQuantity,
+        requestedQuantity: existingQuantity + count,
+        addedQuantity,
+        clamped: addedQuantity !== count,
       });
       newItems[existingIndex] = updatedItem;
     } else {
       // Create new item
       const newItem: CartItem = {
         ...product,
-        quantity: count,
-        listItems: listItem ? [{ ...listItem, attendedGuests: count }] : [],
-        totalNetPrice: product.netPrice.mul(count),
-        totalGrossPrice: product.grossPrice.mul(count),
-        totalVatAmount: product.vatAmount.mul(count),
+        quantity,
+        listItems: listItem
+          ? [{ ...listItem, attendedGuests: addedQuantity }]
+          : [],
+        totalNetPrice: product.netPrice.mul(quantity),
+        totalGrossPrice: product.grossPrice.mul(quantity),
+        totalVatAmount: product.vatAmount.mul(quantity),
       };
 
       log.debug("Adding new product to cart", {
         productId: product.id,
-        quantity: count,
+        quantity,
+        requestedQuantity: count,
+        clamped: quantity !== count,
       });
       newItems.push(newItem);
     }
@@ -110,6 +149,14 @@ export class Cart {
 
   public getQuantity(productId: number): number {
     return this.items.find((i) => i.id === productId)?.quantity ?? 0;
+  }
+
+  /**
+   * Whether a line exceeds the stock available, which the POS allows under the
+   * "ignore" behaviour but should point out.
+   */
+  public isOverStock(item: CartItem): boolean {
+    return availableStock(item, 0) < item.quantity;
   }
 
   public get totalQuantity(): number {

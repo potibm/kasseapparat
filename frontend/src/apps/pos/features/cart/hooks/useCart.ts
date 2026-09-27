@@ -28,15 +28,17 @@ export const useCart = () => {
     null,
   );
   const { showToast } = useToast();
-  const { currency } = useConfig();
+  const { currency, outOfStockBehavior } = useConfig();
   const { storePurchase } = usePosApi();
 
   const add = useCallback(
     (product: ProductType, count: number, listItem: GuestType | null) => {
       cartLog.debug("Adding product to cart", { productId: product.id, count });
-      setCart((prevCart) => prevCart.add(product, count, listItem));
+      setCart((prevCart) =>
+        prevCart.add(product, count, listItem, outOfStockBehavior),
+      );
     },
-    [],
+    [outOfStockBehavior],
   );
 
   const remove = useCallback((product: ProductType) => {

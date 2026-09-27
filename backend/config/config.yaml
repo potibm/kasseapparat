@@ -8,6 +8,13 @@ app:
   log_format: json
   log_level: debug
   otel_endpoint: ""
+  # What happens when a product with limited stock runs out. Products with
+  # total_stock 0 are always unlimited and are never restricted.
+  #   ignore        allow sales beyond the available stock (default)
+  #   fail          reject the purchase if it exceeds the available stock
+  #   auto_sold_out reject further sales and mark the product sold out
+  #   auto_hide     reject further sales and hide the product
+  out_of_stock_behavior: auto_hide
   port: 8080
 
 auth:

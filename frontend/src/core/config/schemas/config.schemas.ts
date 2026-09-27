@@ -30,6 +30,13 @@ export const ConfigSchema = z.object({
     )
     .default([]),
   authMode: z.enum(["proxy", "oidc"]).default("proxy"),
+  /**
+   * What the backend does when a product with limited stock runs out. Defaults to
+   * "ignore" so a build served by an older backend keeps its previous behaviour.
+   */
+  outOfStockBehavior: z
+    .enum(["ignore", "fail", "auto_sold_out", "auto_hide"])
+    .default("ignore"),
   /** @deprecated: Will be removed in favor of dateLocale or currencyLocale */
   locale: z.string().default("da-DK"),
 });

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -216,15 +217,18 @@ func (handler *Handler) GetPurchaseStats(c *gin.Context) {
 }
 
 func mapPurchaseCreationError(err error) error {
-	switch err {
-	case purchaseService.ErrInvalidProductPrice,
-		purchaseService.ErrInvalidTotalGrossPrice,
-		purchaseService.ErrInvalidTotalNetPrice,
-		purchaseService.ErrProductNotFound,
-		purchaseService.ErrGuestNotFound,
-		purchaseService.ErrGuestAlreadyAttended,
-		purchaseService.ErrTooManyAdditionalGuests,
-		purchaseService.ErrListItemWrongProduct:
+	// errors.Is rather than a switch on identity: the stock check runs inside the
+	// purchase transaction, so its error arrives wrapped.
+	switch {
+	case errors.Is(err, purchaseService.ErrInsufficientStock),
+		errors.Is(err, purchaseService.ErrInvalidProductPrice),
+		errors.Is(err, purchaseService.ErrInvalidTotalGrossPrice),
+		errors.Is(err, purchaseService.ErrInvalidTotalNetPrice),
+		errors.Is(err, purchaseService.ErrProductNotFound),
+		errors.Is(err, purchaseService.ErrGuestNotFound),
+		errors.Is(err, purchaseService.ErrGuestAlreadyAttended),
+		errors.Is(err, purchaseService.ErrTooManyAdditionalGuests),
+		errors.Is(err, purchaseService.ErrListItemWrongProduct):
 		return InvalidRequest.WithMsg(utils.CapitalizeFirstRune(err.Error())).WithCause(err)
 	default:
 		return InternalServerError.WithCauseMsg(err)

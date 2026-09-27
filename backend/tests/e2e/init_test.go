@@ -60,7 +60,18 @@ func setup() {
 	}
 }
 
-func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFunc func()) {
+// defaultOutOfStockBehavior keeps the existing suite on the behaviour from before the
+// setting existed, so the tests that do not care about stock are unaffected.
+const defaultOutOfStockBehavior = config.OutOfStockIgnore
+
+func setupTestEnvironment(t *testing.T) (server *httptest.Server, cleanupFunc func()) {
+	return setupTestEnvironmentWithBehavior(t, defaultOutOfStockBehavior)
+}
+
+func setupTestEnvironmentWithBehavior(
+	t *testing.T,
+	outOfStockBehavior config.OutOfStockBehavior,
+) (server *httptest.Server, cleanupFunc func()) {
 	cfg := config.Config{
 		App: config.AppConfig{
 			Version:            "0.1.2",
@@ -70,6 +81,7 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 			Environment:        "test",
 			EnvironmentMessage: "Test environment",
 			CorsAllowOrigins:   []string{"http://localhost:3000"},
+			OutOfStockBehavior: outOfStockBehavior,
 		},
 		Format: config.FormatConfig{
 			Currency: config.CurrencyFormatConfig{
@@ -109,6 +121,7 @@ func setupTestEnvironment(t *testing.T) (httpServer *httptest.Server, cleanupFun
 		mail,
 		int32(cfg.Format.Currency.FractionDigitsMax),
 		cfg.Format.Currency.Code,
+		cfg.App.OutOfStockBehavior,
 	)
 
 	statusPublisher := MockStatusPublisher{}

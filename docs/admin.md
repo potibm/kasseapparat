@@ -46,8 +46,34 @@ This generates `config/config.yaml` with sensible defaults. You should edit this
 - **Localization:** Adjust locale, currency codes, and fraction digits to your local preferences.
 - **Mail Settings:** Configure your sender address and subject prefixes for automated visitor arrival notifications.
 - **Business Rules:** Define VAT rates and accepted payment methods.
+- **Out-of-Stock Behaviour:** Decide what happens when a product with limited stock runs out — see [Limited stock](#limited-stock).
 
 Create `config/config.local.yaml` for anything environment-specific that shouldn't be committed to version control: credentials, API keys, and per-deployment overrides.
+
+### Limited stock
+
+Every product has a `total_stock`. A product with `total_stock: 0` is **unlimited** and is never restricted in any mode — that is what drinks and open-ended tickets use. Products with a `total_stock` above zero are limited, and `out_of_stock_behavior` decides what happens when they run out:
+
+| Value           | Behaviour                                                                                     |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| `ignore`        | Sales are allowed beyond the stock. This is the default and the previous behaviour.           |
+| `fail`          | A purchase that exceeds the stock is rejected with a message naming what is left.             |
+| `auto_sold_out` | Further sales are rejected and the product is marked **Sold Out** once the stock is depleted. |
+| `auto_hide`     | Further sales are rejected and the product is **hidden** once the stock is depleted.          |
+
+```yaml
+app:
+  out_of_stock_behavior: fail
+```
+
+The value is validated at startup, so a typo is rejected rather than silently ignored. An unset or unrecognised value is treated as `ignore` by the sales logic.
+
+Notes:
+
+- **A pending SumUp payment reserves its units**, so a second client cannot take the last ones while a payment is in flight. If that payment then fails or is cancelled, the units are released again.
+- **A refund frees the units and re-enables the product**, so a sold-out or hidden product comes back into sale. See the limitation in [ADR 005](decisions/005-out-of-stock-behavior.md).
+- Changing the mode affects new purchases only. Products already marked sold out or hidden are not re-evaluated; use the admin interface to clear a flag you set by hand.
+- The POS reads the same setting and will not let a seller add more than the available stock in the three enforcing modes. It still warns rather than blocks under `ignore`.
 
 ### 2. Secrets & Credentials (`config.local.yaml`)
 
