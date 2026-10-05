@@ -3,10 +3,11 @@ package initializer
 
 import (
 	"context"
-	"embed"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/getsentry/sentry-go"
@@ -31,7 +32,7 @@ func InitializeHTTPServer(
 	httpHdlr httpHandler.Handler,
 	websocketHdlr websocket.TransactionWebSocketHandler,
 	repository sqliteRepo.Repository,
-	staticFiles embed.FS,
+	staticFiles fs.FS,
 	cfg config.Config,
 	logger *slog.Logger,
 ) (*gin.Engine, error) {
@@ -73,29 +74,48 @@ func InitializeHTTPServer(
 
 	r.Use(CreateCorsMiddleware(cfg.App.CorsAllowOrigins))
 
-	folder, err := static.EmbedFolder(staticFiles, "assets")
+	sub, err := fs.Sub(staticFiles, "assets")
 	if err != nil {
 		return nil, fmt.Errorf("create embedded folder: %w", err)
 	}
 
-	r.Use(static.Serve("/", folder))
+	r.Use(static.Serve("/", staticFS{http.FS(sub)}))
 	r.GET("/health", httpHdlr.GetHealth)
 	r.GET("/ready", httpHdlr.GetReady)
 
 	registerAPIRoutes(httpHdlr, websocketHdlr, cfg)
 
 	r.NoRoute(func(c *gin.Context) {
-		if !strings.HasPrefix(c.Request.RequestURI, "/api") && !strings.Contains(c.Request.RequestURI, ".") {
-			file, _ := staticFiles.ReadFile("assets/index.html")
-			c.Data(
-				http.StatusOK,
-				"text/html; charset=utf-8",
-				file,
-			)
-		}
+		handleSPAFallback(c, staticFiles, logger)
 	})
 
 	return r, nil
+}
+
+func handleSPAFallback(c *gin.Context, staticFiles fs.FS, logger *slog.Logger) {
+	path := c.Request.URL.Path
+
+	if strings.HasPrefix(path, "/api") {
+		return
+	}
+
+	if filepath.Ext(path) != "" {
+		return
+	}
+
+	file, err := fs.ReadFile(staticFiles, "assets/index.html")
+	if err != nil {
+		logger.Error("Failed to read index.html", "error", err)
+		c.String(http.StatusInternalServerError, "Frontend not found")
+
+		return
+	}
+
+	c.Data(
+		http.StatusOK,
+		"text/html; charset=utf-8",
+		file,
+	)
 }
 
 func InitializeOIDCHandler(ctx context.Context, cfg config.Config) (*httpHandler.OIDCAuthHandler, error) {
@@ -312,4 +332,18 @@ func registerSumupTransactionRoutes(rg *gin.RouterGroup, handler httpHandler.Han
 		sumupTransactions.GET("", handler.GetSumupTransactions)
 		sumupTransactions.GET("/:id", handler.GetSumupTransactionByID)
 	}
+}
+
+type staticFS struct {
+	http.FileSystem
+}
+
+func (s staticFS) Exists(prefix, path string) bool {
+	if len(prefix) > 1 && strings.HasPrefix(path, prefix) {
+		path = strings.TrimPrefix(path, prefix)
+	}
+
+	_, err := s.Open(path)
+
+	return err == nil
 }
