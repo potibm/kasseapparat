@@ -68,6 +68,7 @@ const mockConfig: AppConfig = {
   paymentMethods: [],
   sumupEnabled: false,
   authMode: "proxy",
+  outOfStockBehavior: "ignore",
 };
 
 const mockProduct: ProductType = createMockProduct();
@@ -291,9 +292,10 @@ describe("useCart Hook", () => {
         ).rejects.toThrow("General error");
       });
 
+      // The backend's own message is shown, because it names what went wrong.
       expect(mockShowToast).toHaveBeenCalledWith({
         severity: "error",
-        message: "Something went wrong.",
+        message: "General error",
         blocking: false,
       });
     });

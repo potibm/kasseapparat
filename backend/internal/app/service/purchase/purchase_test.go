@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/google/uuid"
@@ -21,6 +22,19 @@ type MockRepository struct {
 	Guests         map[int]*models.Guest
 	StoredPurchase *models.Purchase
 	UpdatedGuests  map[int]*models.Guest
+
+	// storedPurchases keeps every stored purchase so the sold quantity can be derived
+	// from purchase statuses, the way the real query filters on them. A static counter
+	// would not fall back when a purchase is refunded, failed or cancelled.
+	storedPurchases []*models.Purchase
+
+	// UpdatedProducts records which products were written, so a test can tell a
+	// reconciliation that had nothing to do from one that wrote.
+	UpdatedProducts []int
+
+	// reconcileError makes the stock reconciliation fail, to check that a purchase
+	// survives it.
+	reconcileError error
 }
 
 const errNotImplemented = "not implemented"
@@ -64,9 +78,91 @@ func (m *MockRepository) GetFullGuestByID(id int) (*models.Guest, error) {
 
 func (m *MockRepository) StorePurchases(purchase models.Purchase) (models.Purchase, error) {
 	purchase.ID = uuid.New()
+
 	m.StoredPurchase = &purchase
+	m.storedPurchases = append(m.storedPurchases, &purchase)
 
 	return purchase, nil
+}
+
+// GetPurchasedQuantitiesByProductID mirrors the real query: only confirmed purchases
+// count, while refunded, failed and cancelled purchases have released their units.
+func (m *MockRepository) GetPurchasedQuantitiesByProductID(productID int) (int, error) {
+	return m.unitsSoldForProduct(productID)
+}
+
+// GetUnitsSoldByProductID mirrors the batch query the stock reconciliation uses, so
+// both read the same state from the mock.
+func (m *MockRepository) GetUnitsSoldByProductID() (map[int]int, error) {
+	unitsSold := make(map[int]int)
+
+	for _, purchase := range m.storedPurchases {
+		if purchase.Status != models.PurchaseStatusConfirmed {
+			continue
+		}
+
+		for _, item := range purchase.PurchaseItems {
+			unitsSold[item.ProductID] += int(item.Quantity)
+		}
+	}
+
+	return unitsSold, nil
+}
+
+// GetProductsForStockReconciliation serves the products the mock was seeded with, the
+// same selection the real query loads.
+func (m *MockRepository) GetProductsForStockReconciliation() ([]models.Product, error) {
+	if m.reconcileError != nil {
+		return nil, m.reconcileError
+	}
+
+	products := make([]models.Product, 0, len(m.Products))
+
+	for _, product := range m.Products {
+		if product == nil {
+			continue
+		}
+
+		products = append(products, *product)
+	}
+
+	slices.SortFunc(products, func(a, b models.Product) int {
+		return a.ID - b.ID
+	})
+
+	return products, nil
+}
+
+func (m *MockRepository) UpdateProductByID(
+	id int,
+	updatedProduct models.Product,
+) (*models.Product, error) {
+	existing, ok := m.Products[id]
+	if !ok {
+		return nil, fmt.Errorf("product %d not found in mock", id)
+	}
+
+	*existing = updatedProduct
+	m.Products[id] = existing
+
+	return existing, nil
+}
+
+// UpdateProductStockFlags writes only the flags the reactivation derived, the way the
+// real query does.
+func (m *MockRepository) UpdateProductStockFlags(id int, soldOut, hidden, managed bool) error {
+	existing, ok := m.Products[id]
+	if !ok {
+		return fmt.Errorf("product %d not found in mock", id)
+	}
+
+	existing.SoldOut = soldOut
+	existing.Hidden = hidden
+	existing.StockFlagsManaged = managed
+
+	m.UpdatedProducts = append(m.UpdatedProducts, id)
+
+	return nil
 }
 
 func (m *MockRepository) UpdateGuestByID(id int, guest models.Guest) (*models.Guest, error) {
@@ -241,10 +337,6 @@ func (m *MockRepository) GetTotalProducts() (int64, error) {
 	panic(errNotImplemented)
 }
 
-func (m *MockRepository) UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error) {
-	panic(errNotImplemented)
-}
-
 func (m *MockRepository) CreateProduct(product models.Product) (models.Product, error) {
 	panic(errNotImplemented)
 }
@@ -297,20 +389,42 @@ func (m *MockRepository) GetPurchaseStats() ([]sqlite.ProductPurchaseStats, erro
 	panic(errNotImplemented)
 }
 
-func (m *MockRepository) GetPurchasedQuantitiesByProductID(productID int) (int, error) {
-	panic(errNotImplemented)
-}
-
 func (m *MockRepository) GetPurchaseBySumupClientTransactionID(sumupTransactionID uuid.UUID) (*models.Purchase, error) {
 	panic(errNotImplemented)
 }
 
+// GetGuestsByPurchaseID returns no guests rather than panicking: FinalizePurchase
+// tolerates an empty list and skips the notification.
 func (m *MockRepository) GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.Guest, error) {
-	panic(errNotImplemented)
+	return nil, nil
 }
 
 func (m *MockRepository) Ping(context.Context) error {
 	panic(errNotImplemented)
+}
+
+// unitsSoldForProduct is the single-product view on the same state.
+func (m *MockRepository) unitsSoldForProduct(productID int) (int, error) {
+	unitsSold, _ := m.GetUnitsSoldByProductID()
+
+	return unitsSold[productID], nil
+}
+
+// seedUnitsSold records an already-confirmed purchase so a test can start from a
+// given sold quantity without going through the sales path.
+func (m *MockRepository) seedUnitsSold(product *models.Product, unitsSold int) {
+	if unitsSold <= 0 {
+		return
+	}
+
+	_, _ = m.StorePurchases(models.Purchase{
+		ID:     uuid.New(),
+		Status: models.PurchaseStatusConfirmed,
+		PurchaseItems: []models.PurchaseItem{{
+			ProductID: product.ID,
+			Quantity:  uint(unitsSold),
+		}},
+	})
 }
 
 type MockMailer struct {

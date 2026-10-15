@@ -36,6 +36,7 @@ type Config struct {
 	EnvironmentMessage            string                  `json:"environmentMessage"`
 	PaymentMethods                []PaymentMethodsConfig  `json:"paymentMethods"`
 	AuthMode                      string                  `json:"authMode"`
+	OutOfStockBehavior            string                  `json:"outOfStockBehavior"`
 }
 
 func (handler *Handler) GetConfig(c *gin.Context) {
@@ -56,6 +57,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		EnvironmentMessage:            handler.config.App.EnvironmentMessage,
 		PaymentMethods:                convertPaymentMethods(handler.config.PaymentMethods),
 		AuthMode:                      handler.config.Auth.Mode,
+		OutOfStockBehavior:            string(handler.config.App.OutOfStockBehavior),
 	}
 
 	c.JSON(nethttp.StatusOK, config)
