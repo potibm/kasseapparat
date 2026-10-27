@@ -82,7 +82,7 @@ func (r *Repository) CreateReaderCheckout(
 		affiliate := sumup.CreateCheckoutRequestAffiliate{
 			AppID:                r.service.ApplicationID,
 			Key:                  r.service.AffiliateKey,
-			ForeignTransactionID: affiliateTransactionID,
+			ForeignTransactionID: &affiliateTransactionID,
 		}
 		affiliateNullable = sumupnullable.Value(affiliate)
 	}
