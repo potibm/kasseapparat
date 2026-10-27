@@ -7,7 +7,7 @@ exports[`Layout & AppBar > Snapshot Match 1`] = `
   >
     <button
       aria-label="ra.navigation.skip_nav"
-      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary skip-nav-button css-bc50ft-MuiButtonBase-root-MuiButton-root-RaButton-root-RaSkipNavigationButton-root"
+      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary skip-nav-button css-1wkneni-MuiButtonBase-root-MuiButton-root-RaButton-root-RaSkipNavigationButton-root"
       tabindex="0"
       type="button"
     >
