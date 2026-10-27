@@ -66,7 +66,7 @@ export const Version: React.FC<VersionProps> = ({ url = VERSION_URL }) => {
     !version || version.startsWith("0") || version === "dev";
   const versionLink = isDevelopment
     ? null
-    : `https://github.com/potibm/kasseapparat/releases/tag/v${version.replace(/^v/, "")}`;
+    : `https://github.com/potibm/kasseapparat/releases/tag/${version.replace(/^v/, "")}`;
 
   const isOutdated =
     latestVersion && latestVersion !== version && !isDevelopment;
