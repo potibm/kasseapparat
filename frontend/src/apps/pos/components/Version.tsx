@@ -57,7 +57,7 @@ export const Version: React.FC<VersionProps> = ({ url = VERSION_URL }) => {
       }
     };
 
-    fetchVersion();
+    void fetchVersion();
 
     return () => controller.abort();
   }, [url, latestVersion]); // latestVersion im Guard oben reicht aus
