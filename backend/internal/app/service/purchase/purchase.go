@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	"github.com/shopspring/decimal"
@@ -32,6 +33,7 @@ type Service interface {
 	CancelPurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
 	FailPurchase(ctx context.Context, id uuid.UUID) (*models.Purchase, error)
 	RefundPurchase(ctx context.Context, purchaseID uuid.UUID) (*models.Purchase, error)
+	ReconcileStockFlags(ctx context.Context) error
 }
 
 var _ Service = (*PurchaseService)(nil)
@@ -52,6 +54,8 @@ type PurchaseService struct {
 	Mailer        Mailer
 	DecimalPlaces int32
 	CurrencyCode  string
+
+	OutOfStockBehavior config.OutOfStockBehavior
 }
 
 type PurchaseInput struct {
@@ -82,7 +86,33 @@ var (
 	ErrGuestAlreadyAttended    = errors.New("guest already attended")
 	ErrTooManyAdditionalGuests = errors.New("additional guests exceed available guests")
 	ErrListItemWrongProduct    = errors.New("list item does not belong to product")
+
+	// ErrInsufficientStock is the sentinel for a purchase that exceeds the stock
+	// available under the configured out-of-stock behaviour. Wrap it with
+	// insufficientStockError to tell the caller how many units are left.
+	ErrInsufficientStock = errors.New("not enough stock left")
 )
+
+// insufficientStockError carries the remaining stock so the handler can tell the
+// operator how many units are actually left.
+type insufficientStockError struct {
+	ProductName string
+	Available   int
+}
+
+func (e insufficientStockError) Error() string {
+	if e.Available <= 0 {
+		return fmt.Sprintf("%s is sold out", e.ProductName)
+	}
+
+	return fmt.Sprintf("only %d left in stock for %s", e.Available, e.ProductName)
+}
+
+func (e insufficientStockError) Is(target error) bool {
+	return target == ErrInsufficientStock
+}
+
+func (e insufficientStockError) Unwrap() error { return ErrInsufficientStock }
 
 func NewPurchaseService(
 	sqliteRepo sqlite.RepositoryInterface,
@@ -90,13 +120,15 @@ func NewPurchaseService(
 	mailer Mailer,
 	decimalPlaces int32,
 	currencyCode string,
+	outOfStockBehavior config.OutOfStockBehavior,
 ) *PurchaseService {
 	return &PurchaseService{
-		sqliteRepo:    sqliteRepo,
-		sumupRepo:     sumupRepo,
-		Mailer:        mailer,
-		DecimalPlaces: decimalPlaces,
-		CurrencyCode:  currencyCode,
+		sqliteRepo:         sqliteRepo,
+		sumupRepo:          sumupRepo,
+		Mailer:             mailer,
+		DecimalPlaces:      decimalPlaces,
+		CurrencyCode:       currencyCode,
+		OutOfStockBehavior: outOfStockBehavior,
 	}
 }
 
@@ -305,8 +337,24 @@ func (s *PurchaseService) setPurchaseStatus(
 
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// The status decides whether the units of this purchase are still spoken for, so
+	// the product flags have to be derived again.
+	s.reconcileStockFlagsAfterChange(ctx)
 
 	return purchase, err
+}
+
+// reconcileStockFlagsAfterChange runs the reconciliation after a purchase changed the
+// stock. It only logs: the purchase itself is done, and failing the request now would
+// tell the operator that a sale went wrong when it went through.
+func (s *PurchaseService) reconcileStockFlagsAfterChange(ctx context.Context) {
+	if err := s.ReconcileStockFlags(ctx); err != nil {
+		slog.Error("Failed to reconcile stock flags", "error", err)
+	}
 }
 
 func (s *PurchaseService) validateGuest(listInput ListItemInput, productID int) (*models.Guest, error) {
@@ -374,27 +422,17 @@ func (s *PurchaseService) createPurchaseWithStatus(
 	var savedPurchase *models.Purchase
 
 	err = s.sqliteRepo.WithTransaction(ctx, func(txRepo sqlite.RepositoryInterface) error {
+		items, err := s.buildPurchaseItems(txRepo, input.Cart)
+		if err != nil {
+			return err
+		}
+
 		purchase := &models.Purchase{
 			TotalNetPrice:   net,
 			TotalGrossPrice: gross,
 			PaymentMethod:   input.PaymentMethod,
 			Status:          status,
-		}
-
-		for _, item := range input.Cart {
-			product, err := txRepo.GetProductByID(item.ID)
-			if err != nil {
-				return err
-			}
-
-			pi := models.PurchaseItem{
-				ProductID: product.ID,
-				Quantity:  item.Quantity,
-				NetPrice:  product.NetPrice,
-				VATRate:   product.VATRate,
-			}
-
-			purchase.PurchaseItems = append(purchase.PurchaseItems, pi)
+			PurchaseItems:   items,
 		}
 
 		stored, err := txRepo.StorePurchases(*purchase)
@@ -417,7 +455,84 @@ func (s *PurchaseService) createPurchaseWithStatus(
 		return nil, nil, err
 	}
 
+	// The purchase is stored, so the derived stock changed with it.
+	s.reconcileStockFlagsAfterChange(ctx)
+
 	return savedPurchase, guests, nil
+}
+
+// buildPurchaseItems turns the cart into purchase items, checking the stock of every
+// product first. It runs on the transaction-scoped repository so the availability it
+// reads and the purchase it belongs to see the same state.
+func (s *PurchaseService) buildPurchaseItems(
+	repo sqlite.RepositoryInterface,
+	cart []PurchaseCartItem,
+) ([]models.PurchaseItem, error) {
+	// Aggregate the requested quantity per product first. Checking each cart line
+	// against the same availability would let two lines of the same product both pass
+	// and oversell, because neither sees the other's quantity.
+	requestedByProduct := make(map[int]uint, len(cart))
+
+	for _, item := range cart {
+		requestedByProduct[item.ID] += item.Quantity
+	}
+
+	stockChecked := make(map[int]bool, len(requestedByProduct))
+	items := make([]models.PurchaseItem, 0, len(cart))
+
+	for _, item := range cart {
+		product, err := repo.GetProductByID(item.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		if !stockChecked[item.ID] {
+			stockChecked[item.ID] = true
+
+			if err := s.checkStock(repo, *product, requestedByProduct[item.ID]); err != nil {
+				return nil, err
+			}
+		}
+
+		items = append(items, models.PurchaseItem{
+			ProductID: product.ID,
+			Quantity:  item.Quantity,
+			NetPrice:  product.NetPrice,
+			VATRate:   product.VATRate,
+		})
+	}
+
+	return items, nil
+}
+
+// checkStock rejects a cart line that would take more units than are available. It
+// runs on the transaction-scoped repository so the reading and the purchase that
+// follows it see the same state; reading through the outer repository here would both
+// race and wait for a second connection the bounded pool cannot provide.
+func (s *PurchaseService) checkStock(
+	repo sqlite.RepositoryInterface,
+	product models.Product,
+	quantity uint,
+) error {
+	if !restrictsStock(s.OutOfStockBehavior) {
+		return nil
+	}
+
+	unitsSold, err := repo.GetPurchasedQuantitiesByProductID(product.ID)
+	if err != nil {
+		return fmt.Errorf("failed to check stock for product %q: %w", product.Name, err)
+	}
+
+	available, unlimited := AvailableStock(product, unitsSold)
+	if unlimited {
+		return nil
+	}
+
+	if int(quantity) > available {
+		return insufficientStockError{ProductName: product.Name, Available: available}
+	}
+
+	return nil
 }
 
 func (s *PurchaseService) recordTransactionMetrics(

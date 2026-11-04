@@ -100,12 +100,20 @@ export const useCart = () => {
         setCheckoutProcessing(null);
 
         const errorType = getPurchaseErrorType(error);
-        const message = getErrorMessage(errorType);
+        const isReaderBusy = errorType === "READER_BUSY"; // block UI if reader is busy to prevent further attempts
+
+        // The backend names the product and how many units are left, so its message is
+        // the most specific one available. The reader-busy case keeps its fixed text,
+        // because there the operator needs to be told what to do next.
+        const message =
+          isReaderBusy || !(error instanceof Error)
+            ? getErrorMessage(errorType)
+            : error.message;
 
         showToast({
           severity: "error",
           message,
-          blocking: errorType === "READER_BUSY", // block UI if reader is busy to prevent further attempts
+          blocking: isReaderBusy,
         });
 
         purchaseLog.error("Checkout failed", { error, errorType });

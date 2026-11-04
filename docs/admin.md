@@ -46,8 +46,35 @@ This generates `config/config.yaml` with sensible defaults. You should edit this
 - **Localization:** Adjust locale, currency codes, and fraction digits to your local preferences.
 - **Mail Settings:** Configure your sender address and subject prefixes for automated visitor arrival notifications.
 - **Business Rules:** Define VAT rates and accepted payment methods.
+- **Out-of-Stock Behaviour:** Decide what happens when a product with limited stock runs out — see [Limited stock](#limited-stock).
 
 Create `config/config.local.yaml` for anything environment-specific that shouldn't be committed to version control: credentials, API keys, and per-deployment overrides.
+
+### Limited stock
+
+Every product has a `total_stock`. A product with `total_stock: 0` is **unlimited** and is never restricted in any mode — that is what drinks and open-ended tickets use. Products with a `total_stock` above zero are limited, and `out_of_stock_behavior` decides what happens when they run out:
+
+| Value           | Behaviour                                                                                     |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| `ignore`        | Sales are allowed beyond the stock. This is the default and the previous behaviour.           |
+| `fail`          | A purchase that exceeds the stock is rejected with a message naming what is left.             |
+| `auto_sold_out` | Further sales are rejected and the product is marked **Sold Out** once the stock is depleted. |
+| `auto_hide`     | Further sales are rejected and the product is **hidden** once the stock is depleted.          |
+
+```yaml
+app:
+  out_of_stock_behavior: fail
+```
+
+The value is validated at startup, so a typo is rejected rather than silently ignored. An unset or unrecognised value is treated as `ignore` by the sales logic.
+
+Only confirmed purchases count towards the stock. A pending SumUp payment does not hold units — they become sold once the payment is confirmed, and a refund, a failed or a deleted purchase releases them again.
+
+The sold-out and hidden flags of the two automatic modes are **derived**, not entered by hand: after every purchase, every status change, every product edit and at every start, the server compares each product's sold quantity with its stock and sets or clears the flag. A product that was already flagged before the available stock is enough stays flagged, and a flag you set by hand is never touched by that pass — see [ADR 005](decisions/005-out-of-stock-behavior.md).
+
+Because the flags are derived, raising a product's `total_stock` puts it back on sale on the next save, and switching the mode re-evaluates the products that were flagged under the old one at the next start.
+
+The POS reads the same setting. Under the three enforcing modes it disables the add-to-cart button once the remaining stock is in the cart; under `ignore` it keeps offering the product and only shows the remaining count. A purchase that the attempt misses — because two sellers act at once — is rejected by the server with the message the POS then shows.
 
 ### 2. Secrets & Credentials (`config.local.yaml`)
 

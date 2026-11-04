@@ -81,6 +81,7 @@ func NewServeCmd() *cobra.Command {
 				&mailer,
 				Cfg.Format.Currency.FractionDigitsMax,
 				Cfg.Format.Currency.Code,
+				Cfg.App.OutOfStockBehavior,
 			)
 
 			websocketHandler := websocket.NewHandler(
@@ -95,6 +96,13 @@ func NewServeCmd() *cobra.Command {
 			oidcHandler, err := initializer.InitializeOIDCHandler(ctx, Cfg)
 			if err != nil {
 				return fmt.Errorf("failed to initialize OIDC handler: %w", err)
+			}
+
+			// The out-of-stock behaviour derives the product flags from the stock, so
+			// they are brought in line once at startup: flags that a previous run or a
+			// different mode left behind are re-evaluated instead of lingering.
+			if err := purchaseSvc.ReconcileStockFlags(ctx); err != nil {
+				slog.Error("failed to reconcile stock flags at startup", "error", err)
 			}
 
 			httpHandlerConfig := handlerHttp.HandlerConfig{

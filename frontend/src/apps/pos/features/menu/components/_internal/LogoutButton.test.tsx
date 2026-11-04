@@ -30,6 +30,7 @@ describe("LogoutButton", () => {
   it("should not render when authMode is not oidc", () => {
     mockUseConfig.mockReturnValue({
       authMode: "proxy",
+      outOfStockBehavior: "ignore",
     } as unknown as AppConfig);
 
     const { container } = render(<LogoutButton />);

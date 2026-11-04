@@ -74,6 +74,8 @@ type ProductRepository interface {
 	CreateProduct(product models.Product) (models.Product, error)
 	DeleteProduct(product models.Product)
 	GetAttendedGuestSumByProductID(productID int) (int, error)
+	GetProductsForStockReconciliation() ([]models.Product, error)
+	UpdateProductStockFlags(id int, soldOut, hidden, managed bool) error
 }
 
 //nolint:interfacebloat // Repository interface aggregates all domain-specific interfaces
@@ -90,6 +92,7 @@ type PurchaseRepository interface {
 	GetFilteredPurchases(filters PurchaseFilters) ([]models.PurchaseItem, error)
 	GetPurchaseStats() ([]ProductPurchaseStats, error)
 	GetPurchasedQuantitiesByProductID(productID int) (int, error)
+	GetUnitsSoldByProductID() (map[int]int, error)
 	GetPaymentMethodStats() ([]response.PaymentMethodStats, error)
 	GetHourlyRevenueStats() ([]response.HourlyRevenueStats, error)
 	GetHourlyQuantityStats() ([]response.HourlyQuantityStats, error)

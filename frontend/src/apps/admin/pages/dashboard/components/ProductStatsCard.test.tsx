@@ -25,6 +25,7 @@ const mockConfig: AppConfig = {
   paymentMethods: [],
   sumupEnabled: false,
   authMode: "oidc",
+  outOfStockBehavior: "ignore",
 };
 
 const mockDataProvider = {

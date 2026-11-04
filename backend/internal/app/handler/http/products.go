@@ -168,6 +168,10 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 		return
 	}
 
+	// The stock limit is part of what the out-of-stock behaviour derives the product
+	// flags from, so an edit can make a flag — or its release — due.
+	handler.reconcileStockFlags(c)
+
 	c.JSON(http.StatusOK, product)
 }
 

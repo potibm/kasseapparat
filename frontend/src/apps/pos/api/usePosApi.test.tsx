@@ -31,6 +31,7 @@ describe("usePosApi", () => {
     ],
     sumupEnabled: false,
     authMode: "proxy",
+    outOfStockBehavior: "ignore",
   };
 
   it("should create a POS API client with the correct base URL", () => {

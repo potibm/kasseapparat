@@ -241,6 +241,9 @@ func (repo *Repository) GetPurchaseStats() ([]ProductPurchaseStats, error) {
 	return purchases, nil
 }
 
+// GetPurchasedQuantitiesByProductID returns how many units of a product are sold.
+// Only confirmed purchases count: refunded, failed and cancelled purchases released
+// their units again, which is what frees the stock.
 func (repo *Repository) GetPurchasedQuantitiesByProductID(productID int) (int, error) {
 	var sum sql.NullInt64
 
@@ -261,4 +264,35 @@ func (repo *Repository) GetPurchasedQuantitiesByProductID(productID int) (int, e
 	}
 
 	return int(sum.Int64), nil
+}
+
+// GetUnitsSoldByProductID returns the sold quantity per product in one query, so the
+// stock reconciliation does not ask once per product. Products without a confirmed
+// purchase are absent from the result.
+func (repo *Repository) GetUnitsSoldByProductID() (map[int]int, error) {
+	type stockQuantity struct {
+		ProductID int
+		Total     int
+	}
+
+	var quantities []stockQuantity
+
+	err := repo.db.Table("purchase_items").
+		Select("purchase_items.product_id AS product_id, SUM(purchase_items.quantity) AS total").
+		Joins("JOIN purchases ON "+
+			"(purchase_items.purchase_id = purchases.id AND purchase_items.deleted_at IS NULL)").
+		Where("purchases.deleted_at IS NULL AND purchases.status = ?",
+			models.PurchaseStatusConfirmed).
+		Group("purchase_items.product_id").
+		Scan(&quantities).Error
+	if err != nil {
+		return nil, err
+	}
+
+	unitsSold := make(map[int]int, len(quantities))
+	for _, quantity := range quantities {
+		unitsSold[quantity.ProductID] = quantity.Total
+	}
+
+	return unitsSold, nil
 }

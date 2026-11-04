@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Badge, Card } from "flowbite-react";
 import { HiShoppingCart, HiUserAdd, HiOutlineThumbUp } from "react-icons/hi";
 import { useConfig } from "@core/config/hooks/useConfig";
+import { availableStock, canAddMore } from "@pos/features/stock/utils/stock";
 import GuestlistModal from "../../../guestlist/components/GuestlistModal";
 import Button from "../../../../components/Button";
 import ProductInterestModal from "./ProductInterestModal";
@@ -31,11 +32,16 @@ const Product: React.FC<ProductProps> = ({
 }) => {
   const [isGuestListModalOpen, setIsGuestListModalOpen] = useState(false);
   const [isPIModalOpen, setIsPIModalOpen] = useState(false);
-  const { currency } = useConfig();
+  const { currency, outOfStockBehavior } = useConfig();
 
-  const availableStock =
-    product.totalStock - product.unitsSold - quantityByProductInCart(product);
+  const quantityInCart = quantityByProductInCart(product);
+  const stockLeft = availableStock(product, quantityInCart);
   const hasGuestlist = product.guestlists && product.guestlists.length > 0;
+
+  // Whether another unit still fits. Shared with the cart, so this never reads as
+  // enabled while the cart would refuse the same quantity. Under the "ignore"
+  // behaviour the sale stays allowed, so nothing is ever disabled there.
+  const canAdd = canAddMore(product, quantityInCart, outOfStockBehavior);
 
   const getActionButton = () => {
     if (product.soldOut) {
@@ -48,6 +54,16 @@ const Product: React.FC<ProductProps> = ({
       return (
         <Button aria-label={"Show guestlist for " + product.name}>
           <HiUserAdd className="h-5 w-5" />
+        </Button>
+      );
+    } else if (!canAdd) {
+      return (
+        <Button
+          aria-label={"No " + product.name + " left"}
+          data-testid={"no-stock-left-" + product.id}
+          disabled
+        >
+          <HiShoppingCart className="h-5 w-5" />
         </Button>
       );
     } else {
@@ -73,7 +89,7 @@ const Product: React.FC<ProductProps> = ({
       setIsPIModalOpen(true);
     } else if (hasGuestlist) {
       setIsGuestListModalOpen(true);
-    } else {
+    } else if (canAdd) {
       addToCart(product, 1, null);
     }
   };
@@ -111,7 +127,7 @@ const Product: React.FC<ProductProps> = ({
 
           {!product.soldOut && product.totalStock > 0 && (
             <div className="text-sm dark:text-white">
-              {availableStock >= 0 && <span>{availableStock} / </span>}
+              {stockLeft >= 0 && <span>{stockLeft} / </span>}
               {product.totalStock}
             </div>
           )}
