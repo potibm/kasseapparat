@@ -49,7 +49,7 @@ We enforce strict code quality rules for both Go and TypeScript.
 
 ### Infrastructure
 
-- `mise run infra:up` - Start the Docker Compose stack (Mailhog, OpenObserve, RedisInsight).
+- `mise run infra:up` - Start the Docker Compose stack (Mailpit, OpenObserve, RedisInsight).
 - `mise run infra:down` - Stop the stack.
 
 ### Building & Docker

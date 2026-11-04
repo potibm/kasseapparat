@@ -139,7 +139,7 @@ services:
       - disabled
 
   # 2. Connects web-facing services to the global proxy
-  mailhog:
+  mailpit:
     networks:
       - default
       - traefik-global
@@ -154,13 +154,6 @@ services:
       - "traefik.docker.network=traefik-global"
 
   dex:
-    networks:
-      - default
-      - traefik-global
-    labels:
-      - "traefik.docker.network=traefik-global"
-
-  minio:
     networks:
       - default
       - traefik-global
@@ -212,7 +205,7 @@ mkcert -install
 
 ### A.3 Generate the Certificates
 
-Navigate to the `certs` directory of your Master-Traefik and generate the certificates for your project. We include a wildcard (`*.`) so that subdomains like `mailhog.kasseapparat.test` are automatically covered by the same certificate:
+Navigate to the `certs` directory of your Master-Traefik and generate the certificates for your project. We include a wildcard (`*.`) so that subdomains like `mail.kasseapparat.test` are automatically covered by the same certificate:
 
 ```bash
 cd ~/Projects/traefik-proxy/certs
@@ -287,6 +280,6 @@ Flush your DNS cache once to ensure the new rules are applied immediately:
 sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
 ```
 
-From now on, **any** domain ending in `.test` (e.g., `kasseapparat.test`, `mailhog.kasseapparat.test`, `anything.test`) will automatically resolve to your Master-Traefik without you ever having to touch a config file again!
+From now on, **any** domain ending in `.test` (e.g., `kasseapparat.test`, `mail.kasseapparat.test`, `anything.test`) will automatically resolve to your Master-Traefik without you ever having to touch a config file again!
 
-> **Fallback:** If you cannot install dnsmasq, you will need to manually add every single subdomain like `127.0.0.1 kasseapparat.test mailhog.kasseapparat.test` to your `/etc/hosts` file.
+> **Fallback:** If you cannot install dnsmasq, you will need to manually add every single subdomain like `127.0.0.1 kasseapparat.test mail.kasseapparat.test` to your `/etc/hosts` file.
