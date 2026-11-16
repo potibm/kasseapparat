@@ -5,9 +5,11 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	response "github.com/potibm/kasseapparat/internal/app/response"
+	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 	"github.com/shopspring/decimal"
 )
 
@@ -160,6 +162,27 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.Hidden = productRequest.Hidden
 	product.SoldOut = productRequest.SoldOut
 	product.TotalStock = productRequest.TotalStock
+
+	// A mode-owned flag is read-only for products with a stock limit: the form
+	// still sends its current value, so ignore it rather than rejecting.
+	if product.TotalStock > 0 {
+		behavior := config.OutOfStockIgnore
+		if ps, ok := handler.purchaseService.(*purchaseService.PurchaseService); ok {
+			behavior = ps.OutOfStockBehavior
+		}
+		switch behavior {
+		case config.OutOfStockAutoSoldOut:
+			stored, _ := handler.repo.GetProductByID(id)
+			if stored != nil {
+				product.SoldOut = stored.SoldOut
+			}
+		case config.OutOfStockAutoHide:
+			stored, _ := handler.repo.GetProductByID(id)
+			if stored != nil {
+				product.Hidden = stored.Hidden
+			}
+		}
+	}
 
 	product, err = handler.repo.UpdateProductByID(id, *product)
 	if err != nil {

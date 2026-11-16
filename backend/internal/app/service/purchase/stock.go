@@ -54,6 +54,21 @@ func (s *PurchaseService) ReconcileStockFlags(ctx context.Context) error {
 			return fmt.Errorf("failed to load products for stock reconciliation: %w", err)
 		}
 
+		// Short-circuit: under a non-restricting behaviour there is nothing to derive
+		// unless a previous mode left a managed flag behind.
+		if !restrictsStock(s.OutOfStockBehavior) {
+			hasManaged := false
+			for _, product := range products {
+				if product.StockFlagsManaged {
+					hasManaged = true
+					break
+				}
+			}
+			if !hasManaged {
+				return nil
+			}
+		}
+
 		unitsSoldByProduct, err := repo.GetUnitsSoldByProductID()
 		if err != nil {
 			return fmt.Errorf("failed to load sold quantities: %w", err)
@@ -69,29 +84,55 @@ func (s *PurchaseService) ReconcileStockFlags(ctx context.Context) error {
 	})
 }
 
-// reconcileStockFlag updates one product to the state the behaviour asks for, and
-// leaves it untouched otherwise. A product that already carries that state is not
-// written at all, which keeps a reconciliation that has nothing to do free of writes.
+// reconcileStockFlag updates the flag the behaviour owns for one product and leaves
+// the other one untouched. A product an operator flagged by hand keeps that flag,
+// because the behaviour only manages the column its mode owns.
 func (s *PurchaseService) reconcileStockFlag(
 	repo sqlite.RepositoryInterface,
 	product models.Product,
 	unitsSold int,
 ) error {
-	// A product without a stock limit is never restricted, so it never takes a flag. A
-	// flag the behaviour took over is still released, which is what happens when an
-	// operator makes a limited product unlimited again.
-	depleted := product.TotalStock > 0 && unitsSold >= product.TotalStock
+	unlimited := product.TotalStock <= 0
+	depleted := !unlimited && unitsSold >= product.TotalStock
 
-	soldOut := depleted && s.OutOfStockBehavior == config.OutOfStockAutoSoldOut
-	hidden := depleted && s.OutOfStockBehavior == config.OutOfStockAutoHide
+	soldOut := product.SoldOut
+	hidden := product.Hidden
+	managed := product.StockFlagsManaged
 
-	if !product.StockFlagsManaged && (product.SoldOut || product.Hidden) {
-		// An operator flagged this product by hand, so its flags are not ours to
-		// change, neither to set nor to clear.
-		return nil
+	switch s.OutOfStockBehavior {
+	case config.OutOfStockAutoSoldOut:
+		if unlimited {
+			// A limited product that became unlimited releases a flag the
+			// behaviour took over.
+			if managed {
+				soldOut = false
+				managed = false
+			}
+		} else {
+			// sold_out is system-owned for products with a stock limit.
+			soldOut = depleted
+			managed = depleted
+		}
+	case config.OutOfStockAutoHide:
+		if unlimited {
+			if managed {
+				hidden = false
+				managed = false
+			}
+		} else {
+			// hidden is system-owned for products with a stock limit.
+			hidden = depleted
+			managed = depleted
+		}
+	default:
+		// ignore / fail never own a flag. A flag a previous mode took over is
+		// released, which is what makes a mode switch not strand products.
+		if managed {
+			soldOut = false
+			hidden = false
+			managed = false
+		}
 	}
-
-	managed := soldOut || hidden
 
 	if soldOut == product.SoldOut && hidden == product.Hidden && managed == product.StockFlagsManaged {
 		return nil

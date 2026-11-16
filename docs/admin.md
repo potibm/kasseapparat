@@ -72,6 +72,8 @@ Only confirmed purchases count towards the stock. A pending SumUp payment does n
 
 The sold-out and hidden flags of the two automatic modes are **derived**, not entered by hand: after every purchase, every status change, every product edit and at every start, the server compares each product's sold quantity with its stock and sets or clears the flag. A product that was already flagged before the available stock is enough stays flagged, and a flag you set by hand is never touched by that pass — see [ADR 005](decisions/005-out-of-stock-behavior.md).
 
+Under `auto_sold_out` the `sold_out` flag and under `auto_hide` the `hidden` flag are system-owned for products with a `total_stock` above zero: they are read-only in the admin UI (with a hint) and an edit that changes them is ignored by the backend. The other flag stays a free manual choice. Products with `total_stock: 0` keep both flags editable. The trade-off is that you can no longer sell a limited product out early by hand; set `total_stock` to the units already sold instead. `stock_flags_managed` is still used to tell a system-set flag from a manual one when switching modes or making a limited product unlimited again.
+
 Because the flags are derived, raising a product's `total_stock` puts it back on sale on the next save, and switching the mode re-evaluates the products that were flagged under the old one at the next start.
 
 The POS reads the same setting. Under the three enforcing modes it disables the add-to-cart button once the remaining stock is in the cart; under `ignore` it keeps offering the product and only shows the remaining count. A purchase that the attempt misses — because two sellers act at once — is rejected by the server with the message the POS then shows.

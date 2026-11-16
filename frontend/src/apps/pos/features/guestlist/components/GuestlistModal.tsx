@@ -7,6 +7,8 @@ import GuestlistResultTable from "./_internal/GuestlistResultTable";
 import { Product as ProductType, Guest as GuestType } from "@pos/api/schemas";
 import GuestlistArrivalNoteModal from "./_internal/GuestlistArrivalNoteModal";
 import { usePosApi } from "@pos/api/usePosApi";
+import { useConfig } from "@core/config/hooks/useConfig";
+import { canAddMore, availableStock } from "@pos/features/stock/utils/stock";
 
 interface GuestlistModalProps {
   isOpen: boolean;
@@ -18,6 +20,7 @@ interface GuestlistModalProps {
     listEntry: GuestType | null,
   ) => void;
   hasListItem: (guest: GuestType) => boolean;
+  quantityInCart?: number;
 }
 
 const GuestlistModal: React.FC<GuestlistModalProps> = ({
@@ -26,6 +29,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   product,
   addToCart,
   hasListItem,
+  quantityInCart = 0,
 }) => {
   const [guestlistEntries, setGuestlistEntries] = useState<GuestType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -38,10 +42,18 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   } | null>(null);
 
   const { fetchGuestlistByProductId } = usePosApi();
+  const { outOfStockBehavior } = useConfig();
 
   const hasCodes = product.guestlists?.some((list) => list.typeCode) ?? false;
 
   const handleAddToCart = (listEntry: GuestType, additionalGuests: number) => {
+    if (
+      !canAddMore(product, quantityInCart, outOfStockBehavior) ||
+      availableStock(product, quantityInCart) < additionalGuests + 1
+    ) {
+      return;
+    }
+
     addToCart(product, additionalGuests + 1, listEntry);
 
     if (listEntry.arrivalNote) {
@@ -60,6 +72,10 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   };
 
   const handleManualAddToCart = () => {
+    if (!canAddMore(product, quantityInCart, outOfStockBehavior)) {
+      return;
+    }
+
     addToCart(product, 1, null);
     onClose();
   };
@@ -140,6 +156,9 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
               color="alternative"
               aria-label="Add product to cart without guestlist entry"
               onClick={handleManualAddToCart}
+              disabled={
+                !canAddMore(product, quantityInCart, outOfStockBehavior)
+              }
             >
               Manual
             </Button>

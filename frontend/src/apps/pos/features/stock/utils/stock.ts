@@ -2,9 +2,9 @@ import { Product } from "../../../api/schemas";
 import { OutOfStockBehavior } from "@core/config/types/config.types";
 
 /**
- * Stock rules shared by the cart and the product list. These mirror the backend's
- * definition so the POS never offers a quantity the server will reject, but the
- * backend remains the authority: it re-checks inside the purchase transaction.
+ * Stock rules used by the product list. These mirror the backend's definition so
+ * the POS never offers a quantity the server will reject, but the backend remains
+ * the authority: it re-checks inside the purchase transaction.
  */
 
 /** A product with no total stock is unlimited and is never restricted. */

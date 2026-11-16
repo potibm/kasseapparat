@@ -38,9 +38,8 @@ const Product: React.FC<ProductProps> = ({
   const stockLeft = availableStock(product, quantityInCart);
   const hasGuestlist = product.guestlists && product.guestlists.length > 0;
 
-  // Whether another unit still fits. Shared with the cart, so this never reads as
-  // enabled while the cart would refuse the same quantity. Under the "ignore"
-  // behaviour the sale stays allowed, so nothing is ever disabled there.
+  // Whether another unit still fits. Used by the product card only. Under the
+  // "ignore" behaviour the sale stays allowed, so nothing is ever disabled there.
   const canAdd = canAddMore(product, quantityInCart, outOfStockBehavior);
 
   const getActionButton = () => {
@@ -48,12 +47,6 @@ const Product: React.FC<ProductProps> = ({
       return (
         <Button aria-label={"Register interest in " + product.name}>
           <HiOutlineThumbUp className="h-5 w-5" />
-        </Button>
-      );
-    } else if (hasGuestlist) {
-      return (
-        <Button aria-label={"Show guestlist for " + product.name}>
-          <HiUserAdd className="h-5 w-5" />
         </Button>
       );
     } else if (!canAdd) {
@@ -64,6 +57,12 @@ const Product: React.FC<ProductProps> = ({
           disabled
         >
           <HiShoppingCart className="h-5 w-5" />
+        </Button>
+      );
+    } else if (hasGuestlist) {
+      return (
+        <Button aria-label={"Show guestlist for " + product.name}>
+          <HiUserAdd className="h-5 w-5" />
         </Button>
       );
     } else {
@@ -87,6 +86,8 @@ const Product: React.FC<ProductProps> = ({
     e.preventDefault();
     if (product.soldOut) {
       setIsPIModalOpen(true);
+    } else if (!canAdd) {
+      // out of stock: do nothing, the disabled button already conveys it
     } else if (hasGuestlist) {
       setIsGuestListModalOpen(true);
     } else if (canAdd) {
@@ -157,6 +158,7 @@ const Product: React.FC<ProductProps> = ({
           product={product}
           addToCart={addToCart}
           hasListItem={hasListItem}
+          quantityInCart={quantityInCart}
         />
       )}
 

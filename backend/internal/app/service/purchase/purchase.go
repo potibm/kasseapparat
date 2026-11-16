@@ -108,10 +108,6 @@ func (e insufficientStockError) Error() string {
 	return fmt.Sprintf("only %d left in stock for %s", e.Available, e.ProductName)
 }
 
-func (e insufficientStockError) Is(target error) bool {
-	return target == ErrInsufficientStock
-}
-
 func (e insufficientStockError) Unwrap() error { return ErrInsufficientStock }
 
 func NewPurchaseService(
@@ -220,6 +216,11 @@ func (s *PurchaseService) FinalizePurchase(ctx context.Context, purchaseID uuid.
 	if err != nil {
 		return nil, errors.New("failed to finalize purchase: " + err.Error())
 	}
+
+	// Confirming a pending purchase is not stock-checked, so warn if it pushes a
+	// limited product past its stock. Rejecting an already-paid purchase would be
+	// worse, so the sale stands.
+	s.warnIfOversold(ctx, purchase)
 
 	// notify guests
 	guests, err := s.sqliteRepo.GetGuestsByPurchaseID(purchaseID)
@@ -345,7 +346,7 @@ func (s *PurchaseService) setPurchaseStatus(
 	// the product flags have to be derived again.
 	s.reconcileStockFlagsAfterChange(ctx)
 
-	return purchase, err
+	return purchase, nil
 }
 
 // reconcileStockFlagsAfterChange runs the reconciliation after a purchase changed the
@@ -533,6 +534,41 @@ func (s *PurchaseService) checkStock(
 	}
 
 	return nil
+}
+
+// warnIfOversold logs when confirming a pending purchase pushes a limited product
+// past its stock. The sale is not rolled back: the payment has already been taken.
+func (s *PurchaseService) warnIfOversold(ctx context.Context, purchase *models.Purchase) {
+	if purchase == nil {
+		return
+	}
+
+	seen := make(map[int]bool)
+	for _, item := range purchase.PurchaseItems {
+		if seen[item.ProductID] {
+			continue
+		}
+		seen[item.ProductID] = true
+
+		product, err := s.sqliteRepo.GetProductByID(item.ProductID)
+		if err != nil || product == nil || product.TotalStock <= 0 {
+			continue
+		}
+
+		unitsSold, err := s.sqliteRepo.GetPurchasedQuantitiesByProductID(item.ProductID)
+		if err != nil {
+			continue
+		}
+
+		if unitsSold > product.TotalStock {
+			slog.WarnContext(ctx, "confirmed purchase exceeds stock",
+				"product_id", product.ID,
+				"product", product.Name,
+				"units_sold", unitsSold,
+				"total_stock", product.TotalStock,
+			)
+		}
+	}
 }
 
 func (s *PurchaseService) recordTransactionMetrics(

@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
 )
@@ -71,7 +72,7 @@ func (repo *Repository) GetProductsForStockReconciliation() ([]models.Product, e
 		Order("id ASC").
 		Find(&products).Error
 	if err != nil {
-		return nil, errors.New("failed to load products for stock reconciliation")
+		return nil, fmt.Errorf("failed to load products for stock reconciliation: %w", err)
 	}
 
 	return products, nil
