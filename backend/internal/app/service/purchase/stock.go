@@ -39,6 +39,18 @@ func restrictsStock(behavior config.OutOfStockBehavior) bool {
 	}
 }
 
+// hasManagedStockFlags reports whether any product carries a flag the behaviour set
+// itself, which is the only reason a non-restricting mode still has work to do.
+func hasManagedStockFlags(products []models.Product) bool {
+	for _, product := range products {
+		if product.StockFlagsManaged {
+			return true
+		}
+	}
+
+	return false
+}
+
 // ReconcileStockFlags brings the sold-out and hidden flags of every product in line
 // with the stock that is actually left. It is the only place that maintains those
 // flags, and it derives them from the purchases instead of remembering what an earlier
@@ -56,17 +68,8 @@ func (s *PurchaseService) ReconcileStockFlags(ctx context.Context) error {
 
 		// Short-circuit: under a non-restricting behaviour there is nothing to derive
 		// unless a previous mode left a managed flag behind.
-		if !restrictsStock(s.OutOfStockBehavior) {
-			hasManaged := false
-			for _, product := range products {
-				if product.StockFlagsManaged {
-					hasManaged = true
-					break
-				}
-			}
-			if !hasManaged {
-				return nil
-			}
+		if !restrictsStock(s.OutOfStockBehavior) && !hasManagedStockFlags(products) {
+			return nil
 		}
 
 		unitsSoldByProduct, err := repo.GetUnitsSoldByProductID()
@@ -99,39 +102,19 @@ func (s *PurchaseService) reconcileStockFlag(
 	hidden := product.Hidden
 	managed := product.StockFlagsManaged
 
+	// A product an operator flagged by hand keeps its flags: the behaviour only
+	// manages products whose flags it set itself.
+	if !managed && (soldOut || hidden) {
+		return nil
+	}
+
 	switch s.OutOfStockBehavior {
 	case config.OutOfStockAutoSoldOut:
-		if unlimited {
-			// A limited product that became unlimited releases a flag the
-			// behaviour took over.
-			if managed {
-				soldOut = false
-				managed = false
-			}
-		} else {
-			// sold_out is system-owned for products with a stock limit.
-			soldOut = depleted
-			managed = depleted
-		}
+		soldOut, hidden, managed = s.applyAutoSoldOut(unlimited, depleted, managed, soldOut, hidden)
 	case config.OutOfStockAutoHide:
-		if unlimited {
-			if managed {
-				hidden = false
-				managed = false
-			}
-		} else {
-			// hidden is system-owned for products with a stock limit.
-			hidden = depleted
-			managed = depleted
-		}
+		soldOut, hidden, managed = s.applyAutoHide(unlimited, depleted, managed, soldOut, hidden)
 	default:
-		// ignore / fail never own a flag. A flag a previous mode took over is
-		// released, which is what makes a mode switch not strand products.
-		if managed {
-			soldOut = false
-			hidden = false
-			managed = false
-		}
+		soldOut, hidden, managed = s.releaseManagedFlags(managed, soldOut, hidden)
 	}
 
 	if soldOut == product.SoldOut && hidden == product.Hidden && managed == product.StockFlagsManaged {
@@ -143,4 +126,48 @@ func (s *PurchaseService) reconcileStockFlag(
 	}
 
 	return nil
+}
+
+// applyAutoSoldOut derives the sold_out flag the auto_sold_out mode owns. A limited
+// product that became unlimited releases a flag the behaviour took over.
+func (s *PurchaseService) applyAutoSoldOut(
+	unlimited, depleted, managed, soldOut, hidden bool,
+) (newSoldOut, newHidden, newManaged bool) {
+	if unlimited {
+		if managed {
+			return false, hidden, false
+		}
+
+		return soldOut, hidden, managed
+	}
+
+	return depleted, hidden, depleted
+}
+
+// applyAutoHide derives the hidden flag the auto_hide mode owns. A limited product
+// that became unlimited releases a flag the behaviour took over.
+func (s *PurchaseService) applyAutoHide(
+	unlimited, depleted, managed, soldOut, hidden bool,
+) (newSoldOut, newHidden, newManaged bool) {
+	if unlimited {
+		if managed {
+			return soldOut, false, false
+		}
+
+		return soldOut, hidden, managed
+	}
+
+	return soldOut, depleted, depleted
+}
+
+// releaseManagedFlags drops any flag a previous mode took over, which is what makes
+// a mode switch not strand products. A hand-set flag is left untouched.
+func (s *PurchaseService) releaseManagedFlags(
+	managed, soldOut, hidden bool,
+) (newSoldOut, newHidden, newManaged bool) {
+	if managed {
+		return false, false, false
+	}
+
+	return soldOut, hidden, managed
 }

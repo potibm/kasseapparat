@@ -548,6 +548,7 @@ func (s *PurchaseService) warnIfOversold(ctx context.Context, purchase *models.P
 		if seen[item.ProductID] {
 			continue
 		}
+
 		seen[item.ProductID] = true
 
 		product, err := s.sqliteRepo.GetProductByID(item.ProductID)

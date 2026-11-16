@@ -170,6 +170,7 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 		if ps, ok := handler.purchaseService.(*purchaseService.PurchaseService); ok {
 			behavior = ps.OutOfStockBehavior
 		}
+
 		switch behavior {
 		case config.OutOfStockAutoSoldOut:
 			stored, _ := handler.repo.GetProductByID(id)
