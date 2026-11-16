@@ -277,7 +277,10 @@ describe("useCart Hook", () => {
     });
 
     it("should show a non-blocking toast for other errors", async () => {
-      const mockError = new Error("General error");
+      const mockError = new Error("General error") as Error & {
+        status?: number;
+      };
+      mockError.status = 400;
       mockStorePurchase.mockRejectedValue(mockError);
       vi.mocked(getPurchaseErrorType).mockReturnValue(
         "GENERAL_ERROR" as unknown as PurchaseErrorType,

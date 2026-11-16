@@ -49,6 +49,12 @@ const Product: React.FC<ProductProps> = ({
           <HiOutlineThumbUp className="h-5 w-5" />
         </Button>
       );
+    } else if (hasGuestlist) {
+      return (
+        <Button aria-label={"Show guestlist for " + product.name}>
+          <HiUserAdd className="h-5 w-5" />
+        </Button>
+      );
     } else if (!canAdd) {
       return (
         <Button
@@ -57,12 +63,6 @@ const Product: React.FC<ProductProps> = ({
           disabled
         >
           <HiShoppingCart className="h-5 w-5" />
-        </Button>
-      );
-    } else if (hasGuestlist) {
-      return (
-        <Button aria-label={"Show guestlist for " + product.name}>
-          <HiUserAdd className="h-5 w-5" />
         </Button>
       );
     } else {
@@ -86,10 +86,10 @@ const Product: React.FC<ProductProps> = ({
     e.preventDefault();
     if (product.soldOut) {
       setIsPIModalOpen(true);
-    } else if (!canAdd) {
-      // out of stock: do nothing, the disabled button already conveys it
     } else if (hasGuestlist) {
       setIsGuestListModalOpen(true);
+    } else if (!canAdd) {
+      // out of stock: do nothing, the disabled button already conveys it
     } else if (canAdd) {
       addToCart(product, 1, null);
     }
