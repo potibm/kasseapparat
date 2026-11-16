@@ -18,7 +18,9 @@ import GrossPriceInput from "../../ui/inputs/GrossPriceInput";
 import VatRateInput from "../../ui/inputs/VatRateInput";
 import { Product } from "./types";
 
-const HiddenInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({ outOfStockBehavior }) => {
+const HiddenInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({
+  outOfStockBehavior,
+}) => {
   const totalStock = useWatch({ name: "totalStock" }) ?? 0;
   const limited = Number(totalStock) > 0;
   const managed = limited && outOfStockBehavior === "auto_hide";
@@ -26,12 +28,18 @@ const HiddenInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({ out
     <BooleanInput
       source="hidden"
       disabled={managed}
-      helperText={managed ? "Managed automatically while stock is limited (auto_hide)." : "Hide this product from the POS"}
+      helperText={
+        managed
+          ? "Managed automatically while stock is limited (auto_hide)."
+          : "Hide this product from the POS"
+      }
     />
   );
 };
 
-const SoldOutInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({ outOfStockBehavior }) => {
+const SoldOutInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({
+  outOfStockBehavior,
+}) => {
   const totalStock = useWatch({ name: "totalStock" }) ?? 0;
   const limited = Number(totalStock) > 0;
   const managed = limited && outOfStockBehavior === "auto_sold_out";
@@ -39,7 +47,11 @@ const SoldOutInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({ ou
     <BooleanInput
       source="soldOut"
       disabled={managed}
-      helperText={managed ? "Managed automatically while stock is limited (auto_sold_out)." : "Still show the product to collect information how big the interest is"}
+      helperText={
+        managed
+          ? "Managed automatically while stock is limited (auto_sold_out)."
+          : "Still show the product to collect information how big the interest is"
+      }
     />
   );
 };
