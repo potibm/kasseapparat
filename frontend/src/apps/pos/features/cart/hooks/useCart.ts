@@ -100,12 +100,27 @@ export const useCart = () => {
         setCheckoutProcessing(null);
 
         const errorType = getPurchaseErrorType(error);
-        const message = getErrorMessage(errorType);
+        const isReaderBusy = errorType === "READER_BUSY"; // block UI if reader is busy to prevent further attempts
+
+        // The backend names the product and how many units are left, so its message
+        // is the most specific one available — but only for client errors (4xx) such
+        // as "Only 2 left in stock for X". Server errors and network failures keep
+        // the generic text, so raw backend/database messages never reach the toast.
+        const isClientError =
+          error instanceof Error &&
+          typeof (error as { status?: number }).status === "number" &&
+          (error as { status?: number }).status! >= 400 &&
+          (error as { status?: number }).status! < 500;
+
+        const message =
+          isReaderBusy || !(error instanceof Error) || !isClientError
+            ? getErrorMessage(errorType)
+            : error.message;
 
         showToast({
           severity: "error",
           message,
-          blocking: errorType === "READER_BUSY", // block UI if reader is busy to prevent further attempts
+          blocking: isReaderBusy,
         });
 
         purchaseLog.error("Checkout failed", { error, errorType });

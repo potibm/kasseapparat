@@ -13,7 +13,8 @@ export const handleFetchError = async (response: Response): Promise<never> => {
   } catch {
     // Ignore invalid JSON
   }
-  const error = new Error(message);
+  const error = new Error(message) as Error & { status?: number };
+  error.status = response.status;
   const path = response.url ? new URL(response.url).pathname : undefined;
   Sentry.captureException(error, {
     extra: {

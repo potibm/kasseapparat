@@ -68,6 +68,7 @@ const mockConfig: AppConfig = {
   paymentMethods: [],
   sumupEnabled: false,
   authMode: "proxy",
+  outOfStockBehavior: "ignore",
 };
 
 const mockProduct: ProductType = createMockProduct();
@@ -276,7 +277,10 @@ describe("useCart Hook", () => {
     });
 
     it("should show a non-blocking toast for other errors", async () => {
-      const mockError = new Error("General error");
+      const mockError = new Error("General error") as Error & {
+        status?: number;
+      };
+      mockError.status = 400;
       mockStorePurchase.mockRejectedValue(mockError);
       vi.mocked(getPurchaseErrorType).mockReturnValue(
         "GENERAL_ERROR" as unknown as PurchaseErrorType,
@@ -291,9 +295,10 @@ describe("useCart Hook", () => {
         ).rejects.toThrow("General error");
       });
 
+      // The backend's own message is shown, because it names what went wrong.
       expect(mockShowToast).toHaveBeenCalledWith({
         severity: "error",
-        message: "Something went wrong.",
+        message: "General error",
         blocking: false,
       });
     });

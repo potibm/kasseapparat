@@ -53,6 +53,7 @@ const mockConfig: AppConfig = {
   paymentMethods: [],
   sumupEnabled: false,
   authMode: "proxy",
+  outOfStockBehavior: "ignore",
 };
 
 const mockProducts = [

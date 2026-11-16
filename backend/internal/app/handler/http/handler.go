@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -97,4 +98,14 @@ func (handler *Handler) contextWithUser(c *gin.Context) *gin.Context {
 	c.Request = c.Request.WithContext(ctx)
 
 	return c
+}
+
+// reconcileStockFlags re-derives the product flags after a write that can change the
+// stock outside the purchase flow: an edited product, or a deleted purchase. It only
+// logs, because the write itself already succeeded and a reconciliation failure must
+// not turn it into an error response.
+func (handler *Handler) reconcileStockFlags(c *gin.Context) {
+	if err := handler.purchaseService.ReconcileStockFlags(c.Request.Context()); err != nil {
+		slog.Error("failed to reconcile stock flags", "error", err)
+	}
 }

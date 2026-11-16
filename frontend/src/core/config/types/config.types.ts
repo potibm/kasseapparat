@@ -1,3 +1,6 @@
+export type OutOfStockBehavior =
+  "ignore" | "fail" | "auto_sold_out" | "auto_hide";
+
 export interface AppConfig {
   version: string;
   apiHost: string;
@@ -21,4 +24,5 @@ export interface AppConfig {
   sumupEnabled: boolean;
   environmentMessage?: string;
   authMode: string;
+  outOfStockBehavior: OutOfStockBehavior;
 }

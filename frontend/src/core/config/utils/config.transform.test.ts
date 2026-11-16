@@ -16,6 +16,7 @@ describe("transformConfig", () => {
     dateOptions: {},
     vatRates: [],
     authMode: "proxy",
+    outOfStockBehavior: "ignore",
   };
 
   const mockApiHost = "https://api.example.com";
