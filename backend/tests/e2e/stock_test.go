@@ -341,7 +341,9 @@ func TestOutOfStockBehavior_RaisingStockReleasesFlag(t *testing.T) {
 // A flag an operator set by hand is not the behaviour's to clear, so a refund of the
 // product does not put it back on sale.
 func TestOutOfStockBehavior_ManualFlagSurvivesRefund(t *testing.T) {
-	_, cleanup := setupTestEnvironmentWithBehavior(t, config.OutOfStockAutoHide)
+	// hidden is a manual flag under auto_sold_out, so an operator can still set it
+	// by hand there; under auto_hide it is system-owned for limited products.
+	_, cleanup := setupTestEnvironmentWithBehavior(t, config.OutOfStockAutoSoldOut)
 	defer cleanup()
 
 	productID := stockProduct(t, "Hidden By Hand", 2)
