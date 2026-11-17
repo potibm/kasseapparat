@@ -18,9 +18,9 @@ import packageJson from "../../../../package.json";
  */
 describe("decode-uri-component CJS interop", () => {
   it("is not pinned by an npm override", () => {
-    expect(packageJson.overrides ?? {}).not.toHaveProperty(
-      "decode-uri-component",
-    );
+    expect(
+      (packageJson as { overrides?: Record<string, string> }).overrides ?? {},
+    ).not.toHaveProperty("decode-uri-component");
   });
 
   it("lets query-string decode a query string", () => {

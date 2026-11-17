@@ -58,8 +58,5 @@
   "allowScripts": {
     "fsevents@2.3.2": true,
     "fsevents@2.3.3": true
-  },
-  "overrides": {
-    "deepmerge-ts": "^8.0.0"
   }
 }
