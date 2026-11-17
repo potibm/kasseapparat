@@ -27,9 +27,8 @@ func (r *Repository) GetReaders() ([]Reader, error) {
 
 func (r *Repository) GetReader(readerID string) (*Reader, error) {
 	params := sumup.ReadersGetParams{}
-	id := sumup.ReaderID(readerID)
 
-	reader, err := r.service.Client.Readers.Get(context.Background(), r.service.MerchantCode, id, params)
+	reader, err := r.service.Client.Readers.Get(context.Background(), r.service.MerchantCode, readerID, params)
 	if err != nil {
 		slog.Error("Error retrieving reader with ID", "reader_id", readerID, "error", err)
 
@@ -48,11 +47,9 @@ func isReaderNotFoundError(err error) bool {
 }
 
 func (r *Repository) CreateReader(pairingCode, name string) (*Reader, error) {
-	readerName := sumup.ReaderName(name)
-
 	body := sumup.ReadersCreateParams{
-		PairingCode: sumup.ReaderPairingCode(pairingCode),
-		Name:        readerName,
+		PairingCode: pairingCode,
+		Name:        name,
 	}
 
 	createdReader, err := r.service.Client.Readers.Create(context.Background(), r.service.MerchantCode, body)
@@ -123,9 +120,7 @@ func (r *Repository) CreateReaderTerminateAction(readerID string) error {
 }
 
 func (r *Repository) DeleteReader(readerID string) error {
-	id := sumup.ReaderID(readerID)
-
-	return r.service.Client.Readers.Delete(context.Background(), r.service.MerchantCode, id)
+	return r.service.Client.Readers.Delete(context.Background(), r.service.MerchantCode, readerID)
 }
 
 func fromSDKReader(sdkReader *sumup.Reader) *Reader {
