@@ -74,7 +74,7 @@ func TestFindNextHref(t *testing.T) {
 
 func TestFromSDKTransactionWithUUIDId(t *testing.T) {
 	id := "2b5cd782-0733-4fb2-bf22-5a12345bd94f"
-	tid := sumup.TransactionID(id)
+	tid := id
 	tc := "TAAAABCP2SA"
 	amount := float32(40.0)
 	currency := sumup.CurrencyEUR
@@ -108,7 +108,7 @@ func TestFromSDKTransactionWithUUIDId(t *testing.T) {
 func TestFromSDKTransactionWithNonUUIDId(t *testing.T) {
 	id := "8119994131" // not a UUID
 	tc := "TAAAABCP2SA"
-	tid := sumup.TransactionID("2b5cd782-0733-4fb2-bf22-5a12345bd94f")
+	tid := "2b5cd782-0733-4fb2-bf22-5a12345bd94f"
 	amount := float32(40.0)
 	currency := sumup.CurrencyEUR
 	cardType := sumup.CardTypeMastercard
