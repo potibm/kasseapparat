@@ -55,7 +55,9 @@ describe("Cart Component", () => {
       />,
     );
 
-    expect(screen.getByRole("cell", { name: /^total$/i })).toBeInTheDocument();
+    expect(screen.getByText(/^total$/i)).toBeInTheDocument();
+    expect(screen.getByText("Cart is empty")).toBeInTheDocument();
+    expect(screen.getByTestId("cart-quantity")).toHaveTextContent("0");
     // Total should show 0.00 when cart is empty
     expect(screen.getByTestId("cart-total-value")).toHaveTextContent(/0,00/);
 
@@ -85,6 +87,8 @@ describe("Cart Component", () => {
 
     // Product name
     expect(screen.getByText(/Test Coffee/i)).toBeInTheDocument();
+    expect(screen.queryByText("Cart is empty")).not.toBeInTheDocument();
+    expect(screen.getByTestId("cart-quantity")).toHaveTextContent("2");
     // Tocal price for 2 items
     expect(screen.getByTestId("cart-total-value")).toHaveTextContent(/6,00/);
 
@@ -94,6 +98,30 @@ describe("Cart Component", () => {
     });
     fireEvent.click(removeAllBtn);
     expect(mockRemoveAll).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the items scrollable and the total plus checkout pinned below them", () => {
+    let cart = new CartObject();
+    cart = cart.add(mockProduct as unknown as Product, 1);
+
+    render(
+      <Cart
+        cart={cart}
+        removeFromCart={vi.fn()}
+        removeAllFromCart={vi.fn()}
+        checkoutCart={vi.fn()}
+        checkoutProcessing={null}
+      />,
+    );
+
+    const items = screen.getByTestId("cart-items");
+    const footer = screen.getByTestId("cart-footer");
+
+    expect(items).toHaveClass("overflow-y-auto");
+    expect(items).toContainElement(screen.getByTestId("cart-table"));
+    expect(footer).toHaveClass("shrink-0");
+    expect(footer).toContainElement(screen.getByTestId("cart-total-value"));
+    expect(footer).toContainElement(screen.getByTestId("checkout-button-CASH"));
   });
 
   it("shows processing state on checkout buttons", () => {

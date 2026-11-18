@@ -18,6 +18,8 @@ import { usePosApi } from "@pos/api/usePosApi";
 const cartLog = createLogger("Cart");
 const purchaseLog = createLogger("Purchase");
 
+export const UNDO_CLEAR_DURATION_MS = 5000;
+
 export const useCart = () => {
   const [cart, setCart] = useState(() => new Cart());
   const [isPolling, setIsPolling] = useState(false);
@@ -48,6 +50,32 @@ export const useCart = () => {
     cartLog.debug("Clearing cart");
     setCart(new Cart());
   }, []);
+
+  /**
+   * Clears the cart on the user's request and offers an "Undo" toast. Undo only
+   * restores the old cart while the cart is still empty, so it never overwrites
+   * items that were added after clearing.
+   */
+  const clearWithUndo = useCallback(() => {
+    if (cart.isEmpty) return;
+
+    const previousCart = cart;
+    cartLog.debug("Clearing cart (undo available)");
+    setCart(new Cart());
+
+    showToast({
+      severity: "info",
+      message: "Cart cleared",
+      duration: UNDO_CLEAR_DURATION_MS,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          cartLog.debug("Restoring cleared cart");
+          setCart((current) => (current.isEmpty ? previousCart : current));
+        },
+      },
+    });
+  }, [cart, showToast]);
 
   const finalizeCheckout = useCallback(
     (success: boolean) => {
@@ -162,6 +190,7 @@ export const useCart = () => {
     add,
     remove,
     clear,
+    clearWithUndo,
     checkout,
     finalizeCheckout,
     checkoutProcessing,
