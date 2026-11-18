@@ -8,8 +8,6 @@ import { Product as ProductType, Guest as GuestType } from "@pos/api/schemas";
 import GuestlistArrivalNoteModal from "./_internal/GuestlistArrivalNoteModal";
 import { usePosApi } from "@pos/api/usePosApi";
 
-const SEARCH_DEBOUNCE_MS = 200;
-
 interface GuestlistModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -67,49 +65,32 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   };
 
   const fetchGuestEntries = useCallback(
-    async (query: string, signal: AbortSignal) => {
+    async (query = "") => {
       setLoading(true);
       try {
-        const response = await fetchGuestlistByProductId(
-          product.id,
-          query,
-          signal,
-        );
-        // A newer search has started meanwhile: drop this (stale) result.
-        if (signal.aborted) return;
+        const response = await fetchGuestlistByProductId(product.id, query);
         setGuestlistEntries(response);
         setError(null);
         setLoadedSearchQuery(query);
       } catch (error: unknown) {
-        if (signal.aborted) return;
         setError("Error fetching list entries: " + (error as Error).message);
         setGuestlistEntries([]);
         setLoadedSearchQuery("");
       } finally {
-        if (!signal.aborted) setLoading(false);
+        setLoading(false);
       }
     },
     [product.id, fetchGuestlistByProductId],
   );
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    // Debounce typing and cancel the previous request, so a slow response for an
-    // older search term can never overwrite the results of the current one.
-    const controller = new AbortController();
-    const handle = setTimeout(
-      () => {
-        fetchGuestEntries(searchQuery, controller.signal);
+    if (isOpen) {
+      const handle = requestAnimationFrame(() => {
+        fetchGuestEntries(searchQuery);
         setNoteToDisplay(null);
-      },
-      searchQuery === "" ? 0 : SEARCH_DEBOUNCE_MS,
-    );
-
-    return () => {
-      clearTimeout(handle);
-      controller.abort();
-    };
+      });
+      return () => cancelAnimationFrame(handle);
+    }
   }, [isOpen, searchQuery, fetchGuestEntries]);
 
   useEffect(() => {

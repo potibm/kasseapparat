@@ -32,7 +32,7 @@ const GuestlistResultTable: React.FC<GuestlistResultTableProps> = ({
   return (
     <>
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/75 dark:bg-gray-900/75 z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
           <Spinner size="xl" />
         </div>
       )}

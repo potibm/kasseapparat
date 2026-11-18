@@ -9,7 +9,7 @@ const log = createLogger("Product");
 
 export const useProducts = () => {
   const [products, setProducts] = useState<ProductType[] | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const { showToast } = useToast();
   const { fetchProducts, addProductInterest } = usePosApi();
 
