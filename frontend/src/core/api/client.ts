@@ -37,8 +37,9 @@ export const postValidated = async <S extends z.ZodTypeAny>(
 export const getValidated = async <S extends z.ZodTypeAny>(
   url: string,
   schema: S,
+  options?: RequestInit,
 ): Promise<z.infer<S>> => {
-  return performFetch(url, schema, "GET");
+  return performFetch(url, schema, "GET", undefined, options);
 };
 
 export const performFetch = async <S extends z.ZodTypeAny>(
@@ -55,6 +56,7 @@ export const performFetch = async <S extends z.ZodTypeAny>(
     },
     body: JSON.stringify(body),
     credentials: options?.credentials ?? "include",
+    signal: options?.signal,
   });
   if (!response.ok) await handleFetchError(response);
 

@@ -30,6 +30,7 @@ export const createPosApiClient = (apiBaseUrl: string) => {
     fetchGuestlistByProductId: async (
       productId: number,
       query: string,
+      signal?: AbortSignal,
     ): Promise<Guest[]> => {
       const url = buildUrl(
         `/products/${productId}/guests?q=${encodeURIComponent(query)}`,
@@ -38,7 +39,7 @@ export const createPosApiClient = (apiBaseUrl: string) => {
         (val) => (val === null ? [] : val),
         z.array(GuestSchema),
       );
-      return getValidated(url, GuestListSchema);
+      return getValidated(url, GuestListSchema, { signal });
     },
     // Store a new purchase
     storePurchase: async (
