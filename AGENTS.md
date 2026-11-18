@@ -93,6 +93,17 @@ CI order: `deps:install` → `lint` → `test` → `docker:build`.
 - **Backend**: `go test -v -coverprofile=coverage.out ./...` (run from `backend/`).
 - **Frontend**: `vitest`, jsdom, globals enabled, coverage via v8 (`frontend/coverage/lcov.info`).
 - SonarCloud ingests `backend/coverage.out` and `frontend/coverage/lcov.info`.
+- **Coverage on new code must be ≥ 80 %.** SonarCloud's quality gate checks this on every PR. Tests belong in the same PR as the code they cover — never "tests follow later". Exceptions are decided by the maintainer only; do not lower the bar on your own.
+
+---
+
+## Branches and pull requests
+
+> **Temporary (v4 development):** remove or rewrite this section before `feat/v4` is merged into `main`.
+
+- **While v4 is in development, every PR targets `feat/v4`** — features, bugfixes, refactorings, docs, without exception. Never open a PR against `main` unless the maintainer explicitly asks for it.
+- Merging into `main` triggers semantic-release and publishes a new version immediately, so a PR against `main` by mistake ships a release.
+- Keep PRs small: one step per PR, and the POS must stay usable after each one.
 
 ---
 
