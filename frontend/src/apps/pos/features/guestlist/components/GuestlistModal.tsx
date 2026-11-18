@@ -10,6 +10,8 @@ import { usePosApi } from "@pos/api/usePosApi";
 import { useConfig } from "@core/config/hooks/useConfig";
 import { canAddMore, availableStock } from "@pos/features/stock/utils/stock";
 
+const SEARCH_DEBOUNCE_MS = 200;
+
 interface GuestlistModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -81,32 +83,49 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   };
 
   const fetchGuestEntries = useCallback(
-    async (query = "") => {
+    async (query: string, signal: AbortSignal) => {
       setLoading(true);
       try {
-        const response = await fetchGuestlistByProductId(product.id, query);
+        const response = await fetchGuestlistByProductId(
+          product.id,
+          query,
+          signal,
+        );
+        // A newer search has started meanwhile: drop this (stale) result.
+        if (signal.aborted) return;
         setGuestlistEntries(response);
         setError(null);
         setLoadedSearchQuery(query);
       } catch (error: unknown) {
+        if (signal.aborted) return;
         setError("Error fetching list entries: " + (error as Error).message);
         setGuestlistEntries([]);
         setLoadedSearchQuery("");
       } finally {
-        setLoading(false);
+        if (!signal.aborted) setLoading(false);
       }
     },
     [product.id, fetchGuestlistByProductId],
   );
 
   useEffect(() => {
-    if (isOpen) {
-      const handle = requestAnimationFrame(() => {
-        fetchGuestEntries(searchQuery);
+    if (!isOpen) return;
+
+    // Debounce typing and cancel the previous request, so a slow response for an
+    // older search term can never overwrite the results of the current one.
+    const controller = new AbortController();
+    const handle = setTimeout(
+      () => {
+        fetchGuestEntries(searchQuery, controller.signal);
         setNoteToDisplay(null);
-      });
-      return () => cancelAnimationFrame(handle);
-    }
+      },
+      searchQuery === "" ? 0 : SEARCH_DEBOUNCE_MS,
+    );
+
+    return () => {
+      clearTimeout(handle);
+      controller.abort();
+    };
   }, [isOpen, searchQuery, fetchGuestEntries]);
 
   useEffect(() => {
