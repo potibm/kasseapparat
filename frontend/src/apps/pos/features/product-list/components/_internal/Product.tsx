@@ -106,7 +106,7 @@ const Product: React.FC<ProductProps> = ({
       <Card
         theme={compactCardTheme}
         data-testid={"product-card-" + product.id}
-        className="w-[22%] flex flex-col mb-5 mr-5 relative cursor-pointer"
+        className="pos-pressable w-[22%] flex flex-col mb-5 mr-5 relative cursor-pointer"
         onClick={handleCardClick}
       >
         {product.soldOut && (
