@@ -2,10 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PurchaseHistory from "./PurchaseHistory";
-import {
-  REFUND_WINDOW_MS,
-  summarizeItems,
-} from "../utils/purchase.utils";
+import { REFUND_WINDOW_MS, summarizeItems } from "../utils/purchase.utils";
 import Decimal from "decimal.js";
 import { Purchase } from "../../../api/schemas";
 
@@ -191,7 +188,9 @@ describe("PurchaseHistory Component", () => {
       expect(
         screen.getByRole("button", { name: "Resume purchase" }),
       ).toHaveTextContent("Resume");
-      expect(screen.queryByTestId("refund-purchase-p1")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("refund-purchase-p1"),
+      ).not.toBeInTheDocument();
     });
   });
 

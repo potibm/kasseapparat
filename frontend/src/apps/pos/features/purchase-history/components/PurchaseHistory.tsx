@@ -201,7 +201,10 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
                         onClick={() => setModalState({ show: true, purchase })}
                         data-testid={`refund-purchase-${purchase.id}`}
                       >
-                        <HiReceiptRefund className="h-4 w-4" aria-hidden="true" />
+                        <HiReceiptRefund
+                          className="h-4 w-4"
+                          aria-hidden="true"
+                        />
                         Refund
                       </button>
                     ) : (
