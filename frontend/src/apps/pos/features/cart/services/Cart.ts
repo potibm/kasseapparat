@@ -97,6 +97,43 @@ export class Cart {
     return new Cart(this.items.filter((item) => item.id !== productId));
   }
 
+  /**
+   * Removes one unit of a product and drops the line once nothing is left.
+   *
+   * Lines that carry guest-list entries are not decreased unit by unit, because
+   * every unit belongs to a guest. They can only be removed as a whole.
+   */
+  public decrease(productId: number): Cart {
+    const index = this.items.findIndex((item) => item.id === productId);
+    if (index === -1) {
+      return this;
+    }
+
+    const item = this.items[index];
+    if (item.listItems.length > 0) {
+      log.warn("Cannot decrease a line with guest-list entries", {
+        productId,
+      });
+      return this;
+    }
+
+    if (item.quantity <= 1) {
+      return this.remove(productId);
+    }
+
+    const quantity = item.quantity - 1;
+    const newItems = [...this.items];
+    newItems[index] = {
+      ...item,
+      quantity,
+      totalNetPrice: item.netPrice.mul(quantity),
+      totalGrossPrice: item.grossPrice.mul(quantity),
+      totalVatAmount: item.vatAmount.mul(quantity),
+    };
+
+    return new Cart(newItems);
+  }
+
   public get totalGross(): Decimal {
     return this.items.reduce(
       (sum, item) => sum.plus(item.totalGrossPrice),

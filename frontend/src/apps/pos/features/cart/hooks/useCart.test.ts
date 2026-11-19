@@ -116,6 +116,21 @@ describe("useCart Hook", () => {
     });
   });
 
+  describe("decrease()", () => {
+    it("removes one unit of a product", () => {
+      const { result } = renderHook(() => useCart(), { wrapper });
+
+      act(() => {
+        result.current.add(mockProduct, 3, null);
+      });
+      act(() => {
+        result.current.decrease(mockProduct);
+      });
+
+      expect(result.current.cart.getQuantity(mockProduct.id)).toBe(2);
+    });
+  });
+
   describe("clearWithUndo()", () => {
     type ToastArg = {
       severity: string;

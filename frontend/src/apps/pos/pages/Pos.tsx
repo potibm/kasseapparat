@@ -60,6 +60,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
     cart,
     add,
     remove,
+    decrease,
     clearWithUndo,
     checkout,
     checkoutProcessing,
@@ -135,6 +136,11 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
     [finalizeCheckout, handlePurchaseSuccess, showError],
   );
 
+  const increaseInCart = useCallback(
+    (product: ProductType) => add(product, 1, null),
+    [add],
+  );
+
   const handleResumePolling = useCallback(
     (purchase: PurchaseType) => {
       resumePolling(purchase);
@@ -153,6 +159,8 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
             cart={cart}
             checkoutProcessing={checkoutProcessing}
             removeFromCart={remove}
+            increaseInCart={increaseInCart}
+            decreaseInCart={decrease}
             removeAllFromCart={clearWithUndo}
             checkoutCart={handleCheckout}
           />

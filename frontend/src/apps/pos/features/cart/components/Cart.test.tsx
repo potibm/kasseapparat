@@ -49,6 +49,8 @@ describe("Cart Component", () => {
       <Cart
         cart={emptyCart}
         removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={vi.fn()}
         checkoutCart={vi.fn()}
         checkoutProcessing={null}
@@ -79,6 +81,8 @@ describe("Cart Component", () => {
       <Cart
         cart={fullCart}
         removeFromCart={mockRemoveOne}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={mockRemoveAll}
         checkoutCart={vi.fn()}
         checkoutProcessing={null}
@@ -108,6 +112,8 @@ describe("Cart Component", () => {
       <Cart
         cart={cart}
         removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={vi.fn()}
         checkoutCart={vi.fn()}
         checkoutProcessing={null}
@@ -132,6 +138,8 @@ describe("Cart Component", () => {
       <Cart
         cart={cart}
         removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={vi.fn()}
         checkoutCart={vi.fn()}
         checkoutProcessing="cash" // simulates running checkout
@@ -159,6 +167,8 @@ describe("Cart Component", () => {
       <Cart
         cart={cart}
         removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={vi.fn()}
         checkoutCart={vi.fn()}
         checkoutProcessing={null}
@@ -172,6 +182,8 @@ describe("Cart Component", () => {
       <Cart
         cart={updatedCart}
         removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={vi.fn()}
         checkoutCart={vi.fn()}
         checkoutProcessing={null}
