@@ -53,6 +53,18 @@ export const ToastItem = ({
         )}
         {toast.message}
       </div>
+      {toast.action && (
+        <button
+          type="button"
+          className="ml-3 min-h-11 shrink-0 rounded-lg px-3 text-sm font-semibold text-cyan-700 hover:bg-cyan-50 dark:text-cyan-400 dark:hover:bg-gray-700"
+          onClick={() => {
+            toast.action?.onClick();
+            onDismiss(toast.id);
+          }}
+        >
+          {toast.action.label}
+        </button>
+      )}
       <ToastToggle onDismiss={() => onDismiss(toast.id)} />
     </Toast>
   );

@@ -60,7 +60,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
     cart,
     add,
     remove,
-    clear,
+    clearWithUndo,
     checkout,
     checkoutProcessing,
     isPolling,
@@ -153,7 +153,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
             cart={cart}
             checkoutProcessing={checkoutProcessing}
             removeFromCart={remove}
-            removeAllFromCart={clear}
+            removeAllFromCart={clearWithUndo}
             checkoutCart={handleCheckout}
           />
           <PurchaseHistory
@@ -164,7 +164,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
             cartEmpty={cart.isEmpty}
           />
           <Menu username={username} />
-          <p className="text-xs mt-10 dark:text-white">
+          <p className="text-xs mt-2 shrink-0 dark:text-white">
             <Version />
           </p>
         </>

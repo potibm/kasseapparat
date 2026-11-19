@@ -12,6 +12,8 @@ vi.stubGlobal(
   }),
 );
 
+const mockUndo = vi.fn();
+
 const TestComponent = () => {
   const { showToast } = useToast();
 
@@ -28,6 +30,17 @@ const TestComponent = () => {
         }
       >
         Blocking Toast
+      </button>
+      <button
+        onClick={() =>
+          showToast({
+            severity: "info",
+            message: "Cart cleared",
+            action: { label: "Undo", onClick: mockUndo },
+          })
+        }
+      >
+        Action Toast
       </button>
     </div>
   );
@@ -72,6 +85,28 @@ describe("Toast System Integration", () => {
     });
 
     expect(screen.queryByText("YAY!")).not.toBeInTheDocument();
+  });
+
+  it("renders an action button that runs the action and dismisses the toast", () => {
+    renderWithProvider();
+
+    fireEvent.click(screen.getByText("Action Toast"));
+    expect(screen.getByText("Cart cleared")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+
+    expect(mockUndo).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Cart cleared")).not.toBeInTheDocument();
+  });
+
+  it("renders no action button for toasts without an action", () => {
+    renderWithProvider();
+
+    fireEvent.click(screen.getByText("Normal Toast"));
+
+    expect(
+      screen.queryByRole("button", { name: "Undo" }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders a backdrop when a blocking toast is active", () => {

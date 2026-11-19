@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import { HiXCircle } from "react-icons/hi";
 import {
   Table,
   Tooltip,
@@ -32,6 +31,25 @@ interface CartProps {
   checkoutProcessing: string | null;
 }
 
+const compactTableTheme = {
+  head: {
+    cell: {
+      base: "px-2 py-1",
+    },
+  },
+  body: {
+    cell: {
+      base: "px-2 py-1",
+    },
+  },
+};
+
+/**
+ * The cart fills the sidebar as a flex column: a header with the "Clear" action,
+ * the line items in the middle (the only part that scrolls) and the total plus the
+ * checkout buttons pinned to the bottom, so they stay within reach no matter how
+ * many items are in the cart. The parent must give it a bounded height.
+ */
 const Cart: React.FC<CartProps> = ({
   cart,
   removeFromCart,
@@ -70,86 +88,87 @@ const Cart: React.FC<CartProps> = ({
     };
   }, [cart.totalQuantity]);
 
-  const compactTableTheme = {
-    head: {
-      cell: {
-        base: "px-2 py-1",
-      },
-    },
-    body: {
-      cell: {
-        base: "px-2 py-1",
-      },
-    },
-  };
-
   return (
-    <div>
-      <Table
-        striped
-        theme={compactTableTheme}
-        data-testid="cart-table"
-        className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
-      >
-        <TableHead>
-          <TableRow>
-            <TableHeadCell className="w-[40%]">Product</TableHeadCell>
-            <TableHeadCell className="w-[15%] text-right">
-              <Tooltip content="Quantity">Qnt</Tooltip>
-            </TableHeadCell>
-            <TableHeadCell className="w-[15%] text-right">
-              Total Price
-            </TableHeadCell>
-            <TableHeadCell className="w-[30%] text-right">Remove</TableHeadCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {cart.items.map((cartElement: CartItemType) => (
-            <CartRow
-              key={cartElement.id}
-              cartElement={cartElement}
-              currency={currency}
-              removeFromCart={removeFromCart}
-            />
-          ))}
-          <TableRow>
-            <TableCell colSpan={2} className="uppercase font-bold">
-              Total
-            </TableCell>
-            <TableCell
-              className="font-bold text-right"
-              data-testid="cart-total-value"
-            >
-              {currency.format(cart.totalGross.toNumber())}
-            </TableCell>
-            <TableCell className="flex justify-end">
-              {cart.isEmpty ? (
-                <Button
-                  disabled
-                  color="failure"
-                  aria-label="Remove all items from cart"
-                >
-                  <HiXCircle />
-                </Button>
-              ) : (
-                <Button
-                  color="failure"
-                  onClick={() => removeAllFromCart()}
-                  aria-label="Remove all items from cart"
-                >
-                  <HiXCircle />
-                </Button>
-              )}
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+    <div className="flex min-h-0 flex-1 flex-col" data-testid="cart">
+      <div className="flex shrink-0 items-center justify-between pb-2">
+        <h2 className="flex items-center gap-2 text-lg font-bold dark:text-white">
+          Cart
+          <span
+            className="rounded-full bg-gray-300 px-2 text-sm font-semibold dark:bg-gray-700"
+            data-testid="cart-quantity"
+          >
+            {cart.totalQuantity}
+          </span>
+        </h2>
+        <Button
+          color="alternative"
+          className="text-red-700 dark:text-red-400"
+          disabled={cart.isEmpty}
+          onClick={() => removeAllFromCart()}
+          aria-label="Remove all items from cart"
+        >
+          Clear
+        </Button>
+      </div>
 
-      <CheckoutButtons
-        cart={cart}
-        checkoutProcessing={checkoutProcessing}
-        handleCheckoutCart={checkoutCart}
-      />
+      <div className="min-h-0 flex-1 overflow-y-auto" data-testid="cart-items">
+        <Table
+          striped
+          theme={compactTableTheme}
+          data-testid="cart-table"
+          className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
+        >
+          <TableHead>
+            <TableRow>
+              <TableHeadCell className="w-[40%]">Product</TableHeadCell>
+              <TableHeadCell className="w-[15%] text-right">
+                <Tooltip content="Quantity">Qnt</Tooltip>
+              </TableHeadCell>
+              <TableHeadCell className="w-[15%] text-right">
+                Total Price
+              </TableHeadCell>
+              <TableHeadCell className="w-[30%] text-right">
+                Remove
+              </TableHeadCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {cart.isEmpty && (
+              <TableRow>
+                <TableCell colSpan={4} className="py-4 text-center">
+                  Cart is empty
+                </TableCell>
+              </TableRow>
+            )}
+            {cart.items.map((cartElement: CartItemType) => (
+              <CartRow
+                key={cartElement.id}
+                cartElement={cartElement}
+                currency={currency}
+                removeFromCart={removeFromCart}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div
+        className="shrink-0 border-t border-gray-300 pt-2 dark:border-gray-700"
+        data-testid="cart-footer"
+      >
+        <div className="flex items-baseline justify-between px-2 dark:text-white">
+          <span className="text-sm font-bold uppercase">Total</span>
+          <span className="text-2xl font-bold" data-testid="cart-total-value">
+            {currency.format(cart.totalGross.toNumber())}
+          </span>
+        </div>
+
+        <CheckoutButtons
+          cart={cart}
+          checkoutProcessing={checkoutProcessing}
+          handleCheckoutCart={checkoutCart}
+        />
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useCart } from "./useCart";
+import { useCart, UNDO_CLEAR_DURATION_MS } from "./useCart";
 import {
   Product as ProductType,
   Purchase as PurchaseType,
@@ -113,6 +113,85 @@ describe("useCart Hook", () => {
         result.current.clear();
       });
       expect(result.current.cart.isEmpty).toBe(true);
+    });
+  });
+
+  describe("clearWithUndo()", () => {
+    type ToastArg = {
+      severity: string;
+      message: string;
+      duration?: number;
+      action?: { label: string; onClick: () => void };
+    };
+    const lastToast = (): ToastArg =>
+      mockShowToast.mock.calls.at(-1)?.[0] as ToastArg;
+
+    it("clears the cart and offers an undo toast", () => {
+      const { result } = renderHook(() => useCart(), { wrapper });
+
+      act(() => {
+        result.current.add(mockProduct, 2, null);
+      });
+      act(() => {
+        result.current.clearWithUndo();
+      });
+
+      expect(result.current.cart.isEmpty).toBe(true);
+      expect(mockShowToast).toHaveBeenCalledTimes(1);
+      expect(lastToast()).toMatchObject({
+        severity: "info",
+        message: "Cart cleared",
+        duration: UNDO_CLEAR_DURATION_MS,
+        action: { label: "Undo" },
+      });
+    });
+
+    it("restores the previous cart when undo is clicked", () => {
+      const { result } = renderHook(() => useCart(), { wrapper });
+
+      act(() => {
+        result.current.add(mockProduct, 2, null);
+      });
+      act(() => {
+        result.current.clearWithUndo();
+      });
+      act(() => {
+        lastToast().action?.onClick();
+      });
+
+      expect(result.current.cart.getQuantity(mockProduct.id)).toBe(2);
+    });
+
+    it("does not overwrite items added after clearing", () => {
+      const otherProduct = createMockProduct({ id: mockProduct.id + 1 });
+      const { result } = renderHook(() => useCart(), { wrapper });
+
+      act(() => {
+        result.current.add(mockProduct, 2, null);
+      });
+      act(() => {
+        result.current.clearWithUndo();
+      });
+      act(() => {
+        result.current.add(otherProduct, 1, null);
+      });
+      act(() => {
+        lastToast().action?.onClick();
+      });
+
+      expect(result.current.cart.getQuantity(mockProduct.id)).toBe(0);
+      expect(result.current.cart.getQuantity(otherProduct.id)).toBe(1);
+    });
+
+    it("does nothing when the cart is already empty", () => {
+      const { result } = renderHook(() => useCart(), { wrapper });
+
+      act(() => {
+        result.current.clearWithUndo();
+      });
+
+      expect(result.current.cart.isEmpty).toBe(true);
+      expect(mockShowToast).not.toHaveBeenCalled();
     });
   });
 

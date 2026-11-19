@@ -99,7 +99,7 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
     new Date(date).toLocaleString(dateLocale, dateOptions);
 
   return (
-    <div className="mt-10">
+    <div className="mt-4 shrink-0">
       <RefundModal
         show={modalState.show}
         purchase={modalState.purchase}

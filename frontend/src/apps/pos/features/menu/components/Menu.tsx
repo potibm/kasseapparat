@@ -19,7 +19,7 @@ const Menu: React.FC<MenuProps> = ({ username, ...props }) => {
     "hover:bg-primary-800 dark:hover:bg-cyan-700 hover:text-white";
 
   return (
-    <ButtonGroup className="mt-10" {...props}>
+    <ButtonGroup className="mt-4 shrink-0" {...props}>
       <Button
         size="sm"
         aria-label={`Logged in as ${username}`}
