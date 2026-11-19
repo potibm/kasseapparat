@@ -1,6 +1,7 @@
 import React from "react";
 import Logo from "@core/logo/Logo";
 import UserMenu from "./UserMenu";
+import ConnectionIndicator from "@pos/features/connection/components/ConnectionIndicator";
 
 interface PosHeaderProps {
   username: string;
@@ -9,7 +10,7 @@ interface PosHeaderProps {
 
 /**
  * Header bar above the product grid: app name, the environment message (e.g.
- * "Test environment") and the user menu. It frees the sidebar from the menu
+ * "Test environment"), the connection indicator and the user menu. It frees the sidebar from the menu
  * buttons so the cart gets more room.
  */
 export const PosHeader: React.FC<PosHeaderProps> = ({
@@ -33,6 +34,7 @@ export const PosHeader: React.FC<PosHeaderProps> = ({
       </span>
     )}
     <div className="flex-1" />
+    <ConnectionIndicator />
     <UserMenu username={username} />
   </header>
 );
