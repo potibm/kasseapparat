@@ -8,12 +8,17 @@ vi.mock("./UserMenu", () => ({
   ),
 }));
 
+vi.mock("@pos/features/connection/components/ConnectionIndicator", () => ({
+  default: () => <span>connection dot</span>,
+}));
+
 describe("PosHeader", () => {
   it("shows the app name and the user menu", () => {
     render(<PosHeader username="cashier" />);
 
     expect(screen.getByTestId("pos-header")).toHaveTextContent("Kasseapparat");
     expect(screen.getByText("menu for cashier")).toBeInTheDocument();
+    expect(screen.getByText("connection dot")).toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
