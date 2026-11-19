@@ -46,6 +46,11 @@ export const useCart = () => {
     setCart((prevCart) => prevCart.remove(product.id));
   }, []);
 
+  const decrease = useCallback((product: ProductType) => {
+    cartLog.debug("Decreasing product in cart", { productId: product.id });
+    setCart((prevCart) => prevCart.decrease(product.id));
+  }, []);
+
   const clear = useCallback(() => {
     cartLog.debug("Clearing cart");
     setCart(new Cart());
@@ -189,6 +194,7 @@ export const useCart = () => {
     cart,
     add,
     remove,
+    decrease,
     clear,
     clearWithUndo,
     checkout,

@@ -136,6 +136,59 @@ describe("Cart", () => {
     });
   });
 
+  describe("decrease()", () => {
+    it("should remove one unit and recalculate the line totals", () => {
+      const product = createMockProduct({
+        id: 1,
+        netPrice: new Decimal(10),
+        grossPrice: new Decimal(12),
+        vatAmount: new Decimal(2),
+      });
+      const cart = new Cart().add(product, 3);
+
+      const newCart = cart.decrease(1);
+
+      expect(newCart.getQuantity(1)).toBe(2);
+      expect(newCart.items[0].totalNetPrice).toEqual(new Decimal(20));
+      expect(newCart.items[0].totalGrossPrice).toEqual(new Decimal(24));
+      expect(newCart.items[0].totalVatAmount).toEqual(new Decimal(4));
+      // immutability: the original cart is unchanged
+      expect(cart.getQuantity(1)).toBe(3);
+    });
+
+    it("should drop the line when the last unit is removed", () => {
+      const product1 = createMockProduct({ id: 1 });
+      const product2 = createMockProduct({ id: 2 });
+      const cart = new Cart().add(product1, 1).add(product2, 1);
+
+      const newCart = cart.decrease(1);
+
+      expect(newCart.items).toHaveLength(1);
+      expect(newCart.items[0].id).toBe(2);
+    });
+
+    it("should return the same cart for an unknown product", () => {
+      const cart = new Cart().add(createMockProduct({ id: 1 }), 2);
+
+      expect(cart.decrease(99)).toBe(cart);
+    });
+
+    it("should refuse to decrease a line with guest-list entries", () => {
+      const product = createMockProduct({ id: 1 });
+      const guest = createMockGuest({ id: 5 });
+      const cart = new Cart().add(product, 2, guest);
+
+      const newCart = cart.decrease(1);
+
+      expect(newCart).toBe(cart);
+      expect(newCart.getQuantity(1)).toBe(2);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        "Cannot decrease a line with guest-list entries",
+        { productId: 1 },
+      );
+    });
+  });
+
   describe("Getters und Helfer (totalGross, totalNet, getQuantity, etc.)", () => {
     it("should calculate the correct totals for all items", () => {
       const cart = new Cart()

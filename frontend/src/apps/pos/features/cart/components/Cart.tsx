@@ -1,13 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  Table,
-  Tooltip,
-  TableHeadCell,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "flowbite-react";
+import { Table, TableBody, TableRow, TableCell } from "flowbite-react";
 import { useConfig } from "@core/config/hooks/useConfig";
 import "animate.css";
 import Button from "../../../components/Button";
@@ -23,6 +15,8 @@ import CartRow from "./_internal/CartRow.tsx";
 interface CartProps {
   cart: CartObject;
   removeFromCart: (item: ProductType) => void;
+  increaseInCart: (item: ProductType) => void;
+  decreaseInCart: (item: ProductType) => void;
   removeAllFromCart: () => void;
   checkoutCart: (
     paymentMethodCode: string,
@@ -32,11 +26,6 @@ interface CartProps {
 }
 
 const compactTableTheme = {
-  head: {
-    cell: {
-      base: "px-2 py-1",
-    },
-  },
   body: {
     cell: {
       base: "px-2 py-1",
@@ -53,11 +42,13 @@ const compactTableTheme = {
 const Cart: React.FC<CartProps> = ({
   cart,
   removeFromCart,
+  increaseInCart,
+  decreaseInCart,
   removeAllFromCart,
   checkoutCart,
   checkoutProcessing,
 }) => {
-  const { currency } = useConfig();
+  const { currency, outOfStockBehavior } = useConfig();
 
   const [flash, setFlash] = useState(false);
 
@@ -116,26 +107,12 @@ const Cart: React.FC<CartProps> = ({
           striped
           theme={compactTableTheme}
           data-testid="cart-table"
-          className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
+          className={`dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
         >
-          <TableHead>
-            <TableRow>
-              <TableHeadCell className="w-[40%]">Product</TableHeadCell>
-              <TableHeadCell className="w-[15%] text-right">
-                <Tooltip content="Quantity">Qnt</Tooltip>
-              </TableHeadCell>
-              <TableHeadCell className="w-[15%] text-right">
-                Total Price
-              </TableHeadCell>
-              <TableHeadCell className="w-[30%] text-right">
-                Remove
-              </TableHeadCell>
-            </TableRow>
-          </TableHead>
           <TableBody>
             {cart.isEmpty && (
               <TableRow>
-                <TableCell colSpan={4} className="py-4 text-center">
+                <TableCell className="py-4 text-center">
                   Cart is empty
                 </TableCell>
               </TableRow>
@@ -145,7 +122,10 @@ const Cart: React.FC<CartProps> = ({
                 key={cartElement.id}
                 cartElement={cartElement}
                 currency={currency}
+                outOfStockBehavior={outOfStockBehavior}
                 removeFromCart={removeFromCart}
+                increaseInCart={increaseInCart}
+                decreaseInCart={decreaseInCart}
               />
             ))}
           </TableBody>
