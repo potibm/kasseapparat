@@ -30,8 +30,10 @@ export const PosLayout: React.FC<PosLayoutProps> = ({
     <div className="App p-2 dark:bg-black min-h-screen">
       {topAlert}
       <div className="flex w-full">
-        <main className="w-9/12 overflow-hidden">{children}</main>
-        <aside className="fixed inset-y-0 right-0 flex w-3/12 min-w-50 flex-col overflow-hidden bg-slate-200 p-2 text-center dark:bg-gray-900">
+        <main className="mr-[360px] min-w-0 flex-1 overflow-hidden">
+          {children}
+        </main>
+        <aside className="fixed inset-y-0 right-0 flex w-[360px] flex-col overflow-hidden bg-slate-200 p-2 text-center dark:bg-gray-900">
           {sidebar}
         </aside>
       </div>

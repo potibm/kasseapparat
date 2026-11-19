@@ -122,8 +122,29 @@ describe("PurchaseHistory Component", () => {
       render(<PurchaseHistory {...defaultProps} history={history} />);
 
       const rows = screen.getAllByRole("row");
-      // 1 Header-Row + 3 Daten-Rows = 4 Rows total
-      expect(rows).toHaveLength(4);
+      // no header row, only the 3 most recent purchases
+      expect(rows).toHaveLength(3);
+    });
+  });
+
+  describe("Compact rows", () => {
+    it("shows only the time and keeps the full date as a tooltip", () => {
+      const purchase = createMockPurchase("1");
+      render(<PurchaseHistory {...defaultProps} history={[purchase]} />);
+
+      const createdAt = new Date(purchase.createdAt);
+      const time = createdAt.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const fullDate = createdAt.toLocaleString("en-US", {
+        dateStyle: "short",
+        timeStyle: "short",
+      });
+
+      const cell = screen.getByText(time);
+      expect(cell).toHaveAttribute("title", fullDate);
+      expect(screen.getByText("Recent sales")).toBeInTheDocument();
     });
   });
 

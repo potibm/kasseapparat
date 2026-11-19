@@ -55,6 +55,18 @@ const Cart: React.FC<CartProps> = ({
   const prevCartTotalQuantityRef = useRef(cart.totalQuantity);
   const isFirstRenderRef = useRef(true);
 
+  // New lines are added at the top. When one arrives while the list is scrolled
+  // down, bring it into view; quantity changes of existing lines do not scroll.
+  const itemsRef = useRef<HTMLDivElement>(null);
+  const prevLineCountRef = useRef(cart.items.length);
+
+  useEffect(() => {
+    if (cart.items.length > prevLineCountRef.current) {
+      itemsRef.current?.scrollTo?.({ top: 0, behavior: "smooth" });
+    }
+    prevLineCountRef.current = cart.items.length;
+  }, [cart.items.length]);
+
   useEffect(() => {
     if (isFirstRenderRef.current) {
       isFirstRenderRef.current = false;
@@ -102,7 +114,11 @@ const Cart: React.FC<CartProps> = ({
         </Button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto" data-testid="cart-items">
+      <div
+        ref={itemsRef}
+        className="min-h-0 flex-1 overflow-y-auto"
+        data-testid="cart-items"
+      >
         <Table
           striped
           theme={compactTableTheme}

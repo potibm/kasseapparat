@@ -1,14 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { HiReceiptRefund, HiRefresh } from "react-icons/hi";
-import {
-  Spinner,
-  Table,
-  TableRow,
-  TableCell,
-  TableHead,
-  TableHeadCell,
-  TableBody,
-} from "flowbite-react";
+import { Spinner, Table, TableRow, TableCell, TableBody } from "flowbite-react";
 import { useConfig } from "@core/config/hooks/useConfig";
 import { Purchase } from "../../../api/schemas";
 import Button from "../../../components/Button";
@@ -98,8 +90,15 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
   const formatDate = (date: string | Date) =>
     new Date(date).toLocaleString(dateLocale, dateOptions);
 
+  // The sidebar only has room for the time; the full date stays in the labels.
+  const formatTime = (date: string | Date) =>
+    new Date(date).toLocaleTimeString(dateLocale, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
   return (
-    <div className="mt-4 shrink-0">
+    <div className="mt-3 shrink-0">
       <RefundModal
         show={modalState.show}
         purchase={modalState.purchase}
@@ -108,19 +107,15 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
         onConfirm={handleRefund}
       />
 
+      <div className="px-2 pb-1 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+        Recent sales
+      </div>
       <Table
         striped
         data-testid="purchase-history-table"
         theme={compactTableTheme}
         className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
-        <TableHead>
-          <TableRow>
-            <TableHeadCell className="w-[55%]">Date</TableHeadCell>
-            <TableHeadCell className="w-[15%] text-right">Total</TableHeadCell>
-            <TableHeadCell className="w-[30%] text-right">Refund</TableHeadCell>
-          </TableRow>
-        </TableHead>
         <TableBody>
           {loading && (!history || history.length === 0) && (
             <TableRow>
@@ -138,8 +133,11 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
             history.length > 0 &&
             history.slice(0, 3).map((purchase) => (
               <TableRow key={purchase.id}>
-                <TableCell className="whitespace-nowrap">
-                  {formatDate(purchase.createdAt)}
+                <TableCell
+                  className="whitespace-nowrap text-left"
+                  title={formatDate(purchase.createdAt)}
+                >
+                  {formatTime(purchase.createdAt)}
                 </TableCell>
                 <TableCell className="text-right">
                   {currency.format(purchase.totalGrossPrice.toNumber())}
@@ -148,6 +146,7 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
                   {purchase.status === "confirmed" && (
                     <Button
                       color="failure"
+                      size="sm"
                       aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
                       onClick={() => setModalState({ show: true, purchase })}
                       data-testid={`refund-purchase-${purchase.id}`}
@@ -158,6 +157,7 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
                   {purchase.status === "pending" && (
                     <Button
                       color="warning"
+                      size="sm"
                       aria-label={`Resume purchase`}
                       onClick={() => {
                         if (cartEmpty) {
