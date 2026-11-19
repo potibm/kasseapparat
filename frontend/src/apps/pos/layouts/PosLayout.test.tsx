@@ -11,6 +11,7 @@ describe("PosLayout", () => {
     render(
       <PosLayout
         sidebar={<div>sidebar content</div>}
+        header={<div>header content</div>}
         topAlert={<div>top alert</div>}
         overlays={<div>overlay content</div>}
       >
@@ -19,6 +20,7 @@ describe("PosLayout", () => {
     );
 
     expect(screen.getByText("main content")).toBeInTheDocument();
+    expect(screen.getByText("header content")).toBeInTheDocument();
     expect(screen.getByText("sidebar content")).toBeInTheDocument();
     expect(screen.getByText("top alert")).toBeInTheDocument();
     expect(screen.getByText("overlay content")).toBeInTheDocument();

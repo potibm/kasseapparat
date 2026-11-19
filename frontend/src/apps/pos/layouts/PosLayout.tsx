@@ -10,6 +10,8 @@ export const POS_TOUCH_CLASS = "pos-touch";
 interface PosLayoutProps {
   children: ReactNode;
   sidebar: ReactNode;
+  /** Bar above the main content (product grid). */
+  header?: ReactNode;
   topAlert?: ReactNode;
   overlays?: ReactNode;
 }
@@ -17,6 +19,7 @@ interface PosLayoutProps {
 export const PosLayout: React.FC<PosLayoutProps> = ({
   children,
   sidebar,
+  header,
   topAlert,
   overlays,
 }) => {
@@ -31,6 +34,7 @@ export const PosLayout: React.FC<PosLayoutProps> = ({
       {topAlert}
       <div className="flex w-full">
         <main className="mr-[360px] min-w-0 flex-1 overflow-hidden">
+          {header}
           {children}
         </main>
         <aside className="fixed inset-y-0 right-0 flex w-[360px] flex-col overflow-hidden bg-slate-200 p-2 text-center dark:bg-gray-900">

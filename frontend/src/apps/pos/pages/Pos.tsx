@@ -1,15 +1,13 @@
 import "../assets/styles/pos-style.css";
 
 import React, { useState, useCallback } from "react";
-import { Alert } from "flowbite-react";
 // components & layouts
 import Cart from "../features/cart/components/Cart";
 import ProductList from "../features/product-list/components/ProductList";
 import PurchaseHistory from "../features/purchase-history/components/PurchaseHistory";
 import ErrorModal from "../components/ErrorModal";
-import Menu from "../features/menu/components/Menu";
+import PosHeader from "../features/menu/components/PosHeader";
 import PollingModal from "@pos/features/payment/components/PollingModal";
-import Version from "../components/Version";
 import PosLayout from "../layouts/PosLayout";
 // hooks
 import { useAuth } from "../features/auth/hooks/useAuth";
@@ -150,8 +148,11 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
 
   return (
     <PosLayout
-      topAlert={
-        environmentMessage && <Alert color="info">{environmentMessage}</Alert>
+      header={
+        <PosHeader
+          username={username}
+          environmentMessage={environmentMessage}
+        />
       }
       sidebar={
         <>
@@ -171,10 +172,6 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
             removeFromPurchaseHistory={(p: PurchaseType) => handleRefund(p.id)}
             cartEmpty={cart.isEmpty}
           />
-          <Menu username={username} />
-          <p className="text-xs mt-2 shrink-0 dark:text-white">
-            <Version />
-          </p>
         </>
       }
       overlays={
