@@ -30,10 +30,12 @@ const logPurchase = createLogger("Purchase");
 
 interface KasseapparatContentProps {
   username: string;
+  role?: string | null;
 }
 
 const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
   username,
+  role = null,
 }) => {
   const { environmentMessage } = useConfig();
 
@@ -171,6 +173,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
             resumePolling={handleResumePolling}
             removeFromPurchaseHistory={(p: PurchaseType) => handleRefund(p.id)}
             cartEmpty={cart.isEmpty}
+            canRefundAnytime={role === "admin"}
           />
         </>
       }
@@ -199,7 +202,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
 };
 
 export const Kasseapparat: React.FC = () => {
-  const { username } = useAuth();
+  const { username, role } = useAuth();
 
   if (!username) {
     return (
@@ -212,7 +215,7 @@ export const Kasseapparat: React.FC = () => {
 
   return (
     <ToastProvider>
-      <KasseapparatContent username={username} />
+      <KasseapparatContent username={username} role={role} />
     </ToastProvider>
   );
 };
