@@ -19,10 +19,11 @@ interface CartRowProps {
 }
 
 const stepperButton =
-  "flex h-11 w-12 items-center justify-center border border-gray-300 bg-gray-50 text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-white";
+  "flex h-11 w-10 items-center justify-center border border-gray-300 bg-gray-50 text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-white";
 
 /**
- * One cart line: name and line total on top, the quantity stepper below.
+ * One cart line on a single row: name (with guests and unit price), the quantity
+ * stepper and the line total, compact enough for many lines in the sidebar.
  *
  * At quantity 1 the minus button turns into a trash button that removes the line.
  * Lines with guest-list entries only get the trash button: every unit belongs to a
@@ -48,10 +49,10 @@ const CartRow: React.FC<CartRowProps> = ({
 
   return (
     <TableRow data-testid={"cart-product-" + cartElement.id}>
-      <TableCell className="whitespace-normal px-2 py-3 text-left">
-        <div className="flex justify-between gap-2">
-          <div className="min-w-0">
-            <div className="font-semibold text-gray-900 dark:text-white">
+      <TableCell className="whitespace-normal px-2 py-2 text-left">
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold leading-tight text-gray-900 dark:text-white">
               {cartElement.name}
             </div>
             {cartElement.listItems.map((listItem: GuestType) => (
@@ -59,50 +60,51 @@ const CartRow: React.FC<CartRowProps> = ({
                 {displayListItem(listItem)}
               </div>
             ))}
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              × {currency.format(cartElement.grossPrice.toNumber())}
+            </div>
           </div>
-          <div className="whitespace-nowrap font-semibold text-gray-900 dark:text-white">
+
+          <div className="flex shrink-0 items-center">
+            {removesLine ? (
+              <button
+                type="button"
+                className={`${stepperButton} rounded-l-lg text-red-700 dark:text-red-400`}
+                aria-label={`Remove ${cartElement.name} from cart`}
+                onClick={() => removeFromCart(cartElement)}
+              >
+                <HiTrash className="h-5 w-5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={`${stepperButton} rounded-l-lg`}
+                aria-label={`Remove one ${cartElement.name}`}
+                onClick={() => decreaseInCart(cartElement)}
+              >
+                <HiMinus className="h-5 w-5" />
+              </button>
+            )}
+            <span
+              className="flex h-11 w-9 items-center justify-center border-y border-gray-300 font-bold text-gray-900 dark:border-gray-600 dark:text-white"
+              data-testid={"cart-quantity-" + cartElement.id}
+            >
+              {cartElement.quantity}
+            </span>
+            <button
+              type="button"
+              className={`${stepperButton} rounded-r-lg`}
+              aria-label={`Add one ${cartElement.name}`}
+              disabled={!canIncrease}
+              onClick={() => increaseInCart(cartElement)}
+            >
+              <HiPlus className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="w-16 shrink-0 text-right font-semibold whitespace-nowrap text-gray-900 dark:text-white">
             {currency.format(cartElement.totalGrossPrice.toNumber())}
           </div>
-        </div>
-
-        <div className="mt-2 flex items-center">
-          {removesLine ? (
-            <button
-              type="button"
-              className={`${stepperButton} rounded-l-lg text-red-700 dark:text-red-400`}
-              aria-label={`Remove ${cartElement.name} from cart`}
-              onClick={() => removeFromCart(cartElement)}
-            >
-              <HiTrash className="h-5 w-5" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              className={`${stepperButton} rounded-l-lg`}
-              aria-label={`Remove one ${cartElement.name}`}
-              onClick={() => decreaseInCart(cartElement)}
-            >
-              <HiMinus className="h-5 w-5" />
-            </button>
-          )}
-          <span
-            className="flex h-11 w-12 items-center justify-center border-y border-gray-300 text-lg font-bold text-gray-900 dark:border-gray-600 dark:text-white"
-            data-testid={"cart-quantity-" + cartElement.id}
-          >
-            {cartElement.quantity}
-          </span>
-          <button
-            type="button"
-            className={`${stepperButton} rounded-r-lg`}
-            aria-label={`Add one ${cartElement.name}`}
-            disabled={!canIncrease}
-            onClick={() => increaseInCart(cartElement)}
-          >
-            <HiPlus className="h-5 w-5" />
-          </button>
-          <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-            × {currency.format(cartElement.grossPrice.toNumber())}
-          </span>
         </div>
       </TableCell>
     </TableRow>

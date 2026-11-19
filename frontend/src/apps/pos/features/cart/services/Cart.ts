@@ -87,7 +87,8 @@ export class Cart {
         productId: product.id,
         quantity: count,
       });
-      newItems.push(newItem);
+      // New lines go to the top: the most recent addition is where the cashier looks.
+      newItems.unshift(newItem);
     }
 
     return new Cart(newItems);

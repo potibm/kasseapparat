@@ -94,6 +94,26 @@ describe("Cart", () => {
     });
   });
 
+  describe("add() - order of lines", () => {
+    it("should put a new line at the top", () => {
+      const cart = new Cart()
+        .add(createMockProduct({ id: 1 }))
+        .add(createMockProduct({ id: 2 }))
+        .add(createMockProduct({ id: 3 }));
+
+      expect(cart.items.map((item) => item.id)).toEqual([3, 2, 1]);
+    });
+
+    it("should keep an existing line in place when its quantity grows", () => {
+      const product1 = createMockProduct({ id: 1 });
+      const product2 = createMockProduct({ id: 2 });
+      const cart = new Cart().add(product1).add(product2).add(product1);
+
+      expect(cart.items.map((item) => item.id)).toEqual([2, 1]);
+      expect(cart.getQuantity(1)).toBe(2);
+    });
+  });
+
   describe("add() - list items (guests) ", () => {
     it("should add a guest to a new product", () => {
       const cart = new Cart();
