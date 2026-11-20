@@ -1,13 +1,14 @@
 import React from "react";
 import { Spinner } from "flowbite-react";
 import Product from "./_internal/Product";
+import { DisplayProduct } from "../utils/vanishedProducts";
 import {
   Product as ProductType,
   Guest as GuestType,
 } from "../../../api/schemas";
 
 interface ProductListProps {
-  products: ProductType[] | null;
+  products: DisplayProduct[] | null;
   loading?: boolean;
   addToCart: (
     product: ProductType,
@@ -54,6 +55,7 @@ const ProductList: React.FC<ProductListProps> = ({
           hasListItem={hasListItem}
           quantityByProductInCart={quantityByProductInCart}
           addProductInterest={addProductInterest}
+          vanished={product.vanished}
           // "wrap after" a product: the next one starts a new row
           className={
             index > 0 && products[index - 1].wrapAfter ? "col-start-1" : ""

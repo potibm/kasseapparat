@@ -121,6 +121,52 @@ describe("useProducts Hook", () => {
     });
   });
 
+  describe("auto_hide placeholders", () => {
+    const autoHideWrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(
+        ConfigContext.Provider,
+        { value: { ...mockConfig, outOfStockBehavior: "auto_hide" } },
+        children,
+      );
+
+    it("keeps a sold-out product's slot after a refresh", async () => {
+      const ticket = createMockProduct({ id: 1, name: "Ticket", totalStock: 5 });
+      const shirt = createMockProduct({ id: 2, name: "Shirt", totalStock: 5 });
+      mockFetchProducts.mockResolvedValueOnce([ticket, shirt]);
+
+      const { result } = renderHook(() => useProducts(), {
+        wrapper: autoHideWrapper,
+      });
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      // the ticket sold out, the backend no longer returns it
+      mockFetchProducts.mockResolvedValueOnce([shirt]);
+      await act(async () => {
+        await result.current.refreshProducts();
+      });
+
+      expect(result.current.products?.map((p) => p.id)).toEqual([1, 2]);
+      expect(result.current.products?.[0].vanished).toBe(true);
+      expect(result.current.products?.[1].vanished).toBeUndefined();
+    });
+
+    it("drops vanished products under other behaviours", async () => {
+      const ticket = createMockProduct({ id: 1, name: "Ticket", totalStock: 5 });
+      const shirt = createMockProduct({ id: 2, name: "Shirt", totalStock: 5 });
+      mockFetchProducts.mockResolvedValueOnce([ticket, shirt]);
+
+      const { result } = renderHook(() => useProducts(), { wrapper });
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      mockFetchProducts.mockResolvedValueOnce([shirt]);
+      await act(async () => {
+        await result.current.refreshProducts();
+      });
+
+      expect(result.current.products?.map((p) => p.id)).toEqual([2]);
+    });
+  });
+
   describe("addInterest()", () => {
     it("should call the API and then reload the products", async () => {
       mockFetchProducts.mockResolvedValue(mockProducts);
