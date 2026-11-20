@@ -73,6 +73,10 @@ sold-out size disappears from the backend's list; the POS keeps its slot as a pl
 create / update / delete endpoints and conventions as the other admin resources; writes
 require the admin role. Products gain `sectionId`, `productGroupId` and `variant`.
 
+A product created without `sectionId` goes into the default section. On update, an
+omitted or `0` `sectionId` means "unchanged"; moving a product into the default section
+uses that section's real id.
+
 The POS loads sections, groups and products and composes the layout itself. All three
 lists are small, and they are only reloaded together with the products.
 
@@ -80,7 +84,12 @@ lists are small, and they are only reloaded together with the products.
 
 An installation is set up fresh for each event; there are no existing layouts to carry
 over. `wrap_after` is dropped from the model, the admin and the POS without converting
-old values. The seeder and the e2e fixtures are updated in the same pull requests as the
+old values.
+
+The one exception is that every product needs a section. On startup, products without
+one (a database created before sections existed) are put into the default section: the
+first by `pos`, or a new unnamed one. This is idempotent and does nothing on a fresh
+installation. The seeder and the e2e fixtures are updated in the same pull requests as the
 schema, so the daily seeded test instance always shows sections and groups.
 
 ## Considered and rejected: fields on the product only

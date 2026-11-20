@@ -25,8 +25,9 @@ type ProductRequestCreate struct {
 	SectionID int             `json:"sectionId" form:"sectionId"`
 }
 
-// ProductRequestUpdate is the body for editing a product. SectionID is optional:
-// without it the product keeps its current section.
+// ProductRequestUpdate is the body for editing a product. SectionID is optional: when
+// it is omitted or 0 the product keeps its current section. 0 does not mean "the
+// default section" – to move a product there, send that section's id.
 type ProductRequestUpdate struct {
 	Name       string          `json:"name"       form:"name"       binding:"required"`
 	NetPrice   decimal.Decimal `json:"netPrice"   form:"netPrice"   binding:"required"`
@@ -50,7 +51,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 
 	products, err := handler.repo.GetProducts(end-start, start, sort, order, ids)
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCauseMsg(err))
+		listQueryError(c, err)
 
 		return
 	}

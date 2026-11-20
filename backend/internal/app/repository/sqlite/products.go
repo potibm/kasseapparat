@@ -58,7 +58,7 @@ func getProductsValidSortFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("invalid sort field name")
+	return "", ErrInvalidSortField
 }
 
 // GetProductsForStockReconciliation loads the products the stock reconciliation walks,

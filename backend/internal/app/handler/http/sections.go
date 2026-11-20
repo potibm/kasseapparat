@@ -48,7 +48,7 @@ func (handler *Handler) GetSections(c *gin.Context) {
 
 	sections, err := handler.repo.GetSections(end-start, start, sort, order, ids)
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCauseMsg(err))
+		listQueryError(c, err)
 
 		return
 	}
@@ -202,8 +202,9 @@ func sectionResolveError(c *gin.Context, requested int, err error) {
 }
 
 // assignSectionOnUpdate sets the section of an edited product: the requested one, or
-// the default section for a product that has none yet. Without a request the product
-// keeps its section. It reports the error itself and returns false on failure.
+// the default section for a product that has none yet. A requested 0 means
+// "unchanged", not "default section". It reports the error itself and returns false
+// on failure.
 func (handler *Handler) assignSectionOnUpdate(c *gin.Context, product *models.Product, requested int) bool {
 	if requested == 0 && product.SectionID != 0 {
 		return true

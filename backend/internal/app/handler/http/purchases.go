@@ -162,7 +162,7 @@ func (handler *Handler) GetPurchases(c *gin.Context) {
 
 	purchases, err := handler.repo.GetPurchases(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCauseMsg(err))
+		listQueryError(c, err)
 
 		return
 	}

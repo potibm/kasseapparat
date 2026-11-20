@@ -26,7 +26,7 @@ func getSectionsValidSortFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("invalid sort field name")
+	return "", ErrInvalidSortField
 }
 
 func (repo *Repository) GetSections(

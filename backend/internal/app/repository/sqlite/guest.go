@@ -86,7 +86,7 @@ func getGuestsValidSortFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("invalid sort field name")
+	return "", ErrInvalidSortField
 }
 
 func (repo *Repository) GetTotalGuests(filters *GuestFilters) (int64, error) {

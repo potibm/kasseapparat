@@ -128,7 +128,7 @@ func MigrateDatabase(db *gorm.DB) error {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
 
-	return nil
+	return assignProductsWithoutSection(db)
 }
 
 func SeedDatabase(db *gorm.DB, includeTestData bool) error {
