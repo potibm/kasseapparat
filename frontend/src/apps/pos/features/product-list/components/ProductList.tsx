@@ -42,8 +42,11 @@ const ProductList: React.FC<ProductListProps> = ({
   }
 
   return (
-    <div className="flex flex-wrap -m-1.5">
-      {products.map((product) => (
+    <div
+      className="grid auto-rows-[7.5rem] grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-3 p-1"
+      data-testid="product-grid"
+    >
+      {products.map((product, index) => (
         <Product
           key={product.id}
           product={product}
@@ -51,6 +54,10 @@ const ProductList: React.FC<ProductListProps> = ({
           hasListItem={hasListItem}
           quantityByProductInCart={quantityByProductInCart}
           addProductInterest={addProductInterest}
+          // "wrap after" a product: the next one starts a new row
+          className={
+            index > 0 && products[index - 1].wrapAfter ? "col-start-1" : ""
+          }
         />
       ))}
     </div>

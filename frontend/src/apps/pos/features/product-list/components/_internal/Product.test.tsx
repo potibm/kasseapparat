@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import Product from "./Product";
+import Product, { LOW_STOCK_THRESHOLD } from "./Product";
 import * as ConfigHookModule from "@core/config/hooks/useConfig";
 import { createMockProduct } from "@pos/api/schemas.mocks";
 import { OutOfStockBehavior } from "@core/config/types/config.types";
@@ -147,5 +147,138 @@ describe("Product stock affordance", () => {
 
       expect(screen.getByLabelText(addLabel(product))).toBeEnabled();
     });
+  });
+});
+
+describe("Product card", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    setup("fail");
+  });
+
+  it("is a single button showing name and price", () => {
+    const product = plainProduct({ name: "Mate", totalStock: 0 });
+    renderProduct(product);
+
+    const card = screen.getByRole("button", { name: addLabel(product) });
+    expect(card).toHaveAttribute("data-testid", "product-card-" + product.id);
+    expect(card).toHaveTextContent("Mate");
+    expect(card).toHaveTextContent(
+      mockCurrency.format(product.grossPrice.toNumber()),
+    );
+  });
+
+  describe("cart badge", () => {
+    it("shows how many units are already in the cart", () => {
+      const product = plainProduct({ totalStock: 0 });
+      renderProduct(product, 2);
+
+      expect(screen.getByTestId("cart-badge-" + product.id)).toHaveTextContent(
+        "2",
+      );
+    });
+
+    it("is hidden while the product is not in the cart", () => {
+      const product = plainProduct({ totalStock: 0 });
+      renderProduct(product, 0);
+
+      expect(
+        screen.queryByTestId("cart-badge-" + product.id),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe("stock pill", () => {
+    it("is not shown for unlimited products", () => {
+      const product = plainProduct({ totalStock: 0 });
+      renderProduct(product);
+
+      expect(
+        screen.queryByTestId("stock-pill-" + product.id),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows the units left, minus the ones in the cart", () => {
+      const product = plainProduct({ totalStock: 30, unitsSold: 10 });
+      renderProduct(product, 2);
+
+      const pill = screen.getByTestId("stock-pill-" + product.id);
+      expect(pill).toHaveTextContent("18 left");
+      expect(pill).toHaveAttribute("data-tone", "normal");
+    });
+
+    it(`turns low at ${LOW_STOCK_THRESHOLD} units or less`, () => {
+      const product = plainProduct({
+        totalStock: 10,
+        unitsSold: 10 - LOW_STOCK_THRESHOLD,
+      });
+      renderProduct(product);
+
+      expect(screen.getByTestId("stock-pill-" + product.id)).toHaveAttribute(
+        "data-tone",
+        "low",
+      );
+    });
+
+    it("turns red when nothing is left", () => {
+      const product = plainProduct({ totalStock: 5, unitsSold: 5 });
+      renderProduct(product);
+
+      const pill = screen.getByTestId("stock-pill-" + product.id);
+      expect(pill).toHaveTextContent("0 left");
+      expect(pill).toHaveAttribute("data-tone", "none");
+    });
+  });
+
+  it("marks guest-list products", () => {
+    const product = guestlistProduct({ totalStock: 0 });
+    renderProduct(product);
+
+    expect(screen.getByTestId("product-card-" + product.id)).toHaveTextContent(
+      "List",
+    );
+  });
+
+  it("shows sold-out products with the number of interested people", () => {
+    const product = plainProduct({ soldOut: true, soldOutRequestCount: 7 });
+    renderProduct(product);
+
+    expect(
+      screen.getByRole("button", {
+        name: "Register interest in " + product.name,
+      }),
+    ).toHaveTextContent("Sold out · 7 interested");
+    expect(
+      screen.queryByTestId("stock-pill-" + product.id),
+    ).not.toBeInTheDocument();
+  });
+
+  it("opens the interest dialog instead of adding a sold-out product", async () => {
+    const product = plainProduct({ soldOut: true });
+    const { addToCart } = renderProduct(product);
+
+    await userEvent.click(screen.getByTestId("product-card-" + product.id));
+
+    expect(addToCart).not.toHaveBeenCalled();
+    expect(await screen.findByText(/currently sold out/i)).toBeInTheDocument();
+  });
+
+  it("applies extra classes, e.g. to start a new grid row", () => {
+    const product = plainProduct({ totalStock: 0 });
+    const addToCart = vi.fn();
+    render(
+      <Product
+        product={product}
+        addToCart={addToCart}
+        hasListItem={vi.fn(() => false)}
+        quantityByProductInCart={vi.fn(() => 0)}
+        addProductInterest={vi.fn().mockResolvedValue(undefined)}
+        className="col-start-1"
+      />,
+    );
+
+    expect(screen.getByTestId("product-card-" + product.id)).toHaveClass(
+      "col-start-1",
+    );
   });
 });
