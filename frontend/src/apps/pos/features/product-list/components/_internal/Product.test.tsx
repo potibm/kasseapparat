@@ -244,7 +244,9 @@ describe("Product card", () => {
     renderProduct(product);
 
     expect(
-      screen.getByRole("button", { name: "Register interest in " + product.name }),
+      screen.getByRole("button", {
+        name: "Register interest in " + product.name,
+      }),
     ).toHaveTextContent("Sold out · 7 interested");
     expect(
       screen.queryByTestId("stock-pill-" + product.id),

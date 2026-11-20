@@ -138,7 +138,10 @@ const Product: React.FC<ProductProps> = ({
             <span className="flex flex-wrap justify-end gap-1">
               {hasGuestlist && (
                 <span className="flex items-center gap-1 rounded-full bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-900 dark:text-cyan-100">
-                  <HiOutlineViewList className="h-3.5 w-3.5" aria-hidden="true" />
+                  <HiOutlineViewList
+                    className="h-3.5 w-3.5"
+                    aria-hidden="true"
+                  />
                   List
                 </span>
               )}

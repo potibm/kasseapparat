@@ -55,7 +55,9 @@ const ProductList: React.FC<ProductListProps> = ({
           quantityByProductInCart={quantityByProductInCart}
           addProductInterest={addProductInterest}
           // "wrap after" a product: the next one starts a new row
-          className={index > 0 && products[index - 1].wrapAfter ? "col-start-1" : ""}
+          className={
+            index > 0 && products[index - 1].wrapAfter ? "col-start-1" : ""
+          }
         />
       ))}
     </div>
