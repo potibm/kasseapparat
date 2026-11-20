@@ -169,15 +169,8 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.SoldOut = productRequest.SoldOut
 	product.TotalStock = productRequest.TotalStock
 
-	if productRequest.SectionID > 0 || product.SectionID == 0 {
-		sectionID, err := handler.resolveSectionID(productRequest.SectionID)
-		if err != nil {
-			sectionResolveError(c, productRequest.SectionID, err)
-
-			return
-		}
-
-		product.SectionID = sectionID
+	if !handler.assignSectionOnUpdate(c, product, productRequest.SectionID) {
+		return
 	}
 
 	// A mode-owned flag is read-only for products with a stock limit: the form

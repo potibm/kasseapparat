@@ -200,3 +200,23 @@ func sectionResolveError(c *gin.Context, requested int, err error) {
 
 	_ = c.Error(InternalServerError.WithCause(err))
 }
+
+// assignSectionOnUpdate sets the section of an edited product: the requested one, or
+// the default section for a product that has none yet. Without a request the product
+// keeps its section. It reports the error itself and returns false on failure.
+func (handler *Handler) assignSectionOnUpdate(c *gin.Context, product *models.Product, requested int) bool {
+	if requested == 0 && product.SectionID != 0 {
+		return true
+	}
+
+	sectionID, err := handler.resolveSectionID(requested)
+	if err != nil {
+		sectionResolveError(c, requested, err)
+
+		return false
+	}
+
+	product.SectionID = sectionID
+
+	return true
+}
