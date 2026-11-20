@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
-import { HiReceiptRefund, HiRefresh } from "react-icons/hi";
-import { Spinner, Table, TableRow, TableCell, TableBody } from "flowbite-react";
+import { HiLockClosed, HiReceiptRefund, HiRefresh } from "react-icons/hi";
+import { Spinner } from "flowbite-react";
 import { useConfig } from "@core/config/hooks/useConfig";
 import { Purchase } from "../../../api/schemas";
-import Button from "../../../components/Button";
 import { RefundModal } from "./_internal/RefundModal";
 import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
+import { REFUND_WINDOW_MS, summarizeItems } from "../utils/purchase.utils";
 
 const log = createLogger("Purchase");
+
+/** How often the refund windows are re-evaluated while the POS is open. */
+const REFUND_WINDOW_TICK_MS = 30 * 1000;
+
+const MAX_VISIBLE_PURCHASES = 3;
 
 interface PurchaseHistoryProps {
   history: Purchase[] | null;
@@ -16,20 +21,12 @@ interface PurchaseHistoryProps {
   removeFromPurchaseHistory: (purchase: Purchase) => Promise<void>;
   resumePolling: (purchase: Purchase) => void;
   cartEmpty: boolean;
+  /** Admins are exempt from the refund time limit. */
+  canRefundAnytime?: boolean;
 }
 
-const compactTableTheme = {
-  head: {
-    cell: {
-      base: "px-2 py-1",
-    },
-  },
-  body: {
-    cell: {
-      base: "px-2 py-1",
-    },
-  },
-};
+const actionButton =
+  "flex min-h-10 shrink-0 items-center gap-1 rounded-lg border px-3 text-sm font-semibold";
 
 const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
   history,
@@ -37,8 +34,9 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
   removeFromPurchaseHistory,
   resumePolling,
   cartEmpty,
+  canRefundAnytime = false,
 }) => {
-  const { currency, dateLocale, dateOptions } = useConfig();
+  const { currency, dateLocale, dateOptions, paymentMethods } = useConfig();
   const { showToast } = useToast();
 
   // State
@@ -51,6 +49,7 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
   });
   const [processingRefund, setProcessingRefund] = useState(false);
   const [flash, setFlash] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
   const lastTopIdRef = useRef<number | string | null>(null);
 
@@ -76,6 +75,16 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
     }
   }, [history]);
 
+  // Re-evaluate the refund windows while the POS stays open.
+  useEffect(() => {
+    if (canRefundAnytime) return;
+    const intervalId = setInterval(
+      () => setNow(Date.now()),
+      REFUND_WINDOW_TICK_MS,
+    );
+    return () => clearInterval(intervalId);
+  }, [canRefundAnytime]);
+
   const handleRefund = async (purchase: Purchase) => {
     setProcessingRefund(true);
     try {
@@ -84,6 +93,18 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
       setModalState({ show: false, purchase: null });
     } finally {
       setProcessingRefund(false);
+    }
+  };
+
+  const handleResume = (purchase: Purchase) => {
+    if (cartEmpty) {
+      resumePolling(purchase);
+    } else {
+      showToast({
+        severity: "warning",
+        message:
+          "Please complete or clear the current cart before resuming this purchase.",
+      });
     }
   };
 
@@ -97,8 +118,17 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
       minute: "2-digit",
     });
 
+  const paymentMethodName = (code: string) =>
+    paymentMethods?.find((method) => method.code === code)?.name ?? code;
+
+  const isRefundable = (purchase: Purchase) =>
+    canRefundAnytime ||
+    now - new Date(purchase.createdAt).getTime() <= REFUND_WINDOW_MS;
+
+  const visibleHistory = history?.slice(0, MAX_VISIBLE_PURCHASES) ?? [];
+
   return (
-    <div className="mt-3 shrink-0">
+    <div className="mt-3 shrink-0 text-left">
       <RefundModal
         show={modalState.show}
         purchase={modalState.purchase}
@@ -107,78 +137,105 @@ const PurchaseHistory: React.FC<PurchaseHistoryProps> = ({
         onConfirm={handleRefund}
       />
 
-      <div className="px-2 pb-1 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+      <div className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
         Recent sales
       </div>
-      <Table
-        striped
+
+      <div
         data-testid="purchase-history-table"
-        theme={compactTableTheme}
-        className={`table-fixed dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
+        className={`overflow-hidden rounded-lg bg-white dark:bg-gray-800 dark:text-gray-200 ${flash ? "animate__animated animate__pulse" : ""}`}
       >
-        <TableBody>
-          {loading && (!history || history.length === 0) && (
-            <TableRow>
-              <TableCell colSpan={3}>
-                Loading... <Spinner size="sm" />
-              </TableCell>
-            </TableRow>
-          )}
-          {!loading && history?.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={3}>No purchases yet.</TableCell>
-            </TableRow>
-          )}
-          {history &&
-            history.length > 0 &&
-            history.slice(0, 3).map((purchase) => (
-              <TableRow key={purchase.id}>
-                <TableCell
-                  className="whitespace-nowrap text-left"
-                  title={formatDate(purchase.createdAt)}
+        {loading && visibleHistory.length === 0 && (
+          <p className="flex items-center gap-2 px-3 py-2 text-sm">
+            Loading... <Spinner size="sm" />
+          </p>
+        )}
+        {!loading && history?.length === 0 && (
+          <p className="px-3 py-2 text-sm">No purchases yet.</p>
+        )}
+
+        {visibleHistory.length > 0 && (
+          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+            {visibleHistory.map((purchase) => {
+              const isPending = purchase.status === "pending";
+              const summary = summarizeItems(purchase);
+
+              return (
+                <li
+                  key={purchase.id}
+                  data-testid={`purchase-${purchase.id}`}
+                  className={`flex items-center gap-2 px-3 py-1.5 ${isPending ? "bg-amber-50 dark:bg-amber-900/30" : ""}`}
                 >
-                  {formatTime(purchase.createdAt)}
-                </TableCell>
-                <TableCell className="text-right">
-                  {currency.format(purchase.totalGrossPrice.toNumber())}
-                </TableCell>
-                <TableCell className="flex justify-end">
-                  {purchase.status === "confirmed" && (
-                    <Button
-                      color="failure"
-                      size="sm"
-                      aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
-                      onClick={() => setModalState({ show: true, purchase })}
-                      data-testid={`refund-purchase-${purchase.id}`}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm">
+                      <span
+                        className="font-semibold"
+                        title={formatDate(purchase.createdAt)}
+                      >
+                        {formatTime(purchase.createdAt)}
+                      </span>
+                      {" · "}
+                      {currency.format(purchase.totalGrossPrice.toNumber())}
+                      {" · "}
+                      {paymentMethodName(purchase.paymentMethod)}
+                    </div>
+                    {isPending ? (
+                      <div className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                        Pending on reader
+                      </div>
+                    ) : (
+                      summary && (
+                        <div className="truncate text-xs text-gray-600 dark:text-gray-400">
+                          {summary}
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {purchase.status === "confirmed" &&
+                    (isRefundable(purchase) ? (
+                      <button
+                        type="button"
+                        className={`${actionButton} border-gray-300 bg-white text-gray-800 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100`}
+                        aria-label={`Refund purchase from ${formatDate(purchase.createdAt)}`}
+                        onClick={() => setModalState({ show: true, purchase })}
+                        data-testid={`refund-purchase-${purchase.id}`}
+                      >
+                        <HiReceiptRefund
+                          className="h-4 w-4"
+                          aria-hidden="true"
+                        />
+                        Refund
+                      </button>
+                    ) : (
+                      <span
+                        className="flex shrink-0 items-center px-2 text-gray-400"
+                        title="Refunds are only possible within 15 minutes. Ask an admin."
+                        aria-label="Refund window closed"
+                        role="img"
+                        data-testid={`refund-closed-${purchase.id}`}
+                      >
+                        <HiLockClosed className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                    ))}
+
+                  {isPending && (
+                    <button
+                      type="button"
+                      className={`${actionButton} border-amber-400 bg-amber-100 text-amber-900 dark:border-amber-500 dark:bg-amber-800 dark:text-amber-100`}
+                      aria-label="Resume purchase"
+                      onClick={() => handleResume(purchase)}
                     >
-                      <HiReceiptRefund />
-                    </Button>
+                      <HiRefresh className="h-4 w-4" aria-hidden="true" />
+                      Resume
+                    </button>
                   )}
-                  {purchase.status === "pending" && (
-                    <Button
-                      color="warning"
-                      size="sm"
-                      aria-label={`Resume purchase`}
-                      onClick={() => {
-                        if (cartEmpty) {
-                          resumePolling(purchase);
-                        } else {
-                          showToast({
-                            severity: "warning",
-                            message:
-                              "Please complete or clear the current cart before resuming this purchase.",
-                          });
-                        }
-                      }}
-                    >
-                      <HiRefresh className="animate-spin" />
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-        </TableBody>
-      </Table>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };
