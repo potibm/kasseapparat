@@ -74,7 +74,7 @@ describe("SectionList", () => {
 
     await screen.findByText("Tickets");
     await waitFor(() =>
-      expect(screen.getAllByLabelText("Delete")).toHaveLength(2),
+      expect(screen.getAllByLabelText(/delete/i)).toHaveLength(2),
     );
   });
 
@@ -82,7 +82,7 @@ describe("SectionList", () => {
     renderWithAdmin(<SectionList />, { role: "user" });
 
     await screen.findByText("Tickets");
-    expect(screen.queryByLabelText("Delete")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/delete/i)).not.toBeInTheDocument();
   });
 });
 
@@ -99,8 +99,8 @@ describe("SectionDeleteButton", () => {
       { dataProvider: dataProviderWith({ delete: remove as never }) },
     );
 
-    fireEvent.click(await screen.findByLabelText("Delete"));
-    fireEvent.click(await screen.findByText("Confirm"));
+    fireEvent.click(await screen.findByLabelText(/delete/i));
+    fireEvent.click(await screen.findByText(/confirm/i));
 
     expect(
       await screen.findByText(SECTION_NOT_EMPTY_MESSAGE),
@@ -113,8 +113,8 @@ describe("SectionCreate", () => {
   it("renders the name and position fields", async () => {
     renderWithAdmin(<SectionCreate />);
 
-    expect(await screen.findByLabelText("Name")).toBeInTheDocument();
-    expect(screen.getByLabelText(/Pos/)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/pos/i)).toBeInTheDocument();
   });
 });
 
