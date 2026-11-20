@@ -130,7 +130,11 @@ describe("useProducts Hook", () => {
       );
 
     it("keeps a sold-out product's slot after a refresh", async () => {
-      const ticket = createMockProduct({ id: 1, name: "Ticket", totalStock: 5 });
+      const ticket = createMockProduct({
+        id: 1,
+        name: "Ticket",
+        totalStock: 5,
+      });
       const shirt = createMockProduct({ id: 2, name: "Shirt", totalStock: 5 });
       mockFetchProducts.mockResolvedValueOnce([ticket, shirt]);
 
@@ -151,7 +155,11 @@ describe("useProducts Hook", () => {
     });
 
     it("drops vanished products under other behaviours", async () => {
-      const ticket = createMockProduct({ id: 1, name: "Ticket", totalStock: 5 });
+      const ticket = createMockProduct({
+        id: 1,
+        name: "Ticket",
+        totalStock: 5,
+      });
       const shirt = createMockProduct({ id: 2, name: "Shirt", totalStock: 5 });
       mockFetchProducts.mockResolvedValueOnce([ticket, shirt]);
 

@@ -98,7 +98,9 @@ describe("keepVanishedProducts", () => {
   });
 
   it("uses the fresh data of products that are still there", () => {
-    const previous = [createMockProduct({ id: 1, totalStock: 10, unitsSold: 2 })];
+    const previous = [
+      createMockProduct({ id: 1, totalStock: 10, unitsSold: 2 }),
+    ];
     const fresh = createMockProduct({ id: 1, totalStock: 10, unitsSold: 5 });
 
     const [result] = keepVanishedProducts(previous, [fresh], "auto_hide");
