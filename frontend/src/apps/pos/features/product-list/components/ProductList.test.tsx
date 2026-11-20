@@ -103,4 +103,36 @@ describe("ProductList", () => {
     );
     expect(screen.getAllByTestId(/product-card-/)).toHaveLength(2);
   });
+
+  it("starts a new grid row after a product with wrapAfter", () => {
+    const product = (id: number, wrapAfter: boolean) => ({
+      id,
+      name: "Product " + id,
+      totalStock: 0,
+      unitsSold: 0,
+      soldOut: false,
+      wrapAfter,
+      guestlists: null,
+      grossPrice: { toNumber: () => 10 },
+    });
+    const products = [
+      product(1, false),
+      product(2, true),
+      product(3, false),
+    ] as unknown as Parameters<typeof ProductList>[0]["products"];
+
+    render(
+      <ProductList
+        products={products}
+        addToCart={baseProps.addToCart}
+        hasListItem={baseProps.hasListItem}
+        quantityByProductInCart={baseProps.quantityByProductInCart}
+        addProductInterest={baseProps.addProductInterest}
+      />,
+    );
+
+    expect(screen.getByTestId("product-card-1")).not.toHaveClass("col-start-1");
+    expect(screen.getByTestId("product-card-2")).not.toHaveClass("col-start-1");
+    expect(screen.getByTestId("product-card-3")).toHaveClass("col-start-1");
+  });
 });
