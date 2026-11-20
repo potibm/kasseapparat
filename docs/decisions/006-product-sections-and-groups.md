@@ -70,8 +70,9 @@ sold-out size disappears from the backend's list; the POS keeps its slot as a pl
 ## API
 
 `sections` and `productGroups` become regular resources with the same list / get /
-create / update / delete endpoints and conventions as the other admin resources; writes
-require the admin role. Products gain `sectionId`, `productGroupId` and `variant`.
+create / update / delete endpoints and conventions as the other admin resources. As with
+products, every user may create and change them; deleting requires the admin role.
+Products gain `sectionId`, `productGroupId` and `variant`.
 
 A product created without `sectionId` goes into the default section. On update, an
 omitted or `0` `sectionId` means "unchanged"; moving a product into the default section
