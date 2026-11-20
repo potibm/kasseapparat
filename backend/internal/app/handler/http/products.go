@@ -13,6 +13,8 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// ProductRequestCreate is the body for a new product. SectionID is optional: without
+// it the product goes into the default section (ADR 006).
 type ProductRequestCreate struct {
 	Name      string          `json:"name"      form:"name"      binding:"required"`
 	NetPrice  decimal.Decimal `json:"netPrice"  form:"netPrice"  binding:"required"`
@@ -20,8 +22,12 @@ type ProductRequestCreate struct {
 	WrapAfter bool            `json:"wrapAfter" form:"wrapAfter"`
 	Pos       int             `json:"pos"       form:"pos"       binding:"numeric,required"`
 	Hidden    bool            `json:"hidden"    form:"hidden"    binding:"boolean"`
+	SectionID int             `json:"sectionId" form:"sectionId"`
 }
 
+// ProductRequestUpdate is the body for editing a product. SectionID is optional: when
+// it is omitted or 0 the product keeps its current section. 0 does not mean "the
+// default section" – to move a product there, send that section's id.
 type ProductRequestUpdate struct {
 	Name       string          `json:"name"       form:"name"       binding:"required"`
 	NetPrice   decimal.Decimal `json:"netPrice"   form:"netPrice"   binding:"required"`
@@ -32,6 +38,7 @@ type ProductRequestUpdate struct {
 	Hidden     bool            `json:"hidden"     form:"hidden"     binding:"boolean"`
 	SoldOut    bool            `json:"soldOut"    form:"soldOut"    binding:"boolean"`
 	TotalStock int             `json:"totalStock" form:"totalStock" binding:"numeric"`
+	SectionID  int             `json:"sectionId"  form:"sectionId"`
 }
 
 func (handler *Handler) GetProducts(c *gin.Context) {
@@ -44,7 +51,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 
 	products, err := handler.repo.GetProducts(end-start, start, sort, order, ids)
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCauseMsg(err))
+		listQueryError(c, err)
 
 		return
 	}
@@ -163,6 +170,10 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.SoldOut = productRequest.SoldOut
 	product.TotalStock = productRequest.TotalStock
 
+	if !handler.assignSectionOnUpdate(c, product, productRequest.SectionID) {
+		return
+	}
+
 	// A mode-owned flag is read-only for products with a stock limit: the form
 	// still sends its current value, so ignore it rather than rejecting.
 	if product.TotalStock > 0 {
@@ -218,7 +229,16 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.Pos = productRequest.Pos
 	product.Hidden = productRequest.Hidden
 
-	product, err := handler.repo.CreateProduct(product)
+	sectionID, err := handler.resolveSectionID(productRequest.SectionID)
+	if err != nil {
+		sectionResolveError(c, productRequest.SectionID, err)
+
+		return
+	}
+
+	product.SectionID = sectionID
+
+	product, err = handler.repo.CreateProduct(product)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCause(err))
 

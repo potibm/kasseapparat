@@ -58,7 +58,7 @@ func getProductsValidSortFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("invalid sort field name")
+	return "", ErrInvalidSortField
 }
 
 // GetProductsForStockReconciliation loads the products the stock reconciliation walks,
@@ -137,6 +137,7 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	product.SoldOut = updatedProduct.SoldOut
 	product.TotalStock = updatedProduct.TotalStock
 	product.StockFlagsManaged = updatedProduct.StockFlagsManaged
+	product.SectionID = updatedProduct.SectionID
 
 	// Save the updated product to the database
 	if err := repo.db.Save(&product).Error; err != nil {

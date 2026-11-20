@@ -46,7 +46,7 @@ func (handler *Handler) GetGuests(c *gin.Context) {
 
 	guests, err := handler.repo.GetGuests(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCauseMsg(err))
+		listQueryError(c, err)
 
 		return
 	}

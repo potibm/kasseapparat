@@ -78,6 +78,16 @@ type ProductRepository interface {
 	UpdateProductStockFlags(id int, soldOut, hidden, managed bool) error
 }
 
+type SectionRepository interface {
+	GetSections(limit int, offset int, sort string, order string, ids []int) ([]models.Section, error)
+	GetTotalSections() (int64, error)
+	GetSectionByID(id int) (*models.Section, error)
+	GetOrCreateDefaultSection() (*models.Section, error)
+	CreateSection(section models.Section) (models.Section, error)
+	UpdateSectionByID(id int, updatedSection models.Section) (*models.Section, error)
+	DeleteSection(section models.Section) error
+}
+
 //nolint:interfacebloat // Repository interface aggregates all domain-specific interfaces
 type PurchaseRepository interface {
 	PurchaseCRUDRepository
@@ -117,6 +127,7 @@ type RepositoryInterface interface {
 	ProductInterestRepository
 	ProductRepository
 	PurchaseRepository
+	SectionRepository
 	Pinger
 }
 

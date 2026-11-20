@@ -202,7 +202,7 @@ func getPurchasesValidFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("invalid sort field name")
+	return "", ErrInvalidSortField
 }
 
 func (repo *Repository) GetTotalPurchases(filters PurchaseFilters) (int64, error) {
