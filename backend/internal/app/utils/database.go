@@ -22,6 +22,7 @@ var allModels = []interface{}{
 	&models.Guestlist{},
 	&models.Guest{},
 	&models.ProductInterest{},
+	&models.Section{},
 }
 
 func IsValidDatabaseFilename(filename string) bool {
@@ -99,6 +100,7 @@ func PurgeDatabase(db *gorm.DB) error {
 			&models.Guestlist{},
 			&models.Guest{},
 			&models.ProductInterest{},
+			&models.Section{},
 		)
 	if err != nil {
 		return fmt.Errorf("failed to purge database: %w", err)

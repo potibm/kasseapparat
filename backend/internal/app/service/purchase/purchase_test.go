@@ -281,6 +281,34 @@ func (m *MockRepository) DeleteGuestlist(guestlist models.Guestlist) {
 	panic(errNotImplemented)
 }
 
+func (m *MockRepository) GetSections(limit, offset int, sort, order string, ids []int) ([]models.Section, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) GetTotalSections() (int64, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) GetSectionByID(id int) (*models.Section, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) GetOrCreateDefaultSection() (*models.Section, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) CreateSection(section models.Section) (models.Section, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) UpdateSectionByID(id int, updatedSection models.Section) (*models.Section, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) DeleteSection(section models.Section) error {
+	panic(errNotImplemented)
+}
+
 func (m *MockRepository) GetProductInterests(limit, offset int, ids []int) ([]models.ProductInterest, error) {
 	panic(errNotImplemented)
 }

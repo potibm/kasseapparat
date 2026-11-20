@@ -21,6 +21,7 @@ type ProductResponse struct {
 	UnitsSold           int                `json:"unitsSold"`
 	SoldOutRequestCount int                `json:"soldOutRequestCount"`
 	Guestlists          []models.Guestlist `json:"guestlists"`
+	SectionID           int                `json:"sectionId"`
 }
 
 type ExtendedProductResponse struct {
@@ -47,6 +48,7 @@ func ToProductResponse(product models.Product, decimalPlaces int32) ProductRespo
 		UnitsSold:           product.UnitsSold,
 		SoldOutRequestCount: product.SoldOutRequestCount,
 		Guestlists:          product.Guestlists,
+		SectionID:           product.SectionID,
 	}
 
 	return response

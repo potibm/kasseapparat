@@ -12,6 +12,9 @@ import (
 )
 
 type DatabaseSeed struct {
+	ticketsSection        *models.Section
+	shirtsSection         *models.Section
+	merchSection          *models.Section
 	products              []models.Product
 	db                    *gorm.DB
 	regularProduct        *models.Product
@@ -43,6 +46,10 @@ func (ds *DatabaseSeed) Seed(includeTestData bool) error {
 	// stop the seed rather than leave half-written data behind: a product whose
 	// Create failed has ID 0, and every guestlist seeded after it would point at
 	// ProductID 0.
+	if err := ds.seedSections(); err != nil {
+		return err
+	}
+
 	if err := ds.seedProducts(); err != nil {
 		return err
 	}
@@ -70,6 +77,21 @@ func (ds *DatabaseSeed) Seed(includeTestData bool) error {
 	return ds.seedPurchases(DefaultPurchaseCount)
 }
 
+// seedSections creates the sections the products are shown in on the POS (ADR 006).
+func (ds *DatabaseSeed) seedSections() error {
+	ds.ticketsSection = &models.Section{Name: "Tickets", Pos: 1}
+	ds.shirtsSection = &models.Section{Name: "T-Shirts", Pos: 2}
+	ds.merchSection = &models.Section{Name: "Merch", Pos: 3}
+
+	for _, section := range []*models.Section{ds.ticketsSection, ds.shirtsSection, ds.merchSection} {
+		if err := ds.db.Create(section).Error; err != nil {
+			return fmt.Errorf("failed to create section %q: %w", section.Name, err)
+		}
+	}
+
+	return nil
+}
+
 func (ds *DatabaseSeed) seedProducts() error {
 	vat0 := decimal.NewFromInt(0)
 	vat7 := decimal.NewFromInt(7)
@@ -87,6 +109,7 @@ func (ds *DatabaseSeed) seedProducts() error {
 		VATRate:   vat7,
 		Pos:       1,
 		APIExport: true,
+		SectionID: ds.ticketsSection.ID,
 	}
 	if err := ds.db.Create(ds.regularProduct).Error; err != nil {
 		return fmt.Errorf("failed to create product %q: %w", ds.regularProduct.Name, err)
@@ -98,12 +121,20 @@ func (ds *DatabaseSeed) seedProducts() error {
 		VATRate:   vat7,
 		Pos:       2,
 		APIExport: true,
+		SectionID: ds.ticketsSection.ID,
 	}
 	if err := ds.db.Create(ds.reducedProduct).Error; err != nil {
 		return fmt.Errorf("failed to create product %q: %w", ds.reducedProduct.Name, err)
 	}
 
-	ds.freeProduct = &models.Product{Name: "🎟️ Free", NetPrice: price0, VATRate: vat0, Pos: 3, APIExport: true}
+	ds.freeProduct = &models.Product{
+		Name:      "🎟️ Free",
+		NetPrice:  price0,
+		VATRate:   vat0,
+		Pos:       3,
+		APIExport: true,
+		SectionID: ds.ticketsSection.ID,
+	}
 	if err := ds.db.Create(ds.freeProduct).Error; err != nil {
 		return fmt.Errorf("failed to create product %q: %w", ds.freeProduct.Name, err)
 	}
@@ -115,6 +146,7 @@ func (ds *DatabaseSeed) seedProducts() error {
 		Pos:       4,
 		WrapAfter: true,
 		APIExport: true,
+		SectionID: ds.ticketsSection.ID,
 	}
 	if err := ds.db.Create(ds.prepaidProduct).Error; err != nil {
 		return fmt.Errorf("failed to create product %q: %w", ds.prepaidProduct.Name, err)
@@ -234,10 +266,22 @@ func (ds *DatabaseSeed) seedProducts() error {
 	)
 	ds.products = append(
 		ds.products,
-		models.Product{Name: "☕ Coffee Mug", NetPrice: price1GrossAt19, VATRate: vat19, Pos: 30},
+		models.Product{
+			Name:      "☕ Coffee Mug",
+			NetPrice:  price1GrossAt19,
+			VATRate:   vat19,
+			Pos:       30,
+			SectionID: ds.merchSection.ID,
+		},
 	)
 
 	for i := range ds.products {
+		// The shirts are declared above without a section; everything left without
+		// one at this point is a shirt.
+		if ds.products[i].SectionID == 0 {
+			ds.products[i].SectionID = ds.shirtsSection.ID
+		}
+
 		if ds.products[i].ID == 0 {
 			if err := ds.db.Create(&ds.products[i]).Error; err != nil {
 				return fmt.Errorf("failed to create product %q: %w", ds.products[i].Name, err)
