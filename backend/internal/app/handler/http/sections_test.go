@@ -63,7 +63,37 @@ func TestCreateSection_AllowsAnEmptyName(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, w.Code)
 }
 
-func TestSectionWrites_RequireAdmin(t *testing.T) {
+func TestSectionWrites_OpenToEveryUser(t *testing.T) {
+	handler := setupStockFlagHandler(t, config.OutOfStockIgnore)
+
+	c, w := ginContextWithParam(t, http.MethodPost, "/")
+	withUser(c, "user")
+	jsonBody(t, c, SectionRequest{Name: "Tickets", Pos: 1})
+
+	handler.CreateSection(c)
+
+	require.Empty(t, c.Errors)
+	require.Equal(t, http.StatusCreated, w.Code)
+
+	var created models.Section
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &created))
+
+	c, w = ginContextWithParam(t, http.MethodPut, "/")
+	c.Params = gin.Params{{Key: "id", Value: strconv.Itoa(created.ID)}}
+	withUser(c, "user")
+	jsonBody(t, c, SectionRequest{Name: "Entry", Pos: 2})
+
+	handler.UpdateSectionByID(c)
+
+	require.Empty(t, c.Errors)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	reloaded, err := handler.repo.GetSectionByID(created.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "Entry", reloaded.Name)
+}
+
+func TestDeleteSectionByID_RequiresAdmin(t *testing.T) {
 	handler := setupStockFlagHandler(t, config.OutOfStockIgnore)
 
 	section, err := handler.repo.CreateSection(models.Section{Name: "Tickets", Pos: 1})
@@ -71,38 +101,27 @@ func TestSectionWrites_RequireAdmin(t *testing.T) {
 
 	id := strconv.Itoa(section.ID)
 
-	writes := map[string]func(c *gin.Context){
-		"create": handler.CreateSection,
-		"update": handler.UpdateSectionByID,
-		"delete": handler.DeleteSectionByID,
-	}
+	t.Run("as user", func(t *testing.T) {
+		c, _ := ginContextWithParam(t, http.MethodDelete, "/")
+		c.Params = gin.Params{{Key: "id", Value: id}}
+		withUser(c, "user")
 
-	for name, write := range writes {
-		t.Run(name+" as user", func(t *testing.T) {
-			c, _ := ginContextWithParam(t, http.MethodPost, "/")
-			c.Params = gin.Params{{Key: "id", Value: id}}
-			withUser(c, "user")
-			jsonBody(t, c, SectionRequest{Name: "Changed", Pos: 9})
+		handler.DeleteSectionByID(c)
 
-			write(c)
+		assert.Equal(t, http.StatusForbidden, lastErrorStatus(t, c))
+	})
 
-			assert.Equal(t, http.StatusForbidden, lastErrorStatus(t, c))
-		})
+	t.Run("without user", func(t *testing.T) {
+		c, _ := ginContextWithParam(t, http.MethodDelete, "/")
+		c.Params = gin.Params{{Key: "id", Value: id}}
 
-		t.Run(name+" without user", func(t *testing.T) {
-			c, _ := ginContextWithParam(t, http.MethodPost, "/")
-			c.Params = gin.Params{{Key: "id", Value: id}}
-			jsonBody(t, c, SectionRequest{Name: "Changed", Pos: 9})
+		handler.DeleteSectionByID(c)
 
-			write(c)
+		assert.Equal(t, http.StatusUnauthorized, lastErrorStatus(t, c))
+	})
 
-			assert.Equal(t, http.StatusUnauthorized, lastErrorStatus(t, c))
-		})
-	}
-
-	unchanged, err := handler.repo.GetSectionByID(section.ID)
-	require.NoError(t, err)
-	assert.Equal(t, "Tickets", unchanged.Name)
+	_, err = handler.repo.GetSectionByID(section.ID)
+	assert.NoError(t, err, "the section must still exist")
 }
 
 func TestGetSections_ListsByPosWithTotalCount(t *testing.T) {

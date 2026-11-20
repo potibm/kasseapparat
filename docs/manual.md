@@ -155,7 +155,7 @@ Only a few **critical or sensitive operations** are restricted to users with adm
 - Creating a new user **with** admin rights
 - Deleting users
 - Deleting a product
-- Creating, changing or deleting a product section (sections shape the POS layout for everyone)
+- Deleting a product section
 - Deleting a guestlist that was created by someone else
 - Deleting a guest entry created by another user
 

@@ -20,8 +20,9 @@ type SectionRequest struct {
 
 const adminRole = "admin"
 
-// requireAdmin stops the request unless the executing user is an admin. Sections
-// shape the POS for everyone, so only admins may change them (ADR 006).
+// requireAdmin stops the request unless the executing user is an admin. Like products,
+// sections can be created and changed by every user, but only admins may delete them
+// (ADR 006).
 func requireAdmin(c *gin.Context) bool {
 	authUser, exists := middleware.GetAuthUser(c)
 	if !exists {
@@ -31,7 +32,7 @@ func requireAdmin(c *gin.Context) bool {
 	}
 
 	if authUser.Role != adminRole {
-		_ = c.Error(Forbidden.WithMsg("Only admins can change sections"))
+		_ = c.Error(Forbidden.WithMsg("Only admins can delete sections"))
 
 		return false
 	}
@@ -78,10 +79,6 @@ func (handler *Handler) GetSectionByID(c *gin.Context) {
 }
 
 func (handler *Handler) CreateSection(c *gin.Context) {
-	if !requireAdmin(c) {
-		return
-	}
-
 	c = handler.contextWithUser(c)
 
 	var request SectionRequest
@@ -105,10 +102,6 @@ func (handler *Handler) CreateSection(c *gin.Context) {
 }
 
 func (handler *Handler) UpdateSectionByID(c *gin.Context) {
-	if !requireAdmin(c) {
-		return
-	}
-
 	c = handler.contextWithUser(c)
 
 	id, _ := strconv.Atoi(c.Param("id"))
