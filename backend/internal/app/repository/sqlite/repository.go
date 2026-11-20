@@ -67,8 +67,8 @@ type ProductInterestRepository interface {
 
 type ProductRepository interface {
 	GetProductStats() ([]response.ProductStats, error)
-	GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error)
-	GetTotalProducts() (int64, error)
+	GetProducts(limit int, offset int, sort string, order string, filters ProductFilters) ([]models.Product, error)
+	GetTotalProducts(filters ProductFilters) (int64, error)
 	GetProductByID(id int) (*models.Product, error)
 	UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error)
 	CreateProduct(product models.Product) (models.Product, error)

@@ -7,8 +7,10 @@ import {
   DeleteButton,
   NumberField,
   BooleanField,
+  ReferenceField,
 } from "react-admin";
 import { useConfig } from "@core/config/hooks/useConfig";
+import { ProductFilters } from "./ProductFilters";
 import { Product } from "./types";
 
 export const ProductList: React.FC = () => {
@@ -18,7 +20,10 @@ export const ProductList: React.FC = () => {
   if (permissionsLoading) return <>Loading...</>;
 
   return (
-    <List<Product> sort={{ field: "pos", order: "ASC" }}>
+    <List<Product>
+      sort={{ field: "pos", order: "ASC" }}
+      filters={ProductFilters}
+    >
       <Datagrid rowClick="edit" bulkActionButtons={false}>
         <NumberField source="id" />
         <TextField source="name" />
@@ -27,6 +32,12 @@ export const ProductList: React.FC = () => {
           source="grossPrice"
           locales={currencyLocale}
           options={currencyOptions}
+        />
+        <ReferenceField
+          source="sectionId"
+          reference="sections"
+          label="Section"
+          link={false}
         />
         <NumberField source="pos" />
         <BooleanField source="wrapAfter" sortable={false} />

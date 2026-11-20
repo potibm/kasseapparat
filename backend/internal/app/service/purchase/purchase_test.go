@@ -356,12 +356,12 @@ func (m *MockRepository) GetProducts(
 	offset int,
 	sort string,
 	order string,
-	ids []int,
+	filters sqlite.ProductFilters,
 ) ([]models.Product, error) {
 	panic(errNotImplemented)
 }
 
-func (m *MockRepository) GetTotalProducts() (int64, error) {
+func (m *MockRepository) GetTotalProducts(filters sqlite.ProductFilters) (int64, error) {
 	panic(errNotImplemented)
 }
 

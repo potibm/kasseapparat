@@ -11,6 +11,7 @@ import { useConfig } from "@core/config/hooks/useConfig";
 import DecimalInput from "../../ui/inputs/DecimalInput";
 import GrossPriceInput from "../../ui/inputs/GrossPriceInput";
 import VatRateInput from "../../ui/inputs/VatRateInput";
+import SectionInput from "../sections/SectionInput";
 import { Product } from "./types";
 
 export const ProductCreate: React.FC = () => {
@@ -30,6 +31,7 @@ export const ProductCreate: React.FC = () => {
           options={currencyOptions}
         />
         <h6>Layout</h6>
+        <SectionInput preselectFirst />
         <NumberInput
           source="pos"
           helperText="The products will be shown in this order"

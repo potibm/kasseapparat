@@ -175,3 +175,54 @@ func TestProducts_UpdateKeepsTheSection(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, merch.ID, updated.SectionID)
 }
+
+func TestProducts_FilterBySection(t *testing.T) {
+	repo := setupSectionRepository(t)
+
+	tickets := createTestSection(t, repo, "Tickets", 1)
+	merch := createTestSection(t, repo, "Merch", 2)
+
+	regular, err := repo.CreateProduct(models.Product{Name: "Regular", Pos: 1, SectionID: tickets.ID})
+	require.NoError(t, err)
+
+	mug, err := repo.CreateProduct(models.Product{Name: "Mug", Pos: 2, SectionID: merch.ID})
+	require.NoError(t, err)
+
+	filters := ProductFilters{SectionIDs: []int{merch.ID}}
+
+	products, err := repo.GetProducts(10, 0, "pos", "ASC", filters)
+	require.NoError(t, err)
+	require.Len(t, products, 1)
+	assert.Equal(t, mug.ID, products[0].ID)
+
+	total, err := repo.GetTotalProducts(filters)
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), total)
+
+	all, err := repo.GetTotalProducts(ProductFilters{})
+	require.NoError(t, err)
+	assert.Equal(t, int64(2), all)
+
+	byID, err := repo.GetProducts(10, 0, "pos", "ASC", ProductFilters{IDs: []int{regular.ID}})
+	require.NoError(t, err)
+	require.Len(t, byID, 1)
+	assert.Equal(t, "Regular", byID[0].Name)
+}
+
+func TestProducts_SortBySection(t *testing.T) {
+	repo := setupSectionRepository(t)
+
+	tickets := createTestSection(t, repo, "Tickets", 1)
+	merch := createTestSection(t, repo, "Merch", 2)
+
+	_, err := repo.CreateProduct(models.Product{Name: "Mug", Pos: 1, SectionID: merch.ID})
+	require.NoError(t, err)
+
+	_, err = repo.CreateProduct(models.Product{Name: "Regular", Pos: 2, SectionID: tickets.ID})
+	require.NoError(t, err)
+
+	products, err := repo.GetProducts(10, 0, "sectionId", "ASC", ProductFilters{})
+	require.NoError(t, err)
+	require.Len(t, products, 2)
+	assert.Equal(t, "Regular", products[0].Name)
+}

@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 )
 
 const maxProductsForStats = 1000
@@ -44,7 +45,7 @@ func (handler *Handler) GetHourlyQuantityStats(c *gin.Context) {
 
 	productNames := make(map[int]string)
 
-	products, _ := handler.repo.GetProducts(maxProductsForStats, 0, "name", "ASC", nil)
+	products, _ := handler.repo.GetProducts(maxProductsForStats, 0, "name", "ASC", sqliteRepo.ProductFilters{})
 	for _, p := range products {
 		productNames[p.ID] = p.Name
 	}

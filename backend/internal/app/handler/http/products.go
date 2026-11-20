@@ -47,9 +47,12 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	sort := c.DefaultQuery("_sort", "pos")
 	order := c.DefaultQuery("_order", "ASC")
 	filterHidden := c.DefaultQuery("_filter_hidden", "false")
-	ids := queryArrayInt(c, "id")
+	filters := sqliteRepo.ProductFilters{
+		IDs:        queryArrayInt(c, "id"),
+		SectionIDs: queryArrayInt(c, "sectionId"),
+	}
 
-	products, err := handler.repo.GetProducts(end-start, start, sort, order, ids)
+	products, err := handler.repo.GetProducts(end-start, start, sort, order, filters)
 	if err != nil {
 		listQueryError(c, err)
 
@@ -60,7 +63,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 		products = filterHiddenProducts(products)
 	}
 
-	total, err := handler.repo.GetTotalProducts()
+	total, err := handler.repo.GetTotalProducts(filters)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
