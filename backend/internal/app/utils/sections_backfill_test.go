@@ -51,13 +51,15 @@ func TestMigrate_AssignsProductsWithoutSectionToTheFirstSection(t *testing.T) {
 	db := setupBackfillDatabase(t, "backfillexisting")
 
 	merch := models.Section{Name: "Merch", Pos: 2}
-	tickets := models.Section{Name: "Tickets", Pos: 1}
 	require.NoError(t, db.Create(&merch).Error)
+
+	tickets := models.Section{Name: "Tickets", Pos: 1}
 	require.NoError(t, db.Create(&tickets).Error)
 
 	withoutSection := models.Product{Name: "Mate"}
-	withSection := models.Product{Name: "Mug", SectionID: merch.ID}
 	require.NoError(t, db.Create(&withoutSection).Error)
+
+	withSection := models.Product{Name: "Mug", SectionID: merch.ID}
 	require.NoError(t, db.Create(&withSection).Error)
 
 	require.NoError(t, MigrateDatabase(db))
