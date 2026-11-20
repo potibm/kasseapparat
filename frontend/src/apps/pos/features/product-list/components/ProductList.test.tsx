@@ -104,6 +104,36 @@ describe("ProductList", () => {
     expect(screen.getAllByTestId(/product-card-/)).toHaveLength(2);
   });
 
+  it("renders vanished products as placeholders", () => {
+    const products = [
+      {
+        id: 1,
+        name: "Ticket",
+        totalStock: 5,
+        unitsSold: 5,
+        soldOut: false,
+        vanished: true,
+        guestlists: null,
+        grossPrice: { toNumber: () => 10 },
+      },
+    ] as unknown as Parameters<typeof ProductList>[0]["products"];
+
+    render(
+      <ProductList
+        products={products}
+        addToCart={baseProps.addToCart}
+        hasListItem={baseProps.hasListItem}
+        quantityByProductInCart={baseProps.quantityByProductInCart}
+        addProductInterest={baseProps.addProductInterest}
+      />,
+    );
+
+    expect(screen.getByTestId("product-card-1")).toHaveAttribute(
+      "data-vanished",
+      "true",
+    );
+  });
+
   it("starts a new grid row after a product with wrapAfter", () => {
     const product = (id: number, wrapAfter: boolean) => ({
       id,

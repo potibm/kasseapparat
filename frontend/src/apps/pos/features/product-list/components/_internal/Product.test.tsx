@@ -263,6 +263,29 @@ describe("Product card", () => {
     expect(await screen.findByText(/currently sold out/i)).toBeInTheDocument();
   });
 
+  it("renders a disabled sold-out placeholder for a vanished product", async () => {
+    const product = plainProduct({ name: "Ticket", totalStock: 5 });
+    const addToCart = vi.fn();
+    render(
+      <Product
+        product={product}
+        addToCart={addToCart}
+        hasListItem={vi.fn(() => false)}
+        quantityByProductInCart={vi.fn(() => 0)}
+        addProductInterest={vi.fn().mockResolvedValue(undefined)}
+        vanished
+      />,
+    );
+
+    const card = screen.getByRole("button", { name: "Ticket is sold out" });
+    expect(card).toBeDisabled();
+    expect(card).toHaveAttribute("data-vanished", "true");
+    expect(card).toHaveTextContent("Sold out");
+
+    await userEvent.click(card);
+    expect(addToCart).not.toHaveBeenCalled();
+  });
+
   it("applies extra classes, e.g. to start a new grid row", () => {
     const product = plainProduct({ totalStock: 0 });
     const addToCart = vi.fn();

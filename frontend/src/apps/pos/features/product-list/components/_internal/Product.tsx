@@ -24,6 +24,11 @@ interface ProductProps {
   addProductInterest: (product: ProductType) => Promise<void>;
   /** Extra classes for the card, e.g. to start a new grid row. */
   className?: string;
+  /**
+   * The product sold out under auto_hide and is no longer returned by the
+   * backend; its slot is kept as a disabled placeholder (see vanishedProducts).
+   */
+  vanished?: boolean;
 }
 
 type StockTone = "normal" | "low" | "none";
@@ -45,6 +50,7 @@ const Product: React.FC<ProductProps> = ({
   quantityByProductInCart,
   addProductInterest,
   className = "",
+  vanished = false,
 }) => {
   const [isGuestListModalOpen, setIsGuestListModalOpen] = useState(false);
   const [isPIModalOpen, setIsPIModalOpen] = useState(false);
@@ -63,6 +69,29 @@ const Product: React.FC<ProductProps> = ({
   const isBlocked = !product.soldOut && !hasGuestlist && !canAdd;
 
   const price = currency.format(product.grossPrice.toNumber());
+
+  if (vanished) {
+    return (
+      <button
+        type="button"
+        disabled
+        data-testid={"product-card-" + product.id}
+        data-vanished="true"
+        aria-label={product.name + " is sold out"}
+        className={`relative flex h-full flex-col justify-between rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-3 text-left disabled:cursor-not-allowed dark:border-gray-700 dark:bg-gray-800/60 ${className}`}
+      >
+        <span className="text-base font-semibold leading-tight text-balance text-gray-500">
+          {product.name}
+        </span>
+        <span className="flex items-end justify-between gap-2">
+          <span className="text-2xl font-bold text-gray-400">{price}</span>
+          <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-900 dark:text-red-100">
+            Sold out
+          </span>
+        </span>
+      </button>
+    );
+  }
 
   let ariaLabel: string;
   if (product.soldOut) {
