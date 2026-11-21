@@ -216,8 +216,8 @@ github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWD
 github.com/stretchr/testify v1.12.1/go.mod h1:MDEgiDPPsNp5cuIrHPPCyornHKgEVbtFUmoNlxoYthg=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
-github.com/sumup/sumup-go v0.21.0 h1:SSNgl80kST14mj/YsF5EdIa3O0lAUC/VPgzPMjZG1vE=
-github.com/sumup/sumup-go v0.21.0/go.mod h1:LRmcEBSpL1rMvjam6OtD0YBK9cyONiMjNp0DnvSLW1o=
+github.com/sumup/sumup-go v0.22.0 h1:wpKS478HpXyWNsizFrsKaq32CJ8nxTE0/Sw2xIIiaBc=
+github.com/sumup/sumup-go v0.22.0/go.mod h1:LRmcEBSpL1rMvjam6OtD0YBK9cyONiMjNp0DnvSLW1o=
 github.com/tailscale/depaware v0.0.0-20210622194025-720c4b409502/go.mod h1:p9lPsd+cx33L3H9nNoecRRxPssFKUwwI50I3pZ0yT+8=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
