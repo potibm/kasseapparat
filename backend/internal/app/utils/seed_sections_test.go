@@ -43,4 +43,30 @@ func TestSeed_AssignsEveryProductToASection(t *testing.T) {
 	assert.Equal(t, sections[1].ID, sectionOf("👕 Male S"))
 	assert.Equal(t, sections[1].ID, sectionOf("👕 Female XXL"))
 	assert.Equal(t, sections[2].ID, sectionOf("☕ Coffee Mug"))
+
+	var groups []models.ProductGroup
+	require.NoError(t, db.Order("pos ASC").Find(&groups).Error)
+	require.Len(t, groups, 2)
+	assert.Equal(t, "Male", groups[0].Name)
+	assert.Equal(t, "Female", groups[1].Name)
+
+	for _, group := range groups {
+		assert.Equal(t, sections[1].ID, group.SectionID)
+	}
+
+	var maleS models.Product
+	require.NoError(t, db.Where("name = ?", "👕 Male S").First(&maleS).Error)
+	require.NotNil(t, maleS.ProductGroupID)
+	assert.Equal(t, groups[0].ID, *maleS.ProductGroupID)
+	assert.Equal(t, "S", maleS.Variant)
+
+	var femaleSizes int64
+	require.NoError(t, db.Model(&models.Product{}).
+		Where("product_group_id = ?", groups[1].ID).
+		Count(&femaleSizes).Error)
+	assert.Equal(t, int64(5), femaleSizes)
+
+	var mug models.Product
+	require.NoError(t, db.Where("name = ?", "☕ Coffee Mug").First(&mug).Error)
+	assert.Nil(t, mug.ProductGroupID)
 }

@@ -9,10 +9,10 @@ import (
 
 var (
 	ErrSectionNotFound = errors.New("section not found")
-	// ErrSectionNotEmpty is returned when a section that still holds products is deleted.
-	// Moving the products elsewhere would change the POS layout as a side effect of a
-	// delete, so the caller has to empty the section first (ADR 006).
-	ErrSectionNotEmpty = errors.New("section still contains products")
+	// ErrSectionNotEmpty is returned when a section that still holds products or
+	// product groups is deleted. Moving them elsewhere would change the POS layout as a
+	// side effect of a delete, so the caller has to empty the section first (ADR 006).
+	ErrSectionNotEmpty = errors.New("section still contains products or product groups")
 )
 
 var sectionSortFieldMappings = map[string]string{
@@ -122,17 +122,20 @@ func (repo *Repository) UpdateSectionByID(id int, updatedSection models.Section)
 	return &section, nil
 }
 
-// DeleteSection deletes an empty section and refuses one that still holds products.
+// DeleteSection deletes an empty section and refuses one that still holds products or
+// product groups.
 func (repo *Repository) DeleteSection(section models.Section) error {
-	var productCount int64
-	if err := repo.db.Model(&models.Product{}).
-		Where("section_id = ?", section.ID).
-		Count(&productCount).Error; err != nil {
-		return fmt.Errorf("failed to count the products of the section: %w", err)
-	}
+	for _, model := range []any{&models.Product{}, &models.ProductGroup{}} {
+		var count int64
+		if err := repo.db.Model(model).
+			Where("section_id = ?", section.ID).
+			Count(&count).Error; err != nil {
+			return fmt.Errorf("failed to check whether the section is empty: %w", err)
+		}
 
-	if productCount > 0 {
-		return ErrSectionNotEmpty
+		if count > 0 {
+			return ErrSectionNotEmpty
+		}
 	}
 
 	if err := repo.db.Delete(&section).Error; err != nil {

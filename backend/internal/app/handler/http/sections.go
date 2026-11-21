@@ -21,9 +21,9 @@ type SectionRequest struct {
 const adminRole = "admin"
 
 // requireAdmin stops the request unless the executing user is an admin. Like products,
-// sections can be created and changed by every user, but only admins may delete them
-// (ADR 006).
-func requireAdmin(c *gin.Context) bool {
+// sections and product groups can be created and changed by every user, but only
+// admins may delete them (ADR 006). msg explains the refusal.
+func requireAdmin(c *gin.Context, msg string) bool {
 	authUser, exists := middleware.GetAuthUser(c)
 	if !exists {
 		_ = c.Error(UnableToRetrieveExecutingUser)
@@ -32,7 +32,7 @@ func requireAdmin(c *gin.Context) bool {
 	}
 
 	if authUser.Role != adminRole {
-		_ = c.Error(Forbidden.WithMsg("Only admins can delete sections"))
+		_ = c.Error(Forbidden.WithMsg(msg))
 
 		return false
 	}
@@ -133,7 +133,7 @@ func (handler *Handler) UpdateSectionByID(c *gin.Context) {
 }
 
 func (handler *Handler) DeleteSectionByID(c *gin.Context) {
-	if !requireAdmin(c) {
+	if !requireAdmin(c, "Only admins can delete sections") {
 		return
 	}
 
@@ -150,7 +150,7 @@ func (handler *Handler) DeleteSectionByID(c *gin.Context) {
 
 	if err := handler.repo.DeleteSection(*section); err != nil {
 		if errors.Is(err, sqliteRepo.ErrSectionNotEmpty) {
-			_ = c.Error(Conflict.WithMsg("The section still contains products").WithCause(err))
+			_ = c.Error(Conflict.WithMsg("The section still contains products or product groups").WithCause(err))
 
 			return
 		}

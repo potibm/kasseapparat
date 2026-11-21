@@ -88,6 +88,21 @@ type SectionRepository interface {
 	DeleteSection(section models.Section) error
 }
 
+type ProductGroupRepository interface {
+	GetProductGroups(
+		limit int,
+		offset int,
+		sort string,
+		order string,
+		filters ProductFilters,
+	) ([]models.ProductGroup, error)
+	GetTotalProductGroups(filters ProductFilters) (int64, error)
+	GetProductGroupByID(id int) (*models.ProductGroup, error)
+	CreateProductGroup(group models.ProductGroup) (models.ProductGroup, error)
+	UpdateProductGroupByID(id int, updatedGroup models.ProductGroup) (*models.ProductGroup, error)
+	DeleteProductGroup(group models.ProductGroup) error
+}
+
 //nolint:interfacebloat // Repository interface aggregates all domain-specific interfaces
 type PurchaseRepository interface {
 	PurchaseCRUDRepository
@@ -128,6 +143,7 @@ type RepositoryInterface interface {
 	ProductRepository
 	PurchaseRepository
 	SectionRepository
+	ProductGroupRepository
 	Pinger
 }
 

@@ -13,30 +13,40 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// ProductRequestCreate is the body for a new product. SectionID is optional: without
-// it the product goes into the default section (ADR 006).
+// ProductRequestCreate is the body for a new product. SectionID and ProductGroupID are
+// optional: without them the product goes into the default section. A product in a
+// group always takes the group's section (ADR 006).
 type ProductRequestCreate struct {
-	Name      string          `json:"name"      form:"name"      binding:"required"`
-	NetPrice  decimal.Decimal `json:"netPrice"  form:"netPrice"  binding:"required"`
-	VATRate   decimal.Decimal `json:"vatRate"   form:"vatRate"   binding:"required"`
-	Pos       int             `json:"pos"       form:"pos"       binding:"numeric,required"`
-	Hidden    bool            `json:"hidden"    form:"hidden"    binding:"boolean"`
-	SectionID int             `json:"sectionId" form:"sectionId"`
+	Name           string          `json:"name"           form:"name"           binding:"required"`
+	NetPrice       decimal.Decimal `json:"netPrice"       form:"netPrice"       binding:"required"`
+	VATRate        decimal.Decimal `json:"vatRate"        form:"vatRate"        binding:"required"`
+	Pos            int             `json:"pos"            form:"pos"            binding:"numeric,required"`
+	Hidden         bool            `json:"hidden"         form:"hidden"         binding:"boolean"`
+	SectionID      int             `json:"sectionId"      form:"sectionId"`
+	ProductGroupID *int            `json:"productGroupId" form:"productGroupId"`
+	Variant        string          `json:"variant"        form:"variant"`
 }
 
-// ProductRequestUpdate is the body for editing a product. SectionID is optional: when
-// it is omitted or 0 the product keeps its current section. 0 does not mean "the
-// default section" – to move a product there, send that section's id.
+// ProductRequestUpdate is the body for editing a product.
+//
+// SectionID: omitted or 0 keeps the current section. 0 does not mean "the default
+// section" – to move a product there, send that section's id.
+//
+// ProductGroupID: omitted or null keeps the current group, 0 takes the product out of
+// its group, any other id moves it into that group. A product in a group always takes
+// the group's section; a SectionID sent along is ignored then (ADR 006).
 type ProductRequestUpdate struct {
-	Name       string          `json:"name"       form:"name"       binding:"required"`
-	NetPrice   decimal.Decimal `json:"netPrice"   form:"netPrice"   binding:"required"`
-	VATRate    decimal.Decimal `json:"vatRate"    form:"vatRate"    binding:"required"`
-	Pos        int             `json:"pos"        form:"pos"        binding:"numeric,required"`
-	APIExport  bool            `json:"apiExport"  form:"apiExport"  binding:"boolean"`
-	Hidden     bool            `json:"hidden"     form:"hidden"     binding:"boolean"`
-	SoldOut    bool            `json:"soldOut"    form:"soldOut"    binding:"boolean"`
-	TotalStock int             `json:"totalStock" form:"totalStock" binding:"numeric"`
-	SectionID  int             `json:"sectionId"  form:"sectionId"`
+	Name           string          `json:"name"           form:"name"           binding:"required"`
+	NetPrice       decimal.Decimal `json:"netPrice"       form:"netPrice"       binding:"required"`
+	VATRate        decimal.Decimal `json:"vatRate"        form:"vatRate"        binding:"required"`
+	Pos            int             `json:"pos"            form:"pos"            binding:"numeric,required"`
+	APIExport      bool            `json:"apiExport"      form:"apiExport"      binding:"boolean"`
+	Hidden         bool            `json:"hidden"         form:"hidden"         binding:"boolean"`
+	SoldOut        bool            `json:"soldOut"        form:"soldOut"        binding:"boolean"`
+	TotalStock     int             `json:"totalStock"     form:"totalStock"     binding:"numeric"`
+	SectionID      int             `json:"sectionId"      form:"sectionId"`
+	ProductGroupID *int            `json:"productGroupId" form:"productGroupId"`
+	Variant        string          `json:"variant"        form:"variant"`
 }
 
 func (handler *Handler) GetProducts(c *gin.Context) {
@@ -161,8 +171,9 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.Hidden = productRequest.Hidden
 	product.SoldOut = productRequest.SoldOut
 	product.TotalStock = productRequest.TotalStock
+	product.Variant = productRequest.Variant
 
-	if !handler.assignSectionOnUpdate(c, product, productRequest.SectionID) {
+	if !handler.assignProductLayout(c, product, productRequest.SectionID, productRequest.ProductGroupID) {
 		return
 	}
 
@@ -219,17 +230,13 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.VATRate = productRequest.VATRate
 	product.Pos = productRequest.Pos
 	product.Hidden = productRequest.Hidden
+	product.Variant = productRequest.Variant
 
-	sectionID, err := handler.resolveSectionID(productRequest.SectionID)
-	if err != nil {
-		sectionResolveError(c, productRequest.SectionID, err)
-
+	if !handler.assignProductLayout(c, &product, productRequest.SectionID, productRequest.ProductGroupID) {
 		return
 	}
 
-	product.SectionID = sectionID
-
-	product, err = handler.repo.CreateProduct(product)
+	product, err := handler.repo.CreateProduct(product)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCause(err))
 

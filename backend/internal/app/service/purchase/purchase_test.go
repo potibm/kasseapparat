@@ -309,6 +309,37 @@ func (m *MockRepository) DeleteSection(section models.Section) error {
 	panic(errNotImplemented)
 }
 
+func (m *MockRepository) GetProductGroups(
+	limit, offset int,
+	sort, order string,
+	filters sqlite.ProductFilters,
+) ([]models.ProductGroup, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) GetTotalProductGroups(filters sqlite.ProductFilters) (int64, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) GetProductGroupByID(id int) (*models.ProductGroup, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) CreateProductGroup(group models.ProductGroup) (models.ProductGroup, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) UpdateProductGroupByID(
+	id int,
+	updatedGroup models.ProductGroup,
+) (*models.ProductGroup, error) {
+	panic(errNotImplemented)
+}
+
+func (m *MockRepository) DeleteProductGroup(group models.ProductGroup) error {
+	panic(errNotImplemented)
+}
+
 func (m *MockRepository) GetProductInterests(limit, offset int, ids []int) ([]models.ProductInterest, error) {
 	panic(errNotImplemented)
 }

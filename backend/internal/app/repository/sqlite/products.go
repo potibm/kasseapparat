@@ -20,7 +20,8 @@ var productSortFieldMappings = map[string]string{
 	"sectionId":  "Section_Id",
 }
 
-// ProductFilters narrows a product list. An empty slice does not filter.
+// ProductFilters narrows a product or product group list. An empty slice does not
+// filter. Both tables have the id and section_id columns it filters on.
 type ProductFilters struct {
 	IDs        []int
 	SectionIDs []int
@@ -153,6 +154,8 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	product.TotalStock = updatedProduct.TotalStock
 	product.StockFlagsManaged = updatedProduct.StockFlagsManaged
 	product.SectionID = updatedProduct.SectionID
+	product.ProductGroupID = updatedProduct.ProductGroupID
+	product.Variant = updatedProduct.Variant
 
 	// Save the updated product to the database
 	if err := repo.db.Save(&product).Error; err != nil {

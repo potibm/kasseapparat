@@ -78,6 +78,12 @@ A product created without `sectionId` goes into the default section. On update, 
 omitted or `0` `sectionId` means "unchanged"; moving a product into the default section
 uses that section's real id.
 
+`productGroupId` on a product update: omitted or `null` means "unchanged", `0` takes
+the product out of its group (it stays in the group's section), any other id moves it
+into that group. A group created without `sectionId` goes into the default section; on
+a group update, `0` keeps the current section, and moving the group moves its products
+with it.
+
 The POS loads sections, groups and products and composes the layout itself. All three
 lists are small, and they are only reloaded together with the products.
 

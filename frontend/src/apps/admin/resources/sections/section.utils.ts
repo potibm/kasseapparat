@@ -18,11 +18,11 @@ export const sectionLabel = (
 };
 
 export const SECTION_NOT_EMPTY_MESSAGE =
-  "This section still contains products. Move them to another section first.";
+  "This section still contains products or product groups. Move them to another section first.";
 
 /**
  * Turns a failed section delete into a message for the admin. The backend answers a
- * section that still has products with 409, which react-admin would only show as
+ * section that still has products or product groups with 409, which react-admin would only show as
  * "Conflict".
  */
 export const sectionDeleteErrorMessage = (error: unknown): string => {
