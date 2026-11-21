@@ -12,7 +12,6 @@ type ProductResponse struct {
 	GrossPrice          decimal.Decimal    `json:"grossPrice"`
 	VATRate             decimal.Decimal    `json:"vatRate"`
 	VATAmount           decimal.Decimal    `json:"vatAmount"`
-	WrapAfter           bool               `json:"wrapAfter"`
 	Hidden              bool               `json:"hidden"`
 	SoldOut             bool               `json:"soldOut"`
 	APIExport           bool               `json:"apiExport"`
@@ -39,7 +38,6 @@ func ToProductResponse(product models.Product, decimalPlaces int32) ProductRespo
 		GrossPrice:          product.GrossPrice(decimalPlaces),
 		VATRate:             product.VATRate,
 		VATAmount:           product.VATAmount(decimalPlaces),
-		WrapAfter:           product.WrapAfter,
 		Hidden:              product.Hidden,
 		SoldOut:             product.SoldOut,
 		APIExport:           product.APIExport,

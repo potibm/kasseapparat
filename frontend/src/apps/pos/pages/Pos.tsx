@@ -51,6 +51,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
 
   const {
     products,
+    sections,
     loading: productsLoading,
     refreshProducts,
     addInterest,
@@ -191,6 +192,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
     >
       <ProductList
         products={products}
+        sections={sections}
         loading={productsLoading}
         addToCart={add}
         hasListItem={(g: GuestType) => cart.hasListItem(g.id)}
