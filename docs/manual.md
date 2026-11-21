@@ -78,6 +78,12 @@ The Interface consists of several areas:
 - The list of entities (3) with some basic information. Once you click on an entity, you will see details or an option to modify it
 - A pagination bar (4)
 
+### Sections
+
+The POS shows products in sections, for example "Tickets", "T-Shirts" and "Merch". Each section starts on a new row with its name as a heading. A section without a name starts a new row without a heading.
+
+To manage sections click on "POS > Sections" in the menu. Sections are ordered by "Pos". Every user can create and change sections; only admins can delete them, and only once no product is left in them.
+
 ### Add product
 
 To create a product click on "POS > Products" in the menu, then "+ Create" in the action bar.
@@ -91,8 +97,8 @@ You will have to fill out some fields (in multiple tabs):
   - "VAT"
   - "Gross price" will be displayed for information
 - Layout
-  - "Pos" (products will be ordered by this position in the POS, simply enter a value that is between the product that should be before and the product that should be after your product)
-  - "Wrap After" (set this to true and the next product will be shown on a new line in the POS)
+  - "Section" (the section the product is shown in; the first section is preselected)
+  - "Pos" (products will be ordered by this position within their section, simply enter a value that is between the product that should be before and the product that should be after your product)
   - "Hidden" (set this to true and your product will not be shown)
 - Stock
   - "Total Stock" (0 for unlimited stock)

@@ -4,6 +4,7 @@ import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 import { usePosApi } from "@pos/api/usePosApi";
 import { useConfig } from "@core/config/hooks/useConfig";
+import { Section } from "@pos/api/schemas";
 import {
   DisplayProduct,
   keepVanishedProducts,
@@ -13,15 +14,30 @@ const log = createLogger("Product");
 
 export const useProducts = () => {
   const [products, setProducts] = useState<DisplayProduct[] | null>(null);
+  const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { showToast } = useToast();
-  const { fetchProducts, addProductInterest } = usePosApi();
+  const { fetchProducts, fetchSections, addProductInterest } = usePosApi();
   const { outOfStockBehavior } = useConfig();
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const fetchedProducts = await fetchProducts();
+      // Without sections the POS still works, it just shows no headings.
+      const [fetchedProducts, fetchedSections] = await Promise.all([
+        fetchProducts(),
+        fetchSections().catch((error: unknown) => {
+          log.error(
+            "Error fetching sections",
+            error instanceof Error ? { message: error.message } : { error },
+          );
+          return null;
+        }),
+      ]);
+
+      if (fetchedSections !== null) {
+        setSections(fetchedSections);
+      }
 
       setProducts((previous) =>
         keepVanishedProducts(previous, fetchedProducts, outOfStockBehavior),
@@ -42,7 +58,7 @@ export const useProducts = () => {
     } finally {
       setLoading(false);
     }
-  }, [fetchProducts, showToast, outOfStockBehavior]);
+  }, [fetchProducts, fetchSections, showToast, outOfStockBehavior]);
 
   const addInterest = async (productId: number, productName: string) => {
     try {
@@ -66,7 +82,13 @@ export const useProducts = () => {
     loadProducts();
   }, [loadProducts]);
 
-  return { products, loading, refreshProducts: loadProducts, addInterest };
+  return {
+    products,
+    sections,
+    loading,
+    refreshProducts: loadProducts,
+    addInterest,
+  };
 };
 
 export default useProducts;

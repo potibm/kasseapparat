@@ -147,7 +147,6 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	product.Pos = updatedProduct.Pos
 	product.NetPrice = updatedProduct.NetPrice
 	product.VATRate = updatedProduct.VATRate
-	product.WrapAfter = updatedProduct.WrapAfter
 	product.APIExport = updatedProduct.APIExport
 	product.Hidden = updatedProduct.Hidden
 	product.SoldOut = updatedProduct.SoldOut

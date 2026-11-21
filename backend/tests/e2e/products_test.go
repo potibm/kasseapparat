@@ -91,11 +91,10 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 
 	product := withDemoUserAuthToken(e.POST(productBaseURL)).
 		WithJSON(map[string]any{
-			"name":      originalName,
-			"price":     "10",
-			"wrapAfter": false,
-			"pos":       123,
-			"hidden":    false,
+			"name":   originalName,
+			"price":  "10",
+			"pos":    123,
+			"hidden": false,
 		}).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
@@ -115,11 +114,10 @@ func TestCreateUpdateAndDeleteProduct(t *testing.T) {
 
 	withDemoUserAuthToken(e.PUT(productURL)).
 		WithJSON(map[string]any{
-			"name":      changedName,
-			"price":     "20",
-			"wrapAfter": false,
-			"pos":       123,
-			"hidden":    false,
+			"name":   changedName,
+			"price":  "20",
+			"pos":    123,
+			"hidden": false,
 		}).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
@@ -169,11 +167,10 @@ func TestUpdateProductWithNonExistentID(t *testing.T) {
 
 	withDemoUserAuthToken(e.PUT(productBaseURL + "/99999")).
 		WithJSON(map[string]any{
-			"name":      "Updated Name",
-			"price":     "10",
-			"wrapAfter": false,
-			"pos":       123,
-			"hidden":    false,
+			"name":   "Updated Name",
+			"price":  "10",
+			"pos":    123,
+			"hidden": false,
 		}).
 		Expect().
 		Status(http.StatusNotFound)
@@ -199,7 +196,6 @@ func validateProduct(product *httpexpect.Object) {
 	product.Value("grossPrice").String().NotEmpty()
 	product.Value("vatAmount").String().NotEmpty()
 	product.Value("vatRate").String().NotEmpty()
-	product.Value("wrapAfter").Boolean()
 	product.Value("pos").Number().Ge(0)
 	product.Value("apiExport").Boolean()
 	product.Value("totalStock").Number().Ge(0)
@@ -214,7 +210,6 @@ func validateProductOne(product *httpexpect.Object) {
 	product.Value("grossPrice").String().IsEqual("40")
 	product.Value("vatRate").String().IsEqual("7")
 	product.Value("vatAmount").String().IsEqual("2.62")
-	product.Value("wrapAfter").Boolean().IsFalse()
 	product.Value("hidden").Boolean().IsFalse()
 	product.Value("pos").Number().IsEqual(1)
 	product.Value("totalStock").Number().IsEqual(0)

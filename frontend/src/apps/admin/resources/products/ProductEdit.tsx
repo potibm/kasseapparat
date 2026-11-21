@@ -89,10 +89,6 @@ export const ProductEdit: React.FC = () => {
             source="pos"
             helperText="The products will be shown in this order"
           />
-          <BooleanInput
-            source="wrapAfter"
-            helperText="Create a line break after this product"
-          />
           <HiddenInput outOfStockBehavior={outOfStockBehavior} />
         </FormTab>
         <FormTab label="Stock">

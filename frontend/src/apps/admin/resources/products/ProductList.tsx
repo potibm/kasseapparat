@@ -40,7 +40,6 @@ export const ProductList: React.FC = () => {
           link={false}
         />
         <NumberField source="pos" />
-        <BooleanField source="wrapAfter" sortable={false} />
         <BooleanField source="soldOut" sortable={false} />
         <BooleanField source="hidden" sortable={false} />
         {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
