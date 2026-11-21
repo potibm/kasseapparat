@@ -4,7 +4,6 @@ import {
   SimpleForm,
   TextInput,
   Create,
-  BooleanInput,
   required,
 } from "react-admin";
 import { useConfig } from "@core/config/hooks/useConfig";
@@ -36,10 +35,6 @@ export const ProductCreate: React.FC = () => {
           source="pos"
           helperText="The products will be shown in this order"
           validate={[required()]}
-        />
-        <BooleanInput
-          source="wrapAfter"
-          helperText="Create a line break after this product"
         />
       </SimpleForm>
     </Create>

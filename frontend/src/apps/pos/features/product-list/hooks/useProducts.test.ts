@@ -5,18 +5,20 @@ import {
   Product as ProductType,
   ProductInterest as ProductInterestType,
 } from "../../../api/schemas";
-import { createMockProduct } from "@pos/api/schemas.mocks";
+import { createMockProduct, createMockSection } from "@pos/api/schemas.mocks";
 import React from "react";
 import { ConfigContext } from "@core/config/context/ConfigContext";
 import { AppConfig } from "@core/config/types/config.types";
 
 // mocks
 const mockFetchProducts = vi.fn();
+const mockFetchSections = vi.fn();
 const mockAddProductInterest = vi.fn();
 
 vi.mock("@pos/api/usePosApi", () => ({
   usePosApi: () => ({
     fetchProducts: mockFetchProducts,
+    fetchSections: mockFetchSections,
     addProductInterest: mockAddProductInterest,
   }),
 }));
@@ -67,6 +69,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) =>
 describe("useProducts Hook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFetchSections.mockResolvedValue([]);
   });
 
   describe("Initialization (loadProducts)", () => {
@@ -118,6 +121,51 @@ describe("useProducts Hook", () => {
         message: "An unknown error has occurred",
         severity: "error",
       });
+    });
+  });
+
+  describe("sections", () => {
+    it("loads the sections together with the products", async () => {
+      const sections = [createMockSection({ id: 1, name: "Tickets" })];
+      mockFetchProducts.mockResolvedValue(mockProducts);
+      mockFetchSections.mockResolvedValue(sections);
+
+      const { result } = renderHook(() => useProducts(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.sections).toEqual(sections);
+      expect(result.current.products).toEqual(mockProducts);
+    });
+
+    it("still shows the products when the sections cannot be loaded", async () => {
+      mockFetchProducts.mockResolvedValue(mockProducts);
+      mockFetchSections.mockRejectedValue(new Error("Forbidden"));
+
+      const { result } = renderHook(() => useProducts(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.sections).toEqual([]);
+      expect(result.current.products).toEqual(mockProducts);
+      expect(mockShowToast).not.toHaveBeenCalled();
+    });
+
+    it("tolerates a non-Error failure while loading the sections", async () => {
+      mockFetchProducts.mockResolvedValue(mockProducts);
+      mockFetchSections.mockRejectedValue("nope");
+
+      const { result } = renderHook(() => useProducts(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.sections).toEqual([]);
     });
   });
 

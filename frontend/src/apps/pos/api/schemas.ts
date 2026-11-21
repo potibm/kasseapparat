@@ -17,7 +17,7 @@ export const ProductSchema = z.object({
   grossPrice: DecimalSchema,
   vatRate: DecimalSchema,
   vatAmount: DecimalSchema,
-  wrapAfter: z.boolean(),
+  sectionId: z.number(),
   hidden: z.boolean(),
   soldOut: z.boolean(),
   apiExport: z.boolean(),
@@ -38,6 +38,14 @@ export const ProductSchema = z.object({
 });
 
 export type Product = z.infer<typeof ProductSchema>;
+
+export const SectionSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  pos: z.number(),
+});
+
+export type Section = z.infer<typeof SectionSchema>;
 
 export const PurchaseItemSchema = z.object({
   id: z.number(),

@@ -19,7 +19,6 @@ type ProductRequestCreate struct {
 	Name      string          `json:"name"      form:"name"      binding:"required"`
 	NetPrice  decimal.Decimal `json:"netPrice"  form:"netPrice"  binding:"required"`
 	VATRate   decimal.Decimal `json:"vatRate"   form:"vatRate"   binding:"required"`
-	WrapAfter bool            `json:"wrapAfter" form:"wrapAfter"`
 	Pos       int             `json:"pos"       form:"pos"       binding:"numeric,required"`
 	Hidden    bool            `json:"hidden"    form:"hidden"    binding:"boolean"`
 	SectionID int             `json:"sectionId" form:"sectionId"`
@@ -32,7 +31,6 @@ type ProductRequestUpdate struct {
 	Name       string          `json:"name"       form:"name"       binding:"required"`
 	NetPrice   decimal.Decimal `json:"netPrice"   form:"netPrice"   binding:"required"`
 	VATRate    decimal.Decimal `json:"vatRate"    form:"vatRate"    binding:"required"`
-	WrapAfter  bool            `json:"wrapAfter"  form:"wrapAfter"`
 	Pos        int             `json:"pos"        form:"pos"        binding:"numeric,required"`
 	APIExport  bool            `json:"apiExport"  form:"apiExport"  binding:"boolean"`
 	Hidden     bool            `json:"hidden"     form:"hidden"     binding:"boolean"`
@@ -76,19 +74,11 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, productsResponse)
 }
 
-// filterHiddenProducts removes hidden products from the list while preserving
-// wrap-after formatting by transferring the wrap-after property to the previous
-// visible product when a hidden product with wrap-after is encountered.
+// filterHiddenProducts removes hidden products from the list.
 func filterHiddenProducts(products []models.Product) []models.Product {
 	var filteredProducts []models.Product
 
 	for _, product := range products {
-		if product.Hidden && product.WrapAfter {
-			if len(filteredProducts) > 0 {
-				filteredProducts[len(filteredProducts)-1].WrapAfter = true
-			}
-		}
-
 		if !product.Hidden {
 			filteredProducts = append(filteredProducts, product)
 		}
@@ -166,7 +156,6 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.Name = productRequest.Name
 	product.NetPrice = productRequest.NetPrice
 	product.VATRate = productRequest.VATRate
-	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.APIExport = productRequest.APIExport
 	product.Hidden = productRequest.Hidden
@@ -228,7 +217,6 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.Name = productRequest.Name
 	product.NetPrice = productRequest.NetPrice
 	product.VATRate = productRequest.VATRate
-	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.Hidden = productRequest.Hidden
 

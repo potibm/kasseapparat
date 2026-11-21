@@ -144,7 +144,6 @@ func (ds *DatabaseSeed) seedProducts() error {
 		NetPrice:  price0,
 		VATRate:   vat0,
 		Pos:       4,
-		WrapAfter: true,
 		APIExport: true,
 		SectionID: ds.ticketsSection.ID,
 	}

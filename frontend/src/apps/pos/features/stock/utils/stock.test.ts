@@ -10,7 +10,7 @@ const product = (overrides: Partial<Product> = {}): Product =>
     grossPrice: "12.5",
     vatRate: "25",
     vatAmount: "2.5",
-    wrapAfter: false,
+    sectionId: 1,
     hidden: false,
     soldOut: false,
     apiExport: false,

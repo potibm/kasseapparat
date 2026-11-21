@@ -60,6 +60,26 @@ describe("POS API Client", () => {
   });
 
   describe("URL building", () => {
+    it("should fetch the sections in display order", async () => {
+      const client = createPosApiClient("https://api.example.com/api/v3");
+
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: async () => [{ id: 1, name: "Tickets", pos: 1 }],
+        } as Response),
+      );
+
+      const sections = await client.fetchSections();
+
+      expect(sections).toEqual([{ id: 1, name: "Tickets", pos: 1 }]);
+      expect(fetch).toHaveBeenCalledWith(
+        "https://api.example.com/api/v3/sections?_end=1000&_sort=pos&_order=asc",
+        expect.any(Object),
+      );
+    });
+
     it("should handle trailing slash in base URL", async () => {
       const client = createPosApiClient("https://api.example.com/api/v3/");
 

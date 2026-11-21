@@ -11,7 +11,6 @@ type Product struct {
 	Name                string          `json:"name"                gorm:""`
 	NetPrice            decimal.Decimal `json:"netPrice"            gorm:"type:TEXT"`
 	VATRate             decimal.Decimal `json:"vatRate"             gorm:"type:TEXT;default:'0.0'"`
-	WrapAfter           bool            `json:"wrapAfter"           gorm:"default:false"`
 	Hidden              bool            `json:"hidden"              gorm:"default:false"`
 	SoldOut             bool            `json:"soldOut"             gorm:"default:false"`
 	APIExport           bool            `json:"apiExport"           gorm:"default:false"`
