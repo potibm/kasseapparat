@@ -39,6 +39,14 @@ export const ProductList: React.FC = () => {
           label="Section"
           link={false}
         />
+        <ReferenceField
+          source="productGroupId"
+          reference="productGroups"
+          label="Group"
+          link={false}
+          emptyText="–"
+        />
+        <TextField source="variant" sortable={false} emptyText="–" />
         <NumberField source="pos" />
         <BooleanField source="soldOut" sortable={false} />
         <BooleanField source="hidden" sortable={false} />
