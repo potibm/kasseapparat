@@ -15,6 +15,8 @@ type DatabaseSeed struct {
 	ticketsSection        *models.Section
 	shirtsSection         *models.Section
 	merchSection          *models.Section
+	maleShirts            *models.ProductGroup
+	femaleShirts          *models.ProductGroup
 	products              []models.Product
 	db                    *gorm.DB
 	regularProduct        *models.Product
@@ -50,6 +52,10 @@ func (ds *DatabaseSeed) Seed(includeTestData bool) error {
 		return err
 	}
 
+	if err := ds.seedProductGroups(); err != nil {
+		return err
+	}
+
 	if err := ds.seedProducts(); err != nil {
 		return err
 	}
@@ -75,6 +81,43 @@ func (ds *DatabaseSeed) Seed(includeTestData bool) error {
 	}
 
 	return ds.seedPurchases(DefaultPurchaseCount)
+}
+
+// appendShirts adds one shirt per size to the products, as variants of the given group.
+// They are created together with the other products, so the product IDs stay stable.
+func (ds *DatabaseSeed) appendShirts(
+	group *models.ProductGroup,
+	label string,
+	sizes []string,
+	netPrice decimal.Decimal,
+	vatRate decimal.Decimal,
+) {
+	for i, size := range sizes {
+		ds.products = append(ds.products, models.Product{
+			Name:           "👕 " + label + " " + size,
+			NetPrice:       netPrice,
+			VATRate:        vatRate,
+			Pos:            (i + 1) * 10,
+			TotalStock:     gofakeit.IntRange(5, 30),
+			SectionID:      group.SectionID,
+			ProductGroupID: &group.ID,
+			Variant:        size,
+		})
+	}
+}
+
+// seedProductGroups creates the shirt groups, shown as a size matrix on the POS.
+func (ds *DatabaseSeed) seedProductGroups() error {
+	ds.maleShirts = &models.ProductGroup{SectionID: ds.shirtsSection.ID, Name: "Male", Pos: 10}
+	ds.femaleShirts = &models.ProductGroup{SectionID: ds.shirtsSection.ID, Name: "Female", Pos: 20}
+
+	for _, group := range []*models.ProductGroup{ds.maleShirts, ds.femaleShirts} {
+		if err := ds.db.Create(group).Error; err != nil {
+			return fmt.Errorf("failed to create product group %q: %w", group.Name, err)
+		}
+	}
+
+	return nil
 }
 
 // seedSections creates the sections the products are shown in on the POS (ADR 006).
@@ -153,116 +196,9 @@ func (ds *DatabaseSeed) seedProducts() error {
 
 	ds.products = append(ds.products, *ds.prepaidProduct)
 
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Male S",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Male M",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Male L",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Male XL",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Male XXL",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Male 4XL",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Female S",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Female M",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Female L",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Female XL",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
-	ds.products = append(
-		ds.products,
-		models.Product{
-			Name:       "👕 Female XXL",
-			NetPrice:   price20GrossAt19,
-			VATRate:    vat19,
-			Pos:        10,
-			TotalStock: gofakeit.IntRange(5, 30),
-		},
-	)
+	ds.appendShirts(ds.maleShirts, "Male", []string{"S", "M", "L", "XL", "XXL", "4XL"}, price20GrossAt19, vat19)
+	ds.appendShirts(ds.femaleShirts, "Female", []string{"S", "M", "L", "XL", "XXL"}, price20GrossAt19, vat19)
+
 	ds.products = append(
 		ds.products,
 		models.Product{
@@ -275,12 +211,6 @@ func (ds *DatabaseSeed) seedProducts() error {
 	)
 
 	for i := range ds.products {
-		// The shirts are declared above without a section; everything left without
-		// one at this point is a shirt.
-		if ds.products[i].SectionID == 0 {
-			ds.products[i].SectionID = ds.shirtsSection.ID
-		}
-
 		if ds.products[i].ID == 0 {
 			if err := ds.db.Create(&ds.products[i]).Error; err != nil {
 				return fmt.Errorf("failed to create product %q: %w", ds.products[i].Name, err)

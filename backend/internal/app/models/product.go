@@ -20,6 +20,8 @@ type Product struct {
 	SoldOutRequestCount int             `json:"soldOutRequestCount" gorm:"default:0"`
 	Guestlists          []Guestlist     `json:"guestlists"          gorm:""`
 	SectionID           int             `json:"sectionId"           gorm:"index;default:0"`
+	ProductGroupID      *int            `json:"productGroupId"      gorm:"index"`
+	Variant             string          `json:"variant"             gorm:"default:''"`
 
 	// StockFlagsManaged records that the out-of-stock behaviour set SoldOut or Hidden
 	// itself. Only an owned flag is cleared again when the stock comes back, so a flag
