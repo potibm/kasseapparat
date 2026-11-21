@@ -7,6 +7,10 @@ import GuestlistResultTable from "./_internal/GuestlistResultTable";
 import { Product as ProductType, Guest as GuestType } from "@pos/api/schemas";
 import GuestlistArrivalNoteModal from "./_internal/GuestlistArrivalNoteModal";
 import { usePosApi } from "@pos/api/usePosApi";
+import { useConfig } from "@core/config/hooks/useConfig";
+import { canAddMore, availableStock } from "@pos/features/stock/utils/stock";
+
+const SEARCH_DEBOUNCE_MS = 200;
 
 interface GuestlistModalProps {
   isOpen: boolean;
@@ -18,6 +22,7 @@ interface GuestlistModalProps {
     listEntry: GuestType | null,
   ) => void;
   hasListItem: (guest: GuestType) => boolean;
+  quantityInCart?: number;
 }
 
 const GuestlistModal: React.FC<GuestlistModalProps> = ({
@@ -26,6 +31,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   product,
   addToCart,
   hasListItem,
+  quantityInCart = 0,
 }) => {
   const [guestlistEntries, setGuestlistEntries] = useState<GuestType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -38,10 +44,18 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   } | null>(null);
 
   const { fetchGuestlistByProductId } = usePosApi();
+  const { outOfStockBehavior } = useConfig();
 
   const hasCodes = product.guestlists?.some((list) => list.typeCode) ?? false;
 
   const handleAddToCart = (listEntry: GuestType, additionalGuests: number) => {
+    if (
+      !canAddMore(product, quantityInCart, outOfStockBehavior) ||
+      availableStock(product, quantityInCart) < additionalGuests + 1
+    ) {
+      return;
+    }
+
     addToCart(product, additionalGuests + 1, listEntry);
 
     if (listEntry.arrivalNote) {
@@ -60,37 +74,58 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   };
 
   const handleManualAddToCart = () => {
+    if (!canAddMore(product, quantityInCart, outOfStockBehavior)) {
+      return;
+    }
+
     addToCart(product, 1, null);
     onClose();
   };
 
   const fetchGuestEntries = useCallback(
-    async (query = "") => {
+    async (query: string, signal: AbortSignal) => {
       setLoading(true);
       try {
-        const response = await fetchGuestlistByProductId(product.id, query);
+        const response = await fetchGuestlistByProductId(
+          product.id,
+          query,
+          signal,
+        );
+        // A newer search has started meanwhile: drop this (stale) result.
+        if (signal.aborted) return;
         setGuestlistEntries(response);
         setError(null);
         setLoadedSearchQuery(query);
       } catch (error: unknown) {
+        if (signal.aborted) return;
         setError("Error fetching list entries: " + (error as Error).message);
         setGuestlistEntries([]);
         setLoadedSearchQuery("");
       } finally {
-        setLoading(false);
+        if (!signal.aborted) setLoading(false);
       }
     },
     [product.id, fetchGuestlistByProductId],
   );
 
   useEffect(() => {
-    if (isOpen) {
-      const handle = requestAnimationFrame(() => {
-        fetchGuestEntries(searchQuery);
+    if (!isOpen) return;
+
+    // Debounce typing and cancel the previous request, so a slow response for an
+    // older search term can never overwrite the results of the current one.
+    const controller = new AbortController();
+    const handle = setTimeout(
+      () => {
+        fetchGuestEntries(searchQuery, controller.signal);
         setNoteToDisplay(null);
-      });
-      return () => cancelAnimationFrame(handle);
-    }
+      },
+      searchQuery === "" ? 0 : SEARCH_DEBOUNCE_MS,
+    );
+
+    return () => {
+      clearTimeout(handle);
+      controller.abort();
+    };
   }, [isOpen, searchQuery, fetchGuestEntries]);
 
   useEffect(() => {
@@ -140,6 +175,9 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
               color="alternative"
               aria-label="Add product to cart without guestlist entry"
               onClick={handleManualAddToCart}
+              disabled={
+                !canAddMore(product, quantityInCart, outOfStockBehavior)
+              }
             >
               Manual
             </Button>

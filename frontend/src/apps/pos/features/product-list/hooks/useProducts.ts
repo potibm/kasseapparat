@@ -1,24 +1,31 @@
 // src/apps/pos/features/product-list/hooks/useProducts.ts
 import { useState, useEffect, useCallback } from "react";
-import { Product as ProductType } from "../../../api/schemas";
 import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 import { usePosApi } from "@pos/api/usePosApi";
+import { useConfig } from "@core/config/hooks/useConfig";
+import {
+  DisplayProduct,
+  keepVanishedProducts,
+} from "../utils/vanishedProducts";
 
 const log = createLogger("Product");
 
 export const useProducts = () => {
-  const [products, setProducts] = useState<ProductType[] | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [products, setProducts] = useState<DisplayProduct[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const { showToast } = useToast();
   const { fetchProducts, addProductInterest } = usePosApi();
+  const { outOfStockBehavior } = useConfig();
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
       const fetchedProducts = await fetchProducts();
 
-      setProducts(fetchedProducts);
+      setProducts((previous) =>
+        keepVanishedProducts(previous, fetchedProducts, outOfStockBehavior),
+      );
       log.debug("Products fetched successfully", {
         productCount: fetchedProducts.length,
       });
@@ -35,7 +42,7 @@ export const useProducts = () => {
     } finally {
       setLoading(false);
     }
-  }, [fetchProducts, showToast]);
+  }, [fetchProducts, showToast, outOfStockBehavior]);
 
   const addInterest = async (productId: number, productName: string) => {
     try {

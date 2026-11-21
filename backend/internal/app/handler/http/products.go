@@ -5,12 +5,16 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	response "github.com/potibm/kasseapparat/internal/app/response"
+	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 	"github.com/shopspring/decimal"
 )
 
+// ProductRequestCreate is the body for a new product. SectionID is optional: without
+// it the product goes into the default section (ADR 006).
 type ProductRequestCreate struct {
 	Name      string          `json:"name"      form:"name"      binding:"required"`
 	NetPrice  decimal.Decimal `json:"netPrice"  form:"netPrice"  binding:"required"`
@@ -18,8 +22,12 @@ type ProductRequestCreate struct {
 	WrapAfter bool            `json:"wrapAfter" form:"wrapAfter"`
 	Pos       int             `json:"pos"       form:"pos"       binding:"numeric,required"`
 	Hidden    bool            `json:"hidden"    form:"hidden"    binding:"boolean"`
+	SectionID int             `json:"sectionId" form:"sectionId"`
 }
 
+// ProductRequestUpdate is the body for editing a product. SectionID is optional: when
+// it is omitted or 0 the product keeps its current section. 0 does not mean "the
+// default section" – to move a product there, send that section's id.
 type ProductRequestUpdate struct {
 	Name       string          `json:"name"       form:"name"       binding:"required"`
 	NetPrice   decimal.Decimal `json:"netPrice"   form:"netPrice"   binding:"required"`
@@ -30,6 +38,7 @@ type ProductRequestUpdate struct {
 	Hidden     bool            `json:"hidden"     form:"hidden"     binding:"boolean"`
 	SoldOut    bool            `json:"soldOut"    form:"soldOut"    binding:"boolean"`
 	TotalStock int             `json:"totalStock" form:"totalStock" binding:"numeric"`
+	SectionID  int             `json:"sectionId"  form:"sectionId"`
 }
 
 func (handler *Handler) GetProducts(c *gin.Context) {
@@ -38,11 +47,14 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	sort := c.DefaultQuery("_sort", "pos")
 	order := c.DefaultQuery("_order", "ASC")
 	filterHidden := c.DefaultQuery("_filter_hidden", "false")
-	ids := queryArrayInt(c, "id")
+	filters := sqliteRepo.ProductFilters{
+		IDs:        queryArrayInt(c, "id"),
+		SectionIDs: queryArrayInt(c, "sectionId"),
+	}
 
-	products, err := handler.repo.GetProducts(end-start, start, sort, order, ids)
+	products, err := handler.repo.GetProducts(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCauseMsg(err))
+		listQueryError(c, err)
 
 		return
 	}
@@ -51,7 +63,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 		products = filterHiddenProducts(products)
 	}
 
-	total, err := handler.repo.GetTotalProducts()
+	total, err := handler.repo.GetTotalProducts(filters)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
@@ -161,12 +173,42 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.SoldOut = productRequest.SoldOut
 	product.TotalStock = productRequest.TotalStock
 
+	if !handler.assignSectionOnUpdate(c, product, productRequest.SectionID) {
+		return
+	}
+
+	// A mode-owned flag is read-only for products with a stock limit: the form
+	// still sends its current value, so ignore it rather than rejecting.
+	if product.TotalStock > 0 {
+		behavior := config.OutOfStockIgnore
+		if ps, ok := handler.purchaseService.(*purchaseService.PurchaseService); ok {
+			behavior = ps.OutOfStockBehavior
+		}
+
+		switch behavior {
+		case config.OutOfStockAutoSoldOut:
+			stored, _ := handler.repo.GetProductByID(id)
+			if stored != nil {
+				product.SoldOut = stored.SoldOut
+			}
+		case config.OutOfStockAutoHide:
+			stored, _ := handler.repo.GetProductByID(id)
+			if stored != nil {
+				product.Hidden = stored.Hidden
+			}
+		}
+	}
+
 	product, err = handler.repo.UpdateProductByID(id, *product)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCause(err))
 
 		return
 	}
+
+	// The stock limit is part of what the out-of-stock behaviour derives the product
+	// flags from, so an edit can make a flag — or its release — due.
+	handler.reconcileStockFlags(c)
 
 	c.JSON(http.StatusOK, product)
 }
@@ -190,7 +232,16 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.Pos = productRequest.Pos
 	product.Hidden = productRequest.Hidden
 
-	product, err := handler.repo.CreateProduct(product)
+	sectionID, err := handler.resolveSectionID(productRequest.SectionID)
+	if err != nil {
+		sectionResolveError(c, productRequest.SectionID, err)
+
+		return
+	}
+
+	product.SectionID = sectionID
+
+	product, err = handler.repo.CreateProduct(product)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCause(err))
 

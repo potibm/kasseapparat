@@ -1,15 +1,13 @@
 import "../assets/styles/pos-style.css";
 
 import React, { useState, useCallback } from "react";
-import { Alert } from "flowbite-react";
 // components & layouts
 import Cart from "../features/cart/components/Cart";
 import ProductList from "../features/product-list/components/ProductList";
 import PurchaseHistory from "../features/purchase-history/components/PurchaseHistory";
 import ErrorModal from "../components/ErrorModal";
-import Menu from "../features/menu/components/Menu";
+import PosHeader from "../features/menu/components/PosHeader";
 import PollingModal from "@pos/features/payment/components/PollingModal";
-import Version from "../components/Version";
 import PosLayout from "../layouts/PosLayout";
 // hooks
 import { useAuth } from "../features/auth/hooks/useAuth";
@@ -32,10 +30,12 @@ const logPurchase = createLogger("Purchase");
 
 interface KasseapparatContentProps {
   username: string;
+  role?: string | null;
 }
 
 const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
   username,
+  role = null,
 }) => {
   const { environmentMessage } = useConfig();
 
@@ -51,7 +51,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
 
   const {
     products,
-    loading: _productsLoading,
+    loading: productsLoading,
     refreshProducts,
     addInterest,
   } = useProducts();
@@ -60,7 +60,8 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
     cart,
     add,
     remove,
-    clear,
+    decrease,
+    clearWithUndo,
     checkout,
     checkoutProcessing,
     isPolling,
@@ -135,6 +136,11 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
     [finalizeCheckout, handlePurchaseSuccess, showError],
   );
 
+  const increaseInCart = useCallback(
+    (product: ProductType) => add(product, 1, null),
+    [add],
+  );
+
   const handleResumePolling = useCallback(
     (purchase: PurchaseType) => {
       resumePolling(purchase);
@@ -144,8 +150,11 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
 
   return (
     <PosLayout
-      topAlert={
-        environmentMessage && <Alert color="info">{environmentMessage}</Alert>
+      header={
+        <PosHeader
+          username={username}
+          environmentMessage={environmentMessage}
+        />
       }
       sidebar={
         <>
@@ -153,7 +162,9 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
             cart={cart}
             checkoutProcessing={checkoutProcessing}
             removeFromCart={remove}
-            removeAllFromCart={clear}
+            increaseInCart={increaseInCart}
+            decreaseInCart={decrease}
+            removeAllFromCart={clearWithUndo}
             checkoutCart={handleCheckout}
           />
           <PurchaseHistory
@@ -162,11 +173,8 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
             resumePolling={handleResumePolling}
             removeFromPurchaseHistory={(p: PurchaseType) => handleRefund(p.id)}
             cartEmpty={cart.isEmpty}
+            canRefundAnytime={role === "admin"}
           />
-          <Menu username={username} />
-          <p className="text-xs mt-10 dark:text-white">
-            <Version />
-          </p>
         </>
       }
       overlays={
@@ -183,6 +191,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
     >
       <ProductList
         products={products}
+        loading={productsLoading}
         addToCart={add}
         hasListItem={(g: GuestType) => cart.hasListItem(g.id)}
         quantityByProductInCart={(p: ProductType) => cart.getQuantity(p.id)}
@@ -193,7 +202,7 @@ const KasseapparatContent: React.FC<KasseapparatContentProps> = ({
 };
 
 export const Kasseapparat: React.FC = () => {
-  const { username } = useAuth();
+  const { username, role } = useAuth();
 
   if (!username) {
     return (
@@ -206,7 +215,7 @@ export const Kasseapparat: React.FC = () => {
 
   return (
     <ToastProvider>
-      <KasseapparatContent username={username} />
+      <KasseapparatContent username={username} role={role} />
     </ToastProvider>
   );
 };

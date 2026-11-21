@@ -49,13 +49,17 @@ describe("Cart Component", () => {
       <Cart
         cart={emptyCart}
         removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={vi.fn()}
         checkoutCart={vi.fn()}
         checkoutProcessing={null}
       />,
     );
 
-    expect(screen.getByRole("cell", { name: /^total$/i })).toBeInTheDocument();
+    expect(screen.getByText(/^total$/i)).toBeInTheDocument();
+    expect(screen.getByText("Cart is empty")).toBeInTheDocument();
+    expect(screen.getByTestId("cart-quantity")).toHaveTextContent("0");
     // Total should show 0.00 when cart is empty
     expect(screen.getByTestId("cart-total-value")).toHaveTextContent(/0,00/);
 
@@ -77,6 +81,8 @@ describe("Cart Component", () => {
       <Cart
         cart={fullCart}
         removeFromCart={mockRemoveOne}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={mockRemoveAll}
         checkoutCart={vi.fn()}
         checkoutProcessing={null}
@@ -85,6 +91,8 @@ describe("Cart Component", () => {
 
     // Product name
     expect(screen.getByText(/Test Coffee/i)).toBeInTheDocument();
+    expect(screen.queryByText("Cart is empty")).not.toBeInTheDocument();
+    expect(screen.getByTestId("cart-quantity")).toHaveTextContent("2");
     // Tocal price for 2 items
     expect(screen.getByTestId("cart-total-value")).toHaveTextContent(/6,00/);
 
@@ -96,6 +104,90 @@ describe("Cart Component", () => {
     expect(mockRemoveAll).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps the items scrollable and the total plus checkout pinned below them", () => {
+    let cart = new CartObject();
+    cart = cart.add(mockProduct as unknown as Product, 1);
+
+    render(
+      <Cart
+        cart={cart}
+        removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
+        removeAllFromCart={vi.fn()}
+        checkoutCart={vi.fn()}
+        checkoutProcessing={null}
+      />,
+    );
+
+    const items = screen.getByTestId("cart-items");
+    const footer = screen.getByTestId("cart-footer");
+
+    expect(items).toHaveClass("overflow-y-auto");
+    expect(items).toContainElement(screen.getByTestId("cart-table"));
+    expect(footer).toHaveClass("shrink-0");
+    expect(footer).toContainElement(screen.getByTestId("cart-total-value"));
+    expect(footer).toContainElement(screen.getByTestId("checkout-button-CASH"));
+  });
+
+  it("scrolls the item list to the top when a new line is added", () => {
+    const scrollTo = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, "scrollTo", {
+      configurable: true,
+      value: scrollTo,
+    });
+
+    const otherProduct = { ...mockProduct, id: 2, name: "Test Tea" };
+    const cart = new CartObject().add(mockProduct as unknown as Product, 1);
+    const props = {
+      removeFromCart: vi.fn(),
+      increaseInCart: vi.fn(),
+      decreaseInCart: vi.fn(),
+      removeAllFromCart: vi.fn(),
+      checkoutCart: vi.fn(),
+      checkoutProcessing: null,
+    };
+
+    const { rerender } = render(<Cart cart={cart} {...props} />);
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    // quantity change of an existing line: no scrolling
+    const moreOfTheSame = cart.add(mockProduct as unknown as Product, 1);
+    rerender(<Cart cart={moreOfTheSame} {...props} />);
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    // a new line: scroll to the top, where it was inserted
+    const withNewLine = moreOfTheSame.add(
+      otherProduct as unknown as Product,
+      1,
+    );
+    rerender(<Cart cart={withNewLine} {...props} />);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+
+    // @ts-expect-error -- remove the stub again
+    delete HTMLElement.prototype.scrollTo;
+  });
+
+  it("shows name and amount on the checkout buttons", () => {
+    const cart = new CartObject().add(mockProduct as unknown as Product, 2);
+
+    render(
+      <Cart
+        cart={cart}
+        removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
+        removeAllFromCart={vi.fn()}
+        checkoutCart={vi.fn()}
+        checkoutProcessing={null}
+      />,
+    );
+
+    const cashButton = screen.getByTestId("checkout-button-CASH");
+    expect(cashButton).toHaveTextContent("Cash");
+    expect(cashButton).toHaveTextContent(/6,00/);
+  });
+
   it("shows processing state on checkout buttons", () => {
     let cart = new CartObject();
     cart = cart.add(mockProduct as unknown as Product, 1);
@@ -104,6 +196,8 @@ describe("Cart Component", () => {
       <Cart
         cart={cart}
         removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={vi.fn()}
         checkoutCart={vi.fn()}
         checkoutProcessing="cash" // simulates running checkout
@@ -131,6 +225,8 @@ describe("Cart Component", () => {
       <Cart
         cart={cart}
         removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={vi.fn()}
         checkoutCart={vi.fn()}
         checkoutProcessing={null}
@@ -144,6 +240,8 @@ describe("Cart Component", () => {
       <Cart
         cart={updatedCart}
         removeFromCart={vi.fn()}
+        increaseInCart={vi.fn()}
+        decreaseInCart={vi.fn()}
         removeAllFromCart={vi.fn()}
         checkoutCart={vi.fn()}
         checkoutProcessing={null}

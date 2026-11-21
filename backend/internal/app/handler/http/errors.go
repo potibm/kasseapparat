@@ -38,4 +38,9 @@ var (
 		"Bad Request",
 		"The request could not be understood by the server.",
 	)
+	Conflict = NewHTTPError(
+		http.StatusConflict,
+		"Conflict",
+		"The request conflicts with the current state of the resource.",
+	)
 )

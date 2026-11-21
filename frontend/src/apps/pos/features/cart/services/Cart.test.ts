@@ -94,6 +94,26 @@ describe("Cart", () => {
     });
   });
 
+  describe("add() - order of lines", () => {
+    it("should put a new line at the top", () => {
+      const cart = new Cart()
+        .add(createMockProduct({ id: 1 }))
+        .add(createMockProduct({ id: 2 }))
+        .add(createMockProduct({ id: 3 }));
+
+      expect(cart.items.map((item) => item.id)).toEqual([3, 2, 1]);
+    });
+
+    it("should keep an existing line in place when its quantity grows", () => {
+      const product1 = createMockProduct({ id: 1 });
+      const product2 = createMockProduct({ id: 2 });
+      const cart = new Cart().add(product1).add(product2).add(product1);
+
+      expect(cart.items.map((item) => item.id)).toEqual([2, 1]);
+      expect(cart.getQuantity(1)).toBe(2);
+    });
+  });
+
   describe("add() - list items (guests) ", () => {
     it("should add a guest to a new product", () => {
       const cart = new Cart();
@@ -133,6 +153,59 @@ describe("Cart", () => {
 
       expect(newCart.items).toHaveLength(1);
       expect(newCart.items[0].id).toBe(2);
+    });
+  });
+
+  describe("decrease()", () => {
+    it("should remove one unit and recalculate the line totals", () => {
+      const product = createMockProduct({
+        id: 1,
+        netPrice: new Decimal(10),
+        grossPrice: new Decimal(12),
+        vatAmount: new Decimal(2),
+      });
+      const cart = new Cart().add(product, 3);
+
+      const newCart = cart.decrease(1);
+
+      expect(newCart.getQuantity(1)).toBe(2);
+      expect(newCart.items[0].totalNetPrice).toEqual(new Decimal(20));
+      expect(newCart.items[0].totalGrossPrice).toEqual(new Decimal(24));
+      expect(newCart.items[0].totalVatAmount).toEqual(new Decimal(4));
+      // immutability: the original cart is unchanged
+      expect(cart.getQuantity(1)).toBe(3);
+    });
+
+    it("should drop the line when the last unit is removed", () => {
+      const product1 = createMockProduct({ id: 1 });
+      const product2 = createMockProduct({ id: 2 });
+      const cart = new Cart().add(product1, 1).add(product2, 1);
+
+      const newCart = cart.decrease(1);
+
+      expect(newCart.items).toHaveLength(1);
+      expect(newCart.items[0].id).toBe(2);
+    });
+
+    it("should return the same cart for an unknown product", () => {
+      const cart = new Cart().add(createMockProduct({ id: 1 }), 2);
+
+      expect(cart.decrease(99)).toBe(cart);
+    });
+
+    it("should refuse to decrease a line with guest-list entries", () => {
+      const product = createMockProduct({ id: 1 });
+      const guest = createMockGuest({ id: 5 });
+      const cart = new Cart().add(product, 2, guest);
+
+      const newCart = cart.decrease(1);
+
+      expect(newCart).toBe(cart);
+      expect(newCart.getQuantity(1)).toBe(2);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        "Cannot decrease a line with guest-list entries",
+        { productId: 1 },
+      );
     });
   });
 

@@ -67,13 +67,25 @@ type ProductInterestRepository interface {
 
 type ProductRepository interface {
 	GetProductStats() ([]response.ProductStats, error)
-	GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error)
-	GetTotalProducts() (int64, error)
+	GetProducts(limit int, offset int, sort string, order string, filters ProductFilters) ([]models.Product, error)
+	GetTotalProducts(filters ProductFilters) (int64, error)
 	GetProductByID(id int) (*models.Product, error)
 	UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error)
 	CreateProduct(product models.Product) (models.Product, error)
 	DeleteProduct(product models.Product)
 	GetAttendedGuestSumByProductID(productID int) (int, error)
+	GetProductsForStockReconciliation() ([]models.Product, error)
+	UpdateProductStockFlags(id int, soldOut, hidden, managed bool) error
+}
+
+type SectionRepository interface {
+	GetSections(limit int, offset int, sort string, order string, ids []int) ([]models.Section, error)
+	GetTotalSections() (int64, error)
+	GetSectionByID(id int) (*models.Section, error)
+	GetOrCreateDefaultSection() (*models.Section, error)
+	CreateSection(section models.Section) (models.Section, error)
+	UpdateSectionByID(id int, updatedSection models.Section) (*models.Section, error)
+	DeleteSection(section models.Section) error
 }
 
 //nolint:interfacebloat // Repository interface aggregates all domain-specific interfaces
@@ -90,6 +102,7 @@ type PurchaseRepository interface {
 	GetFilteredPurchases(filters PurchaseFilters) ([]models.PurchaseItem, error)
 	GetPurchaseStats() ([]ProductPurchaseStats, error)
 	GetPurchasedQuantitiesByProductID(productID int) (int, error)
+	GetUnitsSoldByProductID() (map[int]int, error)
 	GetPaymentMethodStats() ([]response.PaymentMethodStats, error)
 	GetHourlyRevenueStats() ([]response.HourlyRevenueStats, error)
 	GetHourlyQuantityStats() ([]response.HourlyQuantityStats, error)
@@ -114,6 +127,7 @@ type RepositoryInterface interface {
 	ProductInterestRepository
 	ProductRepository
 	PurchaseRepository
+	SectionRepository
 	Pinger
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parse } from "query-string";
+import { parse } from "@marmelab/query-string";
 import packageJson from "../../../../package.json";
 
 /**

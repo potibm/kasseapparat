@@ -49,7 +49,7 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
   };
 
   return (
-    <>
+    <div className="mt-2 grid grid-cols-2 gap-2">
       {paymentMethods.map((paymentMethod) => (
         <Button
           key={paymentMethod.code}
@@ -64,7 +64,7 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
             !paymentMethodIsActive(paymentMethod.code, cartValue)) && {
             disabled: true,
           })}
-          className="w-full mt-2 uppercase"
+          className="w-full uppercase odd:last:col-span-2"
           onClick={() =>
             handleCheckoutCart(
               paymentMethod.code,
@@ -72,14 +72,20 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
             )
           }
         >
-          {paymentMethod.name}&nbsp;
-          {!cart.isEmpty && currency.format(cartValue.toNumber())}
+          <span className="flex flex-col items-center leading-tight">
+            <span>{paymentMethod.name}</span>
+            {!cart.isEmpty && (
+              <span className="text-sm font-normal normal-case">
+                {currency.format(cartValue.toNumber())}
+              </span>
+            )}
+          </span>
           {checkoutProcessing === paymentMethod.code && (
             <Spinner color="gray" className="ml-3" />
           )}
         </Button>
       ))}
-    </>
+    </div>
   );
 };
 

@@ -29,6 +29,7 @@ const mockConfig: AppConfig = {
   paymentMethods: [],
   sumupEnabled: false,
   authMode: "oidc",
+  outOfStockBehavior: "ignore",
 };
 
 describe("Layout & AppBar", () => {

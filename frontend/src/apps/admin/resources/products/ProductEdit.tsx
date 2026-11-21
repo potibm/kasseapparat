@@ -1,4 +1,5 @@
 import React from "react";
+import { useWatch } from "react-hook-form";
 import {
   NumberInput,
   Edit,
@@ -11,13 +12,53 @@ import {
   FormTab,
 } from "react-admin";
 import { useConfig } from "@core/config/hooks/useConfig";
+import { OutOfStockBehavior } from "@core/config/types/config.types";
 import DecimalInput from "../../ui/inputs/DecimalInput";
 import GrossPriceInput from "../../ui/inputs/GrossPriceInput";
 import VatRateInput from "../../ui/inputs/VatRateInput";
+import SectionInput from "../sections/SectionInput";
 import { Product } from "./types";
 
+const HiddenInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({
+  outOfStockBehavior,
+}) => {
+  const totalStock = useWatch({ name: "totalStock" }) ?? 0;
+  const limited = Number(totalStock) > 0;
+  const managed = limited && outOfStockBehavior === "auto_hide";
+  return (
+    <BooleanInput
+      source="hidden"
+      disabled={managed}
+      helperText={
+        managed
+          ? "Managed automatically while stock is limited (auto_hide)."
+          : "Hide this product from the POS"
+      }
+    />
+  );
+};
+
+const SoldOutInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({
+  outOfStockBehavior,
+}) => {
+  const totalStock = useWatch({ name: "totalStock" }) ?? 0;
+  const limited = Number(totalStock) > 0;
+  const managed = limited && outOfStockBehavior === "auto_sold_out";
+  return (
+    <BooleanInput
+      source="soldOut"
+      disabled={managed}
+      helperText={
+        managed
+          ? "Managed automatically while stock is limited (auto_sold_out)."
+          : "Still show the product to collect information how big the interest is"
+      }
+    />
+  );
+};
+
 export const ProductEdit: React.FC = () => {
-  const { currencyOptions } = useConfig();
+  const { currencyOptions, outOfStockBehavior } = useConfig();
 
   return (
     <Edit<Product> mutationMode="pessimistic" title="Edit product">
@@ -43,6 +84,7 @@ export const ProductEdit: React.FC = () => {
           />
         </FormTab>
         <FormTab label="Layout">
+          <SectionInput />
           <NumberInput
             source="pos"
             helperText="The products will be shown in this order"
@@ -51,10 +93,7 @@ export const ProductEdit: React.FC = () => {
             source="wrapAfter"
             helperText="Create a line break after this product"
           />
-          <BooleanInput
-            source="hidden"
-            helperText="Hide this product from the POS"
-          />
+          <HiddenInput outOfStockBehavior={outOfStockBehavior} />
         </FormTab>
         <FormTab label="Stock">
           <h3>Stock</h3>
@@ -73,10 +112,7 @@ export const ProductEdit: React.FC = () => {
           />
         </FormTab>
         <FormTab label="Sold Out">
-          <BooleanInput
-            source="soldOut"
-            helperText="Still show the product to collect information how big the interest is"
-          />
+          <SoldOutInput outOfStockBehavior={outOfStockBehavior} />
           <NumberInput source="soldOutRequestCount" disabled={true} />
         </FormTab>
         <FormTab label="API">

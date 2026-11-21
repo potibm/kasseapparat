@@ -1,12 +1,15 @@
 import React from "react";
+import { Spinner } from "flowbite-react";
 import Product from "./_internal/Product";
+import { DisplayProduct } from "../utils/vanishedProducts";
 import {
   Product as ProductType,
   Guest as GuestType,
 } from "../../../api/schemas";
 
 interface ProductListProps {
-  products: ProductType[] | null;
+  products: DisplayProduct[] | null;
+  loading?: boolean;
   addToCart: (
     product: ProductType,
     quantity: number,
@@ -19,18 +22,32 @@ interface ProductListProps {
 
 const ProductList: React.FC<ProductListProps> = ({
   products,
+  loading = false,
   addToCart,
   hasListItem,
   quantityByProductInCart,
   addProductInterest,
 }) => {
-  if (!products || products.length === 0) {
-    return <p>No products available.</p>;
+  if (products === null) {
+    return loading ? (
+      <div className="flex items-center gap-3 p-4 dark:text-white">
+        <Spinner size="md" /> Loading products…
+      </div>
+    ) : (
+      <p className="p-4 dark:text-white">Products could not be loaded.</p>
+    );
+  }
+
+  if (products.length === 0) {
+    return <p className="p-4 dark:text-white">No products available.</p>;
   }
 
   return (
-    <div className="flex flex-wrap -m-1.5">
-      {products.map((product) => (
+    <div
+      className="grid auto-rows-[7.5rem] grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-3 p-1"
+      data-testid="product-grid"
+    >
+      {products.map((product, index) => (
         <Product
           key={product.id}
           product={product}
@@ -38,6 +55,11 @@ const ProductList: React.FC<ProductListProps> = ({
           hasListItem={hasListItem}
           quantityByProductInCart={quantityByProductInCart}
           addProductInterest={addProductInterest}
+          vanished={product.vanished}
+          // "wrap after" a product: the next one starts a new row
+          className={
+            index > 0 && products[index - 1].wrapAfter ? "col-start-1" : ""
+          }
         />
       ))}
     </div>
