@@ -185,9 +185,7 @@ describe("ProductList", () => {
   });
 
   it("shows all products without headings when no sections are known", () => {
-    const products = [
-      { id: 1, name: "Product 1", sectionId: 1 },
-    ].map((p) => ({
+    const products = [{ id: 1, name: "Product 1", sectionId: 1 }].map((p) => ({
       ...p,
       totalStock: 0,
       unitsSold: 0,

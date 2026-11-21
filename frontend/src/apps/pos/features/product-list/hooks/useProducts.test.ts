@@ -5,10 +5,7 @@ import {
   Product as ProductType,
   ProductInterest as ProductInterestType,
 } from "../../../api/schemas";
-import {
-  createMockProduct,
-  createMockSection,
-} from "@pos/api/schemas.mocks";
+import { createMockProduct, createMockSection } from "@pos/api/schemas.mocks";
 import React from "react";
 import { ConfigContext } from "@core/config/context/ConfigContext";
 import { AppConfig } from "@core/config/types/config.types";
