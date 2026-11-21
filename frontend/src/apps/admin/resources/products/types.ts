@@ -7,6 +7,7 @@ export interface Product extends RaRecord {
   netPrice: number;
   grossPrice: number;
   pos: number;
+  sectionId: number;
   wrapAfter: boolean;
   soldOut: boolean;
   hidden: boolean;

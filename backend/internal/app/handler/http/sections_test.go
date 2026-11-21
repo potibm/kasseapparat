@@ -417,3 +417,28 @@ func TestGetProductByID_ExposesTheSection(t *testing.T) {
 	require.Empty(t, c.Errors)
 	assert.Contains(t, w.Body.String(), `"sectionId":`+strconv.Itoa(section.ID))
 }
+
+func TestGetProducts_FilteredBySection(t *testing.T) {
+	handler := setupStockFlagHandler(t, config.OutOfStockIgnore)
+
+	tickets, err := handler.repo.CreateSection(models.Section{Name: "Tickets", Pos: 1})
+	require.NoError(t, err)
+
+	merch, err := handler.repo.CreateSection(models.Section{Name: "Merch", Pos: 2})
+	require.NoError(t, err)
+
+	_, err = handler.repo.CreateProduct(models.Product{Name: "Regular", SectionID: tickets.ID})
+	require.NoError(t, err)
+
+	_, err = handler.repo.CreateProduct(models.Product{Name: "Mug", SectionID: merch.ID})
+	require.NoError(t, err)
+
+	c, w := ginContextWithParam(t, http.MethodGet, "/?_start=0&_end=10&sectionId="+strconv.Itoa(merch.ID))
+
+	handler.GetProducts(c)
+
+	require.Empty(t, c.Errors)
+	assert.Equal(t, "1", w.Header().Get("X-Total-Count"))
+	assert.Contains(t, w.Body.String(), `"name":"Mug"`)
+	assert.NotContains(t, w.Body.String(), `"name":"Regular"`)
+}

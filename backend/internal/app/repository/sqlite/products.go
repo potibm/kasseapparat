@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"gorm.io/gorm"
 )
 
 var ErrProductNotFound = errors.New("product not found")
@@ -16,6 +17,25 @@ var productSortFieldMappings = map[string]string{
 	"vatRate":    "Vat_Rate",
 	"grossPrice": "Net_Price * (1+ (Vat_Rate / 100))",
 	"pos":        "Pos",
+	"sectionId":  "Section_Id",
+}
+
+// ProductFilters narrows a product list. An empty slice does not filter.
+type ProductFilters struct {
+	IDs        []int
+	SectionIDs []int
+}
+
+func (filters ProductFilters) apply(query *gorm.DB) *gorm.DB {
+	if len(filters.IDs) > 0 {
+		query = query.Where("Id IN ?", filters.IDs)
+	}
+
+	if len(filters.SectionIDs) > 0 {
+		query = query.Where("Section_Id IN ?", filters.SectionIDs)
+	}
+
+	return query
 }
 
 func (repo *Repository) GetProducts(
@@ -23,7 +43,7 @@ func (repo *Repository) GetProducts(
 	offset int,
 	sort string,
 	order string,
-	ids []int,
+	filters ProductFilters,
 ) ([]models.Product, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
@@ -36,15 +56,11 @@ func (repo *Repository) GetProducts(
 
 	var products []models.Product
 
-	query := repo.db.Table("Products").
+	query := filters.apply(repo.db.Table("Products")).
 		Preload("Guestlists").
 		Order(sortField + " " + order + ", Pos ASC, Id ASC").
 		Limit(limit).
 		Offset(offset)
-
-	if len(ids) > 0 {
-		query = query.Where("Id IN ?", ids)
-	}
 
 	if err := query.Find(&products).Error; err != nil {
 		return nil, errors.New("products not found")
@@ -103,10 +119,10 @@ func (repo *Repository) UpdateProductStockFlags(
 	return nil
 }
 
-func (repo *Repository) GetTotalProducts() (int64, error) {
+func (repo *Repository) GetTotalProducts(filters ProductFilters) (int64, error) {
 	var totalRows int64
 
-	repo.db.Model(&models.Product{}).Count(&totalRows)
+	filters.apply(repo.db.Model(&models.Product{})).Count(&totalRows)
 
 	return totalRows, nil
 }
