@@ -78,7 +78,10 @@ describe("ProductGroupList", () => {
   it("lists the groups with their section", async () => {
     renderWithAdmin(<ProductGroupList />);
 
-    expect(await screen.findByText("Male")).toBeInTheDocument();
+    // the first render of a list is slow on CI
+    expect(
+      await screen.findByText("Male", {}, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Female")).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getAllByText("T-Shirts").length).toBeGreaterThan(0),
