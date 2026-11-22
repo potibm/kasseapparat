@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDataProvider, RaRecord } from "react-admin";
 import { createLogger } from "@core/logger/logger";
+import { useDashboardRefreshTick } from "../context/DashboardRefreshContext";
 
 const log = createLogger("Admin");
 
@@ -19,6 +20,8 @@ export const useStatsData = <T extends RaRecord>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const dataProvider = useDataProvider();
+  // Reloads on every dashboard refresh; the old figures stay until the new arrive.
+  const refreshTick = useDashboardRefreshTick();
 
   useEffect(() => {
     let cancelled = false;
@@ -55,7 +58,7 @@ export const useStatsData = <T extends RaRecord>(
     return () => {
       cancelled = true;
     };
-  }, [dataProvider, resource, sortField, sortOrder]);
+  }, [dataProvider, resource, sortField, sortOrder, refreshTick]);
 
   return { data, loading, error };
 };
