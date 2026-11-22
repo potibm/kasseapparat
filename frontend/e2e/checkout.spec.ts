@@ -25,7 +25,7 @@ test.describe("checkout", () => {
     const pos = new PosPage(page);
     const shirt = TEST_PRODUCTS.MALE_SHIRT_L;
 
-    const maleRow = page.getByRole("group", { name: "Male" });
+    const maleRow = page.getByRole("group", { name: "Male", exact: true });
     await expect(maleRow).toBeVisible();
 
     await maleRow.getByTestId(`product-card-${shirt.id}`).click();
