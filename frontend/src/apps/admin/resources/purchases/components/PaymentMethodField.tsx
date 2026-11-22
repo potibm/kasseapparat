@@ -1,5 +1,7 @@
 import { RaRecord, useRecordContext, FieldProps } from "react-admin";
+import { Box } from "@mui/material";
 import { useConfig } from "@core/config/hooks/useConfig";
+import { paymentMethodColor } from "@admin/ui/colors";
 
 export const PaymentMethodField = <T extends RaRecord>(
   props: FieldProps<T>,
@@ -23,5 +25,28 @@ export const PaymentMethodField = <T extends RaRecord>(
     }
   }
 
-  return <>{paymentMethodName}</>;
+  const index = (paymentMethods ?? []).findIndex(
+    (pm) => pm.code === paymentMethoCodeFromRecord,
+  );
+
+  return (
+    <Box component="span" sx={{ display: "inline-flex", alignItems: "center" }}>
+      <Box
+        component="span"
+        aria-hidden="true"
+        data-testid="payment-method-color"
+        sx={{
+          width: 10,
+          height: 10,
+          borderRadius: "50%",
+          mr: 1,
+          backgroundColor: paymentMethodColor(
+            paymentMethoCodeFromRecord,
+            Math.max(index, 0),
+          ),
+        }}
+      />
+      {paymentMethodName}
+    </Box>
+  );
 };
