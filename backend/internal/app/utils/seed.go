@@ -26,6 +26,7 @@ type DatabaseSeed struct {
 	reducedDkevGuestlist  *models.Guestlist
 	reducedLdGuestlist    *models.Guestlist
 	deineTicketsGuestlist *models.Guestlist
+	crewGuestlist         *models.Guestlist
 }
 
 func NewDatabaseSeed(db *gorm.DB) *DatabaseSeed {
@@ -69,6 +70,10 @@ func (ds *DatabaseSeed) Seed(includeTestData bool) error {
 	}
 
 	if err := ds.seedGuests(); err != nil {
+		return err
+	}
+
+	if err := ds.seedCrewGuests(); err != nil {
 		return err
 	}
 
@@ -237,6 +242,13 @@ func (ds *DatabaseSeed) seedGuestlists() error {
 		return fmt.Errorf("failed to create guestlist %q: %w", ds.deineTicketsGuestlist.Name, err)
 	}
 
+	// The free ticket always has a guest list, also without test data, so the POS
+	// shows it as a guest list product.
+	ds.crewGuestlist = &models.Guestlist{Name: "Crew", ProductID: ds.freeProduct.ID}
+	if err := ds.db.Create(ds.crewGuestlist).Error; err != nil {
+		return fmt.Errorf("failed to create guestlist %q: %w", ds.crewGuestlist.Name, err)
+	}
+
 	return nil
 }
 
@@ -280,6 +292,19 @@ func (ds *DatabaseSeed) seedGuests() error {
 
 	if err := ds.db.Create(knownCodeGuest).Error; err != nil {
 		return fmt.Errorf("failed to create guest %q: %w", knownCodeGuest.Name, err)
+	}
+
+	return nil
+}
+
+// seedCrewGuests fills the crew list with fixed names. It uses no random data, so the
+// rest of the seed stays the same as before.
+func (ds *DatabaseSeed) seedCrewGuests() error {
+	for _, name := range []string{"Mara Technik", "Ole Bar", "Kim Kasse", "Jonas Licht", "Sam Einlass"} {
+		guest := &models.Guest{Name: name, GuestlistID: ds.crewGuestlist.ID}
+		if err := ds.db.Create(guest).Error; err != nil {
+			return fmt.Errorf("failed to create guest %q: %w", guest.Name, err)
+		}
 	}
 
 	return nil
