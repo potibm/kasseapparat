@@ -11,7 +11,8 @@ describe("suggestReceivedAmounts", () => {
   });
 
   it("only suggests amounts above the total", () => {
-    expect(amounts(40)).toEqual([45, 50, 60, 100]);
+    expect(amounts(40)).toEqual([50, 100, 200]);
+    expect(amounts(42)).toEqual([45, 50, 60, 100]);
   });
 
   it("works with cents", () => {
