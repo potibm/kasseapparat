@@ -4,7 +4,7 @@ import { Avatar } from "flowbite-react";
 export const GuestlistAvatar: React.FC<{ name: string }> = ({ name }) => {
   const getInitials = (name: string) => {
     // Remove all non-alphabetical characters except spaces
-    const cleanedName = name.replaceAll(/[^a-zA-Z\s]/g, "").trim();
+    const cleanedName = name.replaceAll(/[^\p{L}\s]/gu, "").trim();
 
     // Split the cleaned name into words
     const words = cleanedName.split(" ").filter((word) => word.length > 0);
