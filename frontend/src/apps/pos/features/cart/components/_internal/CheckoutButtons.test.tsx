@@ -14,7 +14,6 @@ vi.mock("@core/config/hooks/useConfig", () => ({
   useConfig: vi.fn(),
 }));
 
-
 const cart = (total: number, isEmpty = false) =>
   ({ totalGross: new Decimal(total), isEmpty }) as unknown as Cart;
 
@@ -99,12 +98,12 @@ describe("CheckoutButtons", () => {
     const sumupConfig = () =>
       vi.mocked(ConfigHookModule.useConfig).mockReturnValue({
         currency: { format: (value: number) => `${value} €` },
-        paymentMethods: [{ code: "SUMUP", name: "Card", changeCalculator: false }],
+        paymentMethods: [
+          { code: "SUMUP", name: "Card", changeCalculator: false },
+        ],
       } as unknown as ReturnType<typeof ConfigHookModule.useConfig>);
 
-    const renderWithReader = (
-      reader: Partial<SumupReaderContextValue>,
-    ) => {
+    const renderWithReader = (reader: Partial<SumupReaderContextValue>) => {
       sumupConfig();
       const handleCheckoutCart = vi.fn();
 

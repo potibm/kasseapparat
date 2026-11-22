@@ -39,8 +39,8 @@ const SumupReaderDialog: React.FC = () => {
           )}
           {readers?.length === 0 && (
             <p className="text-gray-700 dark:text-gray-300">
-              No card reader is paired yet. Pair one in the admin under
-              “SumUp Readers”.
+              No card reader is paired yet. Pair one in the admin under “SumUp
+              Readers”.
             </p>
           )}
           {readers?.map((reader) => {
