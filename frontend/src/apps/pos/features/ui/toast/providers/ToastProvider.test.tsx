@@ -73,6 +73,17 @@ describe("Toast System Integration", () => {
     expect(screen.getByText("YAY!")).toBeInTheDocument();
   });
 
+  it("shows toasts over the product area, not over the sidebar", () => {
+    renderWithProvider();
+
+    fireEvent.click(screen.getByText("Normal Toast"));
+
+    const container = screen.getByTestId("toast-container");
+    expect(container).toContainElement(screen.getByText("YAY!"));
+    // the sidebar is 360px wide; the toasts end 20px left of it
+    expect(container).toHaveClass("right-[380px]", "bottom-5");
+  });
+
   it("removes the toast automatically after the time has elapsed (Auto-Close)", () => {
     renderWithProvider();
 

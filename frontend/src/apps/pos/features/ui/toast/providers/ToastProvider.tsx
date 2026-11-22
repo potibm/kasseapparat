@@ -41,9 +41,16 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
         <div className="fixed inset-0 z-9998 bg-black/50 backdrop-blur-sm transition-opacity" />
       )}
 
-      <div className="fixed bottom-5 right-5 z-9999 flex flex-col gap-3 w-80">
+      {/* Bottom centre of the product area: the cart, checkout and purchase
+          history on the right stay visible and usable. */}
+      <div
+        data-testid="toast-container"
+        className="pointer-events-none fixed right-[380px] bottom-5 left-5 z-9999 flex flex-col items-center gap-3"
+      >
         {toasts.map((t) => (
-          <ToastItem key={t.id} toast={t} onDismiss={removeToast} />
+          <div key={t.id} className="pointer-events-auto w-80">
+            <ToastItem toast={t} onDismiss={removeToast} />
+          </div>
         ))}
       </div>
     </ToastContext>
