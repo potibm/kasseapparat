@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -116,15 +117,15 @@ func (repo *Repository) GetGuestsByPurchaseID(purchaseID uuid.UUID) ([]models.Gu
 	return guests, nil
 }
 
+// GetUnattendedGuestsByProductID returns the guests of a product that have not
+// arrived yet. q narrows them down: the name contains q, ignoring case and
+// diacritics ("muller" finds "Müller", "strasse" finds "Straße"), or the code starts
+// with q. The lists of one product are small, so the matching happens here rather
+// than in SQL, where LIKE only ignores the case of ASCII letters.
 func (repo *Repository) GetUnattendedGuestsByProductID(productID int, q string) (models.GuestSummarySlice, error) {
 	var guests models.GuestSummarySlice
 
-	var filter GuestFilters
-
-	filter.NotPresent = true
-	if q != "" {
-		filter.Query = q
-	}
+	filter := GuestFilters{NotPresent: true}
 
 	query := repo.db.Model(&models.Guest{}).
 		Select("Guests.id, Guests.name, "+
@@ -140,7 +141,23 @@ func (repo *Repository) GetUnattendedGuestsByProductID(productID int, q string) 
 		return nil, ErrGuestsNotFound
 	}
 
-	return guests, nil
+	return filterGuestSummaries(guests, q), nil
+}
+
+func filterGuestSummaries(guests models.GuestSummarySlice, q string) models.GuestSummarySlice {
+	if strings.TrimSpace(q) == "" {
+		return guests
+	}
+
+	matching := make(models.GuestSummarySlice, 0, len(guests))
+
+	for _, guest := range guests {
+		if guestMatchesQuery(guest.Name, guest.Code, q) {
+			matching = append(matching, guest)
+		}
+	}
+
+	return matching
 }
 
 func (repo *Repository) GetGuestByID(id int) (*models.Guest, error) {
