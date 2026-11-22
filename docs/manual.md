@@ -53,7 +53,9 @@ The cart shows what the current customer has ordered.
 
 You may delete the whole cart or remove a certain product from the cart. It is not possible to reduce the amount of a certain product (to keep it simple). This action is performed without confirmation.
 
-When the order is complete and the user has paid press "checkout" (no confirmation again). Afterwards the cart is empty again and the purchase is shown under the "last purchases" below.
+When the order is complete, press the button of the payment method. Afterwards the cart is empty again and the purchase is shown under the "last purchases" below.
+
+For cash, a dialog asks how much the customer handed over before the payment is booked. "Exact" is preselected, so an exact payment needs just one more tap on "Book payment". Tap the bank note you received (the dialog suggests the next round amounts, e.g. 40 €, 50 €, 100 € for a total of 37 €) or type another amount, and the change is shown in large digits. "Cancel" closes the dialog without booking.
 
 ### Last Purchases
 

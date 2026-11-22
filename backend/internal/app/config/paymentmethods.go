@@ -31,6 +31,16 @@ func (pm PaymentMethods) GetName(code models.PaymentMethod) *string {
 	return nil
 }
 
+// UsesChangeCalculator reports whether the POS asks for the amount received with this
+// payment method. Without an explicit setting only cash does.
+func (pm PaymentMethodConfig) UsesChangeCalculator() bool {
+	if pm.ChangeCalculator != nil {
+		return *pm.ChangeCalculator
+	}
+
+	return pm.Code == models.PaymentMethodCash
+}
+
 func isValidPaymentMethod(code models.PaymentMethod) bool {
 	_, exists := allAvailablePaymentMethods[code]
 

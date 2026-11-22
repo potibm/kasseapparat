@@ -8,8 +8,9 @@ import (
 )
 
 type PaymentMethodsConfig struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
+	Code             string `json:"code"`
+	Name             string `json:"name"`
+	ChangeCalculator bool   `json:"changeCalculator"`
 }
 
 type VatRateConfig struct {
@@ -68,8 +69,9 @@ func convertPaymentMethods(paymentMethods []cfgTypes.PaymentMethodConfig) []Paym
 
 	for _, configPaymentMethod := range paymentMethods {
 		result = append(result, PaymentMethodsConfig{
-			Code: string(configPaymentMethod.Code),
-			Name: configPaymentMethod.Name,
+			Code:             string(configPaymentMethod.Code),
+			Name:             configPaymentMethod.Name,
+			ChangeCalculator: configPaymentMethod.UsesChangeCalculator(),
 		})
 	}
 

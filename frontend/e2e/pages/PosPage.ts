@@ -55,6 +55,11 @@ export class PosPage {
 
   async checkout(method: "CASH" | "CC") {
     await this.page.getByTestId(`checkout-button-${method}`).click();
+
+    // Cash asks for the amount received first; "Exact" is preselected.
+    if (method === "CASH") {
+      await this.page.getByTestId("change-calculator-confirm").click();
+    }
   }
 
   async expectEmptyCart() {
