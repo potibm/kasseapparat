@@ -157,12 +157,20 @@ export const PollingModal: React.FC<PollingModalProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-cyan-100 ring-[12px] ring-cyan-50 motion-safe:animate-pulse dark:bg-cyan-900 dark:ring-cyan-950">
-              <HiCreditCard
+          <div className="flex justify-center py-2">
+            <div className="relative h-24 w-24">
+              {/* expanding ring: clearly visible "waiting" signal */}
+              <span
                 aria-hidden="true"
-                className="h-12 w-12 text-cyan-700 dark:text-cyan-300"
+                data-testid="polling-pulse"
+                className="absolute inset-0 rounded-full bg-cyan-400/70 motion-safe:animate-ping dark:bg-cyan-500/60"
               />
+              <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-cyan-100 ring-4 ring-cyan-300 dark:bg-cyan-900 dark:ring-cyan-700">
+                <HiCreditCard
+                  aria-hidden="true"
+                  className="h-12 w-12 text-cyan-700 dark:text-cyan-300"
+                />
+              </div>
             </div>
           </div>
 
