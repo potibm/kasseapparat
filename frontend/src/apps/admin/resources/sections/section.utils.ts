@@ -1,4 +1,4 @@
-import { HttpError } from "react-admin";
+import { deleteErrorMessage } from "@admin/ui/buttons/deleteErrorMessage";
 
 export const UNNAMED_SECTION_LABEL = "Row break";
 
@@ -20,20 +20,13 @@ export const sectionLabel = (
 export const SECTION_NOT_EMPTY_MESSAGE =
   "This section still contains products or product groups. Move them to another section first.";
 
-/**
- * Turns a failed section delete into a message for the admin. The backend answers a
- * section that still has products or product groups with 409, which react-admin would only show as
- * "Conflict".
- */
-export const sectionDeleteErrorMessage = (error: unknown): string => {
-  if (error instanceof HttpError) {
-    if (error.status === 409) return SECTION_NOT_EMPTY_MESSAGE;
+export const SECTION_DELETE_FAILED_MESSAGE =
+  "The section could not be deleted.";
 
-    const details = (error.body as { details?: unknown } | undefined)?.details;
-    if (typeof details === "string" && details !== "") return details;
-  }
-
-  if (error instanceof Error && error.message !== "") return error.message;
-
-  return "The section could not be deleted.";
-};
+/** Turns a failed section delete into a message for the admin. */
+export const sectionDeleteErrorMessage = (error: unknown): string =>
+  deleteErrorMessage(
+    error,
+    SECTION_NOT_EMPTY_MESSAGE,
+    SECTION_DELETE_FAILED_MESSAGE,
+  );

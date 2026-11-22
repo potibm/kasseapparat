@@ -16,7 +16,7 @@ import { OutOfStockBehavior } from "@core/config/types/config.types";
 import DecimalInput from "../../ui/inputs/DecimalInput";
 import GrossPriceInput from "../../ui/inputs/GrossPriceInput";
 import VatRateInput from "../../ui/inputs/VatRateInput";
-import SectionInput from "../sections/SectionInput";
+import ProductLayoutInputs from "../productGroups/ProductLayoutInputs";
 import { Product } from "./types";
 
 const HiddenInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({
@@ -84,7 +84,7 @@ export const ProductEdit: React.FC = () => {
           />
         </FormTab>
         <FormTab label="Layout">
-          <SectionInput />
+          <ProductLayoutInputs />
           <NumberInput
             source="pos"
             helperText="The products will be shown in this order"
