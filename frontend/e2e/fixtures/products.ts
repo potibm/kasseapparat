@@ -20,6 +20,12 @@ export const TEST_PRODUCTS = {
     name: "🎟️ Prepaid",
     price: "0 €",
   },
+  /** A variant in the "Male" shirt group, shown in the size matrix. */
+  MALE_SHIRT_L: {
+    id: 7,
+    name: "👕 Male L",
+    price: "20 €",
+  },
   COFFEE_MUG: {
     id: 16,
     name: "☕ Coffee Mug",

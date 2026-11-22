@@ -1,27 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { HiOutlineViewList } from "react-icons/hi";
-import { useConfig } from "@core/config/hooks/useConfig";
-import { availableStock, canAddMore } from "@pos/features/stock/utils/stock";
-import GuestlistModal from "../../../guestlist/components/GuestlistModal";
-import ProductInterestModal from "./ProductInterestModal";
-import {
-  Product as ProductType,
-  Guest as GuestType,
-} from "../../../../api/schemas";
+import { useProductTap, ProductTapProps, StockTone } from "./useProductTap";
 
-/** At or below this many units left, the stock pill turns orange. */
-export const LOW_STOCK_THRESHOLD = 3;
-
-interface ProductProps {
-  product: ProductType;
-  addToCart: (
-    product: ProductType,
-    quantity: number,
-    listItem: GuestType | null,
-  ) => void;
-  hasListItem: (guest: GuestType) => boolean;
-  quantityByProductInCart: (product: ProductType) => number;
-  addProductInterest: (product: ProductType) => Promise<void>;
+interface ProductProps extends ProductTapProps {
   /** Extra classes for the card, e.g. to start a new grid row. */
   className?: string;
   /**
@@ -30,8 +11,6 @@ interface ProductProps {
    */
   vanished?: boolean;
 }
-
-type StockTone = "normal" | "low" | "none";
 
 const stockPillClass: Record<StockTone, string> = {
   normal: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200",
@@ -52,23 +31,24 @@ const Product: React.FC<ProductProps> = ({
   className = "",
   vanished = false,
 }) => {
-  const [isGuestListModalOpen, setIsGuestListModalOpen] = useState(false);
-  const [isPIModalOpen, setIsPIModalOpen] = useState(false);
-  const { currency, outOfStockBehavior } = useConfig();
-
-  const quantityInCart = quantityByProductInCart(product);
-  const stockLeft = availableStock(product, quantityInCart);
-  const hasLimitedStock = Number.isFinite(stockLeft);
-  const hasGuestlist = !!product.guestlists && product.guestlists.length > 0;
-
-  // Whether another unit still fits. Under the "ignore" behaviour the sale stays
-  // allowed, so nothing is ever disabled there.
-  const canAdd = canAddMore(product, quantityInCart, outOfStockBehavior);
-
-  // The guest list modal does its own stock checks, so it stays reachable.
-  const isBlocked = !product.soldOut && !hasGuestlist && !canAdd;
-
-  const price = currency.format(product.grossPrice.toNumber());
+  const {
+    quantityInCart,
+    stockLeft,
+    hasLimitedStock,
+    hasGuestlist,
+    isBlocked,
+    price,
+    ariaLabel,
+    stockTone,
+    handleClick,
+    modals,
+  } = useProductTap({
+    product,
+    addToCart,
+    hasListItem,
+    quantityByProductInCart,
+    addProductInterest,
+  });
 
   if (vanished) {
     return (
@@ -92,34 +72,6 @@ const Product: React.FC<ProductProps> = ({
       </button>
     );
   }
-
-  let ariaLabel: string;
-  if (product.soldOut) {
-    ariaLabel = "Register interest in " + product.name;
-  } else if (hasGuestlist) {
-    ariaLabel = "Show guestlist for " + product.name;
-  } else if (isBlocked) {
-    ariaLabel = "No " + product.name + " left";
-  } else {
-    ariaLabel = "Add " + product.name + " for " + price + " to cart";
-  }
-
-  let stockTone: StockTone = "normal";
-  if (stockLeft <= 0) {
-    stockTone = "none";
-  } else if (stockLeft <= LOW_STOCK_THRESHOLD) {
-    stockTone = "low";
-  }
-
-  const handleClick = () => {
-    if (product.soldOut) {
-      setIsPIModalOpen(true);
-    } else if (hasGuestlist) {
-      setIsGuestListModalOpen(true);
-    } else if (canAdd) {
-      addToCart(product, 1, null);
-    }
-  };
 
   let border = "border-transparent";
   if (quantityInCart > 0) {
@@ -198,25 +150,7 @@ const Product: React.FC<ProductProps> = ({
         )}
       </button>
 
-      {!product.soldOut && hasGuestlist && (
-        <GuestlistModal
-          isOpen={isGuestListModalOpen}
-          onClose={() => setIsGuestListModalOpen(false)}
-          product={product}
-          addToCart={addToCart}
-          hasListItem={hasListItem}
-          quantityInCart={quantityInCart}
-        />
-      )}
-
-      {product.soldOut && (
-        <ProductInterestModal
-          show={isPIModalOpen}
-          onClose={() => setIsPIModalOpen(false)}
-          product={product}
-          addProductInterest={addProductInterest}
-        />
-      )}
+      {modals}
     </>
   );
 };

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import Product, { LOW_STOCK_THRESHOLD } from "./Product";
+import Product from "./Product";
+import { LOW_STOCK_THRESHOLD } from "./useProductTap";
 import * as ConfigHookModule from "@core/config/hooks/useConfig";
 import { createMockProduct } from "@pos/api/schemas.mocks";
 import { OutOfStockBehavior } from "@core/config/types/config.types";

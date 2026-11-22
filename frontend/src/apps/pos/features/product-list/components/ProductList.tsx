@@ -1,17 +1,21 @@
 import React from "react";
 import { Spinner } from "flowbite-react";
 import Product from "./_internal/Product";
+import ProductGroupMatrix from "./_internal/ProductGroupMatrix";
 import { DisplayProduct } from "../utils/vanishedProducts";
 import { groupProductsBySection } from "../utils/productSections";
+import { buildSectionBlocks } from "../utils/productBlocks";
 import {
   Product as ProductType,
   Guest as GuestType,
   Section,
+  ProductGroup,
 } from "../../../api/schemas";
 
 interface ProductListProps {
   products: DisplayProduct[] | null;
   sections?: Section[];
+  productGroups?: ProductGroup[];
   loading?: boolean;
   addToCart: (
     product: ProductType,
@@ -26,6 +30,7 @@ interface ProductListProps {
 const ProductList: React.FC<ProductListProps> = ({
   products,
   sections = [],
+  productGroups = [],
   loading = false,
   addToCart,
   hasListItem,
@@ -59,18 +64,36 @@ const ProductList: React.FC<ProductListProps> = ({
               {section.name}
             </h2>
           )}
-          <div className="grid auto-rows-[7.5rem] grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-3">
-            {section.products.map((product) => (
-              <Product
-                key={product.id}
-                product={product}
-                addToCart={addToCart}
-                hasListItem={hasListItem}
-                quantityByProductInCart={quantityByProductInCart}
-                addProductInterest={addProductInterest}
-                vanished={product.vanished}
-              />
-            ))}
+          <div className="flex flex-col gap-3">
+            {buildSectionBlocks(section.products, productGroups).map((block) =>
+              block.kind === "groups" ? (
+                <ProductGroupMatrix
+                  key={block.key}
+                  groups={block.groups}
+                  addToCart={addToCart}
+                  hasListItem={hasListItem}
+                  quantityByProductInCart={quantityByProductInCart}
+                  addProductInterest={addProductInterest}
+                />
+              ) : (
+                <div
+                  key={block.key}
+                  className="grid auto-rows-[7.5rem] grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-3"
+                >
+                  {block.products.map((product) => (
+                    <Product
+                      key={product.id}
+                      product={product}
+                      addToCart={addToCart}
+                      hasListItem={hasListItem}
+                      quantityByProductInCart={quantityByProductInCart}
+                      addProductInterest={addProductInterest}
+                      vanished={product.vanished}
+                    />
+                  ))}
+                </div>
+              ),
+            )}
           </div>
         </section>
       ))}
