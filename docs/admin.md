@@ -50,6 +50,21 @@ This generates `config/config.yaml` with sensible defaults. You should edit this
 
 Create `config/config.local.yaml` for anything environment-specific that shouldn't be committed to version control: credentials, API keys, and per-deployment overrides.
 
+### Payment methods
+
+`payment_methods` is a list of the payment buttons the POS offers. Each entry has a `code` (`CASH`, `CC`, `VOUCHER` or `SUMUP`) and a `name` shown on the button. With `change_calculator` the POS asks for the amount received and shows the change before booking. It is on for `CASH` and off for everything else unless you set it:
+
+```yaml
+payment_methods:
+  - code: CASH
+    name: Cash
+  - code: VOUCHER
+    name: Voucher
+    change_calculator: true
+  - code: CC
+    name: Credit Card
+```
+
 ### Limited stock
 
 Every product has a `total_stock`. A product with `total_stock: 0` is **unlimited** and is never restricted in any mode — that is what drinks and open-ended tickets use. Products with a `total_stock` above zero are limited, and `out_of_stock_behavior` decides what happens when they run out:

@@ -20,7 +20,11 @@ export interface AppConfig {
   dateLocale: string;
   dateOptions: Intl.DateTimeFormatOptions;
   vatRates: Array<{ rate: number; name: string }>;
-  paymentMethods: Array<{ code: string; name: string }>;
+  paymentMethods: Array<{
+    code: string;
+    name: string;
+    changeCalculator?: boolean;
+  }>;
   sumupEnabled: boolean;
   environmentMessage?: string;
   authMode: string;

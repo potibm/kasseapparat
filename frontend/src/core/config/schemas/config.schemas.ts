@@ -26,6 +26,8 @@ export const ConfigSchema = z.object({
       z.object({
         code: z.string(),
         name: z.string(),
+        /** Ask for the amount received and show the change before booking. */
+        changeCalculator: z.boolean().default(false),
       }),
     )
     .default([]),

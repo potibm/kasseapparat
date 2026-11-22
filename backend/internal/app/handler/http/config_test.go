@@ -58,4 +58,5 @@ func TestGetConfig(t *testing.T) {
 
 	assert.Len(t, response.PaymentMethods, 1)
 	assert.Equal(t, "card", response.PaymentMethods[0].Code)
+	assert.False(t, response.PaymentMethods[0].ChangeCalculator)
 }

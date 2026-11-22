@@ -81,4 +81,22 @@ test.describe("checkout", () => {
 
     await pos.expectEmptyCart();
   });
+
+  test("should show the change for cash", async ({ page }) => {
+    const pos = new PosPage(page);
+
+    await pos.addProduct(regularTicketProduct);
+    await pos.expectTotal("40 €");
+
+    await page.getByTestId("checkout-button-CASH").click();
+    await page.getByRole("button", { name: "50 €", exact: true }).click();
+
+    await expect(page.getByTestId("change-calculator-change")).toHaveText(
+      "10 €",
+    );
+
+    await page.getByTestId("change-calculator-confirm").click();
+
+    await pos.expectEmptyCart();
+  });
 });

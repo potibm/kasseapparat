@@ -10,7 +10,9 @@ describe("transformConfig", () => {
     currencyLocale: "de-DE",
     fractionDigitsMin: 2,
     fractionDigitsMax: 2,
-    paymentMethods: [{ code: "CREDIT_CARD", name: "Credit Card" }],
+    paymentMethods: [
+      { code: "CREDIT_CARD", name: "Credit Card", changeCalculator: false },
+    ],
     locale: "de-DE",
     dateLocale: "de-DE",
     dateOptions: {},
@@ -36,7 +38,9 @@ describe("transformConfig", () => {
   it("should set sumupEnabled to true when SUMUP is present in paymentMethods", () => {
     const dataWithSumup: RawConfig = {
       ...mockRawData,
-      paymentMethods: [{ code: "SUMUP", name: "SumUp Terminal" }],
+      paymentMethods: [
+        { code: "SUMUP", name: "SumUp Terminal", changeCalculator: false },
+      ],
     };
 
     const result = transformConfig(dataWithSumup, mockApiHost);

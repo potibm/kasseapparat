@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useConfig } from "@core/config/hooks/useConfig";
 import Button from "../../../../components/Button";
 import { Spinner } from "flowbite-react";
@@ -5,6 +6,9 @@ import { getCurrentReaderId } from "@core/localstorage/helper/local-storage-read
 import { Cart } from "../../services/Cart";
 import Decimal from "decimal.js";
 import { PaymentMethodData } from "../../types/cart.types";
+import ChangeCalculatorModal from "@pos/features/payment/components/ChangeCalculatorModal";
+
+type PaymentMethod = ReturnType<typeof useConfig>["paymentMethods"][number];
 
 interface CheckoutButtonsProps {
   cart: Cart;
@@ -19,6 +23,9 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
 }) => {
   const { currency, paymentMethods } = useConfig();
   const sumUpReaderId = getCurrentReaderId();
+  const [calculatorFor, setCalculatorFor] = useState<PaymentMethod | null>(
+    null,
+  );
 
   const cartValue = cart.totalGross;
 
@@ -48,6 +55,20 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
     };
   };
 
+  const checkoutWith = (paymentMethod: PaymentMethod) =>
+    handleCheckoutCart(
+      paymentMethod.code,
+      getPaymentMethodData(paymentMethod.code),
+    );
+
+  const handleClick = (paymentMethod: PaymentMethod) => {
+    if (paymentMethod.changeCalculator) {
+      setCalculatorFor(paymentMethod);
+    } else {
+      checkoutWith(paymentMethod);
+    }
+  };
+
   return (
     <div className="mt-2 grid grid-cols-2 gap-2">
       {paymentMethods.map((paymentMethod) => (
@@ -65,12 +86,7 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
             disabled: true,
           })}
           className="w-full uppercase odd:last:col-span-2"
-          onClick={() =>
-            handleCheckoutCart(
-              paymentMethod.code,
-              getPaymentMethodData(paymentMethod.code),
-            )
-          }
+          onClick={() => handleClick(paymentMethod)}
         >
           <span className="flex flex-col items-center leading-tight">
             <span>{paymentMethod.name}</span>
@@ -85,6 +101,17 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
           )}
         </Button>
       ))}
+      {calculatorFor && (
+        <ChangeCalculatorModal
+          total={cartValue}
+          paymentMethodName={calculatorFor.name}
+          onClose={() => setCalculatorFor(null)}
+          onConfirm={() => {
+            setCalculatorFor(null);
+            checkoutWith(calculatorFor);
+          }}
+        />
+      )}
     </div>
   );
 };
