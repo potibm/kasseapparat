@@ -5,7 +5,11 @@ import {
   Product as ProductType,
   ProductInterest as ProductInterestType,
 } from "../../../api/schemas";
-import { createMockProduct, createMockSection } from "@pos/api/schemas.mocks";
+import {
+  createMockProduct,
+  createMockProductGroup,
+  createMockSection,
+} from "@pos/api/schemas.mocks";
 import React from "react";
 import { ConfigContext } from "@core/config/context/ConfigContext";
 import { AppConfig } from "@core/config/types/config.types";
@@ -13,12 +17,14 @@ import { AppConfig } from "@core/config/types/config.types";
 // mocks
 const mockFetchProducts = vi.fn();
 const mockFetchSections = vi.fn();
+const mockFetchProductGroups = vi.fn();
 const mockAddProductInterest = vi.fn();
 
 vi.mock("@pos/api/usePosApi", () => ({
   usePosApi: () => ({
     fetchProducts: mockFetchProducts,
     fetchSections: mockFetchSections,
+    fetchProductGroups: mockFetchProductGroups,
     addProductInterest: mockAddProductInterest,
   }),
 }));
@@ -70,6 +76,7 @@ describe("useProducts Hook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetchSections.mockResolvedValue([]);
+    mockFetchProductGroups.mockResolvedValue([]);
   });
 
   describe("Initialization (loadProducts)", () => {
@@ -166,6 +173,36 @@ describe("useProducts Hook", () => {
       });
 
       expect(result.current.sections).toEqual([]);
+    });
+  });
+
+  describe("product groups", () => {
+    it("loads the product groups together with the products", async () => {
+      const groups = [createMockProductGroup({ id: 10, name: "Male" })];
+      mockFetchProducts.mockResolvedValue(mockProducts);
+      mockFetchProductGroups.mockResolvedValue(groups);
+
+      const { result } = renderHook(() => useProducts(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.productGroups).toEqual(groups);
+    });
+
+    it("still shows the products when the groups cannot be loaded", async () => {
+      mockFetchProducts.mockResolvedValue(mockProducts);
+      mockFetchProductGroups.mockRejectedValue(new Error("Forbidden"));
+
+      const { result } = renderHook(() => useProducts(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.productGroups).toEqual([]);
+      expect(result.current.products).toEqual(mockProducts);
     });
   });
 

@@ -21,6 +21,19 @@ test.describe("checkout", () => {
     await pos.expectEmptyCart();
   });
 
+  test("should add a shirt size from the size matrix", async ({ page }) => {
+    const pos = new PosPage(page);
+    const shirt = TEST_PRODUCTS.MALE_SHIRT_L;
+
+    const maleRow = page.getByRole("group", { name: "Male", exact: true });
+    await expect(maleRow).toBeVisible();
+
+    await maleRow.getByTestId(`product-card-${shirt.id}`).click();
+
+    await pos.expectProductInCart(shirt);
+    await expect(pos.cartItems).toHaveCount(1);
+  });
+
   test("should add a product to the cart and remove it", async ({ page }) => {
     const pos = new PosPage(page);
 

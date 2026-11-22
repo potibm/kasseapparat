@@ -4,7 +4,7 @@ import { createLogger } from "@core/logger/logger";
 import { useToast } from "@pos/features/ui/toast/hooks/useToast";
 import { usePosApi } from "@pos/api/usePosApi";
 import { useConfig } from "@core/config/hooks/useConfig";
-import { Section } from "@pos/api/schemas";
+import { ProductGroup, Section } from "@pos/api/schemas";
 import {
   DisplayProduct,
   keepVanishedProducts,
@@ -12,31 +12,49 @@ import {
 
 const log = createLogger("Product");
 
+/**
+ * Loads data the POS can do without: on failure it logs and resolves to null, so
+ * the products still show up (just without headings or size rows).
+ */
+const optional = <T>(load: Promise<T>, what: string): Promise<T | null> =>
+  load.catch((error: unknown) => {
+    log.error(
+      "Error fetching " + what,
+      error instanceof Error ? { message: error.message } : { error },
+    );
+    return null;
+  });
+
 export const useProducts = () => {
   const [products, setProducts] = useState<DisplayProduct[] | null>(null);
   const [sections, setSections] = useState<Section[]>([]);
+  const [productGroups, setProductGroups] = useState<ProductGroup[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { showToast } = useToast();
-  const { fetchProducts, fetchSections, addProductInterest } = usePosApi();
+  const {
+    fetchProducts,
+    fetchSections,
+    fetchProductGroups,
+    addProductInterest,
+  } = usePosApi();
   const { outOfStockBehavior } = useConfig();
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
-      // Without sections the POS still works, it just shows no headings.
-      const [fetchedProducts, fetchedSections] = await Promise.all([
-        fetchProducts(),
-        fetchSections().catch((error: unknown) => {
-          log.error(
-            "Error fetching sections",
-            error instanceof Error ? { message: error.message } : { error },
-          );
-          return null;
-        }),
-      ]);
+      const [fetchedProducts, fetchedSections, fetchedGroups] =
+        await Promise.all([
+          fetchProducts(),
+          optional(fetchSections(), "sections"),
+          optional(fetchProductGroups(), "product groups"),
+        ]);
 
       if (fetchedSections !== null) {
         setSections(fetchedSections);
+      }
+
+      if (fetchedGroups !== null) {
+        setProductGroups(fetchedGroups);
       }
 
       setProducts((previous) =>
@@ -58,7 +76,13 @@ export const useProducts = () => {
     } finally {
       setLoading(false);
     }
-  }, [fetchProducts, fetchSections, showToast, outOfStockBehavior]);
+  }, [
+    fetchProducts,
+    fetchSections,
+    fetchProductGroups,
+    showToast,
+    outOfStockBehavior,
+  ]);
 
   const addInterest = async (productId: number, productName: string) => {
     try {
@@ -85,6 +109,7 @@ export const useProducts = () => {
   return {
     products,
     sections,
+    productGroups,
     loading,
     refreshProducts: loadProducts,
     addInterest,

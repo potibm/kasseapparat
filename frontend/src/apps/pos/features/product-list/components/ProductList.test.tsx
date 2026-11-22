@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import Decimal from "decimal.js";
 import ProductList from "./ProductList";
 import * as ConfigHookModule from "@core/config/hooks/useConfig";
 
@@ -206,5 +207,76 @@ describe("ProductList", () => {
 
     expect(screen.getByTestId("product-card-1")).toBeInTheDocument();
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  });
+
+  it("shows product groups as a size matrix", () => {
+    const shirt = (id: number, variant: string, price: number) => ({
+      id,
+      name: "Shirt " + variant,
+      variant,
+      productGroupId: 10,
+      pos: id,
+      totalStock: 0,
+      unitsSold: 0,
+      soldOut: false,
+      sectionId: 1,
+      guestlists: null,
+      grossPrice: new Decimal(price),
+    });
+    const products = [
+      {
+        id: 1,
+        name: "Mug",
+        pos: 50,
+        totalStock: 0,
+        unitsSold: 0,
+        soldOut: false,
+        sectionId: 1,
+        guestlists: null,
+        grossPrice: new Decimal(5),
+      },
+      shirt(2, "S", 20),
+      shirt(3, "M", 20),
+      { ...shirt(4, "L", 25), productGroupId: 11 },
+      { ...shirt(5, "XL", 30), productGroupId: 11 },
+    ] as unknown as Parameters<typeof ProductList>[0]["products"];
+
+    render(
+      <ProductList
+        products={products}
+        sections={[{ id: 1, name: "Merch", pos: 1 }]}
+        productGroups={[
+          { id: 10, sectionId: 1, name: "Male", pos: 10 },
+          { id: 11, sectionId: 1, name: "Female", pos: 20 },
+        ]}
+        addToCart={baseProps.addToCart}
+        hasListItem={baseProps.hasListItem}
+        quantityByProductInCart={baseProps.quantityByProductInCart}
+        addProductInterest={baseProps.addProductInterest}
+      />,
+    );
+
+    const male = screen.getByRole("group", { name: "Male" });
+    // one price for the whole row, none on the buttons
+    expect(male).toHaveTextContent("20 €");
+    expect(within(male).getByTestId("product-card-2")).toHaveTextContent("S");
+    expect(within(male).getByTestId("product-card-2")).not.toHaveTextContent(
+      "€",
+    );
+
+    const female = screen.getByRole("group", { name: "Female" });
+    // different prices: on every button
+    expect(within(female).getByTestId("product-card-4")).toHaveTextContent(
+      "25 €",
+    );
+    expect(within(female).getByTestId("product-card-5")).toHaveTextContent(
+      "30 €",
+    );
+
+    // the mug comes after the groups and is a regular card
+    expect(screen.getByTestId("product-card-1")).toHaveTextContent("Mug");
+    expect(
+      male.compareDocumentPosition(screen.getByTestId("product-card-1")),
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
 });

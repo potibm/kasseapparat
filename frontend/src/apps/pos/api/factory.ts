@@ -2,6 +2,7 @@ import { getValidated, postValidated } from "@core/api/client";
 import {
   ProductSchema,
   SectionSchema,
+  ProductGroupSchema,
   GuestSchema,
   Guest,
   Purchase,
@@ -31,6 +32,11 @@ export const createPosApiClient = (apiBaseUrl: string) => {
     fetchSections: async () => {
       const url = buildUrl("/sections?_end=1000&_sort=pos&_order=asc");
       return getValidated(url, z.array(SectionSchema));
+    },
+    // Fetch the product groups (variants such as shirt sizes) in display order
+    fetchProductGroups: async () => {
+      const url = buildUrl("/productGroups?_end=1000&_sort=pos&_order=asc");
+      return getValidated(url, z.array(ProductGroupSchema));
     },
     // Fetch guests for a specific product
     fetchGuestlistByProductId: async (
