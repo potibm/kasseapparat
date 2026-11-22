@@ -95,7 +95,7 @@ type PaymentMethodConfig struct {
 	Name string
 	// ChangeCalculator makes the POS ask for the amount received and show the change
 	// before booking. Unset means: on for cash, off for everything else.
-	ChangeCalculator *bool `mapstructure:"change_calculator" yaml:"change_calculator,omitempty"`
+	ChangeCalculator *bool `yaml:"change_calculator,omitempty" mapstructure:"change_calculator"`
 }
 
 type SumupConfig struct {
