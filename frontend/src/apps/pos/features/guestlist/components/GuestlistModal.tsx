@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FloatingLabel, Modal, ModalBody } from "flowbite-react";
+import { Modal, ModalBody } from "flowbite-react";
 import { HiOutlineX } from "react-icons/hi";
 import SidebarKeyboard from "./_internal/SidebarKeyboard";
-import Button from "../../../components/Button";
 import GuestlistResultTable from "./_internal/GuestlistResultTable";
 import { Product as ProductType, Guest as GuestType } from "@pos/api/schemas";
-import GuestlistArrivalNoteModal from "./_internal/GuestlistArrivalNoteModal";
 import { usePosApi } from "@pos/api/usePosApi";
 import { useConfig } from "@core/config/hooks/useConfig";
 import { canAddMore, availableStock } from "@pos/features/stock/utils/stock";
@@ -38,10 +36,8 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loadedSearchQuery, setLoadedSearchQuery] = useState<string>("");
-  const [noteToDisplay, setNoteToDisplay] = useState<{
-    name: string;
-    note: string;
-  } | null>(null);
+  // The guest just checked in whose arrival note is shown in their result card.
+  const [noteGuestId, setNoteGuestId] = useState<number | null>(null);
 
   const { fetchGuestlistByProductId } = usePosApi();
   const { outOfStockBehavior } = useConfig();
@@ -59,17 +55,14 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
     addToCart(product, additionalGuests + 1, listEntry);
 
     if (listEntry.arrivalNote) {
-      setNoteToDisplay({
-        name: listEntry.name,
-        note: listEntry.arrivalNote,
-      });
+      setNoteGuestId(listEntry.id);
     } else {
       onClose();
     }
   };
 
-  const handleCloseNote = () => {
-    setNoteToDisplay(null);
+  const handleAcknowledgeNote = () => {
+    setNoteGuestId(null);
     onClose();
   };
 
@@ -117,7 +110,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
     const handle = setTimeout(
       () => {
         fetchGuestEntries(searchQuery, controller.signal);
-        setNoteToDisplay(null);
+        setNoteGuestId(null);
       },
       searchQuery === "" ? 0 : SEARCH_DEBOUNCE_MS,
     );
@@ -132,11 +125,17 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
     if (!isOpen) {
       const handle = requestAnimationFrame(() => {
         setSearchQuery("");
-        setNoteToDisplay(null);
+        setNoteGuestId(null);
       });
       return () => cancelAnimationFrame(handle);
     }
   }, [isOpen]);
+
+  const canSellWithoutEntry = canAddMore(
+    product,
+    quantityInCart,
+    outOfStockBehavior,
+  );
 
   return (
     <Modal
@@ -146,54 +145,72 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
       size="7xl"
       dismissible
     >
-      <ModalBody className="overflow-hidden">
-        {noteToDisplay && (
-          <GuestlistArrivalNoteModal
-            isOpen={true}
-            onClose={handleCloseNote}
-            arrivalNote={noteToDisplay.note}
-            name={noteToDisplay.name}
-          />
-        )}
-        <div className="flex h-[calc(100vh-6rem)]">
-          {/* Sidebar */}
-          <div className="w-4/12 bg-gray-100 dark:bg-gray-900 p-4">
-            <FloatingLabel
-              className="mb-4"
-              variant="filled"
-              label="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              data-testid="guestlist-search-input"
-              autoFocus={hasCodes}
-            />
-
-            <SidebarKeyboard term={searchQuery} setTerm={setSearchQuery} />
-
-            <Button
-              className="w-full mt-5"
-              color="alternative"
-              aria-label="Add product to cart without guestlist entry"
-              onClick={handleManualAddToCart}
-              disabled={
-                !canAddMore(product, quantityInCart, outOfStockBehavior)
-              }
+      <ModalBody className="overflow-hidden p-0">
+        <div className="flex h-[calc(100vh-6rem)] flex-col dark:text-white">
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 pr-4 pl-6 dark:border-gray-700">
+            <h2 className="text-xl font-bold">List for {product.name}</h2>
+            <button
+              type="button"
+              aria-label="Close guest list"
+              onClick={onClose}
+              className="pos-pressable flex h-12 w-12 items-center justify-center rounded-xl border border-gray-300 dark:border-gray-600"
             >
-              Manual
-            </Button>
+              <HiOutlineX className="h-6 w-6" aria-hidden="true" />
+            </button>
           </div>
-          <div
-            className="w-3/4 p-4 overflow-y-auto dark:text-white"
-            id="results"
-          >
-            <div className="text-xl mb-4 flex justify-between items-center">
-              <span>List for {product.name}</span>
-              <Button onClick={onClose} color="gray">
-                <HiOutlineX />
-              </Button>
+
+          <div className="flex min-h-0 flex-1">
+            {/* Search and letters */}
+            <div className="flex w-[26rem] shrink-0 flex-col gap-4 bg-gray-100 p-5 dark:bg-gray-900">
+              <div className="relative">
+                <label
+                  htmlFor="guestlist-search"
+                  className="absolute top-2 left-4 text-xs font-semibold text-gray-600 dark:text-gray-300"
+                >
+                  {hasCodes ? "Scan ticket or search name" : "Search name"}
+                </label>
+                <input
+                  id="guestlist-search"
+                  type="text"
+                  autoComplete="off"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  data-testid="guestlist-search-input"
+                  autoFocus={hasCodes}
+                  className="h-16 w-full rounded-xl border-2 border-cyan-700 bg-white pt-5 pr-14 pl-4 text-2xl font-semibold tracking-wide text-gray-900 dark:bg-gray-800 dark:text-white"
+                />
+                {searchQuery !== "" && (
+                  <button
+                    type="button"
+                    aria-label="Clear search term"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute top-2.5 right-2 flex h-11 w-11 items-center justify-center rounded-lg bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+                  >
+                    <HiOutlineX className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+
+              <SidebarKeyboard term={searchQuery} setTerm={setSearchQuery} />
+
+              <div className="flex-1" />
+
+              <button
+                type="button"
+                className="pos-pressable h-14 rounded-xl border border-dashed border-gray-400 font-semibold text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-200"
+                aria-label="Add product to cart without guestlist entry"
+                onClick={handleManualAddToCart}
+                disabled={!canSellWithoutEntry}
+              >
+                Sell without list entry
+              </button>
             </div>
 
-            <div className="relative">
+            {/* Results */}
+            <div
+              className="relative min-w-0 flex-1 overflow-y-auto p-5"
+              id="results"
+            >
               <GuestlistResultTable
                 loading={loading}
                 error={error}
@@ -201,6 +218,8 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
                 onAddToCart={handleAddToCart}
                 hasListItem={hasListItem}
                 loadedSearchQuery={loadedSearchQuery}
+                noteGuestId={noteGuestId}
+                onAcknowledgeNote={handleAcknowledgeNote}
               />
             </div>
           </div>
