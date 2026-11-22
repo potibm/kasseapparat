@@ -49,6 +49,7 @@ type GuestlistRepository interface {
 		filters GuestlistFilters,
 	) ([]models.Guestlist, error)
 	GetTotalGuestlists() (int64, error)
+	GetGuestlistStats(ids []int) (map[int]GuestlistStats, error)
 	GetGuestlistByID(id int) (*models.Guestlist, error)
 	GetGuestlistWithTypeCode() (*models.Guestlist, error)
 	UpdateGuestlistByID(id int, updatedGuestlist models.Guestlist) (*models.Guestlist, error)

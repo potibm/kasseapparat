@@ -10,6 +10,7 @@ import {
 import ConditionalDeleteOnOwnershipButton from "@admin/ui/buttons/ConditionalDeleteOnOwnershipButton";
 import CreateGuestlistEntryButton from "./components/CreateGuestlistEntryButton";
 import { GuestlistFilters } from "./GuestlistFilters";
+import GuestlistProgressField from "./components/GuestlistProgressField";
 
 export const GuestlistList: React.FC<ListProps> = (props) => {
   return (
@@ -23,6 +24,7 @@ export const GuestlistList: React.FC<ListProps> = (props) => {
         <TextField source="name" />
         <BooleanField source="typeCode" sortable={false} label="Code" />
         <TextField source="product.name" sortable={false} label="Product" />
+        <GuestlistProgressField label="Arrived" />
         <CreateGuestlistEntryButton />
         <ConditionalDeleteOnOwnershipButton mutationMode="pessimistic" />
       </Datagrid>
