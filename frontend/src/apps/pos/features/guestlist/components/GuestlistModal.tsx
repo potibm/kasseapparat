@@ -1,14 +1,21 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Modal, ModalBody } from "flowbite-react";
-import { HiOutlineX } from "react-icons/hi";
+import { HiCheckCircle, HiOutlineX, HiQrcode } from "react-icons/hi";
 import SidebarKeyboard from "./_internal/SidebarKeyboard";
 import GuestlistResultTable from "./_internal/GuestlistResultTable";
 import { Product as ProductType, Guest as GuestType } from "@pos/api/schemas";
 import { usePosApi } from "@pos/api/usePosApi";
 import { useConfig } from "@core/config/hooks/useConfig";
 import { canAddMore, availableStock } from "@pos/features/stock/utils/stock";
+import { findScannedGuest } from "../utils/scan";
 
 const SEARCH_DEBOUNCE_MS = 200;
+
+type ScanStatus =
+  | { kind: "added"; code: string }
+  | { kind: "inCart"; code: string }
+  | { kind: "chooseGuests"; code: string }
+  | { kind: "noStock"; code: string };
 
 interface GuestlistModalProps {
   isOpen: boolean;
@@ -38,6 +45,10 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   const [loadedSearchQuery, setLoadedSearchQuery] = useState<string>("");
   // The guest just checked in whose arrival note is shown in their result card.
   const [noteGuestId, setNoteGuestId] = useState<number | null>(null);
+  const [noteFromScan, setNoteFromScan] = useState(false);
+  const [scanStatus, setScanStatus] = useState<ScanStatus | null>(null);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const { fetchGuestlistByProductId } = usePosApi();
   const { outOfStockBehavior } = useConfig();
@@ -61,9 +72,61 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
     }
   };
 
+  /**
+   * A scanned ticket checks its guest in right away and keeps the list open for the
+   * next scan. Guests who may bring companions still need a tap on +1/+2.
+   */
+  const checkInScannedGuest = useCallback(
+    (guest: GuestType) => {
+      const code = guest.code ?? guest.name;
+
+      if (hasListItem(guest)) {
+        setScanStatus({ kind: "inCart", code });
+        return;
+      }
+      if (guest.additionalGuests > 0) {
+        setScanStatus({ kind: "chooseGuests", code });
+        return;
+      }
+      if (
+        !canAddMore(product, quantityInCart, outOfStockBehavior) ||
+        availableStock(product, quantityInCart) < 1
+      ) {
+        setScanStatus({ kind: "noStock", code });
+        return;
+      }
+
+      addToCart(product, 1, guest);
+
+      if (guest.arrivalNote) {
+        setNoteGuestId(guest.id);
+        setNoteFromScan(true);
+      } else {
+        setScanStatus({ kind: "added", code });
+        setSearchQuery("");
+      }
+    },
+    [addToCart, hasListItem, product, quantityInCart, outOfStockBehavior],
+  );
+
+  // The search callback reads the latest version through this ref, so adding a
+  // guest to the cart does not restart the search (and hide an arrival note).
+  const checkInScannedRef = useRef(checkInScannedGuest);
+  useEffect(() => {
+    checkInScannedRef.current = checkInScannedGuest;
+  }, [checkInScannedGuest]);
+
   const handleAcknowledgeNote = () => {
     setNoteGuestId(null);
-    onClose();
+
+    if (noteFromScan) {
+      // Back to scanning: the guest is in the cart, the list stays open.
+      setNoteFromScan(false);
+      setSearchQuery("");
+      searchInputRef.current?.focus();
+    } else {
+      onClose();
+    }
   };
 
   const handleManualAddToCart = () => {
@@ -89,6 +152,11 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
         setGuestlistEntries(response);
         setError(null);
         setLoadedSearchQuery(query);
+
+        const scannedGuest = hasCodes
+          ? findScannedGuest(response, query)
+          : null;
+        if (scannedGuest) checkInScannedRef.current(scannedGuest);
       } catch (error: unknown) {
         if (signal.aborted) return;
         setError("Error fetching list entries: " + (error as Error).message);
@@ -98,7 +166,7 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
         if (!signal.aborted) setLoading(false);
       }
     },
-    [product.id, fetchGuestlistByProductId],
+    [product.id, fetchGuestlistByProductId, hasCodes],
   );
 
   useEffect(() => {
@@ -126,6 +194,8 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
       const handle = requestAnimationFrame(() => {
         setSearchQuery("");
         setNoteGuestId(null);
+        setNoteFromScan(false);
+        setScanStatus(null);
       });
       return () => cancelAnimationFrame(handle);
     }
@@ -170,11 +240,21 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
                   {hasCodes ? "Scan ticket or search name" : "Search name"}
                 </label>
                 <input
+                  ref={searchInputRef}
                   id="guestlist-search"
                   type="text"
                   autoComplete="off"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setScanStatus(null);
+                  }}
+                  onKeyDown={(e) => {
+                    // Scanners may end a code with Enter; nothing to submit here.
+                    if (e.key === "Enter") e.preventDefault();
+                  }}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
                   data-testid="guestlist-search-input"
                   autoFocus={hasCodes}
                   className="h-16 w-full rounded-xl border-2 border-cyan-700 bg-white pt-5 pr-14 pl-4 text-2xl font-semibold tracking-wide text-gray-900 dark:bg-gray-800 dark:text-white"
@@ -190,6 +270,14 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
                   </button>
                 )}
               </div>
+
+              {hasCodes && (
+                <ScannerStatus
+                  status={scanStatus}
+                  listening={searchFocused}
+                  onFocusSearch={() => searchInputRef.current?.focus()}
+                />
+              )}
 
               <SidebarKeyboard term={searchQuery} setTerm={setSearchQuery} />
 
@@ -226,6 +314,82 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
         </div>
       </ModalBody>
     </Modal>
+  );
+};
+
+interface ScannerStatusProps {
+  status: ScanStatus | null;
+  listening: boolean;
+  onFocusSearch: () => void;
+}
+
+/**
+ * Tells the cashier whether a scan will arrive: the scanner types into the search
+ * field, so it is ready exactly while that field has the focus.
+ */
+const ScannerStatus: React.FC<ScannerStatusProps> = ({
+  status,
+  listening,
+  onFocusSearch,
+}) => {
+  if (status) {
+    const messages: Record<ScanStatus["kind"], [string, string]> = {
+      added: [
+        `${status.code} added – scan the next ticket`,
+        "text-green-800 dark:text-green-300",
+      ],
+      inCart: [
+        `${status.code} is already in the cart`,
+        "text-amber-800 dark:text-amber-300",
+      ],
+      chooseGuests: [
+        `${status.code}: choose the number of guests`,
+        "text-cyan-800 dark:text-cyan-300",
+      ],
+      noStock: [
+        `${status.code}: no tickets left`,
+        "text-red-800 dark:text-red-300",
+      ],
+    };
+    const [message, color] = messages[status.kind];
+
+    return (
+      <div
+        role="status"
+        data-testid="guestlist-scan-status"
+        className={`-mt-2 flex items-center gap-2 text-sm font-semibold ${color}`}
+      >
+        <HiCheckCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
+        {message}
+      </div>
+    );
+  }
+
+  if (listening) {
+    return (
+      <div
+        role="status"
+        data-testid="guestlist-scan-status"
+        className="-mt-2 flex items-center gap-2 text-sm text-green-800 dark:text-green-300"
+      >
+        <HiQrcode className="h-5 w-5 shrink-0" aria-hidden="true" />
+        <span>
+          <b>Ready to scan</b> · the search field is listening
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      data-testid="guestlist-scan-status"
+      onClick={onFocusSearch}
+      className="-mt-2 flex items-center gap-2 text-left text-sm font-semibold text-amber-800 dark:text-amber-300"
+    >
+      <HiQrcode className="h-5 w-5 shrink-0" aria-hidden="true" />
+      Not ready to scan – tap here first
+    </button>
   );
 };
 

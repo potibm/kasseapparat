@@ -37,11 +37,17 @@ _Products with a shopping cart button_ can be added to the cart directly. For ea
 
 ![screenshot of guestlist](pos-list.png)
 
-_Products with a list_ will open an additional window, where you can find a list of persons (1). Once you click on the buttons (2) associated with the users this will be added to the cart (+1 means "plus an additional person" and so on).
+_Products with a list_ will open an additional window, where you can find a list of persons (1). Tap "Check in" next to a person to add them to the cart, or "+1", "+2" … if they bring additional guests (2). A person with an arrival note is marked "Arrival note"; after the check-in the note opens inside their card and has to be confirmed with "Got it".
 
-On the left side of the window you may search for these people (3). The Buttons contain letters A to Z, spaces (\_), delete the last character (&lt;X) and delete the whole searchterm (x).
+On the left side of the window you may search for these people (3). The buttons contain the letters A to Z, a space and a key to delete the last character; the x in the search field clears it. The search ignores umlauts and accents, so "MULLER" also finds "Müller".
 
-In very rare circumstances you may add a manual entry (without a selected person) using the yellow "manual" button (4).
+In very rare circumstances you may add an entry without a selected person using "Sell without list entry" (4).
+
+#### Scanning tickets
+
+For lists with ticket codes (e.g. presale tickets) you can use a barcode scanner that is connected to the iPad as a keyboard. The scanner types into the search field, so it only works while that field has the focus: the window then shows "Ready to scan". If it shows "Not ready to scan – tap here first", tap that line.
+
+A scanned code that belongs to exactly one ticket is added to the cart right away, and the window stays open for the next scan. It does not matter whether the scanner sends an Enter after the code. A ticket that allows additional guests is not added automatically: choose "Check in", "+1" … yourself. A ticket that is already in the cart is not added a second time.
 
 Closing the window works by clicking outside the window or by clicking the close button (5).
 
