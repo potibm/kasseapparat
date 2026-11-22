@@ -11,6 +11,7 @@ import {
 } from "react-admin";
 import { useConfig } from "@core/config/hooks/useConfig";
 import { ProductFilters } from "./ProductFilters";
+import ProductStockField from "./ProductStockField";
 import { Product } from "./types";
 
 export const ProductList: React.FC = () => {
@@ -48,6 +49,7 @@ export const ProductList: React.FC = () => {
         />
         <TextField source="variant" sortable={false} emptyText="–" />
         <NumberField source="pos" />
+        <ProductStockField label="Stock" />
         <BooleanField source="soldOut" sortable={false} />
         <BooleanField source="hidden" sortable={false} />
         {permissions === "admin" && <DeleteButton mutationMode="pessimistic" />}
