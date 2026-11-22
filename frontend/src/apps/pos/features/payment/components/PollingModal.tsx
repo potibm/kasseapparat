@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Modal, ModalBody, ModalFooter, Spinner } from "flowbite-react";
-import { HiClock } from "react-icons/hi";
+import { Modal, ModalBody, Spinner } from "flowbite-react";
+import { HiCreditCard, HiExclamation } from "react-icons/hi";
 import { getCurrentReaderId } from "@core/localstorage/helper/local-storage-reader";
 import Button from "@pos/components/Button";
 import { usePaymentWebSocket } from "../hooks/usePaymentWebSocket";
@@ -11,6 +11,15 @@ import { useConfig } from "@core/config/hooks/useConfig";
 import { Purchase as PurchaseType } from "../../../api/schemas";
 
 const log = createLogger("Payment");
+
+/** Without news from the terminal for this long, the dialog says so. */
+export const STALE_AFTER_SECONDS = 15;
+
+/** A connection that is still not up after this long is reported. */
+export const CONNECTING_GRACE_SECONDS = 3;
+
+const formatElapsed = (seconds: number) =>
+  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
 /**
  * Props definition for the PollingModal component.
@@ -42,6 +51,7 @@ export const PollingModal: React.FC<PollingModalProps> = ({
 
   const [isAborting, setIsAborting] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [startedAt] = useState(() => Date.now());
   const isTerminalError = [
     "failed",
     "cancelled",
@@ -56,6 +66,17 @@ export const PollingModal: React.FC<PollingModalProps> = ({
   }, []);
 
   const ageInSeconds = Math.max(0, Math.round((now - lastMessageAt) / 1000));
+  const elapsedSeconds = Math.max(0, Math.floor((now - startedAt) / 1000));
+
+  // Only problems are spelled out; a normal payment shows amount and instruction.
+  let problem: string | null = null;
+  if (error) {
+    problem = error;
+  } else if (!isConnected && elapsedSeconds >= CONNECTING_GRACE_SECONDS) {
+    problem = "No connection to the payment service. Retrying…";
+  } else if (ageInSeconds >= STALE_AFTER_SECONDS) {
+    problem = `No news from the terminal for ${ageInSeconds} s.`;
+  }
 
   useEffect(() => {
     if (status === "confirmed") {
@@ -110,38 +131,78 @@ export const PollingModal: React.FC<PollingModalProps> = ({
 
   return (
     <Modal show={true} size="md" popup dismissible={false}>
-      <ModalBody className="m-5">
-        <div className="text-center">
-          <h3 className="text-lg font-semibold mb-8 dark:text-gray-200">
-            Purchase Status
-          </h3>
-          <div className="text-center space-y-4">
-            <div className="text-lg font-medium flex items-center justify-center gap-2 text-yellow-600">
-              <HiClock className="inline mr-1 h-5 w-5" />
-              <span>Waiting for Terminal... ({ageInSeconds} sec ago)</span>
-            </div>
-
-            <Spinner color="warning" size="xl" className="mb-3" />
-
-            {error && <p className="text-red-600 font-medium">{error}</p>}
+      <ModalBody className="p-6">
+        <div className="flex flex-col gap-5 dark:text-white">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold tracking-wider text-gray-600 uppercase dark:text-gray-300">
+              {paymentMethodName}
+            </span>
+            <span
+              data-testid="polling-elapsed"
+              className="text-sm font-semibold text-gray-700 tabular-nums dark:text-gray-200"
+            >
+              {formatElapsed(elapsedSeconds)}
+            </span>
           </div>
-        </div>
-      </ModalBody>
-      <ModalFooter>
-        <div className="w-full flex justify-center">
+
+          <div className="text-center">
+            <div
+              data-testid="polling-amount"
+              className="text-5xl font-bold tracking-tight"
+            >
+              {currency.format(purchase.totalGrossPrice.toNumber())}
+            </div>
+            <div className="mt-2 text-base text-gray-700 dark:text-gray-300">
+              Tap or insert the card on the reader
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-cyan-100 ring-[12px] ring-cyan-50 motion-safe:animate-pulse dark:bg-cyan-900 dark:ring-cyan-950">
+              <HiCreditCard
+                aria-hidden="true"
+                className="h-12 w-12 text-cyan-700 dark:text-cyan-300"
+              />
+            </div>
+          </div>
+
+          {problem && (
+            <div
+              role="alert"
+              data-testid="polling-problem"
+              className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-100"
+            >
+              <HiExclamation aria-hidden="true" className="h-5 w-5 shrink-0" />
+              <span>{problem}</span>
+            </div>
+          )}
+
           {status === "pending" && (
-            <Button disabled={isAborting || !isConnected} onClick={handleAbort}>
-              {isAborting ? "Cancelling..." : "Abort Purchase"}
+            <Button
+              color="red"
+              outline
+              size="xl"
+              className="w-full"
+              disabled={isAborting || !isConnected}
+              onClick={handleAbort}
+            >
+              {isAborting ? "Cancelling…" : "Cancel payment"}
               {isAborting && (
                 <Spinner color="gray" size="sm" className="ml-2" />
               )}
             </Button>
           )}
           {isTerminalError && (
-            <Button onClick={() => onComplete(false)}>Close</Button>
+            <Button
+              size="xl"
+              className="w-full"
+              onClick={() => onComplete(false)}
+            >
+              Close
+            </Button>
           )}
         </div>
-      </ModalFooter>
+      </ModalBody>
     </Modal>
   );
 };
