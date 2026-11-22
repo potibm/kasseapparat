@@ -1,5 +1,5 @@
 import React from "react";
-import { Chip, Stack, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import { useRecordContext } from "react-admin";
 import { summarizeStock, StockTone } from "./stock.utils";
 import { Product } from "./types";
@@ -23,7 +23,7 @@ export const ProductStockField: React.FC<{ label?: string }> = () => {
   const interest = product.soldOutRequestCount ?? 0;
 
   return (
-    <Stack direction="row" spacing={1} alignItems="center">
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
       {stock.total === null ? (
         <Typography variant="body2" color="text.secondary">
           {stock.sold} sold
@@ -41,7 +41,7 @@ export const ProductStockField: React.FC<{ label?: string }> = () => {
           {interest} interested
         </Typography>
       )}
-    </Stack>
+    </Box>
   );
 };
 
