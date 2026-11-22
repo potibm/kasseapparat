@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useThemeMode } from "flowbite-react";
 import {
   HiBookOpen,
+  HiCreditCard,
   HiChevronDown,
   HiLogout,
   HiMoon,
@@ -13,6 +14,7 @@ import useConfig from "@core/config/hooks/useConfig";
 import { createAuthProvider } from "@core/auth/authProvider";
 import { buildApiBaseUrl } from "@core/config/constants";
 import Version from "@pos/components/Version";
+import { useSumupReader } from "@pos/features/sumup-reader/hooks/useSumupReader";
 
 const API_HOST = import.meta.env.VITE_API_HOST ?? "http://localhost:3100";
 const authProvider = createAuthProvider(buildApiBaseUrl(API_HOST));
@@ -32,6 +34,7 @@ interface UserMenuProps {
 export const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
   const { authMode } = useConfig();
   const { computedMode, toggleMode } = useThemeMode();
+  const sumupReader = useSumupReader();
   const [open, setOpen] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -120,6 +123,24 @@ export const UserMenu: React.FC<UserMenuProps> = ({ username }) => {
             <HiBookOpen className="h-5 w-5" aria-hidden="true" />
             Manual
           </a>
+          {sumupReader.enabled && (
+            <button
+              type="button"
+              role="menuitem"
+              className={itemClass}
+              onClick={() => {
+                close();
+                sumupReader.openDialog();
+              }}
+            >
+              <HiCreditCard className="h-5 w-5" aria-hidden="true" />
+              <span className="flex-1 truncate">
+                Card reader:{" "}
+                {sumupReader.selectedReader?.name ??
+                  (sumupReader.selectedReaderId ? "selected" : "none")}
+              </span>
+            </button>
+          )}
           <button
             type="button"
             role="menuitem"

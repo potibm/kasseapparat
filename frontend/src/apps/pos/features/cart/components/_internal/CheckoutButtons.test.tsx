@@ -5,14 +5,15 @@ import Decimal from "decimal.js";
 import CheckoutButtons from "./CheckoutButtons";
 import * as ConfigHookModule from "@core/config/hooks/useConfig";
 import { Cart } from "../../services/Cart";
+import {
+  SumupReaderContext,
+  SumupReaderContextValue,
+} from "@pos/features/sumup-reader/context/SumupReaderContext";
 
 vi.mock("@core/config/hooks/useConfig", () => ({
   useConfig: vi.fn(),
 }));
 
-vi.mock("@core/localstorage/helper/local-storage-reader", () => ({
-  getCurrentReaderId: () => undefined,
-}));
 
 const cart = (total: number, isEmpty = false) =>
   ({ totalGross: new Decimal(total), isEmpty }) as unknown as Cart;
@@ -93,4 +94,74 @@ describe("CheckoutButtons", () => {
       screen.getByRole("button", { name: "Pay with Card" }),
     ).toBeDisabled();
   });
+
+  describe("with SumUp", () => {
+    const sumupConfig = () =>
+      vi.mocked(ConfigHookModule.useConfig).mockReturnValue({
+        currency: { format: (value: number) => `${value} €` },
+        paymentMethods: [{ code: "SUMUP", name: "Card", changeCalculator: false }],
+      } as unknown as ReturnType<typeof ConfigHookModule.useConfig>);
+
+    const renderWithReader = (
+      reader: Partial<SumupReaderContextValue>,
+    ) => {
+      sumupConfig();
+      const handleCheckoutCart = vi.fn();
+
+      render(
+        <SumupReaderContext.Provider
+          value={{ ...readerDefaults, enabled: true, ...reader }}
+        >
+          <CheckoutButtons
+            cart={cart(20)}
+            checkoutProcessing={null}
+            handleCheckoutCart={handleCheckoutCart}
+          />
+        </SumupReaderContext.Provider>,
+      );
+
+      return { handleCheckoutCart };
+    };
+
+    it("pays with the selected reader", async () => {
+      const { handleCheckoutCart } = renderWithReader({
+        selectedReaderId: "rdr_1",
+      });
+
+      await userEvent.click(screen.getByTestId("checkout-button-SUMUP"));
+
+      expect(handleCheckoutCart).toHaveBeenCalledWith("SUMUP", {
+        type: "sumup",
+        sumupReaderId: "rdr_1",
+      });
+      expect(screen.queryByTestId("sumup-reader-hint")).not.toBeInTheDocument();
+    });
+
+    it("is disabled and explains why when the reader has a problem", async () => {
+      const openDialog = vi.fn();
+      renderWithReader({
+        problem: { kind: "none-selected" },
+        openDialog,
+      });
+
+      expect(screen.getByTestId("checkout-button-SUMUP")).toBeDisabled();
+
+      await userEvent.click(screen.getByTestId("sumup-reader-hint"));
+      expect(openDialog).toHaveBeenCalled();
+    });
+  });
 });
+
+const readerDefaults: SumupReaderContextValue = {
+  enabled: false,
+  selectedReaderId: undefined,
+  selectedReader: undefined,
+  readers: null,
+  loading: false,
+  problem: null,
+  selectReader: () => undefined,
+  refresh: () => undefined,
+  dialogOpen: false,
+  openDialog: () => undefined,
+  closeDialog: () => undefined,
+};

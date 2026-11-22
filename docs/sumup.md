@@ -72,6 +72,13 @@ The selected reader will be marked as **"Selected"**.
 
 You can now start accepting purchases in the frontend using the selected reader.
 
+You can also choose the reader directly in the POS, without the admin:
+
+- Open the user menu (top right) and tap **"Card reader: …"**.
+- Or, when card payments cannot work, tap the hint below the payment buttons. It only appears when there is a problem: no reader selected, the selected reader is no longer paired, or its status is not "paired" (e.g. "expired"). The card payment button is disabled in that case.
+
+The dialog lists all paired readers with their status; tap one to use it on this device. Like the selection in the admin, it is stored in this browser only, so every till keeps its own reader.
+
 ## Unpairing a Reader
 
 A reader stays paired to your account. You cannot unpair a reader from the device itself!

@@ -3,6 +3,7 @@ import {
   ProductSchema,
   SectionSchema,
   ProductGroupSchema,
+  SumupReaderSchema,
   GuestSchema,
   Guest,
   Purchase,
@@ -32,6 +33,11 @@ export const createPosApiClient = (apiBaseUrl: string) => {
     fetchSections: async () => {
       const url = buildUrl("/sections?_end=1000&_sort=pos&_order=asc");
       return getValidated(url, z.array(SectionSchema));
+    },
+    // Fetch the SumUp card readers paired with the merchant account
+    fetchSumupReaders: async () => {
+      const url = buildUrl("/sumup/readers");
+      return getValidated(url, z.array(SumupReaderSchema));
     },
     // Fetch the product groups (variants such as shirt sizes) in display order
     fetchProductGroups: async () => {
