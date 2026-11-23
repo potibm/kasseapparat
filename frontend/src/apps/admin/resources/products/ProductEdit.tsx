@@ -19,24 +19,9 @@ import VatRateInput from "../../ui/inputs/VatRateInput";
 import ProductLayoutInputs from "../productGroups/ProductLayoutInputs";
 import { Product } from "./types";
 
-const HiddenInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({
-  outOfStockBehavior,
-}) => {
-  const totalStock = useWatch({ name: "totalStock" }) ?? 0;
-  const limited = Number(totalStock) > 0;
-  const managed = limited && outOfStockBehavior === "auto_hide";
-  return (
-    <BooleanInput
-      source="hidden"
-      disabled={managed}
-      helperText={
-        managed
-          ? "Managed automatically while stock is limited (auto_hide)."
-          : "Hide this product from the POS"
-      }
-    />
-  );
-};
+const HiddenInput: React.FC = () => (
+  <BooleanInput source="hidden" helperText="Hide this product from the POS" />
+);
 
 const SoldOutInput: React.FC<{ outOfStockBehavior: OutOfStockBehavior }> = ({
   outOfStockBehavior,
@@ -89,7 +74,7 @@ export const ProductEdit: React.FC = () => {
             source="pos"
             helperText="The products will be shown in this order"
           />
-          <HiddenInput outOfStockBehavior={outOfStockBehavior} />
+          <HiddenInput />
         </FormTab>
         <FormTab label="Stock">
           <h3>Stock</h3>

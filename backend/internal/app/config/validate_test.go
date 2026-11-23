@@ -45,7 +45,7 @@ func TestOutOfStockBehaviorValidate(t *testing.T) {
 		OutOfStockIgnore,
 		OutOfStockFail,
 		OutOfStockAutoSoldOut,
-		OutOfStockAutoHide,
+		deprecatedOutOfStockAutoHide, // accepted so ApplyDeprecations can rewrite it
 	} {
 		cfg := defaultTestConfig
 		cfg.App.OutOfStockBehavior = behavior

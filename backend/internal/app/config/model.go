@@ -34,9 +34,6 @@ const (
 	// OutOfStockAutoSoldOut rejects further sales and marks the product sold out once
 	// the stock is depleted.
 	OutOfStockAutoSoldOut OutOfStockBehavior = "auto_sold_out"
-	// OutOfStockAutoHide rejects further sales and hides the product once the stock is
-	// depleted.
-	OutOfStockAutoHide OutOfStockBehavior = "auto_hide"
 )
 
 type AppConfig struct {

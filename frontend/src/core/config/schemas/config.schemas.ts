@@ -37,7 +37,7 @@ export const ConfigSchema = z.object({
    * "ignore" so a build served by an older backend keeps its previous behaviour.
    */
   outOfStockBehavior: z
-    .enum(["ignore", "fail", "auto_sold_out", "auto_hide"])
+    .enum(["ignore", "fail", "auto_sold_out"])
     .default("ignore"),
   /** @deprecated: Will be removed in favor of dateLocale or currencyLocale */
   locale: z.string().default("da-DK"),

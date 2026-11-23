@@ -1,7 +1,7 @@
 # ADR 005: Out-of-stock behaviour
 
 **Date:** 2026-09-27 (revised 2026-10-15)
-**Status:** Accepted
+**Status:** Accepted – the `auto_hide` value is superseded by [ADR 007](007-remove-auto-hide.md)
 
 ## Context & Problem
 

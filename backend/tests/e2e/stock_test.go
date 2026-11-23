@@ -182,34 +182,12 @@ func TestOutOfStockBehavior_AutoSoldOut(t *testing.T) {
 		Status(http.StatusBadRequest)
 }
 
-func TestOutOfStockBehavior_AutoHide(t *testing.T) {
-	_, cleanup := setupTestEnvironmentWithBehavior(t, config.OutOfStockAutoHide)
-	defer cleanup()
-
-	productID := stockProduct(t, "Auto Hide Shirts", 2)
-
-	withDemoUserAuthToken(e.POST(purchaseBaseURL)).
-		WithJSON(purchasePayload(productID, 2)).
-		Expect().
-		Status(http.StatusCreated)
-
-	product := reloadProduct(t, productID)
-	assert.True(t, product.Hidden, "selling the last unit should hide the product")
-	assert.False(t, product.SoldOut, "auto_hide must not mark the product sold out")
-
-	withDemoUserAuthToken(e.POST(purchaseBaseURL)).
-		WithJSON(purchasePayload(productID, 1)).
-		Expect().
-		Status(http.StatusBadRequest)
-}
-
 // A product with no total stock is unlimited and must never be restricted, whatever
 // the behaviour is.
 func TestOutOfStockBehavior_UnlimitedProductNeverBlocked(t *testing.T) {
 	for _, behavior := range []config.OutOfStockBehavior{
 		config.OutOfStockFail,
 		config.OutOfStockAutoSoldOut,
-		config.OutOfStockAutoHide,
 	} {
 		t.Run(string(behavior), func(t *testing.T) {
 			_, cleanup := setupTestEnvironmentWithBehavior(t, behavior)
@@ -288,7 +266,7 @@ func TestOutOfStockBehavior_RefundRestoresStock(t *testing.T) {
 
 // The behaviour must reach the frontend so it can guide the cart.
 func TestOutOfStockBehavior_ExposedOnConfig(t *testing.T) {
-	_, cleanup := setupTestEnvironmentWithBehavior(t, config.OutOfStockAutoHide)
+	_, cleanup := setupTestEnvironmentWithBehavior(t, config.OutOfStockAutoSoldOut)
 	defer cleanup()
 
 	e.GET(configURL).
@@ -298,7 +276,7 @@ func TestOutOfStockBehavior_ExposedOnConfig(t *testing.T) {
 		Object().
 		Value("outOfStockBehavior").
 		String().
-		IsEqual("auto_hide")
+		IsEqual("auto_sold_out")
 }
 
 // Raising the stock of a product that was flagged releases the flag. No purchase will
@@ -342,7 +320,7 @@ func TestOutOfStockBehavior_RaisingStockReleasesFlag(t *testing.T) {
 // product does not put it back on sale.
 func TestOutOfStockBehavior_ManualFlagSurvivesRefund(t *testing.T) {
 	// hidden is a manual flag under auto_sold_out, so an operator can still set it
-	// by hand there; under auto_hide it is system-owned for limited products.
+	// by hand there.
 	_, cleanup := setupTestEnvironmentWithBehavior(t, config.OutOfStockAutoSoldOut)
 	defer cleanup()
 

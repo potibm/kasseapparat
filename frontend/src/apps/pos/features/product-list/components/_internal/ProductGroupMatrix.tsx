@@ -3,7 +3,7 @@ import { useConfig } from "@core/config/hooks/useConfig";
 import VariantButton from "./VariantButton";
 import { ProductTapProps } from "./useProductTap";
 import { GroupWithProducts } from "../../utils/productBlocks";
-import { DisplayProduct } from "../../utils/vanishedProducts";
+import { Product as DisplayProduct } from "@pos/api/schemas";
 
 type MatrixProps = Omit<ProductTapProps, "product"> & {
   groups: GroupWithProducts<DisplayProduct>[];
@@ -56,7 +56,6 @@ const ProductGroupMatrix: React.FC<MatrixProps> = ({ groups, ...tapProps }) => {
                   {...tapProps}
                   product={product}
                   showPrice={price === null}
-                  vanished={product.vanished}
                 />
               ))}
             </div>

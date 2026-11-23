@@ -1,5 +1,4 @@
-export type OutOfStockBehavior =
-  "ignore" | "fail" | "auto_sold_out" | "auto_hide";
+export type OutOfStockBehavior = "ignore" | "fail" | "auto_sold_out";
 
 export interface AppConfig {
   version: string;

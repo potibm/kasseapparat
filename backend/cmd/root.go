@@ -75,6 +75,10 @@ var rootCmd = &cobra.Command{
 			Cfg.App.CorsAllowOrigins = cleanOrigins
 		}
 
+		for _, warning := range Cfg.ApplyDeprecations() {
+			slog.Warn("Deprecated configuration", "warning", warning)
+		}
+
 		if err := Cfg.Validate(); err != nil {
 			if !skipConfigValidation(cmd) {
 				return fmt.Errorf("invalid configuration: %w", err)

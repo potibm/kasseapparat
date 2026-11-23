@@ -51,7 +51,8 @@ func TestRestrictsStock(t *testing.T) {
 	assert.False(t, restrictsStock("nonsense"))
 	assert.True(t, restrictsStock(config.OutOfStockFail))
 	assert.True(t, restrictsStock(config.OutOfStockAutoSoldOut))
-	assert.True(t, restrictsStock(config.OutOfStockAutoHide))
+	// auto_hide was removed (ADR 007); the config rewrites it to auto_sold_out.
+	assert.False(t, restrictsStock("auto_hide"))
 }
 
 func TestInsufficientStockError(t *testing.T) {
@@ -168,9 +169,22 @@ func TestReconcileStockFlags(t *testing.T) {
 			behavior: config.OutOfStockAutoSoldOut, totalStock: 3, unitsSold: 2,
 		},
 		{
-			name:     "auto_hide hides a depleted product",
-			behavior: config.OutOfStockAutoHide, totalStock: 3, unitsSold: 3,
-			wantTick: true,
+			// Left over from the removed auto_hide mode (ADR 007): hidden and managed
+			// but not sold out. It is shown again and marked sold out instead.
+			name:     "an auto_hide leftover is shown again and sold out",
+			behavior: config.OutOfStockAutoSoldOut, totalStock: 3, unitsSold: 3,
+			hidden: true, managed: true, wantTick: true,
+		},
+		{
+			name:     "an auto_hide leftover with stock again is released",
+			behavior: config.OutOfStockAutoSoldOut, totalStock: 3, unitsSold: 1,
+			hidden: true, managed: true, wantTick: true,
+		},
+		{
+			// Sold out by this mode and hidden by hand: the hidden flag stays.
+			name:     "a product hidden by hand while sold out stays hidden",
+			behavior: config.OutOfStockAutoSoldOut, totalStock: 3, unitsSold: 3,
+			soldOut: true, hidden: true, managed: true,
 		},
 		{
 			// The stock is back through a refund, a failed or a deleted purchase.
@@ -199,7 +213,7 @@ func TestReconcileStockFlags(t *testing.T) {
 		},
 		{
 			name:     "a manual hidden flag is left alone",
-			behavior: config.OutOfStockAutoHide, totalStock: 3, unitsSold: 3,
+			behavior: config.OutOfStockAutoSoldOut, totalStock: 3, unitsSold: 3,
 			hidden: true,
 		},
 		{
@@ -247,8 +261,10 @@ func wantedStockFlags(
 	depleted := totalStock > 0 && unitsSold >= totalStock
 
 	wantSoldOut = depleted && behavior == config.OutOfStockAutoSoldOut
-	wantHidden = depleted && behavior == config.OutOfStockAutoHide
-	wantManaged = wantSoldOut || wantHidden
+	// No mode hides products any more; a hand-set hidden flag on a product this mode
+	// sold out stays.
+	wantHidden = wantSoldOut && soldOut && hidden
+	wantManaged = wantSoldOut
 
 	// A flag the behaviour does not own keeps its state, and so does a product whose
 	// stock is still gone while the flag is the behaviour's.
@@ -266,7 +282,7 @@ func wantedStockFlags(
 func TestReconcileStockFlags_LeavesManualFlagAfterRefund(t *testing.T) {
 	product := stockTestProduct(2)
 	product.Hidden = true
-	service := newStockService(config.OutOfStockAutoHide, product, 0)
+	service := newStockService(config.OutOfStockAutoSoldOut, product, 0)
 
 	purchase, err := service.CreateConfirmedPurchase(
 		context.Background(),
@@ -369,18 +385,8 @@ func TestCreateConfirmedPurchase_StockBehaviours(t *testing.T) {
 			wantErr: false, wantUnitsSold: 3, wantSoldOutFlag: false,
 		},
 		{
-			name:     "auto_hide sells the last unit and hides the product",
-			behavior: config.OutOfStockAutoHide, totalStock: 3, unitsSold: 2, quantity: 1,
-			wantErr: false, wantUnitsSold: 3, wantHiddenFlag: true,
-		},
-		{
-			name:     "auto_hide rejects the unit after the last",
-			behavior: config.OutOfStockAutoHide, totalStock: 3, unitsSold: 3, quantity: 1,
-			wantErr: true, wantUnitsSold: 3,
-		},
-		{
-			name:     "auto_hide ignores unlimited products",
-			behavior: config.OutOfStockAutoHide, totalStock: 0, unitsSold: 0, quantity: 9,
+			name:     "auto_sold_out ignores unlimited products",
+			behavior: config.OutOfStockAutoSoldOut, totalStock: 0, unitsSold: 0, quantity: 9,
 			wantErr: false, wantUnitsSold: 9, wantHiddenFlag: false,
 		},
 		{
@@ -444,7 +450,6 @@ func TestCreateConfirmedPurchase_UnlimitedProductNeverBlocked(t *testing.T) {
 		config.OutOfStockIgnore,
 		config.OutOfStockFail,
 		config.OutOfStockAutoSoldOut,
-		config.OutOfStockAutoHide,
 	} {
 		t.Run(string(behavior), func(t *testing.T) {
 			product := stockTestProduct(0)
@@ -531,7 +536,7 @@ func TestFinalizePurchase_SellsTheReservedUnits(t *testing.T) {
 // completes cannot remove a product from sale.
 func TestCancelPurchase_KeepsStockAvailable(t *testing.T) {
 	product := stockTestProduct(2)
-	service := newStockService(config.OutOfStockAutoHide, product, 0)
+	service := newStockService(config.OutOfStockAutoSoldOut, product, 0)
 
 	pending := purchaseInputFor(product, 2)
 	pending.PaymentMethod = models.PaymentMethodSumUp
@@ -543,7 +548,7 @@ func TestCancelPurchase_KeepsStockAvailable(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, 0, unitsSold(t, service, product.ID))
-	assert.False(t, product.Hidden)
+	assert.False(t, product.SoldOut)
 
 	_, err = service.CreateConfirmedPurchase(
 		context.Background(),
@@ -560,7 +565,6 @@ func TestRefundPurchase_ClearsAutomaticFlag(t *testing.T) {
 		behavior config.OutOfStockBehavior
 	}{
 		{name: "auto_sold_out", behavior: config.OutOfStockAutoSoldOut},
-		{name: "auto_hide", behavior: config.OutOfStockAutoHide},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			product := stockTestProduct(2)
@@ -573,11 +577,7 @@ func TestRefundPurchase_ClearsAutomaticFlag(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			if tc.behavior == config.OutOfStockAutoSoldOut {
-				require.True(t, product.SoldOut, "selling the last unit should flag the product")
-			} else {
-				require.True(t, product.Hidden, "selling the last unit should hide the product")
-			}
+			require.True(t, product.SoldOut, "selling the last unit should flag the product")
 
 			// Further sales are rejected while the stock is gone.
 			_, err = service.CreateConfirmedPurchase(

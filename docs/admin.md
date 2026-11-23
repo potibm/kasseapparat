@@ -74,7 +74,6 @@ Every product has a `total_stock`. A product with `total_stock: 0` is **unlimite
 | `ignore`        | Sales are allowed beyond the stock. This is the default and the previous behaviour.           |
 | `fail`          | A purchase that exceeds the stock is rejected with a message naming what is left.             |
 | `auto_sold_out` | Further sales are rejected and the product is marked **Sold Out** once the stock is depleted. |
-| `auto_hide`     | Further sales are rejected and the product is **hidden** once the stock is depleted.          |
 
 ```yaml
 app:
@@ -83,15 +82,17 @@ app:
 
 The value is validated at startup, so a typo is rejected rather than silently ignored. An unset or unrecognised value is treated as `ignore` by the sales logic.
 
+The former value `auto_hide` was removed in v4 ([ADR 007](decisions/007-remove-auto-hide.md)): a sold-out product now stays visible on the POS, marked "Sold out", and collects interest. An old config with `auto_hide` still starts; it works like `auto_sold_out` and logs a warning. Products that `auto_hide` had hidden are shown again (and marked sold out) at the next start.
+
 Only confirmed purchases count towards the stock. A pending SumUp payment does not hold units — they become sold once the payment is confirmed, and a refund, a failed or a deleted purchase releases them again.
 
-The sold-out and hidden flags of the two automatic modes are **derived**, not entered by hand: after every purchase, every status change, every product edit and at every start, the server compares each product's sold quantity with its stock and sets or clears the flag. A product that was already flagged before the available stock is enough stays flagged, and a flag you set by hand is never touched by that pass — see [ADR 005](decisions/005-out-of-stock-behavior.md).
+The sold-out flag of `auto_sold_out` is **derived**, not entered by hand: after every purchase, every status change, every product edit and at every start, the server compares each product's sold quantity with its stock and sets or clears the flag. A product that was already flagged before the available stock is enough stays flagged, and a flag you set by hand is never touched by that pass — see [ADR 005](decisions/005-out-of-stock-behavior.md).
 
-Under `auto_sold_out` the `sold_out` flag and under `auto_hide` the `hidden` flag are system-owned for products with a `total_stock` above zero: they are read-only in the admin UI (with a hint) and an edit that changes them is ignored by the backend. The other flag stays a free manual choice. Products with `total_stock: 0` keep both flags editable. The trade-off is that you can no longer sell a limited product out early by hand; set `total_stock` to the units already sold instead. `stock_flags_managed` is still used to tell a system-set flag from a manual one when switching modes or making a limited product unlimited again.
+Under `auto_sold_out` the `sold_out` flag is system-owned for products with a `total_stock` above zero: it is read-only in the admin UI (with a hint) and an edit that changes it is ignored by the backend. The `hidden` flag stays a free manual choice. Products with `total_stock: 0` keep both flags editable. The trade-off is that you can no longer sell a limited product out early by hand; set `total_stock` to the units already sold instead. `stock_flags_managed` is still used to tell a system-set flag from a manual one when switching modes or making a limited product unlimited again.
 
 Because the flags are derived, raising a product's `total_stock` puts it back on sale on the next save, and switching the mode re-evaluates the products that were flagged under the old one at the next start.
 
-The POS reads the same setting. Under the three enforcing modes it disables the add-to-cart button once the remaining stock is in the cart; under `ignore` it keeps offering the product and only shows the remaining count. A purchase that the attempt misses — because two sellers act at once — is rejected by the server with the message the POS then shows.
+The POS reads the same setting. Under the two enforcing modes it disables the add-to-cart button once the remaining stock is in the cart; under `ignore` it keeps offering the product and only shows the remaining count. A purchase that the attempt misses — because two sellers act at once — is rejected by the server with the message the POS then shows.
 
 ### 2. Secrets & Credentials (`config.local.yaml`)
 
@@ -112,7 +113,7 @@ In OIDC mode also set `auth.oidc_client_secret` and `auth.session_secret` (at le
 
 Run `kasseapparat config export` at any time to see the fully merged configuration; secrets are redacted in that output.
 
-_(Note: environment variables override both config files, so prefer `config.local.yaml` over `APP_*` variables for values you own, and use real environment variables only for what your orchestrator injects.)_
+_(Note: environment variables override both config files, so prefer `config.local.yaml` over `APP_\*` variables for values you own, and use real environment variables only for what your orchestrator injects.)\_
 
 ### 3. The deprecated `.env` file
 

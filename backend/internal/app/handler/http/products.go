@@ -185,16 +185,10 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 			behavior = ps.OutOfStockBehavior
 		}
 
-		switch behavior {
-		case config.OutOfStockAutoSoldOut:
+		if behavior == config.OutOfStockAutoSoldOut {
 			stored, _ := handler.repo.GetProductByID(id)
 			if stored != nil {
 				product.SoldOut = stored.SoldOut
-			}
-		case config.OutOfStockAutoHide:
-			stored, _ := handler.repo.GetProductByID(id)
-			if stored != nil {
-				product.Hidden = stored.Hidden
 			}
 		}
 	}

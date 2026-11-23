@@ -4,8 +4,6 @@ import { useProductTap, ProductTapProps, StockTone } from "./useProductTap";
 interface VariantButtonProps extends ProductTapProps {
   /** Show the price on the button; off when the whole row shares one price. */
   showPrice: boolean;
-  /** Sold out under auto_hide and kept as a placeholder (see vanishedProducts). */
-  vanished?: boolean;
 }
 
 const stockTextClass: Record<StockTone, string> = {
@@ -21,7 +19,6 @@ const stockTextClass: Record<StockTone, string> = {
  */
 const VariantButton: React.FC<VariantButtonProps> = ({
   showPrice,
-  vanished = false,
   ...tapProps
 }) => {
   const { product } = tapProps;
@@ -39,10 +36,10 @@ const VariantButton: React.FC<VariantButtonProps> = ({
   } = useProductTap(tapProps);
 
   const label = product.variant?.trim() || product.name;
-  const unavailable = vanished || product.soldOut || isBlocked;
+  const unavailable = product.soldOut || isBlocked;
 
   let status: string | null = null;
-  if (vanished || product.soldOut) {
+  if (product.soldOut) {
     status = "sold out";
   } else if (hasLimitedStock) {
     status = stockLeft + " left";
@@ -62,15 +59,14 @@ const VariantButton: React.FC<VariantButtonProps> = ({
       <button
         type="button"
         data-testid={"product-card-" + product.id}
-        data-vanished={vanished ? "true" : undefined}
-        aria-label={vanished ? product.name + " is sold out" : ariaLabel}
-        disabled={vanished || isBlocked}
+        aria-label={ariaLabel}
+        disabled={isBlocked}
         onClick={handleClick}
         className={`pos-pressable relative flex h-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-lg border-2 px-1 disabled:cursor-not-allowed ${border} ${
           unavailable
             ? "bg-gray-100 text-gray-500 dark:bg-gray-800/60"
             : "bg-white text-gray-900 dark:bg-gray-800 dark:text-white"
-        } ${vanished ? "border-dashed" : ""}`}
+        }`}
       >
         <span
           className={`max-w-full truncate text-xl leading-none font-bold ${
@@ -102,7 +98,7 @@ const VariantButton: React.FC<VariantButtonProps> = ({
           </span>
         )}
       </button>
-      {!vanished && modals}
+      {modals}
     </>
   );
 };
