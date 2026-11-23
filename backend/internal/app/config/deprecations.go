@@ -12,6 +12,7 @@ func (c *Config) ApplyDeprecations() []string {
 
 	if c.App.OutOfStockBehavior == deprecatedOutOfStockAutoHide {
 		c.App.OutOfStockBehavior = OutOfStockAutoSoldOut
+
 		warnings = append(warnings,
 			"out_of_stock_behavior \"auto_hide\" was removed and now works like \"auto_sold_out\"; "+
 				"please update your config")
