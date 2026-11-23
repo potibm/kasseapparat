@@ -29,7 +29,12 @@ export default defineConfig({
   },
 
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+      // The manual shows the POS on an iPad, so its screenshots are taken there only.
+      testIgnore: /docs-screenshots\.spec\.ts/,
+    },
     {
       name: "iPad air (landscape)",
       use: {
