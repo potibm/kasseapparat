@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useConfig } from "@core/config/hooks/useConfig";
 import Button from "../../../../components/Button";
 import { Spinner } from "flowbite-react";
-import { getCurrentReaderId } from "@core/localstorage/helper/local-storage-reader";
+import { useSumupReader } from "@pos/features/sumup-reader/hooks/useSumupReader";
+import SumupReaderHint from "@pos/features/sumup-reader/components/SumupReaderHint";
 import { Cart } from "../../services/Cart";
 import Decimal from "decimal.js";
 import { PaymentMethodData } from "../../types/cart.types";
@@ -22,7 +23,9 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
   handleCheckoutCart,
 }) => {
   const { currency, paymentMethods } = useConfig();
-  const sumUpReaderId = getCurrentReaderId();
+  const { selectedReaderId: sumUpReaderId, problem: readerProblem } =
+    useSumupReader();
+  const offersSumup = paymentMethods.some((method) => method.code === "SUMUP");
   const [calculatorFor, setCalculatorFor] = useState<PaymentMethod | null>(
     null,
   );
@@ -34,7 +37,11 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
     cartValue: Decimal,
   ) => {
     if (paymentMethodCode === "SUMUP") {
-      return sumUpReaderId !== undefined && cartValue.greaterThan(0);
+      return (
+        sumUpReaderId !== undefined &&
+        readerProblem === null &&
+        cartValue.greaterThan(0)
+      );
     }
 
     return true;
@@ -101,6 +108,7 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
           )}
         </Button>
       ))}
+      {offersSumup && <SumupReaderHint />}
       {calculatorFor && (
         <ChangeCalculatorModal
           total={cartValue}

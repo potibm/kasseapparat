@@ -9,6 +9,7 @@ import ErrorModal from "../components/ErrorModal";
 import PosHeader from "../features/menu/components/PosHeader";
 import PollingModal from "@pos/features/payment/components/PollingModal";
 import PosLayout from "../layouts/PosLayout";
+import SumupReaderProvider from "../features/sumup-reader/context/SumupReaderProvider";
 // hooks
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useConfig } from "@core/config/hooks/useConfig";
@@ -219,7 +220,9 @@ export const Kasseapparat: React.FC = () => {
 
   return (
     <ToastProvider>
-      <KasseapparatContent username={username} role={role} />
+      <SumupReaderProvider>
+        <KasseapparatContent username={username} role={role} />
+      </SumupReaderProvider>
     </ToastProvider>
   );
 };

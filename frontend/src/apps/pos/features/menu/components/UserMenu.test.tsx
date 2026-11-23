@@ -30,6 +30,7 @@ vi.mock("@pos/components/Version", () => ({
 import { UserMenu } from "./UserMenu";
 import useConfig from "@core/config/hooks/useConfig";
 import { createAuthProvider } from "@core/auth/authProvider";
+import { SumupReaderContext } from "@pos/features/sumup-reader/context/SumupReaderContext";
 
 describe("UserMenu", () => {
   const mockUseConfig = vi.mocked(useConfig);
@@ -188,4 +189,51 @@ describe("UserMenu", () => {
       expect(mockLogout).toHaveBeenCalledWith({});
     });
   });
+
+  it("opens the card reader selection when SumUp is enabled", () => {
+    const openDialog = vi.fn();
+
+    render(
+      <SumupReaderContext.Provider
+        value={{
+          ...readerContextDefaults,
+          enabled: true,
+          selectedReaderId: "rdr_1",
+          selectedReader: { id: "rdr_1", name: "Bar 1", status: "paired" },
+          openDialog,
+        }}
+      >
+        <UserMenu username="cashier" />
+      </SumupReaderContext.Provider>,
+    );
+    openMenu();
+
+    fireEvent.click(
+      screen.getByRole("menuitem", { name: "Card reader: Bar 1" }),
+    );
+
+    expect(openDialog).toHaveBeenCalled();
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("has no card reader entry without SumUp", () => {
+    render(<UserMenu username="cashier" />);
+    openMenu();
+
+    expect(screen.queryByText(/Card reader/)).not.toBeInTheDocument();
+  });
 });
+
+const readerContextDefaults = {
+  enabled: false,
+  selectedReaderId: undefined,
+  selectedReader: undefined,
+  readers: null,
+  loading: false,
+  problem: null,
+  selectReader: () => undefined,
+  refresh: () => undefined,
+  dialogOpen: false,
+  openDialog: () => undefined,
+  closeDialog: () => undefined,
+};

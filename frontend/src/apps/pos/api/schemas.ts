@@ -49,6 +49,15 @@ export const SectionSchema = z.object({
 
 export type Section = z.infer<typeof SectionSchema>;
 
+export const SumupReaderSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  /** SumUp's pairing status: "paired", "processing", "expired", "unknown". */
+  status: z.string(),
+});
+
+export type SumupReader = z.infer<typeof SumupReaderSchema>;
+
 export const ProductGroupSchema = z.object({
   id: z.number(),
   sectionId: z.number(),
