@@ -25,7 +25,7 @@ func assignProductsWithoutSection(db *gorm.DB) error {
 
 	var section models.Section
 
-	result := db.Order("pos ASC, id ASC").Limit(1).Find(&section)
+	result := db.Order("pos, id ASC").Limit(1).Find(&section)
 	if result.Error != nil {
 		return fmt.Errorf("failed to load the default section: %w", result.Error)
 	}

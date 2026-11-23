@@ -40,10 +40,8 @@ func (filters ProductFilters) apply(query *gorm.DB) *gorm.DB {
 }
 
 func (repo *Repository) GetProducts(
-	limit int,
-	offset int,
-	sort string,
-	order string,
+	limit, offset int,
+	sort, order string,
 	filters ProductFilters,
 ) ([]models.Product, error) {
 	if order != "ASC" && order != "DESC" {
@@ -59,7 +57,7 @@ func (repo *Repository) GetProducts(
 
 	query := filters.apply(repo.db.Table("Products")).
 		Preload("Guestlists").
-		Order(sortField + " " + order + ", Pos ASC, Id ASC").
+		Order(sortField + " " + order + ", Pos, Id ASC").
 		Limit(limit).
 		Offset(offset)
 

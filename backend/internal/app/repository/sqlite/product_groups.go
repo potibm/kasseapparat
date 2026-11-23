@@ -32,10 +32,8 @@ func getProductGroupsValidSortFieldName(input string) (string, error) {
 }
 
 func (repo *Repository) GetProductGroups(
-	limit int,
-	offset int,
-	sort string,
-	order string,
+	limit, offset int,
+	sort, order string,
 	filters ProductFilters,
 ) ([]models.ProductGroup, error) {
 	if order != "ASC" && order != "DESC" {

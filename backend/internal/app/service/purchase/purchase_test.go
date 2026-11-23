@@ -214,10 +214,8 @@ func (m *MockRepository) GetDB() *gorm.DB {
 }
 
 func (m *MockRepository) GetGuests(
-	limit int,
-	offset int,
-	sort string,
-	order string,
+	limit, offset int,
+	sort, order string,
 	filters sqlite.GuestFilters,
 ) ([]models.Guest, error) {
 	panic(errNotImplemented)
@@ -248,10 +246,8 @@ func (m *MockRepository) DeleteGuest(guest models.Guest) {
 }
 
 func (m *MockRepository) GetGuestlists(
-	limit int,
-	offset int,
-	sort string,
-	order string,
+	limit, offset int,
+	sort, order string,
 	filters sqlite.GuestlistFilters,
 ) ([]models.Guestlist, error) {
 	panic(errNotImplemented)

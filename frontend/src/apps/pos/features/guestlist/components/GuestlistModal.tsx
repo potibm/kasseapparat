@@ -46,14 +46,22 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
   // The guest just checked in whose arrival note is shown in their result card.
   const [noteGuestId, setNoteGuestId] = useState<number | null>(null);
   const [noteFromScan, setNoteFromScan] = useState(false);
+  const hasCodes = product.guestlists?.some((list) => list.typeCode) ?? false;
+
   const [scanStatus, setScanStatus] = useState<ScanStatus | null>(null);
-  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(hasCodes);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const { fetchGuestlistByProductId } = usePosApi();
   const { outOfStockBehavior } = useConfig();
 
-  const hasCodes = product.guestlists?.some((list) => list.typeCode) ?? false;
+  // Scanners type into the search field, so it must be focused for them to work.
+  // (Done here instead of the autoFocus attribute, which hurts accessibility.)
+  useEffect(() => {
+    if (!hasCodes) return;
+    const id = window.setTimeout(() => searchInputRef.current?.focus(), 0);
+    return () => window.clearTimeout(id);
+  }, [hasCodes]);
 
   const handleAddToCart = (listEntry: GuestType, additionalGuests: number) => {
     if (
@@ -256,7 +264,6 @@ const GuestlistModal: React.FC<GuestlistModalProps> = ({
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
                   data-testid="guestlist-search-input"
-                  autoFocus={hasCodes}
                   className="h-16 w-full rounded-xl border-2 border-cyan-700 bg-white pt-5 pr-14 pl-4 text-2xl font-semibold tracking-wide text-gray-900 dark:bg-gray-800 dark:text-white"
                 />
                 {searchQuery !== "" && (
@@ -354,21 +361,19 @@ const ScannerStatus: React.FC<ScannerStatusProps> = ({
     const [message, color] = messages[status.kind];
 
     return (
-      <div
-        role="status"
+      <output
         data-testid="guestlist-scan-status"
         className={`-mt-2 flex items-center gap-2 text-sm font-semibold ${color}`}
       >
         <HiCheckCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
         {message}
-      </div>
+      </output>
     );
   }
 
   if (listening) {
     return (
-      <div
-        role="status"
+      <output
         data-testid="guestlist-scan-status"
         className="-mt-2 flex items-center gap-2 text-sm text-green-800 dark:text-green-300"
       >
@@ -376,7 +381,7 @@ const ScannerStatus: React.FC<ScannerStatusProps> = ({
         <span>
           <b>Ready to scan</b> · the search field is listening
         </span>
-      </div>
+      </output>
     );
   }
 

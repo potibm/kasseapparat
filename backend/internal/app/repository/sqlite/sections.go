@@ -30,10 +30,8 @@ func getSectionsValidSortFieldName(input string) (string, error) {
 }
 
 func (repo *Repository) GetSections(
-	limit int,
-	offset int,
-	sort string,
-	order string,
+	limit, offset int,
+	sort, order string,
 	ids []int,
 ) ([]models.Section, error) {
 	if order != "ASC" && order != "DESC" {
@@ -83,7 +81,7 @@ func (repo *Repository) GetSectionByID(id int) (*models.Section, error) {
 func (repo *Repository) GetOrCreateDefaultSection() (*models.Section, error) {
 	var section models.Section
 
-	result := repo.db.Order("Pos ASC, Id ASC").Limit(1).Find(&section)
+	result := repo.db.Order("Pos, Id ASC").Limit(1).Find(&section)
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to load the default section: %w", result.Error)
 	}
