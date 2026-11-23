@@ -5,18 +5,22 @@ import { useRecordContext } from "react-admin";
 interface GuestlistStatsRecord {
   id: number;
   entries?: number;
-  expectedGuests?: number;
+  arrivedEntries?: number;
   arrivedGuests?: number;
 }
 
-/** How many of the expected guests (entries plus companions) have arrived. */
+/**
+ * How many list entries have arrived, and – for information – how many people
+ * that was in total. Additional guests are optional, so they only count once
+ * they actually came.
+ */
 export const GuestlistProgressField: React.FC<{ label?: string }> = () => {
   const list = useRecordContext<GuestlistStatsRecord>();
   if (!list) return null;
 
   const entries = list.entries ?? 0;
-  const expected = list.expectedGuests ?? 0;
-  const arrived = list.arrivedGuests ?? 0;
+  const arrived = list.arrivedEntries ?? 0;
+  const people = list.arrivedGuests ?? 0;
 
   if (entries === 0) {
     return (
@@ -26,21 +30,22 @@ export const GuestlistProgressField: React.FC<{ label?: string }> = () => {
     );
   }
 
-  const percent = expected > 0 ? Math.min(100, (arrived / expected) * 100) : 0;
+  const percent = Math.min(100, (arrived / entries) * 100);
 
   return (
-    <Box sx={{ minWidth: 140 }} data-testid="guestlist-progress">
+    <Box sx={{ minWidth: 160 }} data-testid="guestlist-progress">
       <Typography variant="body2">
-        {arrived} / {expected} arrived
+        {arrived} / {entries} arrived
+        <Typography component="span" variant="body2" color="text.secondary">
+          {" "}
+          · {people} {people === 1 ? "person" : "people"}
+        </Typography>
       </Typography>
       <LinearProgress
         variant="determinate"
         value={percent}
-        aria-label={`${arrived} of ${expected} guests arrived`}
+        aria-label={`${arrived} of ${entries} entries arrived`}
       />
-      <Typography variant="caption" color="text.secondary">
-        {entries} {entries === 1 ? "entry" : "entries"}
-      </Typography>
     </Box>
   );
 };

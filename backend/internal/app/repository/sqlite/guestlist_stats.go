@@ -10,9 +10,10 @@ import (
 type GuestlistStats struct {
 	// Entries is the number of list entries.
 	Entries int `json:"entries"`
-	// ExpectedGuests counts every entry with its additional guests.
-	ExpectedGuests int `json:"expectedGuests"`
-	// ArrivedGuests counts the people already checked in.
+	// ArrivedEntries counts the entries that have been checked in.
+	ArrivedEntries int `json:"arrivedEntries"`
+	// ArrivedGuests counts the people let in, including the additional guests
+	// actually used (which are optional, so they are not compared to anything).
 	ArrivedGuests int `json:"arrivedGuests"`
 }
 
@@ -28,13 +29,13 @@ func (repo *Repository) GetGuestlistStats(ids []int) (map[int]GuestlistStats, er
 	var rows []struct {
 		GuestlistID    int
 		Entries        int
-		ExpectedGuests int
+		ArrivedEntries int
 		ArrivedGuests  int
 	}
 
 	err := repo.db.Model(&models.Guest{}).
 		Select("guestlist_id, COUNT(*) AS entries, "+
-			"COALESCE(SUM(1 + additional_guests), 0) AS expected_guests, "+
+			"COUNT(arrived_at) AS arrived_entries, "+
 			"COALESCE(SUM(attended_guests), 0) AS arrived_guests").
 		Where("guestlist_id IN ?", ids).
 		Group("guestlist_id").
@@ -46,7 +47,7 @@ func (repo *Repository) GetGuestlistStats(ids []int) (map[int]GuestlistStats, er
 	for _, row := range rows {
 		stats[row.GuestlistID] = GuestlistStats{
 			Entries:        row.Entries,
-			ExpectedGuests: row.ExpectedGuests,
+			ArrivedEntries: row.ArrivedEntries,
 			ArrivedGuests:  row.ArrivedGuests,
 		}
 	}

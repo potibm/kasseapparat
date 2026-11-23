@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/models"
@@ -20,8 +21,10 @@ func TestGetGuestlists_IncludesStats(t *testing.T) {
 	crew, err := handler.repo.CreateGuestlist(models.Guestlist{Name: "Crew", ProductID: product.ID})
 	require.NoError(t, err)
 
+	arrived := time.Now()
+
 	_, err = handler.repo.CreateGuest(models.Guest{
-		Name: "A", GuestlistID: crew.ID, AdditionalGuests: 1, AttendedGuests: 2,
+		Name: "A", GuestlistID: crew.ID, AdditionalGuests: 1, AttendedGuests: 2, ArrivedAt: &arrived,
 	})
 	require.NoError(t, err)
 
@@ -44,6 +47,6 @@ func TestGetGuestlists_IncludesStats(t *testing.T) {
 
 	require.NotNil(t, found, "the crew list is in the response")
 	assert.InDelta(t, 1, found["entries"], 0)
-	assert.InDelta(t, 2, found["expectedGuests"], 0)
+	assert.InDelta(t, 1, found["arrivedEntries"], 0)
 	assert.InDelta(t, 2, found["arrivedGuests"], 0)
 }

@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"testing"
+	"time"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
 	"github.com/stretchr/testify/assert"
@@ -20,9 +21,11 @@ func TestGetGuestlistStats(t *testing.T) {
 	empty := &models.Guestlist{Name: "Empty", ProductID: product.ID}
 	require.NoError(t, repo.db.Create(empty).Error)
 
+	arrived := time.Now()
+
 	for _, guest := range []*models.Guest{
-		{Name: "A", GuestlistID: crew.ID, AdditionalGuests: 2, AttendedGuests: 3},
-		{Name: "B", GuestlistID: crew.ID, AdditionalGuests: 1},
+		{Name: "A", GuestlistID: crew.ID, AdditionalGuests: 2, AttendedGuests: 3, ArrivedAt: &arrived},
+		{Name: "B", GuestlistID: crew.ID, AdditionalGuests: 1, AttendedGuests: 1, ArrivedAt: &arrived},
 		{Name: "C", GuestlistID: crew.ID},
 	} {
 		require.NoError(t, repo.db.Create(guest).Error)
@@ -31,7 +34,7 @@ func TestGetGuestlistStats(t *testing.T) {
 	stats, err := repo.GetGuestlistStats([]int{crew.ID, empty.ID})
 	require.NoError(t, err)
 
-	assert.Equal(t, GuestlistStats{Entries: 3, ExpectedGuests: 6, ArrivedGuests: 3}, stats[crew.ID])
+	assert.Equal(t, GuestlistStats{Entries: 3, ArrivedEntries: 2, ArrivedGuests: 4}, stats[crew.ID])
 
 	_, found := stats[empty.ID]
 	assert.False(t, found, "a list without entries has no stats")
