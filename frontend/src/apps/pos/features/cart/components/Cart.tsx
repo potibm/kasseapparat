@@ -95,7 +95,7 @@ const Cart: React.FC<CartProps> = ({
     <div className="flex min-h-0 flex-1 flex-col" data-testid="cart">
       <div className="flex shrink-0 items-center justify-between pb-2">
         <h2 className="flex items-center gap-2 text-lg font-bold dark:text-white">
-          Cart
+          Cart{" "}
           <span
             className="rounded-full bg-gray-300 px-2 text-sm font-semibold dark:bg-gray-700"
             data-testid="cart-quantity"

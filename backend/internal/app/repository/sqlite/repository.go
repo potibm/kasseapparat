@@ -32,7 +32,7 @@ type GuestRepository interface {
 }
 
 type GuestCRUDRepository interface {
-	GetGuests(limit int, offset int, sort string, order string, filters GuestFilters) ([]models.Guest, error)
+	GetGuests(limit, offset int, sort, order string, filters GuestFilters) ([]models.Guest, error)
 	GetGuestByID(id int) (*models.Guest, error)
 	UpdateGuestByID(id int, updatedGuest models.Guest) (*models.Guest, error)
 	CreateGuest(guest models.Guest) (models.Guest, error)
@@ -42,10 +42,8 @@ type GuestCRUDRepository interface {
 
 type GuestlistRepository interface {
 	GetGuestlists(
-		limit int,
-		offset int,
-		sort string,
-		order string,
+		limit, offset int,
+		sort, order string,
 		filters GuestlistFilters,
 	) ([]models.Guestlist, error)
 	GetTotalGuestlists() (int64, error)
@@ -58,7 +56,7 @@ type GuestlistRepository interface {
 }
 
 type ProductInterestRepository interface {
-	GetProductInterests(limit int, offset int, ids []int) ([]models.ProductInterest, error)
+	GetProductInterests(limit, offset int, ids []int) ([]models.ProductInterest, error)
 	GetTotalProductInterests() (int64, error)
 	GetProductInterestByID(id int) (*models.ProductInterest, error)
 	DeleteProductInterest(productInterest models.ProductInterest)
@@ -68,7 +66,7 @@ type ProductInterestRepository interface {
 
 type ProductRepository interface {
 	GetProductStats() ([]response.ProductStats, error)
-	GetProducts(limit int, offset int, sort string, order string, filters ProductFilters) ([]models.Product, error)
+	GetProducts(limit, offset int, sort, order string, filters ProductFilters) ([]models.Product, error)
 	GetTotalProducts(filters ProductFilters) (int64, error)
 	GetProductByID(id int) (*models.Product, error)
 	UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error)
@@ -80,7 +78,7 @@ type ProductRepository interface {
 }
 
 type SectionRepository interface {
-	GetSections(limit int, offset int, sort string, order string, ids []int) ([]models.Section, error)
+	GetSections(limit, offset int, sort, order string, ids []int) ([]models.Section, error)
 	GetTotalSections() (int64, error)
 	GetSectionByID(id int) (*models.Section, error)
 	GetOrCreateDefaultSection() (*models.Section, error)
@@ -129,7 +127,7 @@ type PurchaseCRUDRepository interface {
 	DeletePurchaseByID(id uuid.UUID)
 	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
 	GetTotalPurchases(filters PurchaseFilters) (int64, error)
-	GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error)
+	GetPurchases(limit, offset int, sort, order string, filters PurchaseFilters) ([]models.Purchase, error)
 }
 
 type Pinger interface {

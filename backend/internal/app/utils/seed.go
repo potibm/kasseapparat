@@ -89,8 +89,7 @@ func (ds *DatabaseSeed) appendShirts(
 	group *models.ProductGroup,
 	label string,
 	sizes []string,
-	netPrice decimal.Decimal,
-	vatRate decimal.Decimal,
+	netPrice, vatRate decimal.Decimal,
 ) {
 	for i, size := range sizes {
 		ds.products = append(ds.products, models.Product{

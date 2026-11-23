@@ -26,12 +26,9 @@ export const PosHeader: React.FC<PosHeaderProps> = ({
       Kasseapparat
     </div>
     {environmentMessage && (
-      <span
-        role="status"
-        className="min-w-0 truncate rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-      >
+      <output className="min-w-0 truncate rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-100">
         {environmentMessage}
-      </span>
+      </output>
     )}
     <div className="flex-1" />
     <ConnectionIndicator />

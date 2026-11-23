@@ -146,10 +146,8 @@ func (repo *Repository) updatePurchaseFieldByID(id uuid.UUID, fields map[string]
 }
 
 func (repo *Repository) GetPurchases(
-	limit int,
-	offset int,
-	sort string,
-	order string,
+	limit, offset int,
+	sort, order string,
 	filters PurchaseFilters,
 ) ([]models.Purchase, error) {
 	if order != "ASC" && order != "DESC" {

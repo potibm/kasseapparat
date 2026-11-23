@@ -63,8 +63,7 @@ func (r *Repository) CreateReader(pairingCode, name string) (*Reader, error) {
 func (r *Repository) CreateReaderCheckout(
 	readerID string,
 	amount decimal.Decimal,
-	description string,
-	affiliateTransactionID string,
+	description, affiliateTransactionID string,
 	returnURL *string,
 ) (*uuid.UUID, error) {
 	amountStruct := sumup.CreateCheckoutRequestTotalAmount{

@@ -55,10 +55,8 @@ func (filters GuestFilters) AddWhere(query *gorm.DB) *gorm.DB {
 }
 
 func (repo *Repository) GetGuests(
-	limit int,
-	offset int,
-	sort string,
-	order string,
+	limit, offset int,
+	sort, order string,
 	filters GuestFilters,
 ) ([]models.Guest, error) {
 	if order != "ASC" && order != "DESC" {

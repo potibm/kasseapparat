@@ -41,11 +41,11 @@ export const splitByMatches = (text: string, query: string): TextPart[] => {
   const chars = Array.from(text);
   let folded = "";
   const origin: number[] = [];
-  chars.forEach((char, index) => {
+  for (const [index, char] of chars.entries()) {
     const foldedChar = foldChar(char);
     folded += foldedChar;
     for (let i = 0; i < foldedChar.length; i++) origin.push(index);
-  });
+  }
 
   const matched = new Array<boolean>(chars.length).fill(false);
   let from = folded.indexOf(foldedQuery);
@@ -57,14 +57,14 @@ export const splitByMatches = (text: string, query: string): TextPart[] => {
   }
 
   const parts: TextPart[] = [];
-  chars.forEach((char, index) => {
+  for (const [index, char] of chars.entries()) {
     const last = parts.at(-1);
-    if (last && last.match === matched[index]) {
-      last.text += char;
+    if (last?.match === matched[index]) {
+      last!.text += char;
     } else {
       parts.push({ text: char, match: matched[index] });
     }
-  });
+  }
 
   return parts;
 };

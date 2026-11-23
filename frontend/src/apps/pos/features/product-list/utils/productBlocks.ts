@@ -37,23 +37,7 @@ export const buildSectionBlocks = <P extends GroupableProduct>(
   const items: Item<P>[] = [];
 
   for (const product of products) {
-    const group =
-      product.productGroupId == null
-        ? undefined
-        : groupById.get(product.productGroupId);
-
-    if (!group) {
-      items.push({ kind: "product", pos: product.pos, product });
-      continue;
-    }
-
-    let entry = entries.get(group.id);
-    if (!entry) {
-      entry = { group, products: [] };
-      entries.set(group.id, entry);
-      items.push({ kind: "group", pos: group.pos, entry });
-    }
-    entry.products.push(product);
+    addItem(items, entries, groupById, product);
   }
 
   // Array.prototype.sort is stable: equal positions keep the order of the products.
@@ -61,28 +45,64 @@ export const buildSectionBlocks = <P extends GroupableProduct>(
 
   const blocks: SectionBlock<P>[] = [];
   for (const item of items) {
-    const last = blocks.at(-1);
-
-    if (item.kind === "product") {
-      if (last?.kind === "products") {
-        last.products.push(item.product);
-      } else {
-        blocks.push({
-          kind: "products",
-          key: "products-" + item.product.id,
-          products: [item.product],
-        });
-      }
-    } else if (last?.kind === "groups") {
-      last.groups.push(item.entry);
-    } else {
-      blocks.push({
-        kind: "groups",
-        key: "groups-" + item.entry.group.id,
-        groups: [item.entry],
-      });
-    }
+    appendBlock(blocks, item);
   }
 
   return blocks;
+};
+
+const addItem = <P extends GroupableProduct>(
+  items: Item<P>[],
+  entries: Map<number, GroupWithProducts<P>>,
+  groupById: Map<number, ProductGroup>,
+  product: P,
+): void => {
+  const group =
+    product.productGroupId == null
+      ? undefined
+      : groupById.get(product.productGroupId);
+
+  if (!group) {
+    items.push({ kind: "product", pos: product.pos, product });
+    return;
+  }
+
+  let entry = entries.get(group.id);
+  if (!entry) {
+    entry = { group, products: [] };
+    entries.set(group.id, entry);
+    items.push({ kind: "group", pos: group.pos, entry });
+  }
+  entry.products.push(product);
+};
+
+const appendBlock = <P extends GroupableProduct>(
+  blocks: SectionBlock<P>[],
+  item: Item<P>,
+): void => {
+  const last = blocks.at(-1);
+
+  if (item.kind === "product") {
+    if (last?.kind === "products") {
+      last.products.push(item.product);
+      return;
+    }
+    blocks.push({
+      kind: "products",
+      key: "products-" + item.product.id,
+      products: [item.product],
+    });
+    return;
+  }
+
+  if (last?.kind === "groups") {
+    last.groups.push(item.entry);
+    return;
+  }
+
+  blocks.push({
+    kind: "groups",
+    key: "groups-" + item.entry.group.id,
+    groups: [item.entry],
+  });
 };

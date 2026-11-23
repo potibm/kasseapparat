@@ -32,12 +32,11 @@ const ProductGroupMatrix: React.FC<MatrixProps> = ({ groups, ...tapProps }) => {
         const price = sharedPrice(products);
 
         return (
-          <div
+          <fieldset
             key={group.id}
-            role="group"
             aria-label={group.name}
             data-testid={"product-group-" + group.id}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 border-0 p-0 m-0 min-w-0"
           >
             <div className="w-24 shrink-0">
               <div className="text-base leading-tight font-bold text-gray-900 dark:text-white">
@@ -60,7 +59,7 @@ const ProductGroupMatrix: React.FC<MatrixProps> = ({ groups, ...tapProps }) => {
                 />
               ))}
             </div>
-          </div>
+          </fieldset>
         );
       })}
     </div>
