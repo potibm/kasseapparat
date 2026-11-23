@@ -14,4 +14,6 @@ npx playwright test e2e/docs-screenshots.spec.ts --project="iPad air (landscape)
 
 echo "📁 Copying screenshots to docs/..."
 cp docs-screenshots/*.png ../docs/
-ls -1 docs-screenshots/*.png | sed 's#docs-screenshots/#   docs/#'
+for file in docs-screenshots/*.png; do
+    echo "   docs/${file#docs-screenshots/}"
+done
