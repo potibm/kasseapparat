@@ -42,6 +42,8 @@ Variants of one article, such as the sizes of a T-shirt, form a **row** in a box
 
 Products marked "List" have a guest list (see below).
 
+<div class="page-break"></div>
+
 ### Guest list
 
 ![screenshot of guestlist](pos-list.png)
@@ -62,6 +64,8 @@ A scanned code that belongs to exactly one ticket is added to the cart right awa
 
 Neither the products nor the guest lists can be modified in the POS. This needs to be done in the [admin](#admin).
 
+<div class="page-break"></div>
+
 ### Cart
 
 The cart shows what the current customer has ordered, the newest line on top. Use "+" and "−" to change the quantity; at a quantity of one, "−" becomes a bin that removes the line. Guest list entries can only be removed as a whole.
@@ -81,6 +85,8 @@ For cash, a dialog asks how much the customer handed over before the payment is 
 For card payments the amount is sent to the card reader, and a dialog shows the amount and the elapsed time until the customer has paid. "Cancel payment" stops it. Problems, for example a lost connection to the terminal, are shown in the dialog only when they occur.
 
 If card payments cannot work – no card reader selected, or the selected one is offline – the card button is disabled and a line below it says why. Tap that line to choose a card reader for this iPad.
+
+<div class="page-break"></div>
 
 ### Last purchases
 
