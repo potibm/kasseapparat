@@ -13,6 +13,10 @@ import { PurchaseStatusField } from "./components/PurchaseStatusField";
 import { PaymentMethodField } from "./components/PaymentMethodField";
 import { ConditionalDeleteOnAdminButton } from "../../ui/buttons/ConditionalDeleteOnAdminButton";
 import { ConditionalRefundButton } from "./components/ConditionalRefundButton";
+import {
+  PurchaseItemLike,
+  summarizePurchaseItems,
+} from "./purchaseItems.utils";
 
 export const PurchaseList: React.FC = () => {
   const { currencyOptions, currencyLocale, dateLocale } = useConfig();
@@ -37,6 +41,13 @@ export const PurchaseList: React.FC = () => {
           showTime={true}
           locales={dateLocale}
           options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
+        />
+        <FunctionField
+          label="Items"
+          sortable={false}
+          render={(record: { purchaseItems?: PurchaseItemLike[] }) =>
+            summarizePurchaseItems(record.purchaseItems)
+          }
         />
         <NumberField
           source="totalGrossPrice"
