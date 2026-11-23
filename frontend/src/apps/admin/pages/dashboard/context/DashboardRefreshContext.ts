@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 
 /**
  * A counter that goes up whenever the dashboard should reload its figures. The
@@ -6,5 +6,4 @@ import { createContext, useContext } from "react";
  */
 export const DashboardRefreshContext = createContext(0);
 
-export const useDashboardRefreshTick = () =>
-  useContext(DashboardRefreshContext);
+export const useDashboardRefreshTick = () => use(DashboardRefreshContext);

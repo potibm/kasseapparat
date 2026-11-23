@@ -119,7 +119,7 @@ describe("CheckoutButtons", () => {
       const handleCheckoutCart = vi.fn();
 
       render(
-        <SumupReaderContext.Provider
+        <SumupReaderContext
           value={{ ...readerDefaults, enabled: true, ...reader }}
         >
           <CheckoutButtons
@@ -127,7 +127,7 @@ describe("CheckoutButtons", () => {
             checkoutProcessing={null}
             handleCheckoutCart={handleCheckoutCart}
           />
-        </SumupReaderContext.Provider>,
+        </SumupReaderContext>,
       );
 
       return { handleCheckoutCart };

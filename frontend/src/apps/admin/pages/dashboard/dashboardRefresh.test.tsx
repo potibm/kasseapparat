@@ -60,9 +60,9 @@ describe("useStatsData", () => {
     const { rerender } = renderHook(() => useStatsData("productStats"), {
       wrapper: ({ children }) => (
         <AdminContext dataProvider={dataProvider}>
-          <DashboardRefreshContext.Provider value={tick}>
+          <DashboardRefreshContext value={tick}>
             {children}
-          </DashboardRefreshContext.Provider>
+          </DashboardRefreshContext>
         </AdminContext>
       ),
     });
@@ -87,9 +87,9 @@ describe("KpiCards", () => {
 
     render(
       <AdminContext dataProvider={dataProvider}>
-        <ConfigContext.Provider value={mockConfig}>
+        <ConfigContext value={mockConfig}>
           <KpiCards />
-        </ConfigContext.Provider>
+        </ConfigContext>
       </AdminContext>,
     );
 
@@ -104,9 +104,9 @@ describe("KpiCards", () => {
 
     render(
       <AdminContext dataProvider={dataProvider}>
-        <ConfigContext.Provider value={mockConfig}>
+        <ConfigContext value={mockConfig}>
           <KpiCards />
-        </ConfigContext.Provider>
+        </ConfigContext>
       </AdminContext>,
     );
 
@@ -122,14 +122,14 @@ describe("DashboardToolbar", () => {
     const refreshNow = vi.fn();
 
     render(
-      <ConfigContext.Provider value={mockConfig}>
+      <ConfigContext value={mockConfig}>
         <DashboardToolbar
           enabled
           setEnabled={setEnabled}
           refreshNow={refreshNow}
           lastRefresh={new Date("2026-11-23T09:05:00")}
         />
-      </ConfigContext.Provider>,
+      </ConfigContext>,
     );
 
     fireEvent.click(screen.getByLabelText("Auto-refresh every minute"));
