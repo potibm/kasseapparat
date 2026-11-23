@@ -15,8 +15,6 @@ const OUTPUT_DIR = path.resolve(
   "../docs-screenshots",
 );
 
-const IPAD_PROJECT = "iPad air (landscape)";
-
 const shoot = async (page: Page, name: string) => {
   // Fonts must be loaded, otherwise the pictures differ from run to run.
   await page.evaluate(() => document.fonts.ready);
@@ -28,9 +26,8 @@ const shoot = async (page: Page, name: string) => {
 };
 
 test.describe("documentation screenshots", () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== IPAD_PROJECT, "iPad screenshots only");
-
+  // Runs on the iPad project only (see testIgnore in playwright.config.ts).
+  test.beforeEach(async ({ page }) => {
     await resetDatabase();
     await page.goto("/");
     await new PosPage(page).expectProductVisible(TEST_PRODUCTS.REGULAR_TICKET);
