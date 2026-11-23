@@ -61,7 +61,7 @@ You may delete the whole cart or remove a certain product from the cart. It is n
 
 When the order is complete, press the button of the payment method. Afterwards the cart is empty again and the purchase is shown under the "last purchases" below.
 
-For cash, a dialog asks how much the customer handed over before the payment is booked. "Exact" is preselected, so an exact payment needs just one more tap on "Book payment". Tap the bank note you received (the dialog suggests the next round amounts, e.g. 40 €, 50 €, 100 € for a total of 37 €) or type another amount, and the change is shown in large digits. "Cancel" closes the dialog without booking.
+For cash, a dialog asks how much the customer handed over before the payment is booked. "Exact" is preselected, so an exact payment needs just one more tap on "Book payment". Tap the bank note you received (the dialog suggests the next round amounts, e.g. 40 €, 50 €, 100 € for a total of 37 €) or type another amount, and the change is shown in large digits. "Cancel" closes the dialog without booking. A cart that costs nothing (e.g. only free guest list tickets) is booked right away, without the dialog.
 
 ### Last Purchases
 

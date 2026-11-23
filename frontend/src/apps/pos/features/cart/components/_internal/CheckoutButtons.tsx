@@ -69,7 +69,8 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
     );
 
   const handleClick = (paymentMethod: PaymentMethod) => {
-    if (paymentMethod.changeCalculator) {
+    // Nothing to hand back for a free cart (e.g. guest list tickets only).
+    if (paymentMethod.changeCalculator && cartValue.greaterThan(0)) {
       setCalculatorFor(paymentMethod);
     } else {
       checkoutWith(paymentMethod);

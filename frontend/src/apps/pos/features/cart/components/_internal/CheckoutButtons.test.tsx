@@ -71,6 +71,17 @@ describe("CheckoutButtons", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("books a free cart with cash right away", async () => {
+    const { handleCheckoutCart } = renderButtons(0);
+
+    await userEvent.click(screen.getByTestId("checkout-button-CASH"));
+
+    expect(handleCheckoutCart).toHaveBeenCalledWith("CASH", { type: "empty" });
+    expect(
+      screen.queryByTestId("change-calculator-confirm"),
+    ).not.toBeInTheDocument();
+  });
+
   it("does not book when the calculator is cancelled", async () => {
     const { handleCheckoutCart } = renderButtons();
 
