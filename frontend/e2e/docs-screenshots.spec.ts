@@ -18,6 +18,12 @@ const OUTPUT_DIR = path.resolve(
 const shoot = async (page: Page, name: string) => {
   // Fonts must be loaded, otherwise the pictures differ from run to run.
   await page.evaluate(() => document.fonts.ready);
+  // Tapping a product low on the screen scrolls the product area; show it from the top.
+  await page.evaluate(() =>
+    document
+      .querySelector('[data-testid="pos-products-scroll"]')
+      ?.scrollTo({ top: 0, behavior: "instant" }),
+  );
   await page.screenshot({
     path: path.join(OUTPUT_DIR, name),
     animations: "disabled",
