@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDataProvider, RaRecord } from "react-admin";
 import { createLogger } from "@core/logger/logger";
+import { useDashboardRefreshTick } from "../context/DashboardRefreshContext";
 import {
   parseTimeBucket,
   calculateGranularity,
@@ -41,6 +42,7 @@ export const useHourlyChartData = <
 }: UseHourlyChartDataOptions<T>): UseHourlyChartDataResult<T> => {
   const [data, setData] = useState<T[] | null>(null);
   const dataProvider = useDataProvider();
+  const refreshTick = useDashboardRefreshTick();
 
   useEffect(() => {
     dataProvider
@@ -56,7 +58,7 @@ export const useHourlyChartData = <
         log.error(`${resource} fetch failed`, error);
         setData([]);
       });
-  }, [dataProvider, resource]);
+  }, [dataProvider, resource, refreshTick]);
 
   if (!data || data.length === 0) {
     return {
