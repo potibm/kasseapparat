@@ -7,8 +7,8 @@ import { TEST_PRODUCTS } from "./fixtures/products";
 
 /**
  * Screenshots for docs/manual.md, taken on the iPad the POS is made for. They are
- * written to frontend/docs-screenshots/ and uploaded by CI as an artifact; copy the
- * ones that changed into docs/.
+ * written to frontend/docs-screenshots/; `mise run docs:screenshots` takes them and
+ * copies them to docs/, and CI uploads them as an artifact.
  */
 const OUTPUT_DIR = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -18,8 +18,8 @@ const OUTPUT_DIR = path.resolve(
 const IPAD_PROJECT = "iPad air (landscape)";
 
 const shoot = async (page: Page, name: string) => {
-  // Let fonts, images and transitions settle so the pictures are stable.
-  await page.waitForLoadState("networkidle");
+  // Fonts must be loaded, otherwise the pictures differ from run to run.
+  await page.evaluate(() => document.fonts.ready);
   await page.screenshot({
     path: path.join(OUTPUT_DIR, name),
     animations: "disabled",

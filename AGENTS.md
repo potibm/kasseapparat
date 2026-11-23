@@ -38,6 +38,9 @@ Lint with auto-fix: `mise run lint --fix`
 
 Docker image check: `mise run docker:build` (uses a custom `kasseapparat-builder` buildx builder)
 
+Manual screenshots: `mise run docs:screenshots` (Playwright on the iPad project, copies the PNGs to `docs/`)  
+Manual PDF: `mise run docs:manual`
+
 ---
 
 ## Critical gotchas
