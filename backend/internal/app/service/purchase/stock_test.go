@@ -51,8 +51,7 @@ func TestRestrictsStock(t *testing.T) {
 	assert.False(t, restrictsStock("nonsense"))
 	assert.True(t, restrictsStock(config.OutOfStockFail))
 	assert.True(t, restrictsStock(config.OutOfStockAutoSoldOut))
-	// auto_hide was removed (ADR 007); the config rewrites it to auto_sold_out.
-	assert.False(t, restrictsStock("auto_hide"))
+	assert.False(t, restrictsStock("auto_hide"), "dropped before release (ADR 005)")
 }
 
 func TestInsufficientStockError(t *testing.T) {
@@ -167,18 +166,6 @@ func TestReconcileStockFlags(t *testing.T) {
 		{
 			name:     "auto_sold_out leaves a product with stock alone",
 			behavior: config.OutOfStockAutoSoldOut, totalStock: 3, unitsSold: 2,
-		},
-		{
-			// Left over from the removed auto_hide mode (ADR 007): hidden and managed
-			// but not sold out. It is shown again and marked sold out instead.
-			name:     "an auto_hide leftover is shown again and sold out",
-			behavior: config.OutOfStockAutoSoldOut, totalStock: 3, unitsSold: 3,
-			hidden: true, managed: true, wantTick: true,
-		},
-		{
-			name:     "an auto_hide leftover with stock again is released",
-			behavior: config.OutOfStockAutoSoldOut, totalStock: 3, unitsSold: 1,
-			hidden: true, managed: true, wantTick: true,
 		},
 		{
 			// Sold out by this mode and hidden by hand: the hidden flag stays.

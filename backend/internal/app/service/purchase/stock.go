@@ -128,18 +128,9 @@ func (s *PurchaseService) reconcileStockFlag(
 
 // applyAutoSoldOut derives the sold_out flag the auto_sold_out mode owns. A limited
 // product that became unlimited releases a flag the behaviour took over.
-//
-// The removed auto_hide mode (ADR 007) left managed products hidden but not sold
-// out. This mode always sets sold_out on the products it manages, so that
-// combination can only be such a leftover; its hidden flag is released. A product an
-// operator hid by hand while it was managed here is also sold out and keeps it.
 func (s *PurchaseService) applyAutoSoldOut(
 	unlimited, depleted, managed, soldOut, hidden bool,
 ) (newSoldOut, newHidden, newManaged bool) {
-	if managed && hidden && !soldOut {
-		hidden = false
-	}
-
 	if unlimited {
 		if managed {
 			return false, hidden, false

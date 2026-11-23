@@ -64,8 +64,7 @@ button. A group whose products are all hidden is not shown.
 layout as a side effect of a delete.
 
 **Out-of-stock behaviour is unchanged.** It still works per product; in the matrix a
-sold-out size is a struck-through button. (`auto_hide`, which made sold-out products
-disappear, was removed later – see ADR 007.)
+sold-out size is a struck-through button.
 
 ## API
 

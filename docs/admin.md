@@ -82,8 +82,6 @@ app:
 
 The value is validated at startup, so a typo is rejected rather than silently ignored. An unset or unrecognised value is treated as `ignore` by the sales logic.
 
-The former value `auto_hide` was removed in v4 ([ADR 007](decisions/007-remove-auto-hide.md)): a sold-out product now stays visible on the POS, marked "Sold out", and collects interest. An old config with `auto_hide` still starts; it works like `auto_sold_out` and logs a warning. Products that `auto_hide` had hidden are shown again (and marked sold out) at the next start.
-
 Only confirmed purchases count towards the stock. A pending SumUp payment does not hold units — they become sold once the payment is confirmed, and a refund, a failed or a deleted purchase releases them again.
 
 The sold-out flag of `auto_sold_out` is **derived**, not entered by hand: after every purchase, every status change, every product edit and at every start, the server compares each product's sold quantity with its stock and sets or clears the flag. A product that was already flagged before the available stock is enough stays flagged, and a flag you set by hand is never touched by that pass — see [ADR 005](decisions/005-out-of-stock-behavior.md).
