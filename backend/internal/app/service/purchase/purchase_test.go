@@ -257,6 +257,10 @@ func (m *MockRepository) GetGuestlists(
 	panic(errNotImplemented)
 }
 
+func (m *MockRepository) GetGuestlistStats(ids []int) (map[int]sqlite.GuestlistStats, error) {
+	panic(errNotImplemented)
+}
+
 func (m *MockRepository) GetTotalGuestlists() (int64, error) {
 	panic(errNotImplemented)
 }

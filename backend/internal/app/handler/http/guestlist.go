@@ -44,8 +44,34 @@ func (handler *Handler) GetGuestlists(c *gin.Context) {
 		return
 	}
 
+	ids := make([]int, 0, len(lists))
+
+	for _, list := range lists {
+		ids = append(ids, list.ID)
+	}
+
+	stats, err := handler.repo.GetGuestlistStats(ids)
+	if err != nil {
+		_ = c.Error(InternalServerError.WithCause(err))
+
+		return
+	}
+
+	response := make([]GuestlistWithStats, 0, len(lists))
+
+	for _, list := range lists {
+		response = append(response, GuestlistWithStats{Guestlist: list, GuestlistStats: stats[list.ID]})
+	}
+
 	c.Header("X-Total-Count", strconv.Itoa(int(total)))
-	c.JSON(http.StatusOK, lists)
+	c.JSON(http.StatusOK, response)
+}
+
+// GuestlistWithStats is a guest list in the list endpoint, with how many guests are
+// expected and how many have arrived.
+type GuestlistWithStats struct {
+	models.Guestlist
+	sqliteRepo.GuestlistStats
 }
 
 func (handler *Handler) GetGuestlistByID(c *gin.Context) {
