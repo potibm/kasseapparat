@@ -41,8 +41,16 @@ const AdminPanel: React.FC = () => {
     >
       <Resource name="products" {...products} />
       <Resource name="sections" {...sections} />
-      <Resource name="productGroups" {...productGroups} />
-      <Resource name="productInterests" {...productInterests} />
+      <Resource
+        name="productGroups"
+        options={{ label: "Product groups" }}
+        {...productGroups}
+      />
+      <Resource
+        name="productInterests"
+        options={{ label: "Product interests" }}
+        {...productInterests}
+      />
       <Resource name="guestlists" {...guestlists} />
       <Resource name="guests" {...guests} />
       <Resource name="purchases" {...purchases} />
