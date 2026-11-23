@@ -48,7 +48,8 @@ const ProductGroupMatrix: React.FC<MatrixProps> = ({ groups, ...tapProps }) => {
                 </div>
               )}
             </div>
-            <div className="grid flex-1 grid-cols-[repeat(auto-fill,minmax(4.75rem,1fr))] gap-2">
+            {/* All variants of a group in one row, equally wide. */}
+            <div className="grid min-w-0 flex-1 auto-cols-fr grid-flow-col gap-2">
               {products.map((product) => (
                 <VariantButton
                   key={product.id}

@@ -41,4 +41,17 @@ describe("PosLayout", () => {
 
     expect(document.documentElement).not.toHaveClass(POS_TOUCH_CLASS);
   });
+
+  it("scrolls only the products, not the header", () => {
+    render(
+      <PosLayout sidebar={null} header={<div>header content</div>}>
+        <div>main content</div>
+      </PosLayout>,
+    );
+
+    const scrollArea = screen.getByTestId("pos-products-scroll");
+    expect(scrollArea).toHaveClass("overflow-y-auto");
+    expect(scrollArea).toContainElement(screen.getByText("main content"));
+    expect(scrollArea).not.toContainElement(screen.getByText("header content"));
+  });
 });
