@@ -99,10 +99,10 @@ export const SumupReaderProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   return (
-    <SumupReaderContext.Provider value={value}>
+    <SumupReaderContext value={value}>
       {children}
       {sumupEnabled && dialogOpen && <SumupReaderDialog />}
-    </SumupReaderContext.Provider>
+    </SumupReaderContext>
   );
 };
 

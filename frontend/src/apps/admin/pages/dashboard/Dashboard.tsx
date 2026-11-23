@@ -14,7 +14,7 @@ const Dashboard: React.FC = () => {
     useAutoRefresh();
 
   return (
-    <DashboardRefreshContext.Provider value={tick}>
+    <DashboardRefreshContext value={tick}>
       <Title title="Dashboard" />
       <DashboardToolbar
         enabled={enabled}
@@ -27,7 +27,7 @@ const Dashboard: React.FC = () => {
       <PaymentMethodStatsCard />
       <HourlyRevenueChart />
       <HourlyQuantityChart />
-    </DashboardRefreshContext.Provider>
+    </DashboardRefreshContext>
   );
 };
 

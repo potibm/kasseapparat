@@ -194,7 +194,7 @@ describe("UserMenu", () => {
     const openDialog = vi.fn();
 
     render(
-      <SumupReaderContext.Provider
+      <SumupReaderContext
         value={{
           ...readerContextDefaults,
           enabled: true,
@@ -204,7 +204,7 @@ describe("UserMenu", () => {
         }}
       >
         <UserMenu username="cashier" />
-      </SumupReaderContext.Provider>,
+      </SumupReaderContext>,
     );
     openMenu();
 
