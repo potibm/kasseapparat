@@ -2,7 +2,6 @@ import React from "react";
 import { Spinner } from "flowbite-react";
 import Product from "./_internal/Product";
 import ProductGroupMatrix from "./_internal/ProductGroupMatrix";
-import { DisplayProduct } from "../utils/vanishedProducts";
 import { groupProductsBySection } from "../utils/productSections";
 import { buildSectionBlocks } from "../utils/productBlocks";
 import {
@@ -13,7 +12,7 @@ import {
 } from "../../../api/schemas";
 
 interface ProductListProps {
-  products: DisplayProduct[] | null;
+  products: ProductType[] | null;
   sections?: Section[];
   productGroups?: ProductGroup[];
   loading?: boolean;
@@ -88,7 +87,6 @@ const ProductList: React.FC<ProductListProps> = ({
                       hasListItem={hasListItem}
                       quantityByProductInCart={quantityByProductInCart}
                       addProductInterest={addProductInterest}
-                      vanished={product.vanished}
                     />
                   ))}
                 </div>

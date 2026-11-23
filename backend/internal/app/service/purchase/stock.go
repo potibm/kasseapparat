@@ -32,7 +32,7 @@ func AvailableStock(product models.Product, unitsSold int) (available int, unlim
 // can never start rejecting sales.
 func restrictsStock(behavior config.OutOfStockBehavior) bool {
 	switch behavior {
-	case config.OutOfStockFail, config.OutOfStockAutoSoldOut, config.OutOfStockAutoHide:
+	case config.OutOfStockFail, config.OutOfStockAutoSoldOut:
 		return true
 	default:
 		return false
@@ -111,8 +111,6 @@ func (s *PurchaseService) reconcileStockFlag(
 	switch s.OutOfStockBehavior {
 	case config.OutOfStockAutoSoldOut:
 		soldOut, hidden, managed = s.applyAutoSoldOut(unlimited, depleted, managed, soldOut, hidden)
-	case config.OutOfStockAutoHide:
-		soldOut, hidden, managed = s.applyAutoHide(unlimited, depleted, managed, soldOut, hidden)
 	default:
 		soldOut, hidden, managed = s.releaseManagedFlags(managed, soldOut, hidden)
 	}
@@ -142,22 +140,6 @@ func (s *PurchaseService) applyAutoSoldOut(
 	}
 
 	return depleted, hidden, depleted
-}
-
-// applyAutoHide derives the hidden flag the auto_hide mode owns. A limited product
-// that became unlimited releases a flag the behaviour took over.
-func (s *PurchaseService) applyAutoHide(
-	unlimited, depleted, managed, soldOut, hidden bool,
-) (newSoldOut, newHidden, newManaged bool) {
-	if unlimited {
-		if managed {
-			return soldOut, false, false
-		}
-
-		return soldOut, hidden, managed
-	}
-
-	return soldOut, depleted, depleted
 }
 
 // releaseManagedFlags drops any flag a previous mode took over, which is what makes

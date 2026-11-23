@@ -34,9 +34,6 @@ const (
 	// OutOfStockAutoSoldOut rejects further sales and marks the product sold out once
 	// the stock is depleted.
 	OutOfStockAutoSoldOut OutOfStockBehavior = "auto_sold_out"
-	// OutOfStockAutoHide rejects further sales and hides the product once the stock is
-	// depleted.
-	OutOfStockAutoHide OutOfStockBehavior = "auto_hide"
 )
 
 type AppConfig struct {
@@ -54,7 +51,7 @@ type AppConfig struct {
 	CorsAllowOrigins   CorsAllowOriginsConfig `mapstructure:"cors_allow_origins"  validate:"dive,required"`
 	EnvironmentMessage string                 `mapstructure:"environment_message"`
 
-	OutOfStockBehavior OutOfStockBehavior `mapstructure:"out_of_stock_behavior" validate:"required,oneof=ignore fail auto_sold_out auto_hide"` //nolint:lll // one tag, splitting it would be worse
+	OutOfStockBehavior OutOfStockBehavior `mapstructure:"out_of_stock_behavior" validate:"required,oneof=ignore fail auto_sold_out"` //nolint:lll // one tag, splitting it would be worse
 
 	OtelEndpoint string `mapstructure:"otel_endpoint" validate:"omitempty"`
 	Port         int    `mapstructure:"port"          validate:"required,gt=0,lte=65535"`

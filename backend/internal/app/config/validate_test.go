@@ -45,15 +45,19 @@ func TestOutOfStockBehaviorValidate(t *testing.T) {
 		OutOfStockIgnore,
 		OutOfStockFail,
 		OutOfStockAutoSoldOut,
-		OutOfStockAutoHide,
 	} {
 		cfg := defaultTestConfig
 		cfg.App.OutOfStockBehavior = behavior
 		assert.NoError(t, cfg.Validate(), "behavior %q should be accepted", behavior)
 	}
 
-	// A typo must be rejected at startup rather than silently falling back.
+	// auto_hide was dropped before it was released (ADR 005).
 	cfg := defaultTestConfig
+	cfg.App.OutOfStockBehavior = "auto_hide"
+	assert.Error(t, cfg.Validate())
+
+	// A typo must be rejected at startup rather than silently falling back.
+	cfg = defaultTestConfig
 	cfg.App.OutOfStockBehavior = "faile"
 	err := cfg.Validate()
 	assert.Error(t, err)

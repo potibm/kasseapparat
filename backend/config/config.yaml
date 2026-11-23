@@ -13,7 +13,6 @@ app:
   #   ignore        allow sales beyond the available stock (default)
   #   fail          reject the purchase if it exceeds the available stock
   #   auto_sold_out reject further sales and mark the product sold out
-  #   auto_hide     reject further sales and hide the product
   out_of_stock_behavior: ignore
   port: 8080
 

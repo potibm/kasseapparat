@@ -45,7 +45,7 @@ describe("restrictsStock", () => {
     expect(restrictsStock("ignore")).toBe(false);
   });
 
-  it.each(["fail", "auto_sold_out", "auto_hide"] as const)(
+  it.each(["fail", "auto_sold_out"] as const)(
     "restricts under %s",
     (behavior) => {
       expect(restrictsStock(behavior)).toBe(true);
@@ -61,14 +61,14 @@ describe("canAddMore", () => {
   });
 
   it("is true for an unlimited product in every enforcing mode", () => {
-    for (const behavior of ["fail", "auto_sold_out", "auto_hide"] as const) {
+    for (const behavior of ["fail", "auto_sold_out"] as const) {
       expect(
         canAddMore(product({ totalStock: 0, unitsSold: 500 }), 20, behavior),
       ).toBe(true);
     }
   });
 
-  it.each(["fail", "auto_sold_out", "auto_hide"] as const)(
+  it.each(["fail", "auto_sold_out"] as const)(
     "is true while stock remains under %s",
     (behavior) => {
       expect(
@@ -77,7 +77,7 @@ describe("canAddMore", () => {
     },
   );
 
-  it.each(["fail", "auto_sold_out", "auto_hide"] as const)(
+  it.each(["fail", "auto_sold_out"] as const)(
     "is false once the cart holds the remaining stock under %s",
     (behavior) => {
       // One unit left, one already in the cart.
@@ -87,7 +87,7 @@ describe("canAddMore", () => {
     },
   );
 
-  it.each(["fail", "auto_sold_out", "auto_hide"] as const)(
+  it.each(["fail", "auto_sold_out"] as const)(
     "is false once the stock itself is gone under %s",
     (behavior) => {
       expect(

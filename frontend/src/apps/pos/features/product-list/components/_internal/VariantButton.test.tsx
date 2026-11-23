@@ -43,8 +43,7 @@ const renderVariant = (
   {
     quantityInCart = 0,
     showPrice = false,
-    vanished = false,
-  }: { quantityInCart?: number; showPrice?: boolean; vanished?: boolean } = {},
+  }: { quantityInCart?: number; showPrice?: boolean } = {},
 ) => {
   const addToCart = vi.fn();
 
@@ -56,7 +55,6 @@ const renderVariant = (
       quantityByProductInCart={vi.fn(() => quantityInCart)}
       addProductInterest={vi.fn().mockResolvedValue(undefined)}
       showPrice={showPrice}
-      vanished={vanished}
     />,
   );
 
@@ -122,16 +120,6 @@ describe("VariantButton", () => {
     expect(screen.getByTestId("variant-status-7")).toHaveTextContent(
       "sold out",
     );
-  });
-
-  it("keeps a vanished variant as a disabled placeholder", () => {
-    renderVariant(shirt(), { vanished: true });
-
-    const button = screen.getByRole("button", {
-      name: "👕 Male L is sold out",
-    });
-    expect(button).toBeDisabled();
-    expect(button).toHaveAttribute("data-vanished", "true");
   });
 
   it("marks a product with a guest list", () => {

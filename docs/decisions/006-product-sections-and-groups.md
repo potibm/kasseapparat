@@ -63,9 +63,8 @@ button. A group whose products are all hidden is not shown.
 `409 Conflict` otherwise. Silently moving or ungrouping products would change the POS
 layout as a side effect of a delete.
 
-**Out-of-stock behaviour is unchanged.** It still works per product. Under `auto_hide` a
-sold-out size disappears from the backend's list; the POS keeps its slot as a placeholder
-(see `keepVanishedProducts`), which in the matrix means a disabled size button.
+**Out-of-stock behaviour is unchanged.** It still works per product; in the matrix a
+sold-out size is a struck-through button.
 
 ## API
 

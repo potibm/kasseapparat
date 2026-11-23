@@ -12,13 +12,13 @@ past its stock. That is the right behaviour for drinks and open-ended tickets, a
 wrong one for a fixed run of T-shirts or mugs.
 
 The decision is not whether to restrict stock, but what should happen when it runs out,
-because that differs per event: some merchandise should simply stop selling, some should
-disappear from the POS, and some should keep selling with a nudge.
+because that differs per event: some merchandise should simply stop selling, and some
+should keep selling with a nudge.
 
 ## Decision
 
-**A single global setting, `app.out_of_stock_behavior`, with four values: `ignore`,
-`fail`, `auto_sold_out` and `auto_hide`.**
+**A single global setting, `app.out_of_stock_behavior`, with three values: `ignore`,
+`fail` and `auto_sold_out`.**
 
 `ignore` is the default, and an unset or unrecognised value also behaves as `ignore`. That
 is deliberate: the value is validated at startup so a typo cannot pass unnoticed, but the
@@ -50,12 +50,11 @@ pending purchase would otherwise hold the last units forever, because nothing ex
 
 ## The product flags are derived, not maintained incrementally
 
-`auto_sold_out` and `auto_hide` work through the `sold_out` and `hidden` columns the POS
-already reads: a hidden product is filtered out of the POS list, a sold-out one renders the
-existing "Sold Out" card with its interest dialog. Nothing consumes a flag the API did not
+`auto_sold_out` works through the `sold_out` column the POS already reads: a sold-out
+product renders the existing "Sold Out" card with its interest dialog. Nothing consumes a flag the API did not
 already expose, so a second client needs nothing new to display it.
 
-`PurchaseService.ReconcileStockFlags` derives both columns from the stock in one pass over
+`PurchaseService.ReconcileStockFlags` derives the column from the stock in one pass over
 all products, and runs after a purchase is stored, after every purchase status change, after
 a product is edited, after a purchase is deleted, and once at startup:
 
@@ -80,9 +79,18 @@ free of writes.
 
 ## Considered and rejected: a per-product override
 
-A global setting is what the story asked for and is the smallest thing that covers the four
+A global setting is what the story asked for and is the smallest thing that covers the
 cases. A per-product override would be a natural follow-up, and the aggregation point is
 already per product, so it would not be a rewrite.
+
+## Considered and rejected: hiding sold-out products
+
+An `auto_hide` mode that removes a depleted product from the POS was part of the first
+draft. It was dropped before release: a sold-out card is useful – it says "Sold out · N
+interested" and collects interest – and takes little room, in a product group only a
+struck-through size button (ADR 006). Hiding would also make the grid shift mid-sale, which
+needed placeholder slots in the POS, and would make `hidden` a system-owned flag instead of
+a free manual choice. An event that wants sold-out merchandise gone hides it by hand.
 
 ## Considered and rejected: a stock counter column
 

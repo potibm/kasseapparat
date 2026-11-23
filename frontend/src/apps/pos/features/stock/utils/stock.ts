@@ -26,11 +26,7 @@ export function availableStock(
 
 /** Whether the behaviour stops a sale that exceeds the stock. */
 export function restrictsStock(behavior: OutOfStockBehavior): boolean {
-  return (
-    behavior === "fail" ||
-    behavior === "auto_sold_out" ||
-    behavior === "auto_hide"
-  );
+  return behavior === "fail" || behavior === "auto_sold_out";
 }
 
 /**
