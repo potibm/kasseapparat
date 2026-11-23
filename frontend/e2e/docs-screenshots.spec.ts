@@ -53,7 +53,10 @@ test.describe("documentation screenshots", () => {
     await pos.openGuestlistModal(TEST_PRODUCTS.FREE_TICKET);
     await page.getByRole("button", { name: "Add J to search term" }).click();
     await page.getByRole("button", { name: "Add E to search term" }).click();
-    await expect(page.getByTestId("guestlist-result-table")).toBeVisible();
+    // Wait for the filtered results, not the full list shown before the search.
+    await expect(page.getByTestId("guestlist-result-table")).toContainText(
+      "matching „JE“",
+    );
 
     await shoot(page, "pos-list.png");
   });
