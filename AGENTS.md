@@ -100,16 +100,6 @@ CI order: `deps:install` → `lint` → `test` → `docker:build`.
 
 ---
 
-## Branches and pull requests
-
-> **Temporary (v4 development):** remove or rewrite this section before `feat/v4` is merged into `main`.
-
-- **While v4 is in development, every PR targets `feat/v4`** — features, bugfixes, refactorings, docs, without exception. Never open a PR against `main` unless the maintainer explicitly asks for it.
-- Merging into `main` triggers semantic-release and publishes a new version immediately, so a PR against `main` by mistake ships a release.
-- Keep PRs small: one step per PR, and the POS must stay usable after each one.
-
----
-
 ## Database / data directories
 
 SQLite file lives in `backend/data/`.  
