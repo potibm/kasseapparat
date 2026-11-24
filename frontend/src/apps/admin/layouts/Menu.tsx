@@ -15,6 +15,8 @@ export const Menu: React.FC = () => {
 
       <MenuDivider name="POS" />
       <RaMenu.ResourceItem name="products" />
+      <RaMenu.ResourceItem name="sections" />
+      <RaMenu.ResourceItem name="productGroups" />
       <RaMenu.ResourceItem name="purchases" />
       <RaMenu.ResourceItem name="productInterests" />
 

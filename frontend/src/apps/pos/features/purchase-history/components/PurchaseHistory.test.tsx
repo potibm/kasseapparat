@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PurchaseHistory from "./PurchaseHistory";
+import { REFUND_WINDOW_MS, summarizeItems } from "../utils/purchase.utils";
 import Decimal from "decimal.js";
 import { Purchase } from "../../../api/schemas";
 
@@ -23,6 +24,10 @@ vi.mock("@core/config/hooks/useConfig", () => ({
     }),
     dateLocale: "en-US",
     dateOptions: { dateStyle: "short", timeStyle: "short" },
+    paymentMethods: [
+      { code: "CASH", name: "Cash" },
+      { code: "SUMUP", name: "Card" },
+    ],
   }),
 }));
 
@@ -77,13 +82,22 @@ const mockResumePolling = vi.fn();
 const createMockPurchase = (
   id: string,
   status: "confirmed" | "pending" = "confirmed",
+  createdAt: string = new Date().toISOString(), // within the refund window
 ): Purchase =>
   ({
     id,
     status,
-    createdAt: "2026-04-08T12:00:00Z", // Festes Datum für konsistente Tests
+    createdAt,
+    paymentMethod: "CASH",
     totalGrossPrice: new Decimal(25.5),
+    purchaseItems: [
+      { quantity: 2, product: { name: "Mate" } },
+      { quantity: 1, product: { name: "Beer" } },
+    ],
   }) as unknown as Purchase;
+
+const minutesAgo = (minutes: number) =>
+  new Date(Date.now() - minutes * 60 * 1000).toISOString();
 
 const defaultProps = {
   history: [],
@@ -121,9 +135,144 @@ describe("PurchaseHistory Component", () => {
       ];
       render(<PurchaseHistory {...defaultProps} history={history} />);
 
-      const rows = screen.getAllByRole("row");
-      // 1 Header-Row + 3 Daten-Rows = 4 Rows total
-      expect(rows).toHaveLength(4);
+      expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    });
+  });
+
+  describe("Compact rows", () => {
+    it("shows only the time and keeps the full date as a tooltip", () => {
+      const purchase = createMockPurchase("1");
+      render(<PurchaseHistory {...defaultProps} history={[purchase]} />);
+
+      const createdAt = new Date(purchase.createdAt);
+      const time = createdAt.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const fullDate = createdAt.toLocaleString("en-US", {
+        dateStyle: "short",
+        timeStyle: "short",
+      });
+
+      const cell = screen.getByText(time);
+      expect(cell).toHaveAttribute("title", fullDate);
+      expect(screen.getByText("Recent sales")).toBeInTheDocument();
+    });
+  });
+
+  describe("Sale details", () => {
+    it("shows payment method and a short summary of the items", () => {
+      render(
+        <PurchaseHistory
+          {...defaultProps}
+          history={[createMockPurchase("1")]}
+        />,
+      );
+
+      const row = screen.getByTestId("purchase-1");
+      expect(row).toHaveTextContent("$25.50");
+      expect(row).toHaveTextContent("Cash");
+      expect(row).toHaveTextContent("2× Mate, Beer");
+    });
+
+    it("marks pending card payments and offers a labelled resume button", () => {
+      render(
+        <PurchaseHistory
+          {...defaultProps}
+          history={[createMockPurchase("p1", "pending")]}
+        />,
+      );
+
+      const row = screen.getByTestId("purchase-p1");
+      expect(row).toHaveTextContent("Pending on reader");
+      expect(
+        screen.getByRole("button", { name: "Resume purchase" }),
+      ).toHaveTextContent("Resume");
+      expect(
+        screen.queryByTestId("refund-purchase-p1"),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Refund time limit (ADR 001)", () => {
+    it("offers a labelled refund button within 15 minutes", () => {
+      render(
+        <PurchaseHistory
+          {...defaultProps}
+          history={[createMockPurchase("1", "confirmed", minutesAgo(14))]}
+        />,
+      );
+
+      expect(screen.getByTestId("refund-purchase-1")).toHaveTextContent(
+        "Refund",
+      );
+      expect(screen.queryByTestId("refund-closed-1")).not.toBeInTheDocument();
+    });
+
+    it("shows a lock instead of the refund button after 15 minutes", () => {
+      render(
+        <PurchaseHistory
+          {...defaultProps}
+          history={[createMockPurchase("1", "confirmed", minutesAgo(16))]}
+        />,
+      );
+
+      expect(screen.queryByTestId("refund-purchase-1")).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("img", { name: "Refund window closed" }),
+      ).toBeInTheDocument();
+    });
+
+    it("lets admins refund older purchases", () => {
+      render(
+        <PurchaseHistory
+          {...defaultProps}
+          canRefundAnytime={true}
+          history={[createMockPurchase("1", "confirmed", minutesAgo(60))]}
+        />,
+      );
+
+      expect(screen.getByTestId("refund-purchase-1")).toBeInTheDocument();
+    });
+
+    it("closes the refund window while the POS stays open", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-11-19T10:00:00Z"));
+      const createdAt = new Date(
+        Date.now() - REFUND_WINDOW_MS + 10_000,
+      ).toISOString();
+
+      render(
+        <PurchaseHistory
+          {...defaultProps}
+          history={[createMockPurchase("1", "confirmed", createdAt)]}
+        />,
+      );
+      expect(screen.getByTestId("refund-purchase-1")).toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(30_000);
+      });
+
+      expect(screen.queryByTestId("refund-purchase-1")).not.toBeInTheDocument();
+      expect(screen.getByTestId("refund-closed-1")).toBeInTheDocument();
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe("summarizeItems()", () => {
+    it("lists items with their quantity, omitting a quantity of one", () => {
+      expect(summarizeItems(createMockPurchase("1"))).toBe("2× Mate, Beer");
+    });
+
+    it("returns an empty string for a purchase without items", () => {
+      const purchase = {
+        ...createMockPurchase("1"),
+        purchaseItems: [],
+      } as unknown as Purchase;
+
+      expect(summarizeItems(purchase)).toBe("");
     });
   });
 

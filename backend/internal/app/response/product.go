@@ -12,7 +12,6 @@ type ProductResponse struct {
 	GrossPrice          decimal.Decimal    `json:"grossPrice"`
 	VATRate             decimal.Decimal    `json:"vatRate"`
 	VATAmount           decimal.Decimal    `json:"vatAmount"`
-	WrapAfter           bool               `json:"wrapAfter"`
 	Hidden              bool               `json:"hidden"`
 	SoldOut             bool               `json:"soldOut"`
 	APIExport           bool               `json:"apiExport"`
@@ -21,6 +20,9 @@ type ProductResponse struct {
 	UnitsSold           int                `json:"unitsSold"`
 	SoldOutRequestCount int                `json:"soldOutRequestCount"`
 	Guestlists          []models.Guestlist `json:"guestlists"`
+	SectionID           int                `json:"sectionId"`
+	ProductGroupID      *int               `json:"productGroupId"`
+	Variant             string             `json:"variant"`
 }
 
 type ExtendedProductResponse struct {
@@ -38,7 +40,6 @@ func ToProductResponse(product models.Product, decimalPlaces int32) ProductRespo
 		GrossPrice:          product.GrossPrice(decimalPlaces),
 		VATRate:             product.VATRate,
 		VATAmount:           product.VATAmount(decimalPlaces),
-		WrapAfter:           product.WrapAfter,
 		Hidden:              product.Hidden,
 		SoldOut:             product.SoldOut,
 		APIExport:           product.APIExport,
@@ -47,6 +48,9 @@ func ToProductResponse(product models.Product, decimalPlaces int32) ProductRespo
 		UnitsSold:           product.UnitsSold,
 		SoldOutRequestCount: product.SoldOutRequestCount,
 		Guestlists:          product.Guestlists,
+		SectionID:           product.SectionID,
+		ProductGroupID:      product.ProductGroupID,
+		Variant:             product.Variant,
 	}
 
 	return response
@@ -54,8 +58,7 @@ func ToProductResponse(product models.Product, decimalPlaces int32) ProductRespo
 
 func ToExtendedProductResponse(
 	product models.Product,
-	unitsSold int,
-	soldOutRequestCount int,
+	unitsSold, soldOutRequestCount int,
 	decimalPlaces int32,
 ) ExtendedProductResponse {
 	response := ExtendedProductResponse{

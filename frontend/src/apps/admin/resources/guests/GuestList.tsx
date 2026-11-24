@@ -6,7 +6,9 @@ import {
   NumberField,
   DateField,
   ListProps,
+  SimpleList,
 } from "react-admin";
+import { useIsSmallScreen } from "@admin/ui/hooks/useIsSmallScreen";
 import GuestActions from "./components/GuestActions";
 import { GuestFilters } from "./components/GuestFilters";
 import { useConfig } from "@core/config/hooks/useConfig";
@@ -15,6 +17,7 @@ import { AttendedGuestsBooleanField } from "./components/AttendedGuestsBooleanFi
 
 export const GuestList: React.FC<ListProps> = (props) => {
   const { dateLocale } = useConfig();
+  const isSmall = useIsSmallScreen();
 
   return (
     <List
@@ -23,21 +26,38 @@ export const GuestList: React.FC<ListProps> = (props) => {
       actions={<GuestActions />}
       {...props}
     >
-      <Datagrid rowClick="edit" bulkActionButtons={false}>
-        <NumberField source="id" />
-        <TextField source="name" />
-        <TextField source="guestlist.name" label="Guestlist" />
-        <NumberField source="additionalGuests" sortable={false} />
-        <AttendedGuestsBooleanField label="present" sortable={false} />
-        <DateField
-          source="arrivedAt"
-          showTime={true}
-          emptyText="-"
-          locales={dateLocale}
-          options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
+      {isSmall ? (
+        <SimpleList
+          linkType="edit"
+          primaryText={(guest) => guest.name}
+          secondaryText={(guest) => guest.guestlist?.name ?? ""}
+          tertiaryText={(guest) =>
+            guest.arrivedAt
+              ? "arrived " +
+                new Date(guest.arrivedAt).toLocaleTimeString(dateLocale, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : ""
+          }
         />
-        <ConditionalDeleteOnOwnershipButton mutationMode="pessimistic" />
-      </Datagrid>
+      ) : (
+        <Datagrid rowClick="edit" bulkActionButtons={false}>
+          <NumberField source="id" />
+          <TextField source="name" />
+          <TextField source="guestlist.name" label="Guestlist" />
+          <NumberField source="additionalGuests" sortable={false} />
+          <AttendedGuestsBooleanField label="present" sortable={false} />
+          <DateField
+            source="arrivedAt"
+            showTime={true}
+            emptyText="-"
+            locales={dateLocale}
+            options={{ weekday: "short", hour: "2-digit", minute: "2-digit" }}
+          />
+          <ConditionalDeleteOnOwnershipButton mutationMode="pessimistic" />
+        </Datagrid>
+      )}
     </List>
   );
 };

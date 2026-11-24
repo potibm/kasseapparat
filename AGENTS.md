@@ -38,6 +38,9 @@ Lint with auto-fix: `mise run lint --fix`
 
 Docker image check: `mise run docker:build` (uses a custom `kasseapparat-builder` buildx builder)
 
+Manual screenshots: `mise run docs:screenshots` (Playwright on the iPad project, copies the PNGs to `docs/`)  
+Manual PDF: `mise run docs:manual`
+
 ---
 
 ## Critical gotchas
@@ -93,6 +96,7 @@ CI order: `deps:install` → `lint` → `test` → `docker:build`.
 - **Backend**: `go test -v -coverprofile=coverage.out ./...` (run from `backend/`).
 - **Frontend**: `vitest`, jsdom, globals enabled, coverage via v8 (`frontend/coverage/lcov.info`).
 - SonarCloud ingests `backend/coverage.out` and `frontend/coverage/lcov.info`.
+- **Coverage on new code must be ≥ 80 %.** SonarCloud's quality gate checks this on every PR. Tests belong in the same PR as the code they cover — never "tests follow later". Exceptions are decided by the maintainer only; do not lower the bar on your own.
 
 ---
 

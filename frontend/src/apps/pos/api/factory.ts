@@ -1,6 +1,9 @@
 import { getValidated, postValidated } from "@core/api/client";
 import {
   ProductSchema,
+  SectionSchema,
+  ProductGroupSchema,
+  SumupReaderSchema,
   GuestSchema,
   Guest,
   Purchase,
@@ -26,10 +29,26 @@ export const createPosApiClient = (apiBaseUrl: string) => {
       );
       return getValidated(url, z.array(ProductSchema));
     },
+    // Fetch the product sections in display order
+    fetchSections: async () => {
+      const url = buildUrl("/sections?_end=1000&_sort=pos&_order=asc");
+      return getValidated(url, z.array(SectionSchema));
+    },
+    // Fetch the SumUp card readers paired with the merchant account
+    fetchSumupReaders: async () => {
+      const url = buildUrl("/sumup/readers");
+      return getValidated(url, z.array(SumupReaderSchema));
+    },
+    // Fetch the product groups (variants such as shirt sizes) in display order
+    fetchProductGroups: async () => {
+      const url = buildUrl("/productGroups?_end=1000&_sort=pos&_order=asc");
+      return getValidated(url, z.array(ProductGroupSchema));
+    },
     // Fetch guests for a specific product
     fetchGuestlistByProductId: async (
       productId: number,
       query: string,
+      signal?: AbortSignal,
     ): Promise<Guest[]> => {
       const url = buildUrl(
         `/products/${productId}/guests?q=${encodeURIComponent(query)}`,
@@ -38,7 +57,7 @@ export const createPosApiClient = (apiBaseUrl: string) => {
         (val) => (val === null ? [] : val),
         z.array(GuestSchema),
       );
-      return getValidated(url, GuestListSchema);
+      return getValidated(url, GuestListSchema, { signal });
     },
     // Store a new purchase
     storePurchase: async (

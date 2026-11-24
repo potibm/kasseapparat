@@ -19,10 +19,8 @@ var guestlistSortFieldMappings = map[string]string{
 }
 
 func (repo *Repository) GetGuestlists(
-	limit int,
-	offset int,
-	sort string,
-	order string,
+	limit, offset int,
+	sort, order string,
 	filters GuestlistFilters,
 ) ([]models.Guestlist, error) {
 	if order != "ASC" && order != "DESC" {
@@ -57,7 +55,7 @@ func getListsValidSortFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("invalid sort field name")
+	return "", ErrInvalidSortField
 }
 
 func (repo *Repository) GetTotalGuestlists() (int64, error) {

@@ -3,8 +3,10 @@ package sqlite
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/potibm/kasseapparat/internal/app/models"
+	"gorm.io/gorm"
 )
 
 var ErrProductNotFound = errors.New("product not found")
@@ -15,14 +17,32 @@ var productSortFieldMappings = map[string]string{
 	"vatRate":    "Vat_Rate",
 	"grossPrice": "Net_Price * (1+ (Vat_Rate / 100))",
 	"pos":        "Pos",
+	"sectionId":  "Section_Id",
+}
+
+// ProductFilters narrows a product or product group list. An empty slice does not
+// filter. Both tables have the id and section_id columns it filters on.
+type ProductFilters struct {
+	IDs        []int
+	SectionIDs []int
+}
+
+func (filters ProductFilters) apply(query *gorm.DB) *gorm.DB {
+	if len(filters.IDs) > 0 {
+		query = query.Where("Id IN ?", filters.IDs)
+	}
+
+	if len(filters.SectionIDs) > 0 {
+		query = query.Where("Section_Id IN ?", filters.SectionIDs)
+	}
+
+	return query
 }
 
 func (repo *Repository) GetProducts(
-	limit int,
-	offset int,
-	sort string,
-	order string,
-	ids []int,
+	limit, offset int,
+	sort, order string,
+	filters ProductFilters,
 ) ([]models.Product, error) {
 	if order != "ASC" && order != "DESC" {
 		order = "ASC"
@@ -35,15 +55,11 @@ func (repo *Repository) GetProducts(
 
 	var products []models.Product
 
-	query := repo.db.Table("Products").
+	query := filters.apply(repo.db.Table("Products")).
 		Preload("Guestlists").
-		Order(sortField + " " + order + ", Pos ASC, Id ASC").
+		Order(sortField + " " + order + ", Pos, Id ASC").
 		Limit(limit).
 		Offset(offset)
-
-	if len(ids) > 0 {
-		query = query.Where("Id IN ?", ids)
-	}
 
 	if err := query.Find(&products).Error; err != nil {
 		return nil, errors.New("products not found")
@@ -57,13 +73,55 @@ func getProductsValidSortFieldName(input string) (string, error) {
 		return field, nil
 	}
 
-	return "", errors.New("invalid sort field name")
+	return "", ErrInvalidSortField
 }
 
-func (repo *Repository) GetTotalProducts() (int64, error) {
+// GetProductsForStockReconciliation loads the products the stock reconciliation walks,
+// without the guestlist preload the rest of the application wants. Only the columns the
+// reconciliation reads are selected, so it never touches a product it does not write.
+func (repo *Repository) GetProductsForStockReconciliation() ([]models.Product, error) {
+	var products []models.Product
+
+	err := repo.db.Model(&models.Product{}).
+		Select("id", "name", "total_stock", "sold_out", "hidden", "stock_flags_managed").
+		Order("id ASC").
+		Find(&products).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to load products for stock reconciliation: %w", err)
+	}
+
+	return products, nil
+}
+
+// UpdateProductStockFlags writes the two product flags and their ownership, and nothing
+// else. Going through UpdateProductByID would read the product first and copy every
+// field over it, which would blank out anything the caller did not load.
+func (repo *Repository) UpdateProductStockFlags(
+	id int,
+	soldOut, hidden, managed bool,
+) error {
+	result := repo.db.Model(&models.Product{}).
+		Where("id = ?", id).
+		Updates(map[string]any{
+			"sold_out":            soldOut,
+			"hidden":              hidden,
+			"stock_flags_managed": managed,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrProductNotFound
+	}
+
+	return nil
+}
+
+func (repo *Repository) GetTotalProducts(filters ProductFilters) (int64, error) {
 	var totalRows int64
 
-	repo.db.Model(&models.Product{}).Count(&totalRows)
+	filters.apply(repo.db.Model(&models.Product{})).Count(&totalRows)
 
 	return totalRows, nil
 }
@@ -88,11 +146,14 @@ func (repo *Repository) UpdateProductByID(id int, updatedProduct models.Product)
 	product.Pos = updatedProduct.Pos
 	product.NetPrice = updatedProduct.NetPrice
 	product.VATRate = updatedProduct.VATRate
-	product.WrapAfter = updatedProduct.WrapAfter
 	product.APIExport = updatedProduct.APIExport
 	product.Hidden = updatedProduct.Hidden
 	product.SoldOut = updatedProduct.SoldOut
 	product.TotalStock = updatedProduct.TotalStock
+	product.StockFlagsManaged = updatedProduct.StockFlagsManaged
+	product.SectionID = updatedProduct.SectionID
+	product.ProductGroupID = updatedProduct.ProductGroupID
+	product.Variant = updatedProduct.Variant
 
 	// Save the updated product to the database
 	if err := repo.db.Save(&product).Error; err != nil {

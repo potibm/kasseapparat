@@ -32,7 +32,7 @@ type GuestRepository interface {
 }
 
 type GuestCRUDRepository interface {
-	GetGuests(limit int, offset int, sort string, order string, filters GuestFilters) ([]models.Guest, error)
+	GetGuests(limit, offset int, sort, order string, filters GuestFilters) ([]models.Guest, error)
 	GetGuestByID(id int) (*models.Guest, error)
 	UpdateGuestByID(id int, updatedGuest models.Guest) (*models.Guest, error)
 	CreateGuest(guest models.Guest) (models.Guest, error)
@@ -42,13 +42,12 @@ type GuestCRUDRepository interface {
 
 type GuestlistRepository interface {
 	GetGuestlists(
-		limit int,
-		offset int,
-		sort string,
-		order string,
+		limit, offset int,
+		sort, order string,
 		filters GuestlistFilters,
 	) ([]models.Guestlist, error)
 	GetTotalGuestlists() (int64, error)
+	GetGuestlistStats(ids []int) (map[int]GuestlistStats, error)
 	GetGuestlistByID(id int) (*models.Guestlist, error)
 	GetGuestlistWithTypeCode() (*models.Guestlist, error)
 	UpdateGuestlistByID(id int, updatedGuestlist models.Guestlist) (*models.Guestlist, error)
@@ -57,7 +56,7 @@ type GuestlistRepository interface {
 }
 
 type ProductInterestRepository interface {
-	GetProductInterests(limit int, offset int, ids []int) ([]models.ProductInterest, error)
+	GetProductInterests(limit, offset int, ids []int) ([]models.ProductInterest, error)
 	GetTotalProductInterests() (int64, error)
 	GetProductInterestByID(id int) (*models.ProductInterest, error)
 	DeleteProductInterest(productInterest models.ProductInterest)
@@ -67,13 +66,40 @@ type ProductInterestRepository interface {
 
 type ProductRepository interface {
 	GetProductStats() ([]response.ProductStats, error)
-	GetProducts(limit int, offset int, sort string, order string, ids []int) ([]models.Product, error)
-	GetTotalProducts() (int64, error)
+	GetProducts(limit, offset int, sort, order string, filters ProductFilters) ([]models.Product, error)
+	GetTotalProducts(filters ProductFilters) (int64, error)
 	GetProductByID(id int) (*models.Product, error)
 	UpdateProductByID(id int, updatedProduct models.Product) (*models.Product, error)
 	CreateProduct(product models.Product) (models.Product, error)
 	DeleteProduct(product models.Product)
 	GetAttendedGuestSumByProductID(productID int) (int, error)
+	GetProductsForStockReconciliation() ([]models.Product, error)
+	UpdateProductStockFlags(id int, soldOut, hidden, managed bool) error
+}
+
+type SectionRepository interface {
+	GetSections(limit, offset int, sort, order string, ids []int) ([]models.Section, error)
+	GetTotalSections() (int64, error)
+	GetSectionByID(id int) (*models.Section, error)
+	GetOrCreateDefaultSection() (*models.Section, error)
+	CreateSection(section models.Section) (models.Section, error)
+	UpdateSectionByID(id int, updatedSection models.Section) (*models.Section, error)
+	DeleteSection(section models.Section) error
+}
+
+type ProductGroupRepository interface {
+	GetProductGroups(
+		limit int,
+		offset int,
+		sort string,
+		order string,
+		filters ProductFilters,
+	) ([]models.ProductGroup, error)
+	GetTotalProductGroups(filters ProductFilters) (int64, error)
+	GetProductGroupByID(id int) (*models.ProductGroup, error)
+	CreateProductGroup(group models.ProductGroup) (models.ProductGroup, error)
+	UpdateProductGroupByID(id int, updatedGroup models.ProductGroup) (*models.ProductGroup, error)
+	DeleteProductGroup(group models.ProductGroup) error
 }
 
 //nolint:interfacebloat // Repository interface aggregates all domain-specific interfaces
@@ -90,6 +116,7 @@ type PurchaseRepository interface {
 	GetFilteredPurchases(filters PurchaseFilters) ([]models.PurchaseItem, error)
 	GetPurchaseStats() ([]ProductPurchaseStats, error)
 	GetPurchasedQuantitiesByProductID(productID int) (int, error)
+	GetUnitsSoldByProductID() (map[int]int, error)
 	GetPaymentMethodStats() ([]response.PaymentMethodStats, error)
 	GetHourlyRevenueStats() ([]response.HourlyRevenueStats, error)
 	GetHourlyQuantityStats() ([]response.HourlyQuantityStats, error)
@@ -100,7 +127,7 @@ type PurchaseCRUDRepository interface {
 	DeletePurchaseByID(id uuid.UUID)
 	GetPurchaseByID(id uuid.UUID) (*models.Purchase, error)
 	GetTotalPurchases(filters PurchaseFilters) (int64, error)
-	GetPurchases(limit int, offset int, sort string, order string, filters PurchaseFilters) ([]models.Purchase, error)
+	GetPurchases(limit, offset int, sort, order string, filters PurchaseFilters) ([]models.Purchase, error)
 }
 
 type Pinger interface {
@@ -114,6 +141,8 @@ type RepositoryInterface interface {
 	ProductInterestRepository
 	ProductRepository
 	PurchaseRepository
+	SectionRepository
+	ProductGroupRepository
 	Pinger
 }
 

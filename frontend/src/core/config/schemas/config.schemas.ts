@@ -26,10 +26,19 @@ export const ConfigSchema = z.object({
       z.object({
         code: z.string(),
         name: z.string(),
+        /** Ask for the amount received and show the change before booking. */
+        changeCalculator: z.boolean().default(false),
       }),
     )
     .default([]),
   authMode: z.enum(["proxy", "oidc"]).default("proxy"),
+  /**
+   * What the backend does when a product with limited stock runs out. Defaults to
+   * "ignore" so a build served by an older backend keeps its previous behaviour.
+   */
+  outOfStockBehavior: z
+    .enum(["ignore", "fail", "auto_sold_out"])
+    .default("ignore"),
   /** @deprecated: Will be removed in favor of dateLocale or currencyLocale */
   locale: z.string().default("da-DK"),
 });

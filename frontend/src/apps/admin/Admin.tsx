@@ -2,6 +2,8 @@ import React, { useMemo } from "react";
 import { Admin, Resource } from "react-admin";
 import { createDataProvider } from "./providers/dataProvider";
 import products from "./resources/products";
+import sections from "./resources/sections";
+import productGroups from "./resources/productGroups";
 import productInterests from "./resources/product-interests";
 import purchases from "./resources/purchases";
 import guests from "./resources/guests";
@@ -38,7 +40,17 @@ const AdminPanel: React.FC = () => {
       basename="/admin"
     >
       <Resource name="products" {...products} />
-      <Resource name="productInterests" {...productInterests} />
+      <Resource name="sections" {...sections} />
+      <Resource
+        name="productGroups"
+        options={{ label: "Product groups" }}
+        {...productGroups}
+      />
+      <Resource
+        name="productInterests"
+        options={{ label: "Product interests" }}
+        {...productInterests}
+      />
       <Resource name="guestlists" {...guestlists} />
       <Resource name="guests" {...guests} />
       <Resource name="purchases" {...purchases} />

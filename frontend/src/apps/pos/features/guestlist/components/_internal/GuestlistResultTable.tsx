@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Table,
-  Alert,
-  Spinner,
-  TableHead,
-  TableHeadCell,
-  TableBody,
-  TableRow,
-} from "flowbite-react";
+import { Alert, Spinner } from "flowbite-react";
 import { HiInformationCircle, HiXCircle } from "react-icons/hi";
 import GuestlistResultTableRow from "./GuestlistResultTableRow";
 import { Guest as GuestType } from "@pos/api/schemas";
@@ -19,6 +11,9 @@ interface GuestlistResultTableProps {
   onAddToCart: (listEntry: GuestType, additionalGuests: number) => void;
   hasListItem: (guest: GuestType) => boolean;
   loadedSearchQuery: string;
+  /** The guest whose arrival note is shown after the check-in. */
+  noteGuestId?: number | null;
+  onAcknowledgeNote?: () => void;
 }
 
 const GuestlistResultTable: React.FC<GuestlistResultTableProps> = ({
@@ -28,11 +23,13 @@ const GuestlistResultTable: React.FC<GuestlistResultTableProps> = ({
   onAddToCart,
   hasListItem,
   loadedSearchQuery,
+  noteGuestId = null,
+  onAcknowledgeNote,
 }) => {
   return (
     <>
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/75 dark:bg-gray-900/75">
           <Spinner size="xl" />
         </div>
       )}
@@ -50,31 +47,28 @@ const GuestlistResultTable: React.FC<GuestlistResultTableProps> = ({
       )}
 
       {guestlistEntries.length > 0 && (
-        <div className="space-y-4">
-          <Table
-            hoverable
-            className="dark:text-white"
-            data-testid="guestlist-result-table"
-          >
-            <TableHead>
-              <TableRow>
-                <TableHeadCell className="w-1/12"></TableHeadCell>
-                <TableHeadCell className="w-5/12">Name</TableHeadCell>
-                <TableHeadCell className="w-6/12">Action</TableHeadCell>
-              </TableRow>
-            </TableHead>
-            <TableBody className="divide-y">
-              {guestlistEntries.map((entry) => (
-                <GuestlistResultTableRow
-                  key={entry.id}
-                  entry={entry}
-                  onAddToCart={onAddToCart}
-                  hasListItem={hasListItem}
-                  loadedSearchQuery={loadedSearchQuery}
-                />
-              ))}
-            </TableBody>
-          </Table>
+        <div
+          className="flex flex-col gap-3"
+          data-testid="guestlist-result-table"
+        >
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            <b>{guestlistEntries.length}</b>{" "}
+            {guestlistEntries.length === 1 ? "guest" : "guests"}
+            {loadedSearchQuery.trim() !== "" && (
+              <> matching „{loadedSearchQuery.trim()}“</>
+            )}
+          </div>
+          {guestlistEntries.map((entry) => (
+            <GuestlistResultTableRow
+              key={entry.id}
+              entry={entry}
+              onAddToCart={onAddToCart}
+              hasListItem={hasListItem}
+              loadedSearchQuery={loadedSearchQuery}
+              showArrivalNote={entry.id === noteGuestId}
+              onAcknowledgeNote={onAcknowledgeNote}
+            />
+          ))}
         </div>
       )}
     </>

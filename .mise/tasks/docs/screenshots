@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#MISE description="Take the manual screenshots with Playwright and copy them to docs/"
+#MISE depends=["e2e:install", "e2e:setup"]
+
+set -e
+
+cd frontend
+
+echo "🧹 Removing old screenshots..."
+rm -rf docs-screenshots
+
+echo "📸 Taking screenshots on the iPad project..."
+npx playwright test e2e/docs-screenshots.spec.ts --project="iPad air (landscape)"
+
+echo "📁 Copying screenshots to docs/..."
+cp docs-screenshots/*.png ../docs/
+for file in docs-screenshots/*.png; do
+    echo "   docs/${file#docs-screenshots/}"
+done

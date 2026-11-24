@@ -5,31 +5,48 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/potibm/kasseapparat/internal/app/config"
 	"github.com/potibm/kasseapparat/internal/app/models"
 	sqliteRepo "github.com/potibm/kasseapparat/internal/app/repository/sqlite"
 	response "github.com/potibm/kasseapparat/internal/app/response"
+	purchaseService "github.com/potibm/kasseapparat/internal/app/service/purchase"
 	"github.com/shopspring/decimal"
 )
 
+// ProductRequestCreate is the body for a new product. SectionID and ProductGroupID are
+// optional: without them the product goes into the default section. A product in a
+// group always takes the group's section (ADR 006).
 type ProductRequestCreate struct {
-	Name      string          `json:"name"      form:"name"      binding:"required"`
-	NetPrice  decimal.Decimal `json:"netPrice"  form:"netPrice"  binding:"required"`
-	VATRate   decimal.Decimal `json:"vatRate"   form:"vatRate"   binding:"required"`
-	WrapAfter bool            `json:"wrapAfter" form:"wrapAfter"`
-	Pos       int             `json:"pos"       form:"pos"       binding:"numeric,required"`
-	Hidden    bool            `json:"hidden"    form:"hidden"    binding:"boolean"`
+	Name           string          `json:"name"           form:"name"           binding:"required"`
+	NetPrice       decimal.Decimal `json:"netPrice"       form:"netPrice"       binding:"required"`
+	VATRate        decimal.Decimal `json:"vatRate"        form:"vatRate"        binding:"required"`
+	Pos            int             `json:"pos"            form:"pos"            binding:"numeric,required"`
+	Hidden         bool            `json:"hidden"         form:"hidden"         binding:"boolean"`
+	SectionID      int             `json:"sectionId"      form:"sectionId"`
+	ProductGroupID *int            `json:"productGroupId" form:"productGroupId"`
+	Variant        string          `json:"variant"        form:"variant"`
 }
 
+// ProductRequestUpdate is the body for editing a product.
+//
+// SectionID: omitted or 0 keeps the current section. 0 does not mean "the default
+// section" – to move a product there, send that section's id.
+//
+// ProductGroupID: omitted or null keeps the current group, 0 takes the product out of
+// its group, any other id moves it into that group. A product in a group always takes
+// the group's section; a SectionID sent along is ignored then (ADR 006).
 type ProductRequestUpdate struct {
-	Name       string          `json:"name"       form:"name"       binding:"required"`
-	NetPrice   decimal.Decimal `json:"netPrice"   form:"netPrice"   binding:"required"`
-	VATRate    decimal.Decimal `json:"vatRate"    form:"vatRate"    binding:"required"`
-	WrapAfter  bool            `json:"wrapAfter"  form:"wrapAfter"`
-	Pos        int             `json:"pos"        form:"pos"        binding:"numeric,required"`
-	APIExport  bool            `json:"apiExport"  form:"apiExport"  binding:"boolean"`
-	Hidden     bool            `json:"hidden"     form:"hidden"     binding:"boolean"`
-	SoldOut    bool            `json:"soldOut"    form:"soldOut"    binding:"boolean"`
-	TotalStock int             `json:"totalStock" form:"totalStock" binding:"numeric"`
+	Name           string          `json:"name"           form:"name"           binding:"required"`
+	NetPrice       decimal.Decimal `json:"netPrice"       form:"netPrice"       binding:"required"`
+	VATRate        decimal.Decimal `json:"vatRate"        form:"vatRate"        binding:"required"`
+	Pos            int             `json:"pos"            form:"pos"            binding:"numeric,required"`
+	APIExport      bool            `json:"apiExport"      form:"apiExport"      binding:"boolean"`
+	Hidden         bool            `json:"hidden"         form:"hidden"         binding:"boolean"`
+	SoldOut        bool            `json:"soldOut"        form:"soldOut"        binding:"boolean"`
+	TotalStock     int             `json:"totalStock"     form:"totalStock"     binding:"numeric"`
+	SectionID      int             `json:"sectionId"      form:"sectionId"`
+	ProductGroupID *int            `json:"productGroupId" form:"productGroupId"`
+	Variant        string          `json:"variant"        form:"variant"`
 }
 
 func (handler *Handler) GetProducts(c *gin.Context) {
@@ -38,11 +55,14 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	sort := c.DefaultQuery("_sort", "pos")
 	order := c.DefaultQuery("_order", "ASC")
 	filterHidden := c.DefaultQuery("_filter_hidden", "false")
-	ids := queryArrayInt(c, "id")
+	filters := sqliteRepo.ProductFilters{
+		IDs:        queryArrayInt(c, "id"),
+		SectionIDs: queryArrayInt(c, "sectionId"),
+	}
 
-	products, err := handler.repo.GetProducts(end-start, start, sort, order, ids)
+	products, err := handler.repo.GetProducts(end-start, start, sort, order, filters)
 	if err != nil {
-		_ = c.Error(InternalServerError.WithCauseMsg(err))
+		listQueryError(c, err)
 
 		return
 	}
@@ -51,7 +71,7 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 		products = filterHiddenProducts(products)
 	}
 
-	total, err := handler.repo.GetTotalProducts()
+	total, err := handler.repo.GetTotalProducts(filters)
 	if err != nil {
 		_ = c.Error(InternalServerError.WithCauseMsg(err))
 
@@ -64,19 +84,11 @@ func (handler *Handler) GetProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, productsResponse)
 }
 
-// filterHiddenProducts removes hidden products from the list while preserving
-// wrap-after formatting by transferring the wrap-after property to the previous
-// visible product when a hidden product with wrap-after is encountered.
+// filterHiddenProducts removes hidden products from the list.
 func filterHiddenProducts(products []models.Product) []models.Product {
 	var filteredProducts []models.Product
 
 	for _, product := range products {
-		if product.Hidden && product.WrapAfter {
-			if len(filteredProducts) > 0 {
-				filteredProducts[len(filteredProducts)-1].WrapAfter = true
-			}
-		}
-
 		if !product.Hidden {
 			filteredProducts = append(filteredProducts, product)
 		}
@@ -154,12 +166,32 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 	product.Name = productRequest.Name
 	product.NetPrice = productRequest.NetPrice
 	product.VATRate = productRequest.VATRate
-	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.APIExport = productRequest.APIExport
 	product.Hidden = productRequest.Hidden
 	product.SoldOut = productRequest.SoldOut
 	product.TotalStock = productRequest.TotalStock
+	product.Variant = productRequest.Variant
+
+	if !handler.assignProductLayout(c, product, productRequest.SectionID, productRequest.ProductGroupID) {
+		return
+	}
+
+	// A mode-owned flag is read-only for products with a stock limit: the form
+	// still sends its current value, so ignore it rather than rejecting.
+	if product.TotalStock > 0 {
+		behavior := config.OutOfStockIgnore
+		if ps, ok := handler.purchaseService.(*purchaseService.PurchaseService); ok {
+			behavior = ps.OutOfStockBehavior
+		}
+
+		if behavior == config.OutOfStockAutoSoldOut {
+			stored, _ := handler.repo.GetProductByID(id)
+			if stored != nil {
+				product.SoldOut = stored.SoldOut
+			}
+		}
+	}
 
 	product, err = handler.repo.UpdateProductByID(id, *product)
 	if err != nil {
@@ -167,6 +199,10 @@ func (handler *Handler) UpdateProductByID(c *gin.Context) {
 
 		return
 	}
+
+	// The stock limit is part of what the out-of-stock behaviour derives the product
+	// flags from, so an edit can make a flag — or its release — due.
+	handler.reconcileStockFlags(c)
 
 	c.JSON(http.StatusOK, product)
 }
@@ -186,9 +222,13 @@ func (handler *Handler) CreateProduct(c *gin.Context) {
 	product.Name = productRequest.Name
 	product.NetPrice = productRequest.NetPrice
 	product.VATRate = productRequest.VATRate
-	product.WrapAfter = productRequest.WrapAfter
 	product.Pos = productRequest.Pos
 	product.Hidden = productRequest.Hidden
+	product.Variant = productRequest.Variant
+
+	if !handler.assignProductLayout(c, &product, productRequest.SectionID, productRequest.ProductGroupID) {
+		return
+	}
 
 	product, err := handler.repo.CreateProduct(product)
 	if err != nil {

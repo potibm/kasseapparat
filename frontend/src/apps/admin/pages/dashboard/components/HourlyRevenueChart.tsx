@@ -16,6 +16,7 @@ import {
 import Decimal from "decimal.js";
 import { useHourlyChartData } from "../hooks/useHourlyChartData";
 import { formatXAxisLabel } from "../utils/formatTimeBucket";
+import { paymentMethodColor } from "@admin/ui/colors";
 
 interface HourlyRevenueStat {
   id: string;
@@ -25,19 +26,7 @@ interface HourlyRevenueStat {
   totalGrossPrice: string | number;
 }
 
-const PAYMENT_METHOD_COLORS: Record<string, string> = {
-  CASH: "#4caf50",
-  CC: "#2196f3",
-  SUMUP: "#ff9800",
-  VOUCHER: "#9c27b0",
-};
-
-const getColor = (paymentMethod: string, index: number): string => {
-  return (
-    PAYMENT_METHOD_COLORS[paymentMethod] ||
-    ["#e91e63", "#00bcd4", "#ff5722", "#607d8b", "#795548"][index % 5]
-  );
-};
+const getColor = paymentMethodColor;
 
 const HourlyRevenueChart: React.FC = () => {
   const { currency } = useConfig();

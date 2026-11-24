@@ -12,6 +12,8 @@ vi.stubGlobal(
   }),
 );
 
+const mockUndo = vi.fn();
+
 const TestComponent = () => {
   const { showToast } = useToast();
 
@@ -28,6 +30,17 @@ const TestComponent = () => {
         }
       >
         Blocking Toast
+      </button>
+      <button
+        onClick={() =>
+          showToast({
+            severity: "info",
+            message: "Cart cleared",
+            action: { label: "Undo", onClick: mockUndo },
+          })
+        }
+      >
+        Action Toast
       </button>
     </div>
   );
@@ -60,6 +73,17 @@ describe("Toast System Integration", () => {
     expect(screen.getByText("YAY!")).toBeInTheDocument();
   });
 
+  it("shows toasts over the product area, not over the sidebar", () => {
+    renderWithProvider();
+
+    fireEvent.click(screen.getByText("Normal Toast"));
+
+    const container = screen.getByTestId("toast-container");
+    expect(container).toContainElement(screen.getByText("YAY!"));
+    // the sidebar is 360px wide; the toasts end 20px left of it
+    expect(container).toHaveClass("right-[380px]", "bottom-5");
+  });
+
   it("removes the toast automatically after the time has elapsed (Auto-Close)", () => {
     renderWithProvider();
 
@@ -72,6 +96,28 @@ describe("Toast System Integration", () => {
     });
 
     expect(screen.queryByText("YAY!")).not.toBeInTheDocument();
+  });
+
+  it("renders an action button that runs the action and dismisses the toast", () => {
+    renderWithProvider();
+
+    fireEvent.click(screen.getByText("Action Toast"));
+    expect(screen.getByText("Cart cleared")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+
+    expect(mockUndo).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Cart cleared")).not.toBeInTheDocument();
+  });
+
+  it("renders no action button for toasts without an action", () => {
+    renderWithProvider();
+
+    fireEvent.click(screen.getByText("Normal Toast"));
+
+    expect(
+      screen.queryByRole("button", { name: "Undo" }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders a backdrop when a blocking toast is active", () => {

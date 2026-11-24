@@ -1,6 +1,10 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { PollingModal } from "./PollingModal";
+import {
+  PollingModal,
+  STALE_AFTER_SECONDS,
+  CONNECTING_GRACE_SECONDS,
+} from "./PollingModal";
 import * as PaymentWSModule from "../hooks/usePaymentWebSocket";
 import * as ToastHookModule from "@pos/features/ui/toast/hooks/useToast";
 import * as ConfigHookModule from "@core/config/hooks/useConfig";
@@ -63,18 +67,22 @@ describe("PollingModal", () => {
       <PollingModal purchase={mockPurchase} onComplete={mockOnComplete} />,
     );
 
-    // UI Checks
-    expect(screen.getByText(/Waiting for Terminal.../i)).toBeInTheDocument();
+    // UI Checks: amount and instruction, no problem report
+    expect(screen.getByTestId("polling-amount")).toHaveTextContent("€40.00");
+    expect(
+      screen.getByText("Tap or insert the card on the reader"),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("polling-problem")).not.toBeInTheDocument();
 
     // Click cancel button
-    const abortBtn = screen.getByRole("button", { name: /Abort Purchase/i });
+    const abortBtn = screen.getByRole("button", { name: /Cancel payment/i });
     expect(abortBtn).not.toBeDisabled();
 
     fireEvent.click(abortBtn);
 
     // check that cancel function was called with the correct reader ID
     expect(mockCancel).toHaveBeenCalledWith("reader-xyz");
-    expect(screen.getByText(/Cancelling.../i)).toBeInTheDocument();
+    expect(screen.getByText(/Cancelling/i)).toBeInTheDocument();
   });
 
   it("handles a successful payment (confirmed) correctly", () => {
@@ -154,5 +162,88 @@ describe("PollingModal", () => {
     );
 
     expect(mockOnComplete).toHaveBeenCalledWith(false);
+  });
+
+  describe("problem reports", () => {
+    const pending = (overrides: Partial<UsePaymentWebSocketReturn> = {}) =>
+      vi.mocked(PaymentWSModule.usePaymentWebSocket).mockReturnValue({
+        status: "pending",
+        error: null,
+        lastMessageAt: Date.now(),
+        cancel: mockCancel,
+        isConnected: true,
+        ...overrides,
+      } as unknown as UsePaymentWebSocketReturn);
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("counts the time since the dialog opened", () => {
+      pending();
+
+      render(
+        <PollingModal purchase={mockPurchase} onComplete={mockOnComplete} />,
+      );
+
+      expect(screen.getByTestId("polling-elapsed")).toHaveTextContent("0:00");
+
+      act(() => {
+        vi.advanceTimersByTime(65_000);
+      });
+
+      expect(screen.getByTestId("polling-elapsed")).toHaveTextContent("1:05");
+    });
+
+    it("reports a terminal that has been silent for too long", () => {
+      pending({
+        lastMessageAt: Date.now() - (STALE_AFTER_SECONDS + 5) * 1000,
+      });
+
+      render(
+        <PollingModal purchase={mockPurchase} onComplete={mockOnComplete} />,
+      );
+
+      expect(screen.getByTestId("polling-problem")).toHaveTextContent(
+        `No news from the terminal for ${STALE_AFTER_SECONDS + 5} s.`,
+      );
+    });
+
+    it("reports a missing connection only after a grace period", () => {
+      pending({ isConnected: false });
+
+      render(
+        <PollingModal purchase={mockPurchase} onComplete={mockOnComplete} />,
+      );
+
+      expect(screen.queryByTestId("polling-problem")).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Cancel payment/i }),
+      ).toBeDisabled();
+
+      act(() => {
+        vi.advanceTimersByTime(CONNECTING_GRACE_SECONDS * 1000);
+      });
+
+      expect(screen.getByTestId("polling-problem")).toHaveTextContent(
+        "No connection to the payment service",
+      );
+    });
+
+    it("shows an error message", () => {
+      pending({ error: "A connection error occurred." });
+
+      render(
+        <PollingModal purchase={mockPurchase} onComplete={mockOnComplete} />,
+      );
+
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "A connection error occurred.",
+      );
+    });
   });
 });

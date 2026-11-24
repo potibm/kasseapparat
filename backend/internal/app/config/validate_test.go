@@ -8,13 +8,14 @@ import (
 
 var defaultTestConfig = Config{
 	App: AppConfig{
-		DbFilename:  "kasseapparat",
-		GinMode:     "release",
-		Environment: "production",
-		LogLevel:    "info",
-		LogFormat:   "json",
-		FrontendURL: "http://localhost:3000",
-		Port:        8080,
+		DbFilename:         "kasseapparat",
+		GinMode:            "release",
+		Environment:        "production",
+		LogLevel:           "info",
+		LogFormat:          "json",
+		FrontendURL:        "http://localhost:3000",
+		Port:               8080,
+		OutOfStockBehavior: OutOfStockIgnore,
 	},
 	Format: FormatConfig{
 		Currency: CurrencyFormatConfig{Locale: "de-DE", Code: "EUR"},
@@ -37,6 +38,35 @@ var defaultTestConfig = Config{
 func TestConfigValidate(t *testing.T) {
 	cfg := defaultTestConfig
 	assert.NoError(t, cfg.Validate())
+}
+
+func TestOutOfStockBehaviorValidate(t *testing.T) {
+	for _, behavior := range []OutOfStockBehavior{
+		OutOfStockIgnore,
+		OutOfStockFail,
+		OutOfStockAutoSoldOut,
+	} {
+		cfg := defaultTestConfig
+		cfg.App.OutOfStockBehavior = behavior
+		assert.NoError(t, cfg.Validate(), "behavior %q should be accepted", behavior)
+	}
+
+	// auto_hide was dropped before it was released (ADR 005).
+	cfg := defaultTestConfig
+	cfg.App.OutOfStockBehavior = "auto_hide"
+	assert.Error(t, cfg.Validate())
+
+	// A typo must be rejected at startup rather than silently falling back.
+	cfg = defaultTestConfig
+	cfg.App.OutOfStockBehavior = "faile"
+	err := cfg.Validate()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "OutOfStockBehavior")
+
+	// Unset must be rejected too, so a missing value cannot reach the sales path.
+	cfg = defaultTestConfig
+	cfg.App.OutOfStockBehavior = ""
+	assert.Error(t, cfg.Validate())
 }
 
 func TestCurrencyFormatConfigValidate(t *testing.T) {

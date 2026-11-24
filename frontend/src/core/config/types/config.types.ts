@@ -1,3 +1,5 @@
+export type OutOfStockBehavior = "ignore" | "fail" | "auto_sold_out";
+
 export interface AppConfig {
   version: string;
   apiHost: string;
@@ -17,8 +19,13 @@ export interface AppConfig {
   dateLocale: string;
   dateOptions: Intl.DateTimeFormatOptions;
   vatRates: Array<{ rate: number; name: string }>;
-  paymentMethods: Array<{ code: string; name: string }>;
+  paymentMethods: Array<{
+    code: string;
+    name: string;
+    changeCalculator?: boolean;
+  }>;
   sumupEnabled: boolean;
   environmentMessage?: string;
   authMode: string;
+  outOfStockBehavior: OutOfStockBehavior;
 }

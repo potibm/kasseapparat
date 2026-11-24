@@ -8,8 +8,9 @@ import (
 )
 
 type PaymentMethodsConfig struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
+	Code             string `json:"code"`
+	Name             string `json:"name"`
+	ChangeCalculator bool   `json:"changeCalculator"`
 }
 
 type VatRateConfig struct {
@@ -36,6 +37,7 @@ type Config struct {
 	EnvironmentMessage            string                  `json:"environmentMessage"`
 	PaymentMethods                []PaymentMethodsConfig  `json:"paymentMethods"`
 	AuthMode                      string                  `json:"authMode"`
+	OutOfStockBehavior            string                  `json:"outOfStockBehavior"`
 }
 
 func (handler *Handler) GetConfig(c *gin.Context) {
@@ -56,6 +58,7 @@ func (handler *Handler) GetConfig(c *gin.Context) {
 		EnvironmentMessage:            handler.config.App.EnvironmentMessage,
 		PaymentMethods:                convertPaymentMethods(handler.config.PaymentMethods),
 		AuthMode:                      handler.config.Auth.Mode,
+		OutOfStockBehavior:            string(handler.config.App.OutOfStockBehavior),
 	}
 
 	c.JSON(nethttp.StatusOK, config)
@@ -66,8 +69,9 @@ func convertPaymentMethods(paymentMethods []cfgTypes.PaymentMethodConfig) []Paym
 
 	for _, configPaymentMethod := range paymentMethods {
 		result = append(result, PaymentMethodsConfig{
-			Code: string(configPaymentMethod.Code),
-			Name: configPaymentMethod.Name,
+			Code:             string(configPaymentMethod.Code),
+			Name:             configPaymentMethod.Name,
+			ChangeCalculator: configPaymentMethod.UsesChangeCalculator(),
 		})
 	}
 

@@ -9,12 +9,16 @@ import {
 } from "react-admin";
 import { ProductInterest } from "./types";
 import { useConfig } from "@core/config/hooks/useConfig";
+import ProductInterestSummary from "./ProductInterestSummary";
 
 export const ProductInterestList: React.FC = () => {
   const { dateLocale } = useConfig();
 
   return (
-    <List<ProductInterest> sort={{ field: "createdAt", order: "DESC" }}>
+    <List<ProductInterest>
+      sort={{ field: "createdAt", order: "DESC" }}
+      aside={<ProductInterestSummary />}
+    >
       <Datagrid rowClick={false} bulkActionButtons={false}>
         <NumberField source="id" />
         <DateField

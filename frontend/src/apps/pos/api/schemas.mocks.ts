@@ -3,10 +3,41 @@ import Decimal from "decimal.js";
 import {
   User as UserType,
   Product as ProductType,
+  Section as SectionType,
+  ProductGroup as ProductGroupType,
   Guest as GuestType,
   Purchase as PurchaseType,
   PurchaseItem as PurchaseItemType,
 } from "./schemas";
+
+/**
+ * Generates a mock product section.
+ *
+ * @param overrides  Specific fields to override in the generated object.
+ */
+export const createMockSection = (
+  overrides?: Partial<SectionType>,
+): SectionType => ({
+  id: faker.number.int({ min: 1, max: 99999 }),
+  name: faker.commerce.department(),
+  pos: faker.number.int({ min: 1, max: 100 }),
+  ...overrides,
+});
+
+/**
+ * Generates a mock product group.
+ *
+ * @param overrides  Specific fields to override in the generated object.
+ */
+export const createMockProductGroup = (
+  overrides?: Partial<ProductGroupType>,
+): ProductGroupType => ({
+  id: faker.number.int({ min: 1, max: 99999 }),
+  sectionId: 1,
+  name: faker.commerce.productAdjective(),
+  pos: faker.number.int({ min: 1, max: 100 }),
+  ...overrides,
+});
 
 /**
  * Generates a realistic mock Product object for testing purposes.
@@ -35,7 +66,9 @@ export const createMockProduct = (
     vatRate: new Decimal(vatRateNum.toFixed(2)),
     vatAmount: new Decimal(vatAmountNum.toFixed(2)),
 
-    wrapAfter: faker.datatype.boolean(),
+    sectionId: 1,
+    productGroupId: null,
+    variant: "",
     hidden: faker.datatype.boolean(0.1),
     soldOut: faker.datatype.boolean(0.2),
     apiExport: true,

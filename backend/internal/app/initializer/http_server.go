@@ -215,6 +215,8 @@ func registerAPIRoutes(
 		protectedAPIRouter.GET("/auth/me", httpHdlr.GetMe)
 
 		registerProductRoutes(protectedAPIRouter, httpHdlr)
+		registerSectionRoutes(protectedAPIRouter, httpHdlr)
+		registerProductGroupRoutes(protectedAPIRouter, httpHdlr)
 		registerProductInterestRoutes(protectedAPIRouter, httpHdlr)
 		protectedAPIRouter.GET("/productStats", httpHdlr.GetProductStats)
 		protectedAPIRouter.GET("/paymentMethodStats", httpHdlr.GetPaymentMethodStats)
@@ -267,6 +269,28 @@ func registerProductRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
 		products.PUT("/:id", handler.UpdateProductByID)
 		products.DELETE("/:id", handler.DeleteProductByID)
 		products.POST("", handler.CreateProduct)
+	}
+}
+
+func registerSectionRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
+	sections := rg.Group("/sections")
+	{
+		sections.GET("", handler.GetSections)
+		sections.GET("/:id", handler.GetSectionByID)
+		sections.PUT("/:id", handler.UpdateSectionByID)
+		sections.DELETE("/:id", handler.DeleteSectionByID)
+		sections.POST("", handler.CreateSection)
+	}
+}
+
+func registerProductGroupRoutes(rg *gin.RouterGroup, handler httpHandler.Handler) {
+	groups := rg.Group("/productGroups")
+	{
+		groups.GET("", handler.GetProductGroups)
+		groups.GET("/:id", handler.GetProductGroupByID)
+		groups.PUT("/:id", handler.UpdateProductGroupByID)
+		groups.DELETE("/:id", handler.DeleteProductGroupByID)
+		groups.POST("", handler.CreateProductGroup)
 	}
 }
 

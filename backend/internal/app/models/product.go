@@ -11,7 +11,6 @@ type Product struct {
 	Name                string          `json:"name"                gorm:""`
 	NetPrice            decimal.Decimal `json:"netPrice"            gorm:"type:TEXT"`
 	VATRate             decimal.Decimal `json:"vatRate"             gorm:"type:TEXT;default:'0.0'"`
-	WrapAfter           bool            `json:"wrapAfter"           gorm:"default:false"`
 	Hidden              bool            `json:"hidden"              gorm:"default:false"`
 	SoldOut             bool            `json:"soldOut"             gorm:"default:false"`
 	APIExport           bool            `json:"apiExport"           gorm:"default:false"`
@@ -20,6 +19,14 @@ type Product struct {
 	UnitsSold           int             `json:"unitsSold"           gorm:"default:0"`
 	SoldOutRequestCount int             `json:"soldOutRequestCount" gorm:"default:0"`
 	Guestlists          []Guestlist     `json:"guestlists"          gorm:""`
+	SectionID           int             `json:"sectionId"           gorm:"index;default:0"`
+	ProductGroupID      *int            `json:"productGroupId"      gorm:"index"`
+	Variant             string          `json:"variant"             gorm:"default:''"`
+
+	// StockFlagsManaged records that the out-of-stock behaviour set SoldOut or Hidden
+	// itself. Only an owned flag is cleared again when the stock comes back, so a flag
+	// an operator set by hand survives a refund. Not part of the API.
+	StockFlagsManaged bool `json:"-"`
 }
 
 func (p Product) GrossPrice(decimalPlaces int32) decimal.Decimal {

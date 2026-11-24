@@ -306,7 +306,7 @@ func fromSDKTransactionFull(sdkCheckout *sumup.TransactionFull) *Transaction {
 	}
 }
 
-func fromSDKTransactionEvent(sdkEvent *sumup.Event) TransactionEvent {
+func fromSDKTransactionEvent(sdkEvent *sumup.TransactionEvent) TransactionEvent {
 	timestamp := time.Time{}
 
 	if sdkEvent.Timestamp != nil {

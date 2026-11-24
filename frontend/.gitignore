@@ -23,6 +23,7 @@ coverage
 
 # Playwright
 /test-results/
+/docs-screenshots/
 /playwright-report/
 /blob-report/
 /playwright/.cache/

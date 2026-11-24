@@ -22,6 +22,8 @@ var allModels = []interface{}{
 	&models.Guestlist{},
 	&models.Guest{},
 	&models.ProductInterest{},
+	&models.Section{},
+	&models.ProductGroup{},
 }
 
 func IsValidDatabaseFilename(filename string) bool {
@@ -99,6 +101,8 @@ func PurgeDatabase(db *gorm.DB) error {
 			&models.Guestlist{},
 			&models.Guest{},
 			&models.ProductInterest{},
+			&models.Section{},
+			&models.ProductGroup{},
 		)
 	if err != nil {
 		return fmt.Errorf("failed to purge database: %w", err)
@@ -126,7 +130,7 @@ func MigrateDatabase(db *gorm.DB) error {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
 
-	return nil
+	return assignProductsWithoutSection(db)
 }
 
 func SeedDatabase(db *gorm.DB, includeTestData bool) error {

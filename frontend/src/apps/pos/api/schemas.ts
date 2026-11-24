@@ -17,7 +17,9 @@ export const ProductSchema = z.object({
   grossPrice: DecimalSchema,
   vatRate: DecimalSchema,
   vatAmount: DecimalSchema,
-  wrapAfter: z.boolean(),
+  sectionId: z.number(),
+  productGroupId: z.number().nullable().optional(),
+  variant: z.string().optional(),
   hidden: z.boolean(),
   soldOut: z.boolean(),
   apiExport: z.boolean(),
@@ -38,6 +40,32 @@ export const ProductSchema = z.object({
 });
 
 export type Product = z.infer<typeof ProductSchema>;
+
+export const SectionSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  pos: z.number(),
+});
+
+export type Section = z.infer<typeof SectionSchema>;
+
+export const SumupReaderSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  /** SumUp's pairing status: "paired", "processing", "expired", "unknown". */
+  status: z.string(),
+});
+
+export type SumupReader = z.infer<typeof SumupReaderSchema>;
+
+export const ProductGroupSchema = z.object({
+  id: z.number(),
+  sectionId: z.number(),
+  name: z.string(),
+  pos: z.number(),
+});
+
+export type ProductGroup = z.infer<typeof ProductGroupSchema>;
 
 export const PurchaseItemSchema = z.object({
   id: z.number(),
