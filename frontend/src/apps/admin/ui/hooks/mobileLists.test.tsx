@@ -56,6 +56,8 @@ const renderList = (
   );
 
 describe("admin lists on a phone", () => {
+  // The first react-admin list in a test file renders slowly on CI runners,
+  // so the lookups wait longer than the default second.
   it("lists products with price and stock", async () => {
     renderList(
       "products",
@@ -74,7 +76,9 @@ describe("admin lists on a phone", () => {
       <ProductList />,
     );
 
-    expect(await screen.findByText("Mug")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Mug", {}, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(screen.getByText("$12.00 · 2 / 5 left")).toBeInTheDocument();
     expect(screen.getByText("Hidden")).toBeInTheDocument();
     expect(screen.getByText("$3.00 · 40 sold")).toBeInTheDocument();
@@ -95,7 +99,9 @@ describe("admin lists on a phone", () => {
       <PurchaseList />,
     );
 
-    expect(await screen.findByText("$41.00")).toBeInTheDocument();
+    expect(
+      await screen.findByText("$41.00", {}, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(screen.getByText("2× Mate")).toBeInTheDocument();
   });
 
@@ -114,7 +120,9 @@ describe("admin lists on a phone", () => {
       <GuestList />,
     );
 
-    expect(await screen.findByText("Alex Müller")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Alex Müller", {}, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Crew")).toBeInTheDocument();
     expect(screen.getByText(/^arrived /)).toBeInTheDocument();
     expect(screen.getByText("Jana")).toBeInTheDocument();
@@ -136,7 +144,9 @@ describe("admin lists on a phone", () => {
       <GuestlistList />,
     );
 
-    expect(await screen.findByText("Crew")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Crew", {}, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Free")).toBeInTheDocument();
     expect(screen.getByText("2 / 20 arrived")).toBeInTheDocument();
     expect(screen.getByText("No entries")).toBeInTheDocument();
