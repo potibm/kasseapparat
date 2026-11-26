@@ -56,3 +56,64 @@ payment_methods:
 	assert.False(t, methods[2].UsesChangeCalculator())
 	assert.Nil(t, methods[2].ChangeCalculator)
 }
+
+func TestConfig_DropSumupWithoutCredentials(t *testing.T) {
+	withSumup := func() PaymentMethods {
+		return PaymentMethods{
+			{Code: models.PaymentMethodCash, Name: "Cash"},
+			{Code: models.PaymentMethodSumUp, Name: "Card"},
+		}
+	}
+
+	tests := []struct {
+		name        string
+		sumup       SumupConfig
+		methods     PaymentMethods
+		wantDropped bool
+		wantCodes   []models.PaymentMethod
+	}{
+		{
+			name:        "keeps SumUp with credentials",
+			sumup:       SumupConfig{APIKey: "key", MerchantCode: "M1"},
+			methods:     withSumup(),
+			wantDropped: false,
+			wantCodes:   []models.PaymentMethod{models.PaymentMethodCash, models.PaymentMethodSumUp},
+		},
+		{
+			name:        "drops SumUp without an API key",
+			sumup:       SumupConfig{MerchantCode: "M1"},
+			methods:     withSumup(),
+			wantDropped: true,
+			wantCodes:   []models.PaymentMethod{models.PaymentMethodCash},
+		},
+		{
+			name:        "drops SumUp without a merchant code",
+			sumup:       SumupConfig{APIKey: "key"},
+			methods:     withSumup(),
+			wantDropped: true,
+			wantCodes:   []models.PaymentMethod{models.PaymentMethodCash},
+		},
+		{
+			name:        "leaves other methods alone",
+			methods:     PaymentMethods{{Code: models.PaymentMethodCash, Name: "Cash"}},
+			wantDropped: false,
+			wantCodes:   []models.PaymentMethod{models.PaymentMethodCash},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := Config{Sumup: tt.sumup, PaymentMethods: tt.methods}
+
+			assert.Equal(t, tt.wantDropped, cfg.DropSumupWithoutCredentials())
+
+			codes := make([]models.PaymentMethod, 0, len(cfg.PaymentMethods))
+
+			for _, method := range cfg.PaymentMethods {
+				codes = append(codes, method.Code)
+			}
+
+			assert.Equal(t, tt.wantCodes, codes)
+		})
+	}
+}

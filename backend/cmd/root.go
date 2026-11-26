@@ -95,6 +95,13 @@ var rootCmd = &cobra.Command{
 
 		setupLogger(Cfg.App.LogFormat, Cfg.App.LogLevel)
 
+		if Cfg.DropSumupWithoutCredentials() {
+			slog.Warn(
+				"SUMUP is listed in payment_methods, but sumup.api_key or sumup.merchant_code is not set: " +
+					"the POS does not offer card payments via SumUp",
+			)
+		}
+
 		return nil
 	},
 }

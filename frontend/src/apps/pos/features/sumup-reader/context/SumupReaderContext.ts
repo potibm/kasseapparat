@@ -3,7 +3,11 @@ import { SumupReader } from "@pos/api/schemas";
 import { ReaderProblem } from "../utils/readerProblem";
 
 export interface SumupReaderContextValue {
-  /** Whether card payments via SumUp are configured at all. */
+  /**
+   * Whether the POS offers card payments via SumUp: configured, and SumUp knows at
+   * least one reader (or the list is not known yet). Pairing a reader is done in the
+   * admin, so without any the POS shows neither the button nor a hint.
+   */
   enabled: boolean;
   selectedReaderId: string | undefined;
   selectedReader: SumupReader | undefined;

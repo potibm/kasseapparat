@@ -27,6 +27,11 @@ const Selected = () => {
   return <span data-testid="selected">{selectedReader?.name ?? "-"}</span>;
 };
 
+const Enabled = () => {
+  const { enabled } = useSumupReader();
+  return <span data-testid="enabled">{enabled ? "yes" : "no"}</span>;
+};
+
 const renderProvider = () =>
   render(
     <SumupReaderProvider>
@@ -104,18 +109,20 @@ describe("SumupReaderProvider", () => {
     ).toBeInTheDocument();
   });
 
-  it("explains how to pair a reader when there is none", async () => {
+  it("offers no card payments while no reader is paired", async () => {
     fetchSumupReaders.mockResolvedValue([]);
-    renderProvider();
+    render(
+      <SumupReaderProvider>
+        <SumupReaderHint />
+        <Enabled />
+      </SumupReaderProvider>,
+    );
 
-    fireEvent.click(await screen.findByTestId("sumup-reader-hint"));
-
-    expect(
-      await screen.findByText(/No card reader is paired yet/),
-    ).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
-    await waitFor(() => expect(fetchSumupReaders).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(fetchSumupReaders).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(screen.getByTestId("enabled")).toHaveTextContent("no"),
+    );
+    expect(screen.queryByTestId("sumup-reader-hint")).not.toBeInTheDocument();
   });
 
   it("does nothing without SumUp", () => {

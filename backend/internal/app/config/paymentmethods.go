@@ -46,3 +46,28 @@ func isValidPaymentMethod(code models.PaymentMethod) bool {
 
 	return exists
 }
+
+// DropSumupWithoutCredentials removes SUMUP from the payment methods when the SumUp
+// API key or merchant code is missing: the POS would offer a button that can never
+// work. It reports whether SUMUP was removed, so the caller can warn about it.
+func (c *Config) DropSumupWithoutCredentials() bool {
+	if c.Sumup.APIKey != "" && c.Sumup.MerchantCode != "" {
+		return false
+	}
+
+	if !c.PaymentMethods.Contains(models.PaymentMethodSumUp) {
+		return false
+	}
+
+	kept := make(PaymentMethods, 0, len(c.PaymentMethods))
+
+	for _, method := range c.PaymentMethods {
+		if method.Code != models.PaymentMethodSumUp {
+			kept = append(kept, method)
+		}
+	}
+
+	c.PaymentMethods = kept
+
+	return true
+}

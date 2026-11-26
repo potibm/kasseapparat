@@ -23,6 +23,8 @@ payment_methods:
 
 The `payment_methods` list decides which buttons the POS offers. It is a YAML list, not a comma-separated string.
 
+The POS only shows the SumUp button when it can work: without `sumup.api_key` and `sumup.merchant_code` the server leaves `SUMUP` out and logs a warning, and as long as no reader is paired (see below) the button is hidden as well.
+
 ### Merchant Code (Merchant ID)
 
 You can find your Merchant Code on [SumUp Settings](https://me.sumup.com/en-en/settings/developer), displayed directly below your company name.
