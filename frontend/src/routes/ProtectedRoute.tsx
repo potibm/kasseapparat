@@ -12,7 +12,9 @@ export const ProtectedRoute: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    window.location.href = `${apiBaseUrl}/auth/login`;
+    // Come back to the page that asked for the login, not to the start page.
+    const returnTo = encodeURIComponent(window.location.pathname);
+    window.location.href = `${apiBaseUrl}/auth/login?returnTo=${returnTo}`;
     return;
   }
 

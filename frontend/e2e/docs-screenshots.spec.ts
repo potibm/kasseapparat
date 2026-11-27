@@ -35,7 +35,7 @@ test.describe("documentation screenshots", () => {
   // Runs on the iPad project only (see testIgnore in playwright.config.ts).
   test.beforeEach(async ({ page }) => {
     await resetDatabase();
-    await page.goto("/");
+    await page.goto("/pos");
     await new PosPage(page).expectProductVisible(TEST_PRODUCTS.REGULAR_TICKET);
   });
 

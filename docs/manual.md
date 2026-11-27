@@ -18,6 +18,8 @@ Kasseapparat uses your event's central Identity Provider (Single Sign-On) for au
 
 When you access the Kasseapparat URL, you will either be authenticated automatically or redirected to your event's central login page. Log in using your standard event or crew credentials.
 
+The start page links to the **POS** (`/pos`, made for the iPad) and the **admin** (`/admin`, which also works on a phone). Add the POS to the iPad's home screen to open it directly.
+
 <div class="page-break"></div>
 
 ## <a name="pos">POS</a>
