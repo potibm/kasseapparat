@@ -147,6 +147,15 @@ describe("CheckoutButtons", () => {
       expect(screen.queryByTestId("sumup-reader-hint")).not.toBeInTheDocument();
     });
 
+    it("leaves out the SumUp button when no reader is paired", () => {
+      renderWithReader({ enabled: false });
+
+      expect(
+        screen.queryByTestId("checkout-button-SUMUP"),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId("sumup-reader-hint")).not.toBeInTheDocument();
+    });
+
     it("is disabled and explains why when the reader has a problem", async () => {
       const openDialog = vi.fn();
       renderWithReader({

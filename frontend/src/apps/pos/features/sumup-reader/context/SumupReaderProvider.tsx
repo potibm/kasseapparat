@@ -69,16 +69,17 @@ export const SumupReaderProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const closeDialog = useCallback(() => setDialogOpen(false), []);
 
+  // No reader paired at all: nothing to choose here, that is set up in the admin.
+  const available = sumupEnabled && readers?.length !== 0;
+
   const value = useMemo(
     () => ({
-      enabled: sumupEnabled,
+      enabled: available,
       selectedReaderId,
       selectedReader: readers?.find((r) => r.id === selectedReaderId),
       readers,
       loading,
-      problem: sumupEnabled
-        ? findReaderProblem(selectedReaderId, readers)
-        : null,
+      problem: available ? findReaderProblem(selectedReaderId, readers) : null,
       selectReader,
       refresh: () => void refresh(),
       dialogOpen,
@@ -86,7 +87,7 @@ export const SumupReaderProvider: React.FC<{ children: React.ReactNode }> = ({
       closeDialog,
     }),
     [
-      sumupEnabled,
+      available,
       selectedReaderId,
       readers,
       loading,

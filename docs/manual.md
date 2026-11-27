@@ -86,7 +86,7 @@ For cash, a dialog asks how much the customer handed over before the payment is 
 
 For card payments the amount is sent to the card reader, and a dialog shows the amount and the elapsed time until the customer has paid. "Cancel payment" stops it. Problems, for example a lost connection to the terminal, are shown in the dialog only when they occur.
 
-If card payments cannot work – no card reader selected, or the selected one is offline – the card button is disabled and a line below it says why. Tap that line to choose a card reader for this iPad.
+If card payments cannot work – no card reader selected, or the selected one is offline – the card button is disabled and a line below it says why. Tap that line to choose a card reader for this iPad. As long as no card reader is paired at all, there is no card button; pairing is done in the [admin](#admin).
 
 <div class="page-break"></div>
 

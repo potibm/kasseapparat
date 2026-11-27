@@ -22,9 +22,16 @@ const CheckoutButtons: React.FC<CheckoutButtonsProps> = ({
   checkoutProcessing,
   handleCheckoutCart,
 }) => {
-  const { currency, paymentMethods } = useConfig();
-  const { selectedReaderId: sumUpReaderId, problem: readerProblem } =
-    useSumupReader();
+  const { currency, paymentMethods: configuredMethods } = useConfig();
+  const {
+    enabled: sumupAvailable,
+    selectedReaderId: sumUpReaderId,
+    problem: readerProblem,
+  } = useSumupReader();
+  // Without a paired card reader there is no SumUp button at all.
+  const paymentMethods = configuredMethods.filter(
+    (method) => method.code !== "SUMUP" || sumupAvailable,
+  );
   const offersSumup = paymentMethods.some((method) => method.code === "SUMUP");
   const [calculatorFor, setCalculatorFor] = useState<PaymentMethod | null>(
     null,
