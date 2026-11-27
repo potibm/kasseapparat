@@ -12,7 +12,7 @@ test.describe("guestlist", () => {
     test.beforeEach(async ({ page }) => {
       await resetDatabase();
 
-      await page.goto("/");
+      await page.goto("/pos");
 
       const pos = new PosPage(page);
       await pos.expectProductVisible(freeTicketProduct);
@@ -53,7 +53,7 @@ test.describe("guestlist", () => {
     test.beforeEach(async ({ page }) => {
       await resetDatabase();
 
-      await page.goto("/");
+      await page.goto("/pos");
 
       const pos = new PosPage(page);
       await pos.expectProductVisible(prepaidTicketProduct);
@@ -94,7 +94,7 @@ test.describe("guestlist", () => {
     test.beforeEach(async ({ page }) => {
       await resetDatabase();
 
-      await page.goto("/");
+      await page.goto("/pos");
 
       const pos = new PosPage(page);
       await pos.expectProductVisible(freeTicketProduct);

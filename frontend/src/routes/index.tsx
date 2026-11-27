@@ -5,12 +5,17 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import Kasseapparat from "../apps/pos/pages/Pos";
 import Admin from "../apps/admin/Admin";
 import NotFound from "../apps/pos/pages/NotFound";
+import Splash from "../apps/splash/pages/Splash";
 
 const Routes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
   const router = useMemo(() => {
     const routesForPublic: RouteObject[] = [
+      {
+        path: "/",
+        element: <Splash />,
+      },
       {
         path: "/admin/*",
         element: <Admin />,
@@ -19,11 +24,10 @@ const Routes: React.FC = () => {
 
     const routesForAuthenticatedOnly: RouteObject[] = [
       {
-        path: "/",
         element: <ProtectedRoute />,
         children: [
           {
-            path: "/",
+            path: "/pos",
             element: <Kasseapparat />,
           },
         ],
